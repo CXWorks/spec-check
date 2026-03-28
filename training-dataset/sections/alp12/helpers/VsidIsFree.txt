@@ -1,0 +1,5 @@
+B3.157 VsidIsFree function
+             Returns TRUE if vsid is unused within the VSMMU vsmmu.
+             func VsidIsFree(
+                 vsmmu : RmmVsmmu,
+                 vsid : bits(64)) => boolean

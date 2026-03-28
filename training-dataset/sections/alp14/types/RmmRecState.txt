@@ -1,0 +1,9 @@
+C2.42 RmmRecState type
+            The RmmRecState enumeration represents the state of a REC.
+            The RmmRecState enumeration is an abstract type.
+            The values of the RmmRecState enumeration are shown in the following table.
+                   Name                                    Description
+                   REC_READY                               REC is not currently running.
+                   REC_RUNNING                             REC is currently running.
+            The RmmRecState enumeration is used in the following types:
+               • RmmRec

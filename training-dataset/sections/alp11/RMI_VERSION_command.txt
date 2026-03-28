@@ -1,0 +1,52 @@
+B4.3.56 RMI_VERSION command
+              Allows the Host and the RMM to determine whether there exists a mutually acceptable revision of the RMM via
+              which the two components can communicate.
+              On calling this command, the Host provides a requested RMI version.
+              The output values include a status code and two revisions which are supported by the RMM: a lower revision and a
+              higher revision.
+                  • The higher revision value is the highest interface revision which is supported by the RMM.
+                  • The lower revision is less than or equal to the higher revision.
+              The status code and lower revision output values indicate which of the following is true, in order of precedence:
+                 a) The RMM supports an interface revision which is compatible with the requested revision.
+                      • The status code is RMI_SUCCESS.
+                      • The lower revision is equal to the requested revision.
+                 b) The RMM does not support an interface revision which is compatible with the requested revision. The RMM
+                    supports an interface revision which is incompatible with and less than the requested revision.
+                      • The status code is RMI_ERROR_INPUT.
+                      • The lower revision is the highest interface revision which is both less than the requested revision and
+                        supported by the RMM.
+                 c) The RMM does not support an interface revision which is compatible with the requested revision. The RMM
+                    supports an interface revision which is incompatible with and greater than the requested revision.
+                      • The status code is RMI_ERROR_INPUT.
+                      • The lower revision is equal to the higher revision.
+              B4.3.56.1 Interface
+              B4.3.56.1.1    Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID, value 0xC4000150
+        req                 X1           63:0        RmiInterfaceVersion                   Requested interface revision
+              B4.3.56.1.2    Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        RmiCommandReturnCode                  Command return status
+        lower               X1           63:0        RmiInterfaceVersion                   Lower supported interface revision
+        higher              X2           63:0        RmiInterfaceVersion                   Higher supported interface revision
+             B4.3.56.2 Failure conditions
+  ID                        Condition
+  incompat_lower            pre:  (!RmiVersionIsSupported(req)
+                                      && RmiVersionLowerIsSupported(req))
+                            post: (ResultEqual(result, RMI_ERROR_INPUT)
+                                      && VersionEqual(lower, RmiVersionHighestBelow(req))
+                                      && VersionEqual(higher, RmiVersionHighest()))
+  incompat_higher           pre:  (!RmiVersionIsSupported(req)
+                                      && !RmiVersionLowerIsSupported(req)
+                                      && RmiVersionHigherIsSupported(req))
+                            post: (ResultEqual(result, RMI_ERROR_INPUT)
+                                      && VersionEqual(lower, higher)
+                                      && VersionEqual(higher, RmiVersionHighest()))
+             B4.3.56.2.1   Failure condition ordering
+             The RMI_VERSION command does not have any failure condition orderings.
+             B4.3.56.3 Success conditions
+  ID                        Condition
+  lower                     VersionEqual(lower, req)
+  higher                    VersionEqual(higher, RmiVersionHighest())
+             B4.3.56.4 Footprint
+             The RMI_VERSION command does not have any footprint.

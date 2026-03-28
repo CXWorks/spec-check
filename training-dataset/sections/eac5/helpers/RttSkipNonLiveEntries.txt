@@ -1,0 +1,19 @@
+B3.75 RttSkipNonLiveEntries function
+             Scanning rtt starting from ipa, returns the IPA of the first live entry.
+             If no live entry is found, returns the next IPA after the last entry in rtt.
+             The return value is aligned to the size of the address range described by an entry at RTT level.
+             func RttSkipNonLiveEntries(
+                 rtt : RmmRtt,
+                 level : integer,
+                 ipa : Address) => Address
+             begin
+                 var result : Address = RttSkipEntriesUnlessState(
+                             rtt, level, ipa, ASSIGNED);
+                   result = MinAddress(result,
+                             RttSkipEntriesUnlessState(
+                                 rtt, level, ipa, ASSIGNED_NS));
+                   result = MinAddress(result,
+                           RttSkipEntriesUnlessState(
+                               rtt, level, ipa, TABLE));
+                   return AlignDownToRttLevel(result, level);
+             end

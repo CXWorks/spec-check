@@ -1,0 +1,4 @@
+B3.79 RmiFeatureRegister0Decode function
+             Decode RmiFeatureRegister0 value.
+             func RmiFeatureRegister0Decode(
+                 value : bits(64)) => RmiFeatureRegister0

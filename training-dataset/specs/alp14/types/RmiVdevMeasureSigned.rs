@@ -1,0 +1,4 @@
+pub enum RmiVdevMeasureSigned {
+  RMI_VDEV_MEASURE_NOT_SIGNED,
+  RMI_VDEV_MEASURE_SIGNED,
+}

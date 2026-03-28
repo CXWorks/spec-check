@@ -1,0 +1,86 @@
+B4.3.42 RMI_RTT_MAP_UNPROTECTED command
+                Creates a mapping from an Unprotected IPA to a Non-secure PA in a primary RTT.
+                B4.3.42.1 Interface
+                B4.3.42.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400015F
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               IPA at which the memory will be
+                                                                                            mapped in the target Realm
+        level                 X3          63:0        Int64                                 RTT level
+        desc                  X4          63:0        Bits64         T                      RTTE descriptor
+                The layout and encoding of fields in the desc input value match “Attribute fields in stage 2 VMSAv8-64 Block
+                and Page descriptors” in Arm Architecture Reference Manual for A-Profile architecture [3].
+                B4.3.42.1.2   Context
+                The RMI_RTT_MAP_UNPROTECTED command operates on the following context.
+        Name                  Type                       Value                                      Before    Description
+        realm                 RmmRealm                   RealmAt(rd)                                false     Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                             realm, ipa, level,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false     RTTE index
+                                                             ipa, walk.level)
+        rtte                  RmmRttEntry                RttDescriptorDecode(                       false     RTT entry
+                                                             desc,
+                                                             realm.rtt_s2ap_encoding
+                                                         )
+                B4.3.42.1.3   Output values
+         Name                   Register     Bits           Type                                          Description
+         result                 X0           63:0           RmiCommandReturnCode                          Command return status
+               B4.3.42.2 Failure conditions
+  ID                             Condition
+  attr_valid                     pre: !RttDescriptorIsValidForUnprotected(desc)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_align                       pre: !AddrIsGranuleAligned(rd)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                       pre: !PaIsDelegable(rd)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                       pre: GranuleAt(rd).state != RD
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_bound                    pre:  (!RttLevelIsValid(realm, level)
+                                           || level < 1)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  addr_align                     pre: !AddrIsRttLevelAligned(rtte.addr, level)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  addr_bound                     pre:  ((realm.feat_lpa2 == FEATURE_FALSE)
+                                           && (UInt(rtte.addr) >= 2^48))
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                      pre: !AddrIsRttLevelAligned(ipa, level)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_bound                      pre:  (UInt(ipa) >= (2 ^ realm.ipa_width)
+                                           || AddrIsProtected(ipa, realm))
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  s2ap_indirect_b ound           pre:  (realm.rtt_s2ap_encoding == S2AP_INDIRECT
+                                           && rtte.s2ap_indirect.base_index != S2AP_NO_ACCESS
+                                           && rtte.s2ap_indirect.base_index != S2AP_RO
+                                           && rtte.s2ap_indirect.base_index != S2AP_WO
+                                           && rtte.s2ap_indirect.base_index != S2AP_RW)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_walk                       pre: walk.level < level
+                                 post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  rtte_state                     pre: walk.rtte.state != UNASSIGNED_NS
+                                 post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+               B4.3.42.2.1      Failure condition ordering
+               [rd_bound, rd_state] < [rtt_walk, rtte_state]
+               [level_bound, ipa_bound, s2ap_indirect_bound] < [rtt_walk, rtte_state]
+                    ipa_align   addr_bound   addr_align   rd_align   attr_valid   s2ap_indirect_bound   ipa_bound   level_bound       rd_state       rd_bound
+                                                                                                                                                    RMI_ERROR_INPUT
+                                                                                                                      rtte_state     rtt_walk
+                                                                                                                                   RMI_ERROR_RT
+               B4.3.42.3 Success conditions
+  ID                        Condition
+  rtte_state                post: walk.rtte.state == ASSIGNED_NS
+  rtte_attr                 post: walk.rtte.attr_unprot == rtte.attr_unprot
+  rtte_s2ap_direct          pre: realm.rtt_s2ap_encoding == S2AP_DIRECT
+                            post: (walk.rtte.s2ap_direct.read
+                                          == rtte.s2ap_direct.read
+                                      && walk.rtte.s2ap_direct.write
+                                          == rtte.s2ap_direct.write)
+  rtte_s2ap_indirect        pre: realm.rtt_s2ap_encoding == S2AP_INDIRECT
+                            post: (walk.rtte.s2ap_indirect.base_index
+                                          == rtte.s2ap_indirect.base_index
+                                      && walk.rtte.s2ap_indirect.overlay_index == 15)
+  rtte_addr                 post: walk.rtte.addr == rtte.addr
+               B4.3.42.4 Footprint
+    ID                        Value
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

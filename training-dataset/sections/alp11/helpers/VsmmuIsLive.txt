@@ -1,0 +1,5 @@
+B3.161 VsmmuIsLive function
+             Returns TRUE if the VSMMU located at physical address addr is live.
+             func VsmmuIsLive(
+                 addr : Address) => boolean
+

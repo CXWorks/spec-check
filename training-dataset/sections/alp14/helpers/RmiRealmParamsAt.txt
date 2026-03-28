@@ -1,0 +1,5 @@
+B3.91 RmiRealmParamsAt function
+             Returns Realm parameters stored at physical address addr.
+             If the PAS of addr is not NS, the return value is UNKNOWN.
+             func RmiRealmParamsAt(
+                 addr : Address) => RmiRealmParams

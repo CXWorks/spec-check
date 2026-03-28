@@ -1,0 +1,16 @@
+C1.14 RmmRealm type
+            The RmmRealm structure contains attributes of a Realm.
+            The RmmRealm structure is an abstract type.
+            The members of the RmmRealm structure are shown in the following table.
+            Name                  Type                                    Description
+            ipa_width             UInt8                                   IPA width in bits
+            measurements          RmmRealmMeasurement[5]                  Realm measurements
+            hash_algo             RmmHashAlgorithm                        Algorithm used to compute Realm measurements
+            rec_index             UInt64                                  Index of next REC to be created
+            rtt_base              Address                                 Realm Translation Table base address
+            rtt_level_start       Int64                                   RTT starting level
+            rtt_num_start         UInt64                                  Number of physically contiguous starting level RTTs
+            Name               Type                                    Description
+            state              RmmRealmState                           Lifecycle state
+            vmid               Bits16                                  Virtual Machine Identifier
+            rpv                Bits512                                 Realm Personalization Value

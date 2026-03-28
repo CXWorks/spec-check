@@ -1,0 +1,11 @@
+C2.15 RmmHipas type
+            The RmmHipas enumeration represents host IPA state.
+            The RmmHipas enumeration is an abstract type.
+              The values of the RmmHipas enumeration are shown in the following table.
+                      Name                                   Description
+                      HIPAS_ASSIGNED                         Protected IPA which is associated with a DATA Granule.
+                      HIPAS_ASSIGNED_DEV                     Protected IPA which is associated with a DEV_MAPPED Granule.
+                      HIPAS_ASSIGNED_NS                      Unprotected IPA which is associated with a physical Granule.
+                      HIPAS_ASSIGNED_VSMMU                   Protected IPA which is associated with a VSMMU Granule.
+                      HIPAS_UNASSIGNED                       Protected IPA which is not associated with any Granule.
+                      HIPAS_UNASSIGNED_NS                    Unprotected IPA which is not associated with any Granule.

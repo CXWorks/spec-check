@@ -1,0 +1,4 @@
+B3.110 RsiVdevInfoAt function
+             Returns device configuration stored at IPA addr, mapped in the current Realm.
+             func RsiVdevInfoAt(
+                 addr : Address) => RsiVdevInfo

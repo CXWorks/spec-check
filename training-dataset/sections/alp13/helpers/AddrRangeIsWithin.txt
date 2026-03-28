@@ -1,0 +1,12 @@
+B3.10 AddrRangeIsWithin function
+             Returns TRUE if all addresses in the inner range [inner_base, inner_top) are within the outer range
+             [outer_range, outer_top).
+             func AddrRangeIsWithin(
+                 inner_base : Address,
+                 inner_top : Address,
+                 outer_base : Address,
+                 outer_top : Address) => boolean
+             begin
+                 return (AddrIsWithin(inner_base, outer_base, outer_top)
+                     && AddrIsWithin(inner_top, outer_base, outer_top));
+             end;

@@ -1,0 +1,12 @@
+C2.52 RmmRttS2APBase type
+             The RmmRttS2APBase enumeration represents S2AP base value.
+             The RmmRttS2APBase enumeration is an abstract type.
+             The values of the RmmRttS2APBase enumeration are shown in the following table.
+                    Name                                      Description
+                    S2AP_NO_ACCESS                            NoAccess
+                    S2AP_RO                                   RO
+                    S2AP_RW                                   RW
+                    S2AP_RW_PUX                               RW+puX
+                    S2AP_WO                                   WO
+             The RmmRttS2APBase enumeration is used in the following types:
+                • RmmRttS2APIndirect

@@ -1,0 +1,6 @@
+pub enum RmmPdevProtection {
+  PDEV_FCOH_E2E_IDE,
+  PDEV_FCOH_E2E_SYS,
+  PDEV_IOCOH_E2E_IDE,
+  PDEV_IOCOH_E2E_SYS,
+}

@@ -1,0 +1,20 @@
+B3.155 VdevAttestInfoEqual function
+             Returns TRUE if the VDEV attestation info matches.
+             func VdevAttestInfoEqual(
+                 lock_nonce : integer,
+                 meas_nonce : integer,
+                 report_nonce : integer,
+                 attest_info : RmmVdevAttestInfo) => boolean
+             begin
+                 return (lock_nonce == attest_info.lock_nonce
+                     && meas_nonce == attest_info.meas_nonce
+                     && report_nonce == attest_info.report_nonce);
+             end;
+             func VdevAttestInfoEqual(
+                 attest_info_1 : RmmVdevAttestInfo,
+                 attest_info_2 : RmmVdevAttestInfo) => boolean
+             begin
+                 return (attest_info_1.lock_nonce == attest_info_2.lock_nonce
+                     && attest_info_1.meas_nonce == attest_info_2.meas_nonce
+                     && attest_info_1.report_nonce == attest_info_2.report_nonce);
+             end;

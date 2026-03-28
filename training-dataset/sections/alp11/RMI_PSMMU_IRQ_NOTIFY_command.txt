@@ -1,0 +1,34 @@
+B4.3.22 RMI_PSMMU_IRQ_NOTIFY command
+              Notify RMM of an SMMU interrupt.
+              B4.3.22.1 Interface
+              B4.3.22.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 X0          63:0        UInt64                                FID, value 0xC400016F
+        psmmu               X1          63:0        Address                               PA of PSMMU
+        irq                 X2          1:0         RmiSmmuIrq                            SMMU IRQ
+              The following unused bits of RMI_PSMMU_IRQ_NOTIFY input values SBZ: X2[63:2].
+              B4.3.22.1.2   Output values
+        Name                Register    Bits        Type                                  Description
+        result              X0          63:0        RmiCommandReturnCode                  Command return status
+        action              X1          0:0         RmiSmmuAction                         Action required by Host
+        rd                  X2          63:0        Address                               PA of RD.
+                                                                                          This is valid if action ==
+                                                                                          RMI_SMMU_ACTION_VIRQ.
+        vsmmu               X3          63:0        Address                               PA of VSMMU.
+                                                                                          This is valid if action ==
+                                                                                          RMI_SMMU_ACTION_VIRQ.
+        msi_addr            X4          63:0        Address                               MSI address.
+                                                                                          This is valid if action ==
+                                                                                          RMI_SMMU_ACTION_VIRQ.
+        msi_data            X5          63:0        Bits64                                MSI data.
+                                                                                          This is valid if action ==
+                                                                                          RMI_SMMU_ACTION_VIRQ.
+              The following unused bits of RMI_PSMMU_IRQ_NOTIFY output values MBZ: X1[63:1].
+              B4.3.22.2 Failure conditions
+  ID                         Condition
+  psmmu_valid                pre: !PsmmuAddrIsValid(psmmu)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+              B4.3.22.3 Success conditions
+              The RMI_PSMMU_IRQ_NOTIFY command does not have any success conditions.
+             B4.3.22.4 Footprint
+             The RMI_PSMMU_IRQ_NOTIFY command does not have any footprint.

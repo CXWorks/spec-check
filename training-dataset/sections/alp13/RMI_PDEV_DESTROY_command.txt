@@ -1,0 +1,48 @@
+B4.3.18 RMI_PDEV_DESTROY command
+               Destroy a PDEV.
+               B4.3.18.1 Interface
+               B4.3.18.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000177
+        pdev_ptr             X1          63:0        Address                               PA of the PDEV
+               B4.3.18.1.2   Context
+               The RMI_PDEV_DESTROY command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        pdev_pre             RmmPdev                    PdevAt(pdev_ptr)                           true     PDEV
+               B4.3.18.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.18.2 Failure conditions
+  ID                          Condition
+  da_supp                     pre: ImplFeatures().feat_da != FEATURE_TRUE
+                              post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  pdev_align                  pre: !AddrIsGranuleAligned(pdev_ptr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_bound                  pre: !PaIsDelegable(pdev_ptr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_gran_state             pre: GranuleAt(pdev_ptr).state != PDEV
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_state                  pre: pdev_pre.state != PDEV_STOPPED
+                              post: ResultEqual(result, RMI_ERROR_DEVICE)
+  pdev_p2p                    pre: pdev_pre.p2p_added == RMM_TRUE
+                              post: ResultEqual(result, RMI_ERROR_DEVICE)
+               B4.3.18.2.1   Failure condition ordering
+               [pdev_gran_state] < [pdev_state]
+               [da_supp] < [pdev_align, pdev_bound, pdev_gran_state, pdev_state,
+                    pdev_p2p]
+                                                              da_supp
+                                                  RMI_ERROR_NOT _SUPPORT ED
+                              pdev_bound                    pdev_align                    pdev_gran_state
+                                                                                                    RMI_ERROR_INPUT
+                                                                   pdev_p2p                   pdev_state
+                                                                                             RMI_ERROR_DEVICE
+               B4.3.18.3 Success conditions
+  ID                          Condition
+  gran_state                  post: GranuleAt(pdev_ptr).state == DELEGATED
+  aux_state                   post: AuxStateEqual32(
+                                        pdev_pre.aux, pdev_pre.num_aux,
+                                        DELEGATED)
+               B4.3.18.4 Footprint
+    ID                          Value
+    state                       GranuleAt(pdev_ptr).state
+    aux_state                   AuxStates(pdev_pre.aux, prev_pre._num_aux)

@@ -1,0 +1,9 @@
+C2.22 RmmMemPermLocked type
+               The RmmMemPermLocked enumeration represents whether a memory permission value is locked.
+               The RmmMemPermLocked enumeration is an abstract type.
+               The values of the RmmMemPermLocked enumeration are shown in the following table.
+                      Name                                   Description
+                      MEM_PERM_LOCKED                        Memory permission value is locked
+                      MEM_PERM_UNLOCKED                      Memory permission value is unlocked
+            The RmmMemPermLocked enumeration is used in the following types:
+               • RmmRealm

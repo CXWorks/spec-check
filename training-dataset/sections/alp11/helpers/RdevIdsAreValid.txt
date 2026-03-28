@@ -1,0 +1,6 @@
+B3.59 RdevIdsAreValid function
+             Returns TRUE if the tuple (vdev_id, inst_id) identifies a Realm device which is assigned to realm.
+             func RdevIdsAreValid(
+                 realm : RmmRealm,
+                 vdev_id : bits(64),
+                 inst_id : integer) => boolean

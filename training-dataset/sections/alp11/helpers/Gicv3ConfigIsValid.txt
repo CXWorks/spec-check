@@ -1,0 +1,5 @@
+B3.29 Gicv3ConfigIsValid function
+             Returns TRUE if the values of all gicv3_* attributes are valid.
+             func Gicv3ConfigIsValid(
+                 gicv3_hcr : bits(64),
+                 gicv3_lrs : array [16] of bits(64)) => boolean

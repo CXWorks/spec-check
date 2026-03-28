@@ -1,0 +1,43 @@
+C2.45 RmmRttEntry type
+            The RmmRttEntry structure contains attributes of an RTT Entry.
+            The RmmRttEntry structure is an abstract type.
+            The members of the RmmRttEntry structure are shown in the following table.
+            Name                 Type                                    Description
+            addr                 Address                                 Output address
+            ripas                RmmRipas                                RIPAS
+            state                RmmRttEntryState                        State
+            attr_prot            RmmRttMemAttr                           Memory type and cacheability attributes for a Protected
+                                                                         IPA
+                                                                         This attribute and attr_unprot are aliased views of the
+                                                                         underlying MemAttr field in the RTT descriptor. This
+                                                                         view is valid if the RTT entry describes an address in
+                                                                         Protected IPA space.
+                                                                         The RMM uses stage 2 memory attributes to constrain
+                                                                         the resultant memory type and cacheability attributes,
+                                                                         based on the type of physical location identified by the
+                                                                         output address.
+             Name                Type                                    Description
+             attr_unprot         Bits3                                   Memory type and cacheability attributes for an
+                                                                         Unprotected IPA
+                                                                         This attribute and attr_prot are aliased views of the
+                                                                         underlying MemAttr field in the RTT descriptor. This
+                                                                         view is valid if the RTT entry describes an address in
+                                                                         Unprotected IPA space.
+                                                                         The Host controls memory type and cacheability
+                                                                         attributes by setting the value of the MemAttr[2:0] field
+                                                                         in the RTT descriptor.
+             sh                  RmmRttShareability                      Shareability attributes.
+             s2ap_direct         RmmRttS2APDirect                        Directly-encoded S2AP
+                                                                         This attribute is valid if the RTT entry describes an
+                                                                         address in Unprotected IPA space and the Realm uses
+                                                                         direct S2AP encoding.
+             s2ap_indirect       RmmRttS2APIndirect                      Directly-encoded S2AP
+                                                                         This attribute is valid if either of the following is true:
+                                                                             • The RTT entry describes an address in Protected
+                                                                               IPA space.
+                                                                             • The RTT entry describes an address in
+                                                                               Unprotected IPA space and the Realm uses
+                                                                               indirect S2AP encoding.
+             The RmmRttEntry structure is used in the following types:
+                  • RmmRtt
+                  • RmmRttWalkResult

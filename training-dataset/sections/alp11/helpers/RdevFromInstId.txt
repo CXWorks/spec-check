@@ -1,0 +1,5 @@
+B3.56 RdevFromInstId function
+             Returns the RDEV identified by inst_id and assigned to realm.
+             func RdevFromInstId(
+                 realm : RmmRealm,
+                 inst_id : integer) => RmmRdev

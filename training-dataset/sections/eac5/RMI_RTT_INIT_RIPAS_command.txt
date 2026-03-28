@@ -1,0 +1,97 @@
+B4.3.18 RMI_RTT_INIT_RIPAS command
+               Set the RIPAS of a target IPA range to RAM, for a Realm in the REALM_NEW state.
+               B4.3.18.1 Interface
+               B4.3.18.1.1   Input values
+        Name                 Register     Bits        Type                                  Description
+        fid                  X0           63:0        UInt64                                FID, value 0xC4000168
+        rd                   X1           63:0        Address                               PA of the RD for the target Realm
+        base                 X2           63:0        Address                               Base of target IPA region
+        top                  X3           63:0        Address                               Top of target IPA region
+               B4.3.18.1.2   Context
+               The RMI_RTT_INIT_RIPAS command operates on the following context.
+        Name                 Type                        Value                                      Before    Description
+        realm                RmmRealm                    Realm(rd)                                  true      Realm
+        walk                 RmmRttWalkResult            RttWalk(rd, base,                          false     RTT walk result
+                                                         RMM_RTT_PAGE_LEVEL)
+        walk_top             Address                     RttSkipEntriesWithRipas(                   false     Top IPA of entries
+                                                             Rtt(walk.rtt_addr),                              which have associated
+                                                             walk.level,                                      RIPAS values,
+                                                             base, top, FALSE)                                starting from entry at
+                                                                                                              which the RTT walk
+                                                                                                              terminated
+               B4.3.18.1.3   Output values
+        Name                 Register     Bits        Type                                  Description
+        result               X0           63:0        RmiCommandReturnCode                  Command return status
+        out_top              X1           63:0        Address                               Top IPA of range whose RIPAS was
+                                                                                            modified
+               The out_top output value is valid only when the command result is RMI_SUCCESS.
+               When the out_top output value is valid, it is aligned to the size of the address range described by the RTT entry
+               at the level where the RTT walk terminated.
+                B4.3.18.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                     pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: Granule(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  size_valid                   pre: UInt(top) <= UInt(base)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_bound                    pre:  !AddrIsProtected(
+                                         ToAddress(UInt(top) - RMM_GRANULE_SIZE),
+                                         realm)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  realm_state                  pre: realm.state != REALM_NEW
+                               post: ResultEqual(result, RMI_ERROR_REALM)
+  base_align                   pre: !AddrIsRttLevelAligned(base, walk.level)
+                               post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  rtte_state                   pre: walk.rtte.state != UNASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  top_gran_align               pre: !AddrIsGranuleAligned(top)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_rtt_align                pre:  ((UInt(top) < UInt(RttUpperBound(
+                                             base, walk.level, realm.ipa_width)))
+                                         && RttEntryHasRipas(RttEntry(
+                                             walk.rtt_addr,
+                                             RttEntryIndex(top, walk.level)))
+                                         && !AddrIsRttLevelAligned(top, walk.level))
+                               post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+                B4.3.18.2.1   Failure condition ordering
+                [rd_bound, rd_state] < [realm_state]
+                [rd_bound, rd_state] < [base_align, rtte_state]
+                [rd_bound, rd_state] < [top_rtt_align]
+                [top_gran_align] < [top_rtt_align]
+                        top_bound        size_valid        rd_align       rd_state        rd_bound        top_gran_align
+                                                                                                              RMI_ERROR_INPUT
+                                                 realm_state           rtte_state        base_align       top_rtt_align
+                                                 RMI_ERROR_REALM
+                                                                                                              RMI_ERROR_RT
+               B4.3.18.3 Success conditions
+  ID                          Condition
+  rtte_ripas                  RttEntriesInRangeRipas(
+                                  Rtt(walk.rtt_addr),
+                                  walk.level,
+                                  base, walk_top,
+                                  RAM)
+  rim                         Realm(rd).measurements[0] == RimExtendRipas(
+                                  realm, base, walk_top, walk.level)
+  out_top                     out_top == walk_top
+               B4.3.18.4 RMI_RTT_INIT_RIPAS extension of RIM
+               On successful execution of RMI_RTT_INIT_RIPAS, the new RIM value of the target Realm is calculated by the
+               RMM as follows:
+                 1. Allocate an RmmMeasurementDescriptorRipas data structure.
+                 2. For each RTT entry in the range [base, top) described by the RMI_RTT_INIT_RIPAS input values:
+                 a. Populate the measurement descriptor:
+                  • Set the desc_type field to the descriptor type.
+                  • Set the len field to the descriptor length.
+                  • Set the base field to the IPA of the RTT entry.
+                  • Set the top field to Min(ipa + size, top), where
+                      – ipa is the IPA of the RTT entry
+                      – size is the size in bytes of the IPA region described by the RTT entry
+                      – top is the input value provided to the command
+                 b. Using the RHA of the target Realm, compute the hash of the measurement descriptor. Set the RIM of the
+                    target Realm to this value, zero filling upper bytes if the RHA output is smaller than the size of the RIM.
+               B4.3.18.5 Footprint
+    ID                          Value
+    rtte                        Rtt(walk.rtt_addr)
+    rim                         Realm(rd).measurements[0]

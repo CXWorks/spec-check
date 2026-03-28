@@ -1,0 +1,15 @@
+B3.89 RmiPdevParamsIsValid function
+             Returns TRUE if the memory location contains a valid encoding of the RmiPdevParams type and all the following
+             are true:
+                • The device identifier is valid
+                • The device identifier is not equal to the device identifier of another PDEV
+                • The Root Port identifier is valid
+                • The IDE stream identifier is valid
+                • The RID range is valid
+                • The RID range does not overlap the RID range of another PDEV
+                • The base and top of every address range is aligned to the size of a Granule
+                • Every address range falls within a memory range permitted by the system
+                • None of the address ranges overlaps another address range for this PDEV
+                • None of the address ranges overlaps an address range for another PDEV
+             func RmiPdevParamsIsValid(
+                 addr : Address) => boolean

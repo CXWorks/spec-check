@@ -1,0 +1,5 @@
+B3.52 RttAllEntriesState function
+             Returns TRUE if all entries in the RTT at address rtt have state state.
+             func RttAllEntriesState(
+                 rtt : RmmRtt,
+                 state : RmmRttEntryState) => boolean

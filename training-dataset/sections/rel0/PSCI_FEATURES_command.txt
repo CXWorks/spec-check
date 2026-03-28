@@ -1,0 +1,21 @@
+B6.3.5 PSCI_FEATURES command
+               Query whether a specific PSCI feature is implemented.
+               B6.3.5.1 Interface
+               B6.3.5.1.1   Input values
+         Name                                Register     Bits        Type                 Description
+         fid                                 X0           63:0        UInt64               FID, value 0x8400000A
+         psci_func_id                        X1           31:0        UInt32               Function ID for a PSCI Function
+               The following unused bits of PSCI_FEATURES input values SBZ: X1[63:32].
+               B6.3.5.1.2   Output values
+         Name                                Register     Bits        Type                 Description
+         result                              X0           63:0        PsciReturnCode       Command return code
+               B6.3.5.2 Failure conditions
+               The PSCI_FEATURES command does not have any failure conditions.
+               B6.3.5.3 Success conditions
+  ID                          Condition
+  func_ok                     pre: psci_func_id is a supported PSCI function.
+                              post: result == PSCI_SUCCESS
+  func_not_ok                 pre: psci_func_id is not a supported PSCI function.
+                              post: result == PSCI_NOT_SUPPORTED
+               B6.3.5.4 Footprint
+               The PSCI_FEATURES command does not have any footprint.

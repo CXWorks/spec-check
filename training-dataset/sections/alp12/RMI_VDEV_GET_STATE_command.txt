@@ -1,0 +1,37 @@
+B4.3.58 RMI_VDEV_GET_STATE command
+                Get state of a VDEV.
+                B4.3.58.1 Interface
+                B4.3.58.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000189
+        vdev_ptr              X1          63:0        Address                               PA of the VDEV
+                B4.3.58.1.2   Context
+                The RMI_VDEV_GET_STATE command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        vdev                  RmmVdev                    VdevAt(vdev_ptr)                           false    VDEV
+                B4.3.58.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        state                 X1          7:0         RmiVdevState                          VDEV state
+                The following unused bits of RMI_VDEV_GET_STATE output values MBZ: X1[63:8].
+                B4.3.58.2 Failure conditions
+  ID                           Condition
+  da_supp                      pre: ImplFeatures().feat_da != FEATURE_TRUE
+                               post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  vdev_align                   pre: !AddrIsGranuleAligned(vdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_bound                   pre: !PaIsDelegable(vdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_gran_state              pre: GranuleAt(vdev_ptr).state != VDEV
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+             B4.3.58.2.1   Failure condition ordering
+             [da_supp] < [vdev_align, vdev_bound, vdev_gran_state]
+                                                                                                 da_supp
+                                                                                        RMI_ERROR_NOT _SUPPORT ED
+                           vdev_gran_state                       vdev_bound                     vdev_align
+                                                                                              RMI_ERROR_INPUT
+             B4.3.58.3 Success conditions
+  ID                        Condition
+  state                     Equal(state, vdev.vdev_state)
+             B4.3.58.4 Footprint
+             The RMI_VDEV_GET_STATE command does not have any footprint.

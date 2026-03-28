@@ -1,0 +1,7 @@
+B3.58 RttEntryHasRipas function
+             Returns TRUE if the RTT entry has a RIPAS value.
+             func RttEntryHasRipas(
+                 rtte : RmmRttEntry) => boolean
+             begin
+                 return (rtte.state == ASSIGNED || rtte.state == UNASSIGNED);
+             end

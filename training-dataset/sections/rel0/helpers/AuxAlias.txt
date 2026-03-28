@@ -1,0 +1,20 @@
+B3.9 AuxAlias function
+             Returns TRUE if any of the first count entries in a list of auxiliary Granule addresses are aliased - either among
+             themselves, or with the REC address itself.
+             func AuxAlias(
+                 rec : Address,
+                 aux : array [16] of Address,
+                 count : integer) => boolean
+             begin
+                 assert 0 <= count && count <= 16;
+                 var sorted = AuxSort(aux, count);
+                   for i = 0 to count - 1 do
+                       if sorted[i] == rec then
+                           return TRUE;
+                       end
+                       if i >= 1 && sorted[i] == sorted[i - 1] then
+                           return TRUE;
+                       end
+                   end
+                   return FALSE;
+             end

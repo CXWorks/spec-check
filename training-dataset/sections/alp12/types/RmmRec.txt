@@ -1,0 +1,39 @@
+C2.36 RmmRec type
+            The RmmRec structure contains attributes of a REC.
+            The RmmRec structure is an abstract type.
+            The members of the RmmRec structure are shown in the following table.
+            Name                 Type                                    Description
+            owner                Address                                 PA of RD of Realm which owns this REC
+            aux                  Address[32]                             PAs of auxiliary Granules
+            flags                RmmRecFlags                             Flags which control REC behavior
+            mpidr                Bits64                                  MPIDR value
+            gic_owner            UInt64                                  Index of Plane which is the GIC owner
+            state                RmmRecState                             Lifecycle state
+            pending              RmmRecPending                           Whether a REC operation is pending
+            emulatable_abort     RmmRecEmulatableAbort                   Whether the most recent exit from this REC was due to
+                                                                         an Emulatable Data Abort
+            gprs                 Bits64[32]                              General-purpose register values
+            pc                   Bits64                                  Program counter value
+            sysregs              RmmSystemRegisters                      EL1 and EL0 system register values
+            attest_state         RmmRecAttestState                       Attestation token generation state
+            attest_challenge     Bits512                                 Challenge for under-construction attestation token
+            ripas_addr           Address                                 Next IPA to be processed in RIPAS change
+            ripas_top            Address                                 Top IPA of pending RIPAS change
+            ripas_value          RmmRipas                                RIPAS value of pending RIPAS change
+            ripas_destroyed      RmmRipasChangeDestroyed                 Whether a RIPAS change from DESTROYED to RAM
+                                                                         should be permitted
+            ripas_response       RmmRecResponse                          Host response to RIPAS change request
+            dev_mem_addr         Address                                 Next IPA to be processed in device memory mapping
+                                                                         validation
+            dev_mem_top          Address                                 Top IPA of pending device memory mapping validation
+            dev_mem_pa           Address                                 PA of device memory
+            dev_mem_flags        RmmDevMemFlags                          Device memory mapping validation flags
+            dev_mem_response RmmRecResponse                              Host response to device memory mapping validation
+                                                                         request
+            s2ap_addr            Address                                 Next IPA to be processed in S2AP change
+            s2ap_top             Address                                 Top IPA of pending S2AP change
+            s2ap_overlay_index UInt4                                     Overlay index of pending S2AP change
+            s2ap_response        RmmRecResponse                          Host response to S2AP change request
+            vdev_id              Bits64                                  Virtual device ID
+            inst_id              UInt64                                  Device instance ID
+            inst_id_valid        RmmBoolean                              Whether device instance ID is valid

@@ -1,0 +1,16 @@
+C2.3 RmmDataFlags type
+            The RmmDataFlags fieldset contains flags provided by the Host during DATA Granule creation.
+            The RmmDataFlags fieldset is a concrete type.
+            The width of the RmmDataFlags fieldset is 64 bits.
+            The fields of the RmmDataFlags fieldset are shown in the following diagram.
+             63                                                                                                           32
+                                                                      SBZ
+             31                                                                                                       1    0
+                                                                                                                          measure
+                                                                     SBZ
+            The fields of the RmmDataFlags fieldset are shown in the following table.
+            Name                  Bits     Description                                            Value
+            measure               0        Whether to measure DATA Granule contents               RmmDataMeasureContent
+                                  63:1     Reserved                                               SBZ
+            The RmmDataFlags fieldset is used in the following types:
+               • RmmMeasurementDescriptorData

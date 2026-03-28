@@ -1,0 +1,4 @@
+B3.32 MecMembers function
+             Returns number of Realms which are members of a given MEC.
+             func MecMembers(
+                 mecid : bits(64)) => integer

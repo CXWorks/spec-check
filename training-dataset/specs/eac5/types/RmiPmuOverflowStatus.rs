@@ -1,0 +1,4 @@
+pub enum RmiPmuOverflowStatus {
+  RMI_PMU_OVERFLOW_NOT_ACTIVE,
+  RMI_PMU_OVERFLOW_ACTIVE,
+}

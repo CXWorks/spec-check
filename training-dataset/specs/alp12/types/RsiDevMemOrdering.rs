@@ -1,0 +1,4 @@
+pub enum RsiDevMemOrdering {
+  RSI_DEV_MEM_NOT_LIMITED_ORDER,
+  RSI_DEV_MEM_LIMITED_ORDER,
+}

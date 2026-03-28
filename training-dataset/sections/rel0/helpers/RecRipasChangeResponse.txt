@@ -1,0 +1,12 @@
+B3.40 RecRipasChangeResponse function
+             Returns response to RIPAS change request.
+             func RecRipasChangeResponse(
+                 rec : RmmRec) => RsiResponse
+             begin
+                 if ((rec.ripas_value == RAM)
+                         && (rec.ripas_addr != rec.ripas_top)
+                         && (rec.ripas_response == REJECT)) then
+                     return RSI_REJECT;
+                 end
+                   return RSI_ACCEPT;
+             end

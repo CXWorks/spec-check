@@ -1,0 +1,7 @@
+B3.116 RttAllEntriesContiguous function
+             Returns TRUE if all entries in the RTT at address rtt at level level have contiguous output addresses, starting
+             with addr.
+             func RttAllEntriesContiguous(
+                 rtt : RmmRtt,
+                 addr : Address,
+                 level : integer) => boolean

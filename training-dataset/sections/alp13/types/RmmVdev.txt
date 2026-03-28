@@ -1,0 +1,31 @@
+C2.58 RmmVdev type
+            The RmmVdev structure contains attributes of a VDEV.
+            The RmmVdev structure is an abstract type.
+            The members of the RmmVdev structure are shown in the following table.
+            Name                 Type                                   Description
+            vdev_id              Bits64                                 Virtual device identifier
+            tdi_id               Bits64                                 TDI identifier
+            pdev                 Address                                PA of parent PDEV
+            realm                Address                                PA of RD of Realm which owns this VDEV
+            vdev_state           RmmVdevState                           VDEV lifecycle state
+            dma_state            RmmVdevDmaState                        DMA state
+            op                   RmmVdevOperation                       Operation performed on this VDEV
+            comm_state           RmmDevCommState                        Device communication state
+            aux                  Address[32]                            Addresses of auxiliary Granules
+            num_aux              UInt64                                 Number of auxiliary Granules
+            vsmmu                RmmFeature                             Whether device uses a VSMMU
+            vsmmu_addr           Address                                PA of VSMMU.
+                                                                        This field is valid if vsmmu is FEATURE_TRUE.
+            vsid                 Bits64                                 Virtual Stream Identifier.
+                                                                        This field is valid if vsmmu is FEATURE_TRUE.
+            num_map              UInt64                                 Number of Granules of this VDEV’s memory which
+                                                                        have been mapped into the owning Realm’s address
+                                                                        space
+            lock_nonce           UInt64                                 Nonce generated on most recent transition to LOCKED
+                                                                        state
+            meas_nonce           UInt64                                 Nonce generated on most recent
+                                                                        GET_MEASUREMENT request
+            report_nonce         UInt64                                 Nonce generated on most recent
+                                                                        GET_INTERFACE_REPORT request
+            meas_digest          Bits512                                Measurement digest
+            report_digest        Bits512                                Interface report digest

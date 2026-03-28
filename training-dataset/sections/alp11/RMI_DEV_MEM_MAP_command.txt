@@ -1,0 +1,76 @@
+B4.3.4 RMI_DEV_MEM_MAP command
+                Maps device memory.
+                B4.3.4.1 Interface
+                B4.3.4.1.1   Input values
+        Name                 Register     Bits        Type                                  Description
+        fid                  X0           63:0        UInt64                                FID, value 0xC4000172
+        rd                   X1           63:0        Address                               PA of the RD for the target Realm
+        ipa                  X2           63:0        Address                               IPA at which the Granule will be
+                                                                                            mapped in the target Realm
+        level                X3           63:0        Int64                                 RTT level
+        addr                 X4           63:0        Address                               PA of the target device memory
+                B4.3.4.1.2   Context
+                The RMI_DEV_MEM_MAP command operates on the following context.
+        Name                 Type                        Value                                      Before   Description
+        realm                RmmRealm                    RealmAt(rd)                                false    Realm
+        walk                 RmmRttWalkResult            RttWalk(                                   false    RTT walk result
+                                                             realm, ipa,
+                                                             level,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx            UInt64                      RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+        gran_state_pre       RmmGranuleState             GranuleAt(addr).state                      true     Previous Granule
+                                                                                                             state
+                B4.3.4.1.3   Output values
+        Name                 Register     Bits        Type                                  Description
+        result               X0           63:0        RmiCommandReturnCode                  Command return status
+                B4.3.4.2 Failure conditions
+  ID                           Condition
+  addr_align                   pre: !AddrIsGranuleAligned(addr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                               Condition
+  addr_bound                       pre: !PaIsDelegableDevMem(addr)
+                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  addr_state                       pre: GranuleAt(addr).state != DELEGATED
+                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_align                         pre: !AddrIsGranuleAligned(rd)
+                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                         pre: !PaIsDelegable(rd)
+                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                         pre: GranuleAt(rd).state != RD
+                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_bound                      pre: !RttLevelIsBlockOrPage(realm, level)
+                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                        pre: !AddrIsGranuleAligned(ipa)
+                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_bound                        pre: !AddrIsProtected(ipa, realm)
+                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_walk                         pre: walk.level < level
+                                   post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  rtte_state                       pre: walk.rtte.state != UNASSIGNED
+                                   post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+               B4.3.4.2.1        Failure condition ordering
+               [rd_bound, rd_state] < [rtt_walk, rtte_state]
+               [level_bound, ipa_bound] < [rtt_walk, rtte_state]
+                     ipa_align      rd_align   addr_state   addr_bound    addr_align   ipa_bound    level_bound       rd_state       rd_bound
+                                                                                                                                    RMI_ERROR_INPUT
+                                                                                                      rtte_state     rtt_walk
+                                                                                                                   RMI_ERROR_RT
+               B4.3.4.3 Success conditions
+  ID                               Condition
+  state                            GranuleAt(addr).state == DEV_MAPPED
+  rtte_state                       walk.rtte.state == ASSIGNED_DEV
+  rtte_addr                        walk.rtte.addr == addr
+  rtte_attr_ncoh                   pre: PaIsDelegableNonCohDevMem(addr)
+                                   post: walk.rtte.attr_prot == MEMATTR_NON_CACHEABLE
+  rtte_attr_coh                    pre: PaIsDelegableCohDevMem(addr)
+                                   post: walk.rtte.attr_prot == MEMATTR_PASSTHROUGH
+  rtte_sh_ncoh                     pre: PaIsDelegableNonCohDevMem(addr)
+                                   post: walk.rtte.sh == SHAREABILITY_OUTER
+  ID                        Condition
+  rtte_sh_coh               pre: PaIsDelegableCohDevMem(addr)
+                            post: walk.rtte.sh == SHAREABILITY_INNER
+                B4.3.4.4 Footprint
+    ID                        Value
+    state                     GranuleAt(addr).state
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

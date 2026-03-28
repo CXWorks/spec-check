@@ -1,0 +1,6 @@
+B3.122 RttDescriptorIsValidForUnprotected function
+             Returns TRUE if, within the descriptor desc, all of the following are true:
+                • All fields which are Host-controlled Unprotected RTT attributes are set to architecturally valid values.
+                • All fields which are not Host-controlled Unprotected RTT attributes are set to zero.
+             func RttDescriptorIsValidForUnprotected(
+                 desc : bits(64)) => boolean

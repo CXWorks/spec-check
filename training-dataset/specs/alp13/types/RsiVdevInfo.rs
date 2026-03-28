@@ -1,0 +1,15 @@
+struct RsiVdevInfo {
+  pub flags: RsiVdevFlags,
+  pub attest_type: RsiVdevAttestType,
+  pub cert_id: UInt64,
+  pub hash_algo: RsiHashAlgorithm,
+  pub lock_nonce: UInt64,
+  pub meas_nonce: UInt64,
+  pub report_nonce: UInt64,
+  pub tdisp_version: UInt64,
+  pub state: RsiVdevState,
+  pub vca_digest: [UInt64; 8],
+  pub cert_digest: [UInt64; 8],
+  pub meas_digest: [UInt64; 8],
+  pub report_digest: [UInt64; 8],
+}

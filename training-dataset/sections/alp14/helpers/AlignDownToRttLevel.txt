@@ -1,0 +1,5 @@
+B3.12 AlignDownToRttLevel function
+             Round down addr to align to the size of the address range described by an RTTE in a level level RTT.
+             func AlignDownToRttLevel(
+                 addr : Address,
+                 level : integer) => Address

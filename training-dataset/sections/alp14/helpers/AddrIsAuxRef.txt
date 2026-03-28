@@ -1,0 +1,6 @@
+B3.4 AddrIsAuxRef function
+             Returns TRUE if the primary RTT entry at IPA addr is auxiliary-referenced, that is pointed to by an auxiliary
+             RTT entry.
+             func AddrIsAuxRef(
+                 addr : Address,
+                 realm : RmmRealm) => boolean

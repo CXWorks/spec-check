@@ -1,0 +1,9 @@
+C2.16 RmmLfaPolicy type
+                The RmmLfaPolicy enumeration represents a Live Firmware Activation policy.
+                The RmmLfaPolicy enumeration is an abstract type.
+                The values of the RmmLfaPolicy enumeration are shown in the following table.
+                        Name                                   Description
+                        LFA_ALLOW                              LFA is permitted.
+                        LFA_DISALLOW                           LFA is not permitted.
+                The RmmLfaPolicy enumeration is used in the following types:
+                   • RmmRealm

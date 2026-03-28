@@ -1,0 +1,10 @@
+C2.7 RmmDevMemFlags type
+            The RmmDevMemFlags structure contains flags which describe properties of a device memory mapping.
+            The RmmDevMemFlags structure is an abstract type.
+            The members of the RmmDevMemFlags structure are shown in the following table.
+            Name                Type                                    Description
+            coh                 RmmDevMemCoherent                       Whether the output address of the device memory
+                                                                        mapping is within the system coherent memory space.
+            order               RmmDevMemOrdering                       Ordering properties of the device memory location.
+            The RmmDevMemFlags structure is used in the following types:
+               • RmmRec

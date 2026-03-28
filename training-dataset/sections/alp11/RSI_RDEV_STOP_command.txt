@@ -1,0 +1,43 @@
+B5.3.23 RSI_RDEV_STOP command
+                 Stop a Realm device.
+                 B5.3.23.1 Interface
+                 B5.3.23.1.1   Input values
+          Name                 Register    Bits        Type                                  Description
+          fid                  X0          63:0        UInt64                                FID, value 0xC40001AB
+          vdev_id              X1          63:0        Bits64                                Realm device identifier
+          inst_id              X2          63:0        UInt64                                Device instance identifier
+                 B5.3.23.1.2   Context
+                 The RSI_RDEV_STOP command operates on the following context.
+          Name                 Type                       Value                                      Before    Description
+          realm                RmmRealm                   CurrentRealm()                             false     Current Realm
+          rdev                 RmmRdev                    RdevFromInstId(                            false     Realm device
+                                                              realm,
+                                                              inst_id)
+                 B5.3.23.1.3   Output values
+          Name                 Register    Bits        Type                                  Description
+          result               X0          63:0        RsiCommandReturnCode                  Command return status
+                 B5.3.23.2 Failure conditions
+  ID                            Condition
+  da_en                         pre: realm.feat_da != FEATURE_TRUE
+                                post: result == RSI_ERROR_STATE
+  vdev_id                       pre: !RdevIdsAreValid(realm, vdev_id, inst_id)
+                                post: result == RSI_ERROR_INPUT
+  state                         pre:  (rdev.state != RDEV_UNLOCKED
+                                          && rdev.state != RDEV_LOCKED
+                                          && rdev.state != RDEV_STARTED
+                                          && rdev.state != RDEV_ERROR)
+                                post: result == RSI_ERROR_INPUT
+             B5.3.23.2.1    Failure condition ordering
+             [da_en] < [vdev_id]
+             [vdev_id] < [state]
+                                                                                                da_en
+                                                                                          RSI_ERROR_STAT E
+                                                                                               vdev_id
+                                                                                                 state
+                                                                                         RSI_ERROR_INPUT
+             B5.3.23.3 Success conditions
+  ID                         Condition
+  state                      rdev.state == RDEV_STOPPING
+             B5.3.23.4 Footprint
+    ID                          Value
+    state                       rdev.state

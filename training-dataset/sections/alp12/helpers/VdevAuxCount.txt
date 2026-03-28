@@ -1,0 +1,7 @@
+B3.149 VdevAuxCount function
+             Returns the number of auxiliary Granules required for a VDEV with the specified flags.
+             The return value is guaranteed not to be greater than 32.
+             For a given flags value, this function always returns the same value.
+             func VdevAuxCount(
+                 pdev_flags : RmiPdevFlags,
+                 vdev_flags : RmiVdevFlags) => integer

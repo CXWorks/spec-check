@@ -1,0 +1,7 @@
+B3.15 AttestationTokenWrite function
+             Write fragment of attestation token.
+             Returns amount of data written in bytes.
+             func AttestationTokenWrite(
+                 addr : Address,
+                 offset : integer,
+                 size : integer) => integer

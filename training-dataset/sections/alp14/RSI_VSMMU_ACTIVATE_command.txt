@@ -1,0 +1,47 @@
+B5.3.21 RSI_VSMMU_ACTIVATE command
+                Activate a VSMMU.
+                B5.3.21.1 Interface
+                B5.3.21.1.1   Input values
+         Name                 Register    Bits        Type                                  Description
+         fid                  X0          63:0        UInt64                                FID, value 0xC400019B
+         base                 X1          63:0        Address                               Base of target IPA region
+         top                  X2          63:0        Address                               Top of target IPA region
+                B5.3.21.1.2   Context
+                The RSI_VSMMU_ACTIVATE command operates on the following context.
+         Name                 Type                       Value                                      Before    Description
+         realm                RmmRealm                   CurrentRealm()                             false     Current Realm
+         walk                 RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                             realm, base,
+                                                             RMM_RTT_PAGE_LEVEL,
+                                                             RMM_RTT_TREE_PRIMARY)
+         vsmmu                RmmVsmmu                   VsmmuAt(walk.rtte.addr)                    false     VSMMU
+                B5.3.21.1.3   Output values
+         Name                 Register    Bits        Type                                  Description
+         result               X0          63:0        RsiCommandReturnCode                  Command return status
+         new_base             X1          63:0        Address                               Base of IPA region which was not
+                                                                                            modified by the command
+                B5.3.21.2 Failure conditions
+  ID                           Condition
+  base_align                   pre: !AddrIsGranuleAligned(base)
+                               post: result == RSI_ERROR_INPUT
+  top_align                    pre: !AddrIsGranuleAligned(top)
+                               post: result == RSI_ERROR_INPUT
+  size_valid                   pre: UInt(top) <= UInt(base)
+                               post: result == RSI_ERROR_INPUT
+  ID                          Condition
+  rgn_bound                   pre: !AddrRangeIsProtected(base, top, realm)
+                              post: result == RSI_ERROR_INPUT
+  rtte_state                  pre: walk.rtte.state != ASSIGNED_VSMMU
+                              post: result == RSI_ERROR_INPUT
+               B5.3.21.2.1   Failure condition ordering
+               The RSI_VSMMU_ACTIVATE command does not have any failure condition orderings.
+               B5.3.21.3 Success conditions
+  ID                          Condition
+  ripas                       post: RIPAS of address range [base, new_base) is equal to DEV.
+  start                       pre:  (base == vsmmu.reg_base
+                                        && new_base != vsmmu.reg_top)
+                              post: vsmmu.state == VSMMU_ACTIVATING
+  complete                    pre: new_base == vsmmu.reg_top
+                              post: vsmmu.state == VSMMU_ACTIVE
+               B5.3.21.4 Footprint
+               The RSI_VSMMU_ACTIVATE command does not have any footprint.

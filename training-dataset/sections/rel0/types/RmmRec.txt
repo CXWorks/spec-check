@@ -1,0 +1,26 @@
+C1.19 RmmRec type
+           The RmmRec structure contains attributes of a REC.
+           The RmmRec structure is an abstract type.
+           The members of the RmmRec structure are shown in the following table.
+            Name               Type                                    Description
+            attest_state       RmmRecAttestState                       Attestation token generation state
+            attest_challenge   Bits512                                 Challenge for under-construction attestation token
+            aux                Address[16]                             Addresses of auxiliary Granules
+            emulatable_abort   RmmRecEmulatableAbort                   Whether the most recent exit from this REC was due to
+                                                                       an Emulatable Data Abort
+            flags              RmmRecFlags                             Flags which control REC behavior
+            gprs               Bits64[32]                              General-purpose register values
+            mpidr              Bits64                                  MPIDR value
+            owner              Address                                 PA of RD of Realm which owns this REC
+             Name                 Type                                    Description
+             pc                   Bits64                                  Program counter value
+             psci_pending         RmmPsciPending                          Whether a PSCI request is pending
+             state                RmmRecState                             Lifecycle state
+             sysregs              RmmSystemRegisters                      EL1 and EL0 system register values
+             ripas_addr           Address                                 Next address to be processed in RIPAS change
+             ripas_top            Address                                 Top address of pending RIPAS change
+             ripas_value          RmmRipas                                RIPAS value of pending RIPAS change
+             ripas_destroyed      RmmRipasChangeDestroyed                 Whether a RIPAS change from DESTROYED should be
+                                                                          permitted
+             ripas_response       RmmRecResponse                          Host response to RIPAS change request
+             host_call_pending RmmHostCallPending                         Whether a Host call is pending

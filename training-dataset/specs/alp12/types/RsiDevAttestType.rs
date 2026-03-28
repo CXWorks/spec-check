@@ -1,0 +1,4 @@
+pub enum RsiDevAttestType {
+  RSI_INDEPENDENTLY_ATTESTED,
+  RSI_PLATFORM_ATTESTED,
+}

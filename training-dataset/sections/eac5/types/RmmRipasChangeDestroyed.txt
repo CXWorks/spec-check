@@ -1,0 +1,8 @@
+C1.25 RmmRipasChangeDestroyed type
+            The RmmRipasChangeDestroyed enumeration represents whether a RIPAS change from DESTROYED should be
+            permitted.
+            The RmmRipasChangeDestroyed enumeration is an abstract type.
+            The values of the RmmRipasChangeDestroyed enumeration are shown in the following table.
+                      Name                                   Description
+                      CHANGE_DESTROYED                       A RIPAS change from DESTROYED should be permitted.
+                      NO_CHANGE_DESTROYED                    A RIPAS change from DESTROYED should not be permitted.

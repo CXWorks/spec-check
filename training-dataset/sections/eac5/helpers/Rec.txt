@@ -1,0 +1,4 @@
+B3.34 Rec function
+             Returns the REC object located at physical address addr.
+             func Rec(
+                 addr : Address) => RmmRec

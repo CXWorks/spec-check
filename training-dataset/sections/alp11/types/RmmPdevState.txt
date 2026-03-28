@@ -1,0 +1,21 @@
+C2.26 RmmPdevState type
+            The RmmPdevState enumeration represents the state of a PDEV.
+            The RmmPdevState enumeration is an abstract type.
+            The values of the RmmPdevState enumeration are shown in the following table.
+                    Name                                   Description
+                    PDEV_COMMUNICATING                     The RMM is communicating with the device.
+                    PDEV_ERROR                             Device has reported a fatal error.
+                    PDEV_HAS_KEY                           RMM has device public key.
+                    PDEV_IDE_RESETTING                     The PDEV’s IDE link is being reset.
+                    PDEV_NEEDS_KEY                         RMM needs device public key.
+                    PDEV_NEW                               Initial state of the device.
+                    PDEV_READY                             Secure connection between the RMM and the device has been
+                                                           established.
+                                                           Physical link between the device and memory is secured.
+                                                           Ready for creation of VDEV instances.
+                    PDEV_STOPPED                           Secure connection between the RMM and the device has been
+                                                           terminated.
+                    PDEV_STOPPING                          The RMM is communicating with the device to terminate the secure
+                                                           connection between the RMM and the device.
+            The RmmPdevState enumeration is used in the following types:
+               • RmmPdev

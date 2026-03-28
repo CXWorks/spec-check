@@ -1,0 +1,4 @@
+pub enum RsiDevMeasureSigned {
+  RSI_DEV_MEASURE_NOT_SIGNED,
+  RSI_DEV_MEASURE_SIGNED,
+}

@@ -1,0 +1,4 @@
+pub enum RsiDeviceAttestationType {
+  RSI_INDEPENDENTLY_ATTESTED,
+  RSI_PLATFORM_ATTESTED,
+}

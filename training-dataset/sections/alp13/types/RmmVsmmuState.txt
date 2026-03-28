@@ -1,0 +1,11 @@
+C2.63 RmmVsmmuState type
+            The RmmVsmmuState enumeration represents the state of a VSMMU.
+            The RmmVsmmuState enumeration is an abstract type.
+            The values of the RmmVsmmuState enumeration are shown in the following table.
+                      Name                                   Description
+                      VSMMU_ACTIVATING                       VSMMU is in the process of being activated by the Realm.
+                      VSMMU_ACTIVE                           VSMMU has been activated by the Realm.
+                      VSMMU_INACTIVE                         VSMMU has not been activated by the Realm.
+            The RmmVsmmuState enumeration is used in the following types:
+                  • RmmVsmmu
+

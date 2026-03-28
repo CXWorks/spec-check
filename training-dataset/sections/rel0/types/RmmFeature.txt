@@ -1,0 +1,9 @@
+C1.3 RmmFeature type
+               The RmmFeature enumeration represents whether a feature is enabled.
+               The RmmFeature enumeration is an abstract type.
+               The values of the RmmFeature enumeration are shown in the following table.
+                         Name                                   Description
+                         FEATURE_FALSE                               • During discovery: Feature is not supported.
+                                                                     • During selection: Feature is not enabled.
+                         FEATURE_TRUE                                • During discovery: Feature is supported.
+                                                                     • During selection: Feature is enabled.

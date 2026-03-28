@@ -1,0 +1,20 @@
+B3.138 RttS2APEqual function
+             Returns TRUE if the S2AP of the two RTT entries match.
+             func RttS2APEqual(
+                 rtte1 : RmmRttEntry,
+                 rtte2 : RmmRttEntry,
+                 encoding : RmmRttS2APEncoding) => boolean
+             begin
+                 case encoding of
+                     when S2AP_DIRECT => return (
+                         (rtte1.s2ap_direct.read
+                             == rtte2.s2ap_direct.read)
+                         && (rtte1.s2ap_direct.write
+                             == rtte2.s2ap_direct.write));
+                     when S2AP_INDIRECT => return (
+                         (rtte1.s2ap_indirect.base_index
+                             == rtte2.s2ap_indirect.base_index)
+                         && (rtte1.s2ap_indirect.overlay_index
+                             == rtte2.s2ap_indirect.overlay_index));
+                 end
+             end

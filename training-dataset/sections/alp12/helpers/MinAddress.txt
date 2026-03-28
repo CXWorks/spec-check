@@ -1,0 +1,8 @@
+B3.34 MinAddress function
+             Returns the smaller of two addresses.
+             func MinAddress(
+                 addr1 : Address,
+                 addr2 : Address) => Address
+             begin
+                 return ToAddress(Min(UInt(addr1), UInt(addr2)));
+             end

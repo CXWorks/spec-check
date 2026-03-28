@@ -1,0 +1,4 @@
+C1.30 RmmSystemRegisters type
+            The RmmSystemRegisters structure contains EL0 and EL1 system registers.
+            The RmmSystemRegisters structure is an abstract type.
+

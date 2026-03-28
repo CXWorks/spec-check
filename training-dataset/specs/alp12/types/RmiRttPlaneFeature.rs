@@ -1,0 +1,5 @@
+pub enum RmiRttPlaneFeature {
+  RMI_RTT_PLANE_AUX,
+  RMI_RTT_PLANE_AUX_SINGLE,
+  RMI_RTT_PLANE_SINGLE,
+}

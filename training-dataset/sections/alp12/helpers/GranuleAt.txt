@@ -1,0 +1,4 @@
+B3.27 GranuleAt function
+             Returns the Granule located at physical address addr.
+             func GranuleAt(
+                 addr : Address) => RmmGranule

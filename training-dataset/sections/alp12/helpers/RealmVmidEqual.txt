@@ -1,0 +1,17 @@
+B3.59 RealmVmidEqual function
+             Returns TRUE if RTT base values of realm match the provided values.
+             func RealmVmidEqual(
+                 realm : RmmRealm,
+                 vmid : bits(16),
+                 aux_vmid : array[3] of bits(16)) => boolean
+             begin
+                 if (realm.vmid[0] != vmid) then
+                     return FALSE;
+                 end
+                   for i = 0 to 2 do
+                       if (realm.vmid[i + 1] != aux_vmid[i]) then
+                           return FALSE;
+                       end
+                   end
+                   return TRUE;
+             end

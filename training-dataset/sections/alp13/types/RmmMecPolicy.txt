@@ -1,0 +1,11 @@
+C2.20 RmmMecPolicy type
+               The RmmMecPolicy enumeration represents a MEC policy.
+               The RmmMecPolicy enumeration is an abstract type.
+               The values of the RmmMecPolicy enumeration are shown in the following table.
+                      Name                                    Description
+                      MEC_POLICY_PRIVATE                      The MEC protects memory owned by a single Realm. A MEC with
+                                                              this policy may be referred to as a Private MEC.
+                      MEC_POLICY_SHARED                       The MEC protects memory owned by multiple Realms. A MEC
+                                                              with this policy may be referred to as a Shared MEC.
+               The RmmMecPolicy enumeration is used in the following types:
+                  • RmmRealm

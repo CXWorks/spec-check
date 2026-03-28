@@ -1,0 +1,7 @@
+C2.24 RmmP2PStream type
+            The RmmP2PStream structure contains attributes of a P2P stream.
+            The RmmP2PStream structure is an abstract type.
+            The members of the RmmP2PStream structure are shown in the following table.
+            Name                Type                                    Description
+            pdev1               Address                                 Address of first PDEV
+            pdev2               Address                                 Address of second PDEV

@@ -1,0 +1,7 @@
+C2.12 RmmGranule type
+            The RmmGranule structure contains attributes of a Granule.
+            The RmmGranule structure is an abstract type.
+            The members of the RmmGranule structure are shown in the following table.
+            Name                Type                                    Description
+            gpt                 RmmGptEntry                             GPT entry
+            state               RmmGranuleState                         Lifecycle state

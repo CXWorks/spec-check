@@ -1,0 +1,4 @@
+B3.126 RttIsHomogeneous function
+             Returns TRUE if the RTT at address rtt is homogeneous.
+             func RttIsHomogeneous(
+                 rtt : RmmRtt) => boolean

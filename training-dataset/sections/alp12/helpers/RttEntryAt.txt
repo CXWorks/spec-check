@@ -1,0 +1,5 @@
+B3.122 RttEntryAt function
+             Returns the ith entry in the RTT rtt.
+             func RttEntryAt(
+                 rtt : RmmRtt,
+                 i : integer) => RmmRttEntry

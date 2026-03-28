@@ -1,0 +1,18 @@
+C1.4 RmmFeatures type
+               The RmmFeatures structure contains features supported by RMM implementation.
+               The RmmFeatures structure is an abstract type.
+               The members of the RmmFeatures structure are shown in the following table.
+               Name                 Type                                    Description
+               max_ipa_width        UInt64                                  Maximum IPA width
+               feat_lpa2            RmmFeature                              Whether LPA2 is supported
+               feat_sve             RmmFeature                              Whether SVE is supported
+            Name               Type                                    Description
+            max_sve_vl         UInt64                                  Maximum SVE vector length
+            num_bps            UInt64                                  Number of breakpoints available
+            num_wps            UInt64                                  Number of watchpoints available
+            feat_pmu           RmmFeature                              Number of watchpoints available
+            pmu_num_ctrs       UInt64                                  Number of PMU counters available
+            feat_sha_256       RmmFeature                              Whether SHA-256 is supported
+            feat_sha_512       RmmFeature                              Whether SHA-512 is supported
+            max_recs_order     UInt64                                  Order of the maximum number of RECs which can be
+                                                                       created per Realm

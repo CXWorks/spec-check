@@ -1,0 +1,10 @@
+C2.56 RmmRttWalkNotAligned type
+             The RmmRttWalkNotAligned structure contains result of an RTT walk which is not aligned to the requested level.
+             The RmmRttWalkNotAligned structure is an abstract type.
+             The members of the RmmRttWalkNotAligned structure are shown in the following table.
+             Name                Type                                   Description
+             valid               RmmBoolean                             TRUE if an RTT walk was performed whose result is
+                                                                        not aligned to the requested level
+             index               UInt64                                 RTT index
+             addr                Address                                Address
+             walk                RmmRttWalkResult                       Walk result

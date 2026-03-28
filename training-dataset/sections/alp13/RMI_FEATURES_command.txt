@@ -1,0 +1,22 @@
+B4.3.4 RMI_FEATURES command
+                Read feature register.
+                The following table indicates which feature register is returned depending on the index provided.
+                                         Index          Feature register
+                                         0              RMI feature register 0
+                                         1              RMI feature register 1
+                B4.3.4.1 Interface
+                B4.3.4.1.1   Input values
+          Name                Register       Bits      Type                                  Description
+          fid                 X0             63:0      UInt64                                FID, value 0xC4000165
+          index               X1             63:0      UInt64                                Feature register index
+                B4.3.4.1.2   Output values
+          Name                Register       Bits      Type                                  Description
+          result              X0             63:0      RmiCommandReturnCode                  Command return status
+          value               X1             63:0      Bits64                                Feature register value
+                B4.3.4.2 Failure conditions
+                The RMI_FEATURES command does not have any failure conditions.
+                B4.3.4.3 Success conditions
+  ID                            Condition
+  value                         post: value == RmiFeatureRegisterEncode(index)
+                B4.3.4.4 Footprint
+                The RMI_FEATURES command does not have any footprint.

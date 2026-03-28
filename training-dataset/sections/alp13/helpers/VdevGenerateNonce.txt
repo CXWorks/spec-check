@@ -1,0 +1,4 @@
+B3.153 VdevGenerateNonce function
+             Generate a VDEV nonce.
+             func VdevGenerateNonce(
+                 vdev : RmmVdev) => integer

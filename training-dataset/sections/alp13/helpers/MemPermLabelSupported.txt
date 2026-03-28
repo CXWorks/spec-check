@@ -1,0 +1,5 @@
+B3.35 MemPermLabelSupported function
+             Returns TRUE if the specified value is a valid encoding for a memory permission label and the label is supported
+             by the implementation.
+             func MemPermLabelSupported(
+                 label : bits(64)) => boolean

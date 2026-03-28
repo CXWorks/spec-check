@@ -1,0 +1,4 @@
+B3.109 RsiRealmConfigAt function
+             Returns Realm configuration stored at IPA addr, mapped in the current Realm.
+             func RsiRealmConfigAt(
+                   addr : Address) => RsiRealmConfig

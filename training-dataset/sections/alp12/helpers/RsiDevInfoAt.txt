@@ -1,0 +1,4 @@
+B3.99 RsiDevInfoAt function
+             Returns device configuration stored at IPA addr, mapped in the current Realm.
+             func RsiDevInfoAt(
+                   addr : Address) => RsiDevInfo

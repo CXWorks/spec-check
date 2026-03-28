@@ -1,0 +1,26 @@
+B4.3.9 RMI_MEC_SET_PRIVATE command
+                Change state of a MEC to Private.
+                B4.3.9.1 Interface
+                B4.3.9.1.1   Input values
+          Name               Register     Bits        Type                                  Description
+          fid                X0           63:0        UInt64                                FID, value 0xC400018D
+          mecid              X1           63:0        Bits64                                MECID
+                B4.3.9.1.2   Output values
+          Name               Register     Bits        Type                                  Description
+          result             X0           63:0        RmiCommandReturnCode                  Command return status
+                B4.3.9.2 Failure conditions
+  ID                           Condition
+  mecid_bound
+                               pre: UInt(mecid) > UInt(ImplFeatures().max_mecid)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  state                        pre: MecState(mecid) != MEC_STATE_SHARED
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  members                      pre: MecMembers(mecid) != 0
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+                B4.3.9.2.1   Failure condition ordering
+                The RMI_MEC_SET_PRIVATE command does not have any failure condition orderings.
+                B4.3.9.3 Success conditions
+  ID                           Condition
+  mec_state                    MecState(mecid) == MEC_STATE_PRIVATE_UNASSIGNED
+                B4.3.9.4 Footprint
+                The RMI_MEC_SET_PRIVATE command does not have any footprint.

@@ -1,0 +1,21 @@
+B4.3.12 RMI_PDEV_AUX_COUNT command
+                Get number of auxiliary Granules required for a PDEV.
+                B4.3.12.1 Interface
+                B4.3.12.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000156
+        flags                 X1          63:0        Bits64                                PDEV flags
+                B4.3.12.1.2   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        aux_count             X1          63:0        UInt64                                Number of auxiliary Granules required
+                                                                                            for a PDEV
+                B4.3.12.2 Failure conditions
+  ID                           Condition
+  da_supp                      pre: ImplFeatures().feat_da != FEATURE_TRUE
+                               post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+                B4.3.12.3 Success conditions
+  ID                           Condition
+  aux_count                    aux_count == PdevAuxCount(RmiPdevFlagsDecode(flags))
+                B4.3.12.4 Footprint
+                The RMI_PDEV_AUX_COUNT command does not have any footprint.

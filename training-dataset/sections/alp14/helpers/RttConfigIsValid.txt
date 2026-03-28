@@ -1,0 +1,6 @@
+B3.120 RttConfigIsValid function
+             Returns TRUE if the RTT configuration values provided are self-consistent and are supported by the platform.
+             func RttConfigIsValid(
+                 ipa_width : integer,
+                 rtt_level_start : integer,
+                 rtt_num_start : integer) => boolean

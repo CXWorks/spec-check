@@ -1,0 +1,9 @@
+C2.53 RmmRttS2APDirect type
+             The RmmRttS2APDirect structure contains directly-encoded S2AP.
+             The RmmRttS2APDirect structure is an abstract type.
+            The members of the RmmRttS2APDirect structure are shown in the following table.
+            Name                Type                                    Description
+            read                RmmBoolean                              Read permission
+            write               RmmBoolean                              Write permission
+            The RmmRttS2APDirect structure is used in the following types:
+               • RmmRttEntry

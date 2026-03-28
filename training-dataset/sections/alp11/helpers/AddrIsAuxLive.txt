@@ -1,0 +1,5 @@
+B3.3 AddrIsAuxLive function
+             Returns TRUE if IPA addr is auxiliary-live, that is live in any auxiliary RTT.
+             func AddrIsAuxLive(
+                 addr : Address,
+                 realm : RmmRealm) => boolean

@@ -1,0 +1,12 @@
+C2.36 RmmRecEmulatableAbort type
+            The RmmRecEmulatableAbort enumeration represents whether the most recent exit from a REC was due to an
+            Emulatable Data Abort.
+            The RmmRecEmulatableAbort enumeration is an abstract type.
+            The values of the RmmRecEmulatableAbort enumeration are shown in the following table.
+                    Name                                   Description
+                    EMULATABLE_ABORT                       The most recent exit from a REC was due to an Emulatable Data
+                                                           Abort.
+                    NOT_EMULATABLE_ABORT                   The most recent exit from a REC was not due to an Emulatable
+                                                           Data Abort.
+            The RmmRecEmulatableAbort enumeration is used in the following types:
+                • RmmRec

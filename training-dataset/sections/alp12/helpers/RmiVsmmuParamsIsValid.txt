@@ -1,0 +1,8 @@
+B3.98 RmiVsmmuParamsIsValid function
+             Returns TRUE if the memory location contains a valid encoding of the RmiVsmmuParams type and all the
+             following are true:
+                • aidr value is not set to an architecturally valid value.
+                • Any idr[] value is not set to an architecturally valid value.
+             Here, “architecturally valid” refers to the SMMU implementation to which this VSMMU belongs.
+             func RmiVsmmuParamsIsValid(
+                 addr : Address) => boolean

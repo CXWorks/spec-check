@@ -1,0 +1,6 @@
+B3.28 GranulesAllState function
+             Returns TRUE if the state of all Granules within the range [base, top) is equal to state.
+             func GranulesAllState(
+                 base : Address,
+                 top : Address,
+                 state : RmmGranuleState) => boolean

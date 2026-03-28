@@ -1,0 +1,4 @@
+B3.158 VsmmuAt function
+             Returns the VSMMU object located at physical address addr.
+             func VsmmuAt(
+                 addr : Address) => RmmVsmmu

@@ -1,0 +1,6 @@
+B3.73 RimExtendRipasForEntry function
+             Extend RIM with contribution from RIPAS change for a single RTT entry.
+             func RimExtendRipasForEntry(
+                 rim : RmmRealmMeasurement,
+                 ipa : Address,
+                 level : integer) => RmmRealmMeasurement

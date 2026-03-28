@@ -1,0 +1,4 @@
+B3.59 PsmmuSupportsMsi function
+             Returns TRUE if the PSMMU located at addr supports MSI.
+             func PsmmuSupportsMsi(
+                 addr : Address) => boolean

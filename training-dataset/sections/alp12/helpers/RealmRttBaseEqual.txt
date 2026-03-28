@@ -1,0 +1,17 @@
+B3.58 RealmRttBaseEqual function
+             Returns TRUE if RTT base values of realm match the provided values.
+             func RealmRttBaseEqual(
+                 realm : RmmRealm,
+                 rtt_base : Address,
+                 aux_rtt_base : array[3] of Address) => boolean
+             begin
+                   if (realm.rtt_base[0] != rtt_base) then
+                       return FALSE;
+                   end
+                   for i = 0 to 2 do
+                       if (realm.rtt_base[i + 1] != aux_rtt_base[i]) then
+                           return FALSE;
+                       end
+                   end
+                   return TRUE;
+             end

@@ -1,0 +1,4 @@
+B3.56 RealmIsLive function
+             Returns TRUE if the Realm whose RD is located at physical address addr is live.
+             func RealmIsLive(
+                 addr : Address) => boolean

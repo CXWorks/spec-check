@@ -1,0 +1,5 @@
+B3.12 AuxSort function
+             Sort first count entries in array of auxiliary Granule addresses.
+             func AuxSort(
+                 addrs : array [16] of Address,
+                 count : integer) => array [16] of Address

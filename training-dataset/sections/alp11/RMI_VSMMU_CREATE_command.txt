@@ -1,0 +1,79 @@
+B4.3.57 RMI_VSMMU_CREATE command
+              Create a VSMMU.
+              B4.3.57.1 Interface
+              B4.3.57.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 X0          63:0        UInt64                                FID, value 0xC400016A
+        rd                  X1          63:0        Address                               PA of the RD
+        vsmmu_ptr           X2          63:0        Address                               PA of the VSMMU
+        params_ptr          X3          63:0        Address                               PA of VSMMU parameters
+              B4.3.57.1.2   Context
+              The RMI_VSMMU_CREATE command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        realm               RmmRealm                   RealmAt(rd)                                false    Realm
+        vsmmu               RmmVsmmu                   VsmmuAt(vsmmu_ptr)                         false    VSMMU
+        params              RmiVsmmuParams             RmiVsmmuParamsAt(                          false    VSMMU parameters
+                                                           params_ptr)
+              B4.3.57.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              X0          63:0        RmiCommandReturnCode                  Command return status
+              B4.3.57.2 Failure conditions
+  ID                         Condition
+  da_supp                    pre: ImplFeatures().feat_da != FEATURE_TRUE
+                             post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  rd_align                   pre: !AddrIsGranuleAligned(rd)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                   pre: !PaIsDelegable(rd)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                   pre: GranuleAt(rd).state != RD
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                                   Condition
+  realm_state                          pre: realm.state != REALM_NEW
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_align                          pre: !AddrIsGranuleAligned(vsmmu_ptr)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_bound                          pre: !PaIsDelegableDram(vsmmu_ptr)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_state                          pre: GranuleAt(vsmmu_ptr).state != DELEGATED
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_align                         pre: !AddrIsGranuleAligned(params_ptr)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_pas                           pre: !GranuleAccessPermitted(params_ptr, PAS_NS)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_valid                         pre: !RmiVsmmuParamsIsValid(params_ptr)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  reg_base_align                       pre:  (!AddrIsGranuleAligned(params.reg_base)
+                                                 || !AddrIsGranuleAligned(params.reg_top))
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  reg_base_bound                       pre:  (!AddrIsProtected(params.reg_base, realm)
+                                                 || !AddrIsProtected(params.reg_top, realm)
+                                                 || UInt(params.reg_top) <= UInt(params.reg_base))
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+                B4.3.57.2.1           Failure condition ordering
+                [rd_bound, rd_state] < [realm_state]
+                [da_supp] < [rd_align, rd_bound, rd_state, vsmmu_align, vsmmu_bound,
+                     vsmmu_state, params_align, params_pas, params_valid,
+                     reg_base_align, reg_base_bound]
+                                                                                                                                                      da_supp
+                                                                                                                                              RMI_ERROR_NOT _SUPPORT ED
+                     reg_base_bound     reg_base_align   params_valid   params_pas   params_align   vsmmu_state   vsmmu_bound   vsmmu_align           rd_align            rd_state    rd_bound
+                                                                                                                                                                                     realm_state
+                                                                                                                                                                                      RMI_ERROR_INPUT
+                B4.3.57.3 Success conditions
+  ID                                   Condition
+  gran_state                           GranuleAt(vsmmu_ptr).state == VSMMU
+  realm                                vsmmu.realm == rd
+  reg_base                             vsmmu.reg_base == params.reg_base
+  reg_top                              vsmmu.reg_top == params.reg_top
+  aidr                                 vsmmu.aidr == params.aidr
+  ID                        Condition
+  idr                       (vsmmu.idr[0] == params.idr[0]
+                                && vsmmu.idr[1] == params.idr[1]
+                                && vsmmu.idr[2] == params.idr[2]
+                                && vsmmu.idr[3] == params.idr[3]
+                                && vsmmu.idr[4] == params.idr[4]
+                                && vsmmu.idr[5] == params.idr[5]
+                                && vsmmu.idr[6] == params.idr[6])
+             B4.3.57.4 Footprint
+    ID                        Value
+    state                     GranuleAt(vsmmu_ptr).state

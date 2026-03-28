@@ -1,0 +1,5 @@
+B3.93 RmiVdevParamsAt function
+             Returns VDEV parameters stored at physical address addr.
+             If the PAS of addr is not NS, the return value is UNKNOWN.
+             func RmiVdevParamsAt(
+                 addr : Address) => RmiVdevParams

@@ -1,0 +1,5 @@
+B3.60 RttEntryIndex function
+             Returns the index of the entry in a level level RTT which is identified by addr.
+             func RttEntryIndex(
+                 addr : Address,
+                 level : integer) => integer

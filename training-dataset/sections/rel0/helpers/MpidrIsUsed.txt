@@ -1,0 +1,4 @@
+B3.24 MpidrIsUsed function
+             Returns TRUE if the specified MPIDR value identifies a REC in the current Realm.
+             func MpidrIsUsed(
+                 mpidr : bits(64)) => boolean

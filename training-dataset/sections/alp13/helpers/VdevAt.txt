@@ -1,0 +1,4 @@
+B3.150 VdevAt function
+             Returns the VDEV object located at physical address addr.
+             func VdevAt(
+                 addr : Address) => RmmVdev

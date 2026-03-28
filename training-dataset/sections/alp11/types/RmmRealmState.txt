@@ -1,0 +1,10 @@
+C2.33 RmmRealmState type
+            The RmmRealmState enumeration represents the state of a Realm.
+            The RmmRealmState enumeration is an abstract type.
+            The values of the RmmRealmState enumeration are shown in the following table.
+                    Name                                     Description
+                    REALM_ACTIVE                             Eligible for execution.
+                    REALM_NEW                                Under construction. Not eligible for execution.
+                    REALM_SYSTEM_OFF                         System has been turned off. Not eligible for execution.
+            The RmmRealmState enumeration is used in the following types:
+               • RmmRealm

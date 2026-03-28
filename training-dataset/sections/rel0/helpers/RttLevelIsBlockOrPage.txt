@@ -1,0 +1,5 @@
+B3.65 RttLevelIsBlockOrPage function
+             Returns TRUE if level is either a block or page RTT level for the Realm described by rd.
+             func RttLevelIsBlockOrPage(
+                 rd : Address,
+                 level : integer) => boolean

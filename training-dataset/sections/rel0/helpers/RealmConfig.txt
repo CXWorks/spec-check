@@ -1,0 +1,4 @@
+B3.30 RealmConfig function
+             Returns Realm configuration stored at IPA addr, mapped in the current Realm.
+             func RealmConfig(
+                 addr : Address) => RsiRealmConfig

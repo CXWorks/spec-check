@@ -1,0 +1,7 @@
+B3.156 VmidsAreFree function
+             Returns TRUE if vmid is unused.
+             func VmidsAreFree(
+                 vmid : array [[4]] of bits(16)) => boolean
+             func VmidsAreFree(
+                 vmid : bits(16),
+                 aux_vmid : array [[3]] of bits(16)) => boolean

@@ -1,0 +1,144 @@
+B4.3.28 RMI_REC_CREATE command
+              Creates a REC.
+              B4.3.28.1 Interface
+              B4.3.28.1.1   Input values
+        Name                Register      Bits        Type                                  Description
+        fid                 X0            63:0        UInt64                                FID, value 0xC400015A
+        rd                  X1            63:0        Address                               PA of the RD for the target Realm
+        rec_ptr             X2            63:0        Address                               PA of the target REC
+        params_ptr          X3            63:0        Address                               PA of REC parameters
+              B4.3.28.1.2   Context
+              The RMI_REC_CREATE command operates on the following context.
+        Name                Type                         Value                                      Before   Description
+        realm_pre           RmmRealm                     RealmAt(rd)                                true     Realm
+        realm               RmmRealm                     RealmAt(rd)                                false    Realm
+        params              RmiRecParams                 RmiRecParamsAt(params_ptr)                 false    REC parameters
+        rec                 RmmRec                       RecAt(rec_ptr)                             false    REC
+              B4.3.28.1.3   Output values
+        Name                Register      Bits        Type                                  Description
+        result              X0            63:0        RmiCommandReturnCode                  Command return status
+              B4.3.28.2 Failure conditions
+  ID                           Condition
+  params_align                 pre: !AddrIsGranuleAligned(params_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_pas                   pre: !GranuleAccessPermitted(params_ptr, PAS_NS)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                                   Condition
+  rec_align                            pre: !AddrIsGranuleAligned(rec_ptr)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_bound                            pre: !PaIsDelegableDram(rec_ptr)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_state                            pre: GranuleAt(rec_ptr).state != DELEGATED
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_align                             pre: !AddrIsGranuleAligned(rd)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                             pre: !PaIsDelegable(rd)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                             pre: GranuleAt(rd).state != RD
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  realm_state                          pre: realm_pre.state != REALM_NEW
+                                       post: ResultEqual(result, RMI_ERROR_REALM)
+  num_recs                             pre: realm_pre.num_recs == (2 ^ ImplFeatures().max_recs_order) - 1
+                                       post: ResultEqual(result, RMI_ERROR_REALM)
+  mpidr_index                          pre: RecIndex(params.mpidr) != realm_pre.rec_index
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  num_aux                              pre: params.num_aux != RecAuxCount(rd)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  aux_align                            pre: !AuxAligned16(params.aux, params.num_aux)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  aux_alias                            pre: AuxAlias16(rec_ptr, params.aux, params.num_aux)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  aux_state                            pre:  !AuxStateEqual16(
+                                                 params.aux, params.num_aux, DELEGATED)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+                B4.3.28.2.1         Failure condition ordering
+                [rd_bound, rd_state] < [realm_state, num_recs]
+                    aux_state   aux_alias   aux_align   num_aux   mpidr_index   rd_align   rec_state   rec_bound   rec_align   params_pas   params_align     rd_state    rd_bound
+                                                                                                                                                                        RMI_ERROR_INPUT
+                                                                                                                                                           num_recs     realm_state
+                                                                                                                                                                        RMI_ERROR_REALM
+                B4.3.28.3 Success conditions
+  ID                                   Condition
+  rec_index                            realm.rec_index == realm_pre.rec_index + 1
+  rec_gran_state                       GranuleAt(rec_ptr).state == REC
+  rec_owner                            rec.owner == rd
+  rec_attest                           rec.attest_state == NO_ATTEST_IN_PROGRESS
+  ID                        Condition
+  rec_mpidr                 MpidrEqual(rec.mpidr, params.mpidr)
+  rec_state                 rec.state == REC_READY
+  runnable                  pre: params.flags.runnable == RMI_RUNNABLE
+                            post: rec.flags.runnable == RUNNABLE
+  not_runnable              pre: params.flags.runnable == RMI_NOT_RUNNABLE
+                            post: rec.flags.runnable == NOT_RUNNABLE
+  rec_gprs                  (rec.gprs[0] == params.gprs[0]
+                                && rec.gprs[1] == params.gprs[1]
+                                && rec.gprs[2] == params.gprs[2]
+                                && rec.gprs[3] == params.gprs[3]
+                                && rec.gprs[4] == params.gprs[4]
+                                && rec.gprs[5] == params.gprs[5]
+                                && rec.gprs[6] == params.gprs[6]
+                                && rec.gprs[7] == params.gprs[7]
+                                && rec.gprs[8] == Zeros(64)
+                                && rec.gprs[9] == Zeros(64)
+                                && rec.gprs[10] == Zeros(64)
+                                && rec.gprs[11] == Zeros(64)
+                                && rec.gprs[12] == Zeros(64)
+                                && rec.gprs[13] == Zeros(64)
+                                && rec.gprs[14] == Zeros(64)
+                                && rec.gprs[15] == Zeros(64)
+                                && rec.gprs[16] == Zeros(64)
+                                && rec.gprs[17] == Zeros(64)
+                                && rec.gprs[18] == Zeros(64)
+                                && rec.gprs[19] == Zeros(64)
+                                && rec.gprs[20] == Zeros(64)
+                                && rec.gprs[21] == Zeros(64)
+                                && rec.gprs[22] == Zeros(64)
+                                && rec.gprs[23] == Zeros(64)
+                                && rec.gprs[24] == Zeros(64)
+                                && rec.gprs[25] == Zeros(64)
+                                && rec.gprs[26] == Zeros(64)
+                                && rec.gprs[27] == Zeros(64)
+                                && rec.gprs[28] == Zeros(64)
+                                && rec.gprs[29] == Zeros(64)
+                                && rec.gprs[30] == Zeros(64)
+                                && rec.gprs[31] == Zeros(64))
+  rec_pc                    rec.pc == params.pc
+  rim                       pre: params.flags.runnable == RMI_RUNNABLE
+                            post: realm.measurements[0] == RimExtendRec(
+                                      realm_pre, params)
+  rec_aux                   AuxEqual16(
+                                rec.aux, params.aux,
+                                RecAuxCount(rd))
+  rec_aux_state             AuxStateEqual16(
+                                rec.aux, RecAuxCount(rd), REC_AUX)
+  ripas_addr                rec.ripas_addr == Zeros(ADDRESS_WIDTH)
+  ripas_top                 rec.ripas_top == Zeros(ADDRESS_WIDTH)
+  pending                   rec.pending == REC_PENDING_NONE
+  num_recs                  realm.num_recs == realm_pre.num_recs + 1
+  ID                           Condition
+  gic_owner                    rec.gic_owner == 0
+                B4.3.28.4 RMI_REC_CREATE extension of RIM
+                On successful execution of RMI_REC_CREATE, if the new REC is runnable then the new RIM value of the target
+                Realm is calculated by the RMM as follows:
+                  1. Allocate a zero-filled RmiRecParams data structure to hold the measured REC parameters.
+                  2. Copy the following attributes from the Host-provided RmiRecParams data structure into the measured REC
+                     parameters data structure:
+                   • gprs
+                   • pc
+                   • flags
+                  3. Using the RHA of the target Realm, compute the hash of the measured REC parameters data structure.
+                  4. Allocate an RmmMeasurementDescriptorRec data structure.
+                  5. Populate the measurement descriptor:
+                   • Set the desc_type field to the descriptor type.
+                   • Set the len field to the descriptor length.
+                   • Set the rim field to the current RIM value of the target Realm.
+                   • Set the content field to the hash of the measured REC parameters.
+                  6. Using the RHA of the target Realm, compute the hash of the measurement descriptor. Set the RIM of the
+                     target Realm to this value, zero filling upper bytes if the RHA output is smaller than the size of the RIM.
+                B4.3.28.5 Footprint
+    ID                            Value
+    rec_index                     realm.rec_index
+    rec_state                     GranuleAt(rec).state
+    rec_aux_state                 AuxStates(rec.aux, RecAuxCount(rd))
+    rim                           realm.measurements[0]
+    num_recs                      realm.num_recs

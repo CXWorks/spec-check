@@ -1,0 +1,6 @@
+B3.147 ToBits64 function
+             Convert integer to Bits64.
+             func ToBits64(value : integer) => bits(64)
+             begin
+                 return value[63:0];
+             end

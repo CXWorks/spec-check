@@ -1,0 +1,12 @@
+B3.75 RipasToRmi function
+             Encodes a RIPAS value.
+             func RipasToRmi(
+                 ripas : RmmRipas) => RmiRipas
+             begin
+                 case ripas of
+                      when EMPTY     => return RMI_EMPTY;
+                      when RAM       => return RMI_RAM;
+                      when DESTROYED => return RMI_DESTROYED;
+                      when DEV       => return RMI_DEV;
+                 end;
+             end;

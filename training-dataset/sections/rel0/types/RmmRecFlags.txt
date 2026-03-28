@@ -1,0 +1,6 @@
+C1.22 RmmRecFlags type
+            The RmmRecFlags structure contains REC flags.
+            The RmmRecFlags structure is an abstract type.
+            The members of the RmmRecFlags structure are shown in the following table.
+            Name               Type                                    Description
+            runnable           RmmRecRunnable                          Whether the REC is elgible to run

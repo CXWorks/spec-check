@@ -1,0 +1,4 @@
+B3.66 RecAt function
+             Returns the REC object located at physical address addr.
+             func RecAt(
+                 addr : Address) => RmmRec

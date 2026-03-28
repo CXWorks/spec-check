@@ -1,0 +1,4 @@
+B3.62 RealmMeasurementEncode function
+             Return encoding for an RmmRealmMeasurement value.
+             func RealmMeasurementEncode(
+                 value : RmmRealmMeasurement) => array [[8]] of bits(64)

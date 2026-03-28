@@ -1,0 +1,6 @@
+pub enum RmiPdevProtection {
+  RMI_PDEV_IOCOH_E2E_IDE,
+  RMI_PDEV_IOCOH_E2E_SYS,
+  RMI_PDEV_FCOH_E2E_IDE,
+  RMI_PDEV_FCOH_E2E_SYS,
+}

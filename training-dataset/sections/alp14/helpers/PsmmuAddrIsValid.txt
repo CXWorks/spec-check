@@ -1,0 +1,4 @@
+B3.58 PsmmuAddrIsValid function
+             Returns TRUE if addr is the base address of a PSMMU.
+             func PsmmuAddrIsValid(
+                 addr : Address) => boolean

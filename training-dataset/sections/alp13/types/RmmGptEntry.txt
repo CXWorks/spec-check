@@ -1,0 +1,12 @@
+C2.11 RmmGptEntry type
+            The RmmGptEntry enumeration represents granule Protection Table entry.
+            The RmmGptEntry enumeration is an abstract type.
+            The values of the RmmGptEntry enumeration are shown in the following table.
+                    Name                                    Description
+                    GPT_AAP                                 Access permitted via any PAS.
+                    GPT_NS                                  Access permitted via Non-secure PAS only.
+                    GPT_REALM                               Access permitted via Realm PAS only.
+                    GPT_ROOT                                Access permitted via Root PAS only.
+                    GPT_SECURE                              Access permitted via Secure PAS only.
+            The RmmGptEntry enumeration is used in the following types:
+               • RmmGranule

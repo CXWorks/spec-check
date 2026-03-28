@@ -1,0 +1,40 @@
+B4.3.13 RMI_REC_DESTROY command
+              Destroys a REC.
+              B4.3.13.1 Interface
+              B4.3.13.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 X0          63:0        UInt64                                FID, value 0xC400015B
+        rec                 X1          63:0        Address                               PA of the target REC
+              B4.3.13.1.2   Context
+              The RMI_REC_DESTROY command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        rd                  Address                    Rec(rec).owner                             true     RD address
+        rec_obj             RmmRec                     Rec(rec)                                   true     REC
+              B4.3.13.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              X0          63:0        RmiCommandReturnCode                  Command return status
+              B4.3.13.2 Failure conditions
+  ID                         Condition
+  rec_align                  pre: !AddrIsGranuleAligned(rec)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_bound                  pre: !PaIsDelegable(rec)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_gran_state             pre: Granule(rec).state != REC
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_state                  pre: Rec(rec).state == REC_RUNNING
+                             post: ResultEqual(result, RMI_ERROR_REC)
+                B4.3.13.2.1   Failure condition ordering
+                [rec_bound, rec_gran_state] < [rec_state]
+                              rec_align                    rec_gran_state                          rec_bound
+                                                                                                  RMI_ERROR_INPUT
+                                                                                                   rec_state
+                                                                                                  RMI_ERROR_REC
+                B4.3.13.3 Success conditions
+  ID                           Condition
+  rec_gran_state               Granule(rec).state == DELEGATED
+  rec_aux_state                AuxStateEqual(
+                                   rec_obj.aux, RecAuxCount(rd), DELEGATED)
+                B4.3.13.4 Footprint
+    ID                           Value
+    rec_state                    Granule(rec).state
+    rec_aux_state                AuxStates(rec_obj.aux, RecAuxCount(rd))

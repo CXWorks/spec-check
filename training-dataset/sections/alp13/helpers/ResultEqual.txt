@@ -1,0 +1,9 @@
+B3.69 ResultEqual function
+             Returns TRUE if command result matches the stated value.
+             func ResultEqual(
+                 result : RmiCommandReturnCode,
+                 status : RmiStatusCode) => boolean
+             func ResultEqual(
+                 result : RmiCommandReturnCode,
+                 status : RmiStatusCode,
+                 index : integer) => boolean

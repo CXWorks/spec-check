@@ -1,0 +1,13 @@
+B3.10 AddrRangeIsProtected function
+             Returns TRUE if all addresses in range [base, top) are Protected IPAs for realm.
+             func AddrRangeIsProtected(
+                 base : Address,
+                 top : Address,
+                 realm : RmmRealm) => boolean
+             begin
+                 var size = UInt(top) - UInt(base);
+                 return (AddrIsProtected(base, realm)
+                     && size > 0
+                     && size < 2^realm.ipa_width
+                     && AddrIsProtected(ToAddress(UInt(top) - 1), realm));
+             end;

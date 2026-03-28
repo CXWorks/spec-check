@@ -1,0 +1,20 @@
+C2.30 RmmRdevState type
+            The RmmRdevState enumeration represents the state of an RDEV.
+            The RmmRdevState enumeration is an abstract type.
+            The values of the RmmRdevState enumeration are shown in the following table.
+                    Name                                   Description
+                    RDEV_ERROR                             Device interface has reported a fatal error.
+                    RDEV_LOCKED                            Device interface is locked.
+                    RDEV_LOCKED_BUSY                       Device interface is locked and is handling an interruptible Realm
+                                                           device operation.
+                    RDEV_STARTED                           Device interface is started.
+                    RDEV_STARTED_BUSY                      Device interface is started and is handling an interruptible Realm
+                                                           device operation.
+                    RDEV_STOPPED                           Device interface is stopped.
+                      Name                                    Description
+                      RDEV_STOPPING                           Device interface is stopping.
+                      RDEV_UNLOCKED                           Device interface is unlocked.
+                      RDEV_UNLOCKED_BUSY                      Device interface is unlocked and is handling an interruptible Realm
+                                                              device operation.
+            The RmmRdevState enumeration is used in the following types:
+               • RmmRdev

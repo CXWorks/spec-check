@@ -1,0 +1,6 @@
+pub enum RmmDevCommState {
+  DEV_COMM_ACTIVE,
+  DEV_COMM_ERROR,
+  DEV_COMM_IDLE,
+  DEV_COMM_PENDING,
+}

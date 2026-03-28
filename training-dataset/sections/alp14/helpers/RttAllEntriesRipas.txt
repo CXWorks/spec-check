@@ -1,0 +1,5 @@
+B3.117 RttAllEntriesRipas function
+             Returns TRUE if all entries in the RTT at address rtt have RIPAS ripas.
+             func RttAllEntriesRipas(
+                 rtt : RmmRtt,
+                 ripas : RmmRipas) => boolean

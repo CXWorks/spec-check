@@ -1,0 +1,10 @@
+C2.14 RmmHashAlgorithm type
+            The RmmHashAlgorithm enumeration represents hash algorithm.
+            The RmmHashAlgorithm enumeration is an abstract type.
+            The values of the RmmHashAlgorithm enumeration are shown in the following table.
+                   Name                                    Description
+                   HASH_SHA_256                            SHA-256 (Secure Hash Standard (SHS) [22])
+                   HASH_SHA_512                            SHA-512 (Secure Hash Standard (SHS) [22])
+            The RmmHashAlgorithm enumeration is used in the following types:
+               • RmmRealm
+               • RmmPdev

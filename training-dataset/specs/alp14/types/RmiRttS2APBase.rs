@@ -1,0 +1,7 @@
+pub enum RmiRttS2APBase {
+  RMI_S2AP_NO_ACCESS,
+  RMI_S2AP_RO,
+  RMI_S2AP_WO,
+  RMI_S2AP_RW,
+  RMI_S2AP_RW_PUX,
+}

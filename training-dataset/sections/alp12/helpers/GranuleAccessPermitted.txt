@@ -1,0 +1,14 @@
+B3.26 GranuleAccessPermitted function
+             Returns TRUE if the Granule located at physical address addr is accessible via pas.
+             func GranuleAccessPermitted(
+                 addr : Address,
+                 pas : RmmPhysicalAddressSpace) => boolean
+             begin
+                 case GranuleAt(addr).gpt of
+                     when GPT_NS     => return (pas == PAS_NS);
+                     when GPT_REALM => return (pas == PAS_REALM);
+                     when GPT_SECURE => return (pas == PAS_SECURE);
+                     when GPT_ROOT   => return (pas == PAS_ROOT);
+                     when GPT_AAP    => return TRUE;
+                 end
+             end

@@ -1,0 +1,45 @@
+B4.3.29 RMI_REC_DESTROY command
+              Destroys a REC.
+              B4.3.29.1 Interface
+              B4.3.29.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 X0          63:0        UInt64                                FID, value 0xC400015B
+        rec_ptr             X1          63:0        Address                               PA of the target REC
+              B4.3.29.1.2   Context
+              The RMI_REC_DESTROY command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        rd_pre              Address                    RecAt(rec_ptr).owner                       true     RD address
+        realm_pre           RmmRealm                   RealmAt(rd_pre)                            true     Realm
+        realm               RmmRealm                   RealmAt(rd_pre)                            false    Realm
+        rec_pre             RmmRec                     RecAt(rec_ptr)                             true     REC
+        rec                 RmmRec                     RecAt(rec_ptr)                             false    REC
+              B4.3.29.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              X0          63:0        RmiCommandReturnCode                  Command return status
+              B4.3.29.2 Failure conditions
+  ID                         Condition
+  rec_align                  pre: !AddrIsGranuleAligned(rec_ptr)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_bound                  pre: !PaIsDelegable(rec_ptr)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_gran_state             pre: GranuleAt(rec_ptr).state != REC
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_state                  pre: rec.state == REC_RUNNING
+                             post: ResultEqual(result, RMI_ERROR_REC)
+                B4.3.29.2.1   Failure condition ordering
+                [rec_bound, rec_gran_state] < [rec_state]
+                              rec_align                    rec_gran_state                          rec_bound
+                                                                                                  RMI_ERROR_INPUT
+                                                                                                   rec_state
+                                                                                                  RMI_ERROR_REC
+                B4.3.29.3 Success conditions
+  ID                           Condition
+  rec_gran_state               post: GranuleAt(rec_ptr).state == DELEGATED
+  rec_aux_state                post: AuxStateEqual32(
+                                         rec_pre.aux, RecAuxCount(rd_pre), DELEGATED)
+  num_recs                     post: realm.num_recs == realm_pre.num_recs - 1
+                B4.3.29.4 Footprint
+    ID                           Value
+    rec_state                    GranuleAt(rec_ptr).state
+    rec_aux_state                AuxStates(rec_pre.aux, RecAuxCount(rd_pre))
+    num_recs                     realm.num_recs

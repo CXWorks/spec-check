@@ -1,0 +1,4 @@
+B3.59 RttEntryFromDescriptor function
+             Converts a descriptor to an RmmRttEntry object.
+             func RttEntryFromDescriptor(
+                 desc : bits(64)) => RmmRttEntry

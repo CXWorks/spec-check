@@ -1,0 +1,8 @@
+C2.21 RmmMecState type
+               The RmmMecState enumeration represents state of a MEC.
+               The RmmMecState enumeration is an abstract type.
+               The values of the RmmMecState enumeration are shown in the following table.
+                      Name                                                Description
+                      MEC_STATE_PRIVATE_ASSIGNED                          A Private MEC which is assigned to a Realm.
+                      MEC_STATE_PRIVATE_UNASSIGNED                        A Private MEC which is not assigned to a Realm.
+                      MEC_STATE_SHARED                                    A Shared MEC.

@@ -1,0 +1,4 @@
+B3.14 AttestationTokenMaxSize function
+             Maximum size of attestation token in bytes.
+             func AttestationTokenMaxSize(
+                 realm : RmmRealm) => integer

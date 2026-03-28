@@ -1,0 +1,73 @@
+B3.63 RealmParamsSupported function
+             Returns TRUE if the Realm parameters are supported by the implementation.
+             func RealmParamsSupported(
+                 params : RmiRealmParams) => boolean
+             begin
+                 var impl : RmmFeatures = ImplFeatures();
+                  if (params.flags0.lpa2 == RMI_FEATURE_TRUE
+                       && impl.feat_lpa2 != FEATURE_TRUE) then
+                       return FALSE;
+                  end;
+                  if (params.flags0.sve == RMI_FEATURE_TRUE
+                       && impl.feat_sve != FEATURE_TRUE) then
+                       return FALSE;
+                  end;
+                  if (params.flags0.pmu == RMI_FEATURE_TRUE
+                       && impl.feat_pmu != FEATURE_TRUE) then
+                       return FALSE;
+                  end;
+                  if (params.flags0.da == RMI_FEATURE_TRUE
+                       && impl.feat_da != FEATURE_TRUE) then
+                       return FALSE;
+                  end;
+                  if (params.s2sz > impl.max_ipa_width) then
+                       return FALSE;
+                  end;
+                  if (params.sve_vl > impl.max_sve_vl) then
+                       return FALSE;
+                  end;
+                  if (params.num_bps == 0
+                       || params.num_bps + 1 > impl.num_bps) then
+                       return FALSE;
+                  end;
+                  if (params.num_wps == 0
+                       || params.num_wps + 1 > impl.num_wps) then
+                       return FALSE;
+                  end;
+                  if (params.pmu_num_ctrs > impl.pmu_num_ctrs) then
+                       return FALSE;
+                  end;
+                  if (params.hash_algo == RMI_HASH_SHA_256
+                       && impl.feat_sha_256 != FEATURE_TRUE) then
+                       return FALSE;
+                  end;
+                  if (params.hash_algo == RMI_HASH_SHA_512
+                       && impl.feat_sha_512 != FEATURE_TRUE) then
+                       return FALSE;
+                  end;
+                  if (params.num_aux_planes > impl.max_num_aux_planes) then
+                       return FALSE;
+                  end;
+                  if (params.flags1.rtt_s2ap_encoding == RMI_S2AP_INDIRECT
+                       && impl.rtt_s2ap_indirect == FEATURE_FALSE) then
+                       return FALSE;
+                  end;
+                  if (params.num_aux_planes > 0) then
+                      if (params.flags1.rtt_tree_per_plane == RMI_FEATURE_FALSE
+                          && impl.rtt_plane == RTT_PLANE_AUX) then
+                          return FALSE;
+                      end;
+                         if (params.flags1.rtt_tree_per_plane == RMI_FEATURE_TRUE
+                             && impl.rtt_plane == RTT_PLANE_SINGLE) then
+                             return FALSE;
+                         end;
+                         if ((params.flags1.rtt_tree_per_plane == RMI_FEATURE_TRUE
+                                 && params.flags1.rtt_s2ap_encoding != RMI_S2AP_DIRECT)
+                             || (params.flags1.rtt_tree_per_plane == RMI_FEATURE_FALSE
+                                 && params.flags1.rtt_s2ap_encoding != RMI_S2AP_INDIRECT
+                             )) then
+                             return FALSE;
+                         end;
+                  end;
+                 return TRUE;
+             end;

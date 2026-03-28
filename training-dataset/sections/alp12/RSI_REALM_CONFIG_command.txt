@@ -1,0 +1,38 @@
+B5.3.26 RSI_REALM_CONFIG command
+                Read configuration for the current Realm.
+                B5.3.26.1 Interface
+                B5.3.26.1.1   Input values
+         Name                 Register    Bits        Type                                  Description
+         fid                  X0          63:0        UInt64                                FID, value 0xC4000196
+         addr                 X1          63:0        Address                               IPA of the Granule to which the
+                                                                                            configuration data will be written
+                B5.3.26.1.2   Context
+                The RSI_REALM_CONFIG command operates on the following context.
+         Name                 Type                       Value                                      Before    Description
+         realm                RmmRealm                   CurrentRealm()                             false     Current Realm
+         cfg                  RsiRealmConfig             RsiRealmConfigAt(addr)                     false     Realm configuration
+         walk                 RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                             realm, addr,
+                                                             RMM_RTT_PAGE_LEVEL,
+                                                             RMM_RTT_TREE_PRIMARY)
+                B5.3.26.1.3   Output values
+         Name                 Register    Bits        Type                                  Description
+         result               X0          63:0        RsiCommandReturnCode                  Command return status
+                B5.3.26.2 Failure conditions
+  ID                           Condition
+  addr_align                   pre: !AddrIsGranuleAligned(addr)
+                               post: result == RSI_ERROR_INPUT
+  addr_bound                   pre: !AddrIsProtected(addr, realm)
+                               post: result == RSI_ERROR_INPUT
+  addr_empty                   pre: walk.rtte.ripas == EMPTY
+                               post: result == RSI_ERROR_INPUT
+                B5.3.26.2.1   Failure condition ordering
+                The RSI_REALM_CONFIG command does not have any failure condition orderings.
+              B5.3.26.3 Success conditions
+  ID                         Condition
+  ipa_width                  cfg.ipa_width == realm.ipa_width
+  hash_algo                  Equal(cfg.hash_algo, realm.hash_algo)
+  num_aux_planes             cfg.num_aux_planes == realm.num_aux_planes
+  ats_plane                  cfg.ats_plane == realm.ats_plane
+              B5.3.26.4 Footprint
+              The RSI_REALM_CONFIG command does not have any footprint.

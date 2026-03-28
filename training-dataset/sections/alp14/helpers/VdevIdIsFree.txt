@@ -1,0 +1,5 @@
+B3.159 VdevIdIsFree function
+             Returns TRUE if vdev_id does not identify any device which is assigned to realm.
+             func VdevIdIsFree(
+                 realm : RmmRealm,
+                 vdev_id : bits(64)) => boolean

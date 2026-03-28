@@ -1,0 +1,4 @@
+B3.24 PaIsDelegable function
+             Returns TRUE if the Granule located at physical address addr is delegable.
+             func PaIsDelegable(
+                 addr : Address) => boolean

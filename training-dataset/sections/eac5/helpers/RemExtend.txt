@@ -1,0 +1,7 @@
+B3.41 RemExtend function
+             Extend REM, using size LSBs from new_value, with the remaining bits zero-padded to form a 512-bit value.
+             func RemExtend(
+                 hash_algo : RmmHashAlgorithm,
+                 old_value : RmmRealmMeasurement,
+                 new_value : RmmRealmMeasurement,
+                 size : integer) => RmmRealmMeasurement

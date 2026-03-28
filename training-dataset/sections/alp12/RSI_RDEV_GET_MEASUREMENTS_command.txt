@@ -1,0 +1,63 @@
+B5.3.19 RSI_RDEV_GET_MEASUREMENTS command
+                Get Realm device measurements.
+                B5.3.19.1 Interface
+                B5.3.19.1.1   Input values
+         Name                 Register    Bits        Type                                  Description
+         fid                  X0          63:0        UInt64                                FID, value 0xC40001A7
+         vdev_id              X1          63:0        Bits64                                Virtual device identifier
+         inst_id              X2          63:0        UInt64                                Device instance identifier
+         params_addr          X3          63:0        Address                               Address of parameters
+R0445           If flags.signed == RSI_DEV_MEASURE_SIGNED then:
+                   • The final SPDM GET_MEASUREMENTS request issued by the RMM in reponse to this command includes
+                     a request for a signature.
+                   • The data which the RMM requests the Host to cache includes a concatenation of all the measurement
+                     exchanges. This in turn includes any opaque data, and the signature.
+                B5.3.19.1.2   Context
+                The RSI_RDEV_GET_MEASUREMENTS command operates on the following context.
+         Name                 Type                       Value                                      Before     Description
+         realm                RmmRealm                   CurrentRealm()                             false      Current Realm
+         vdev                 RmmVdev                    VdevFromInstId(                            false      Realm device
+                                                             realm,
+                                                             inst_id)
+         params               RsiDevMeasureParams        RsiDevMeasureParamsAt(                     false      Measurement
+                                                             ,→params_addr)                                    parameters
+                B5.3.19.1.3   Output values
+         Name                 Register    Bits        Type                                  Description
+         result               X0          63:0        RsiCommandReturnCode                  Command return status
+                B5.3.19.2 Failure conditions
+  ID                         Condition
+  da_en                      pre: realm.feat_da != FEATURE_TRUE
+                             post: result == RSI_ERROR_STATE
+  vdev_id                    pre: !VdevIdsAreValid(realm, vdev_id, inst_id)
+                             post: result == RSI_ERROR_INPUT
+  indices                    pre:  (params.indices[0] == '1'
+                                       || params.indices[255] == '1')
+                             post: result == RSI_ERROR_INPUT
+  state                      pre:  (vdev.rdev_state != RDEV_UNLOCKED
+                                       && vdev.rdev_state != RDEV_LOCKED
+                                       && vdev.rdev_state != RDEV_STARTED)
+                             post: result == RSI_ERROR_DEVICE
+R0446        If flags.all == RSI_DEV_MEASURE_NOT_ALL and any of the requested measurement indices are reported by
+             the device as not available then the command fails with RSI_ERROR_INPUT.
+             B5.3.19.2.1    Failure condition ordering
+             [da_en] < [vdev_id]
+             [vdev_id] < [state]
+                                                                                               da_en
+                                                                                       RSI_ERROR_STAT E
+                                                                indices                      vdev_id
+                                                                                        RSI_ERROR_INPUT
+                                                                                                state
+                                                                                         RSI_ERROR_DEVICE
+             B5.3.19.3 Success conditions
+  ID                         Condition
+  new                        pre: vdev.rdev_state == RDEV_UNLOCKED
+                             post: vdev.rdev_state == RDEV_UNLOCKED_BUSY
+  locked                     pre: vdev.rdev_state == RDEV_LOCKED
+                             post: vdev.rdev_state == RDEV_LOCKED_BUSY
+  started                    pre: vdev.rdev_state == RDEV_STARTED
+                             post: vdev.rdev_state == RDEV_STARTED_BUSY
+  operation                  vdev.operation == RDEV_OP_GET_MEASUREMENTS
+              B5.3.19.4 Footprint
+    ID                          Value
+    state                       vdev.rdev_state
+    operation                   vdev.operation

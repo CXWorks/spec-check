@@ -1,0 +1,5 @@
+pub enum RmiSmmuIrq {
+  RMI_SMMU_IRQ_GERROR,
+  RMI_SMMU_IRQ_EVENTQ,
+  RMI_SMMU_IRQ_PRIQ,
+}

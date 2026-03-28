@@ -1,0 +1,20 @@
+B3.53 PsciReturnCodePermitted function
+             Whether a PSCI return code is permitted.
+             func PsciReturnCodePermitted(
+                 calling_rec : RmmRec,
+                 target_rec : RmmRec,
+                 value : PsciReturnCode) => boolean
+             begin
+                 if value == PSCI_SUCCESS then
+                     return TRUE;
+                 end
+                   var fid : bits(64) = calling_rec.gprs[0];
+                   // Host is permitted to deny a PSCI_CPU_ON request, if the target
+                   // CPU is not already on.
+                   if (fid == FID_PSCI_CPU_ON
+                       && target_rec.flags.runnable != RUNNABLE
+                       && value == PSCI_DENIED) then
+                       return TRUE;
+                   end
+                   return FALSE;
+             end

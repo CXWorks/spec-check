@@ -1,0 +1,5 @@
+B3.2 AddrIsAligned function
+           Returns TRUE if address addr is aligned to an n byte boundary.
+           func AddrIsAligned(
+               addr : Address,
+               n : integer) => boolean

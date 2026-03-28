@@ -1,0 +1,9 @@
+C2.28 RmmPdevSpdm type
+            The RmmPdevSpdm enumeration represents whether communication with the device uses SPDM.
+            The RmmPdevSpdm enumeration is an abstract type.
+            The values of the RmmPdevSpdm enumeration are shown in the following table.
+                    Name                                   Description
+                    SPDM_FALSE                             Communication with the device does not use SPDM.
+                    SPDM_TRUE                              Communication with the device uses SPDM.
+            The RmmPdevSpdm enumeration is used in the following types:
+               • RmmPdev

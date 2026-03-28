@@ -1,0 +1,80 @@
+B4.3.69 RMI_VSMMU_UNMAP command
+               Remove a VSMMU mapping.
+               B4.3.69.1 Interface
+               B4.3.69.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC400016D
+        rd                   X1          63:0        Address                               PA of the RD
+        ipa                  X2          63:0        Address                               IPA at which to remove the mapping
+        vsmmu_ptr            X3          63:0        Address                               PA of the VSMMU
+               B4.3.69.1.2   Context
+               The RMI_VSMMU_UNMAP command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        realm                RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                 RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                                            realm, ipa,
+                                                            RMM_RTT_PAGE_LEVEL,
+                                                            RMM_RTT_TREE_PRIMARY)
+        entry_idx            UInt64                     RttEntryIndex(                             false    RTTE index
+                                                            ipa, walk.level)
+        walk_top             Address                    RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                                            RttAt(walk.rtt_addr),                           RTT entries, from
+                                                            walk.level,                                     entry at which the
+                                                            ipa)                                            RTT walk terminated
+        vsmmu                RmmVsmmu                   VsmmuAt(vsmmu_ptr)                         false    VSMMU
+               B4.3.69.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+        top                  X1          63:0        Address                               Top IPA of non-live RTT entries, from
+                                                                                           entry at which the RTT walk terminated
+               B4.3.69.2 Failure conditions
+  ID                                   Condition
+  da_supp                              pre: ImplFeatures().feat_da != FEATURE_TRUE
+                                       post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  rd_align                             pre: !AddrIsGranuleAligned(rd)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                             pre: !PaIsDelegable(rd)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                             pre: GranuleAt(rd).state != RD
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                            pre: !AddrIsGranuleAligned(ipa)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_bound                            pre: !AddrIsProtected(ipa, realm)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_align                          pre: !AddrIsGranuleAligned(vsmmu_ptr)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_bound                          pre: !PaIsDelegable(vsmmu_ptr)
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_state                          pre: GranuleAt(vsmmu_ptr).state != VSMMU
+                                       post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_walk                             pre: walk.level < RMM_RTT_PAGE_LEVEL
+                                       post: (ResultEqual(result, RMI_ERROR_RTT, walk.level)
+                                                 && (top == walk_top))
+  rtte_state                           pre: walk.rtte.state != ASSIGNED_VSMMU
+                                       post: (ResultEqual(result, RMI_ERROR_RTT, walk.level)
+                                                 && (top == walk_top))
+  rtte_addr                            pre: walk.rtte.addr != vsmmu_ptr
+                                       post: (ResultEqual(result, RMI_ERROR_RTT, walk.level)
+                                                 && (top == walk_top))
+  aux_live                             pre: AddrIsAuxLive(ipa, realm)
+                                       post: ResultEqual(result, RMI_ERROR_RTT_AUX, 0)
+               B4.3.69.2.1           Failure condition ordering
+               [rd_bound, rd_state] < [rtt_walk, rtte_state, rtte_addr, aux_live]
+               [ipa_bound] < [rtt_walk, rtte_state, rtte_addr, aux_live]
+                          da_supp             vsmmu_state   vsmmu_bound   vsmmu_align          ipa_align      rd_align    ipa_bound       rd_state       rd_bound
+                  RMI_ERROR_NOT _SUPPORT ED
+                                                                                                                                                        RMI_ERROR_INPUT
+                                                                                            aux_live          rtte_addr   rtte_state     rtt_walk
+                                                                                        RMI_ERROR_RT T _AUX                            RMI_ERROR_RT
+               B4.3.69.3 Success conditions
+  ID                                   Condition
+  rtte_state                           post: walk.rtte.state == UNASSIGNED
+  ID                        Condition
+  ripas_ram                 pre: walk.rtte.ripas == DEV
+                            post: walk.rtte.ripas == DESTROYED
+  top                       post: top == walk_top
+  state                     post: vsmmu.state == VSMMU_INACTIVE
+              B4.3.69.4 Footprint
+    ID                        Value
+    data_state                GranuleAt(walk.rtte.addr).state
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

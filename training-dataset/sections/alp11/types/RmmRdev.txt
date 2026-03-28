@@ -1,0 +1,8 @@
+C2.28 RmmRdev type
+            The RmmRdev structure contains attributes of an RDEV.
+            The RmmRdev structure is an abstract type.
+            The members of the RmmRdev structure are shown in the following table.
+            Name               Type                                    Description
+            state              RmmRdevState                            Lifecycle state
+            operation          RmmRdevOperation                        Operation being performed by the RDEV
+            vdev_ptr           Address                                 PA of VDEV associated with this RDEV

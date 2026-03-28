@@ -1,0 +1,17 @@
+B3.102 RsiFeatureRegisterEncode function
+             Encode feature register.
+             func RsiFeatureRegisterEncode(
+                 realm : RmmRealm,
+                 index : integer) => bits(64)
+             begin
+                 var result : bits(64) = Zeros();
+                  if (index == 0) then
+                      var reg : RsiFeatureRegister0;
+                         reg.DA = FeatureToRsi(realm.feat_da);
+                         // Omitted: set reg.MRO depending on whether platform
+                         // implements FEAT_S2PIE
+                         reg.ATS = FeatureToRsi(realm.feat_ats);
+                         // Omitted: encode reg into bits(64) value
+                  end;
+                 return result;
+             end;

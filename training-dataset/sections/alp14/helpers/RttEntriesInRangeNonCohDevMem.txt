@@ -1,0 +1,21 @@
+B3.125 RttEntriesInRangeNonCohDevMem function
+             Returns TRUE if all entries in the RTT at address rtt at level level, within Protected IPA range [base, top), have
+             output addresses which map to non-coherent device memory.
+             func RttEntriesInRangeNonCohDevMem(
+                 rtt : RmmRtt,
+                 level : integer,
+                 base : Address,
+                 top : Address) => boolean
+             begin
+                 var addr : Address = base;
+                 var size : integer = RttLevelSize(level);
+                   while (UInt(addr) < UInt(top)) do
+                       var index : integer = RttEntryIndex(addr, level);
+                       var rtte : RmmRttEntry = RttEntryAt(rtt, index);
+                          if (!PaIsDelegableNonCohDevMem(rtte.addr)) then
+                              return FALSE;
+                          end;
+                          addr = ToAddress(UInt(addr) + size);
+                   end;
+                   return TRUE;
+             end;

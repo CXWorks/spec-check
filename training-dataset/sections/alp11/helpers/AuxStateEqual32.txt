@@ -1,0 +1,16 @@
+B3.21 AuxStateEqual32 function
+             Returns TRUE if the state of the first count entries in a list of auxiliary Granule addresses is equal to state.
+             func AuxStateEqual32(
+                 aux : array [32] of Address,
+                 count : integer,
+                 state : RmmGranuleState) => boolean
+             begin
+                 assert 0 <= count && count <= 32;
+                 for i = 0 to count - 1 do
+                     if (!PaIsDelegable(aux[i])
+                              || GranuleAt(aux[i]).state != state) then
+                         return FALSE;
+                     end
+                 end
+                 return TRUE;
+             end

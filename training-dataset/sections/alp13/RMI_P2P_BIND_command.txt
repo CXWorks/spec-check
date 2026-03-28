@@ -1,0 +1,108 @@
+B4.3.9 RMI_P2P_BIND command
+              Create a P2P binding between two VDEVs.
+              B4.3.9.1 Interface
+              B4.3.9.1.1   Input values
+        Name               Register     Bits        Type                                  Description
+        fid                X0           63:0        UInt64                                FID, value 0xC40001D4
+        rd                 X1           63:0        Address                               PA of the RD
+        stream_ptr         X2           63:0        Address                               PA of the P2P_STREAM object
+        pdev1_ptr          X3           63:0        Address                               PA of the first PDEV object
+        pdev2_ptr          X4           63:0        Address                               PA of the second PDEV object
+        vdev1_ptr          X5           63:0        Address                               PA of the first VDEV object
+        vdev2_ptr          X6           63:0        Address                               PA of the second VDEV object
+              B4.3.9.1.2   Context
+              The RMI_P2P_BIND command operates on the following context.
+        Name               Type                        Value                                      Before   Description
+        realm              RmmRealm                    RealmAt(rd)                                false    Realm
+        stream             RmmP2PStream                P2PStreamAt(stream_ptr)                    false    P2P stream
+        pdev1              RmmPdev                                                                false    First PDEV
+                                                       PdevAt(pdev1_ptr)
+        pdev2              RmmPdev                     PdevAt(pdev2_ptr)                          false    Second PDEV
+        vdev1              RmmVdev                     VdevAt(vdev1_ptr)                          false    First VDEV
+        vdev2              RmmVdev                     VdevAt(vdev2_ptr)                          false    Second VDEV
+              B4.3.9.1.3   Output values
+        Name               Register     Bits        Type                                  Description
+        result             X0           63:0        RmiCommandReturnCode                  Command return status
+              B4.3.9.2 Failure conditions
+  ID                         Condition
+  da_supp                    pre: ImplFeatures().feat_da != FEATURE_TRUE
+                             post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  rd_align                   pre: !AddrIsGranuleAligned(rd)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                        Condition
+  rd_bound                  pre: !PaIsDelegable(rd)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                  pre: GranuleAt(rd).state != RD
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  stream_align              pre: !AddrIsGranuleAligned(stream_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  stream_bound              pre: !PaIsDelegable(stream_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  stream_state              pre: GranuleAt(stream_ptr).state != P2P_STREAM
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev1_align               pre: !AddrIsGranuleAligned(pdev1_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev1_bound               pre: !PaIsDelegable(pdev1_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev1_gran_stat e         pre: GranuleAt(pdev1_ptr).state != PDEV
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev1_stream              pre:  (pdev1.p2p_added != RMM_TRUE
+                                      || pdev1.p2p_addr != stream_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev2_align               pre: !AddrIsGranuleAligned(pdev2_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev2_bound               pre: !PaIsDelegable(pdev2_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev2_gran_stat e         pre: GranuleAt(pdev2_ptr).state != PDEV
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev2_stream              pre:  (pdev2.p2p_added != RMM_TRUE
+                                      || pdev2.p2p_addr != stream_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev1_align               pre: !AddrIsGranuleAligned(vdev1_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev1_bound               pre: !PaIsDelegable(vdev1_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev1_gran_stat e         pre: GranuleAt(vdev1_ptr).state != VDEV
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev1_realm               pre: vdev1.realm != rd
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev1_pdev                pre: vdev1.pdev != pdev1_ptr
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev1_comm                pre: vdev1.comm_state != DEV_COMM_IDLE
+                            post: ResultEqual(result, RMI_ERROR_DEVICE)
+  vdev2_align               pre: !AddrIsGranuleAligned(vdev2_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev2_bound               pre: !PaIsDelegable(vdev2_ptr)
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev2_gran_stat e         pre: GranuleAt(vdev2_ptr).state != VDEV
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev2_realm               pre: vdev2.realm != rd
+                            post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                                                               Condition
+  vdev2_pdev                                                       pre: vdev2.pdev != pdev2_ptr
+                                                                   post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev2_comm                                                       pre: vdev2.comm_state != DEV_COMM_IDLE
+                                                                   post: ResultEqual(result, RMI_ERROR_DEVICE)
+             B4.3.9.2.1                                     Failure condition ordering
+             [da_supp] < [rd_align, rd_bound, rd_state, stream_align, stream_bound,
+                  stream_state, pdev1_align, pdev1_bound, pdev1_gran_state,
+                  pdev1_stream, pdev2_align, pdev2_bound, pdev2_gran_state,
+                  pdev2_stream, vdev1_align, vdev1_bound, vdev1_gran_state,
+                  vdev1_realm, vdev1_pdev, vdev1_comm, vdev2_align, vdev2_bound,
+                  vdev2_gran_state, vdev2_realm, vdev2_pdev, vdev2_comm]
+                                                                                                                                                                                                                                                                                                                                                                                                          da_supp
+                                                                                                                                                                                                                                                                                                                                                                                                   RMI_ERROR_NOT _SUPPORT ED
+               vdev2_comm   vdev1_comm         vdev2_pdev    vdev2_realm   vdev2_gran_state   vdev2_bound   vdev2_align   vdev1_pdev   vdev1_realm   vdev1_gran_state   vdev1_bound   vdev1_align   pdev2_stream   pdev2_gran_state   pdev2_bound   pdev2_align   pdev1_stream   pdev1_gran_state   pdev1_bound   pdev1_align   stream_state   stream_bound   stream_align   rd_state   rd_bound          rd_align
+                            RMI_ERROR_DEVICE                                                                                                                                                                                                                                                                                                                                                          RMI_ERROR_INPUT
+             B4.3.9.3 Success conditions
+  ID                                                               Condition
+  vdev1_op                                                         post: vdev1.op == VDEV_OP_P2P_BIND
+  vdev1_comm                                                       post: vdev1.comm_state == DEV_COMM_PENDING
+  vdev2_op                                                         post: vdev2.op == VDEV_OP_P2P_BIND
+  vdev2_comm                                                       post: vdev2.comm_state == DEV_COMM_PENDING
+             B4.3.9.4 Footprint
+    ID                                                                     Value
+    vdev1_op                                                               vdev1.op
+    vdev1_comm                                                             vdev1.comm_state
+    vdev2_op                                                               vdev2.op
+    vdev2_comm                                                             vdev2.comm_state

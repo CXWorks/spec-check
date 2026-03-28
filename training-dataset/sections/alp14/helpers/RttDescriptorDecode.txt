@@ -1,0 +1,5 @@
+B3.121 RttDescriptorDecode function
+             Decode an RTT descriptor.
+             func RttDescriptorDecode(
+                 desc : bits(64),
+                 encoding : RmmRttS2APEncoding) => RmmRttEntry

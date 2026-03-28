@@ -1,0 +1,5 @@
+pub enum RmmVsmmuState {
+  VSMMU_ACTIVATING,
+  VSMMU_ACTIVE,
+  VSMMU_INACTIVE,
+}

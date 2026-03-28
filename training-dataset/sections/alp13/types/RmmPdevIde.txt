@@ -1,0 +1,9 @@
+C2.27 RmmPdevIde type
+            The RmmPdevIde enumeration represents whether the link to the device is protected using IDE.
+            The RmmPdevIde enumeration is an abstract type.
+            The values of the RmmPdevIde enumeration are shown in the following table.
+                    Name                                   Description
+                    IDE_FALSE                              The link to the device is not protected using IDE.
+                    IDE_TRUE                               The link to the device is protected using IDE.
+            The RmmPdevIde enumeration is used in the following types:
+               • RmmPdev

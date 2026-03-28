@@ -1,0 +1,11 @@
+C2.40 RmmRecPending type
+            The RmmRecPending enumeration represents whether a REC operation is pending.
+            The RmmRecPending enumeration is an abstract type.
+            The values of the RmmRecPending enumeration are shown in the following table.
+                   Name                                         Description
+                   REC_PENDING_HOST_CALL                        A Host call is pending.
+                   REC_PENDING_NONE                             No operation is pending.
+                   REC_PENDING_PSCI                             A PSCI operation is pending.
+                   REC_PENDING_VDEV_REQUEST                     A VDEV request is pending.
+            The RmmRecPending enumeration is used in the following types:
+               • RmmRec

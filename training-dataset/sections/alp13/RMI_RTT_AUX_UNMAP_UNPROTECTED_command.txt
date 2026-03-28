@@ -1,0 +1,64 @@
+B4.3.40 RMI_RTT_AUX_UNMAP_UNPROTECTED command
+                Removes a mapping from an Unprotected IPA in an auxiliary RTT.
+                B4.3.40.1 Interface
+                B4.3.40.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000184
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               IPA in the target Realm
+        index                 X3          63:0        UInt64                                RTT tree index
+                B4.3.40.1.2   Context
+                The RMI_RTT_AUX_UNMAP_UNPROTECTED command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false    Auxiliary RTT walk
+                                                             realm, ipa,                                     result
+                                                             RMM_RTT_PAGE_LEVEL,
+                                                             index)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+        walk_top              Address                    RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                                             RttAt(walk.rtt_addr),                           RTT entries, from
+                                                             walk.level,                                     entry at which the
+                                                             ipa)                                            RTT walk terminated
+                B4.3.40.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        top                   X1          63:0        Address                               Top IPA of non-live RTT entries, from
+                                                                                            entry at which the RTT walk terminated
+        level                 X2          63:0        Int64                                 RTT level reached by the RTT walk
+                B4.3.40.2 Failure conditions
+  ID                          Condition
+  rd_align                    pre: !AddrIsGranuleAligned(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                    pre: !PaIsDelegable(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                    pre: GranuleAt(rd).state != RD
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                   pre: !AddrIsGranuleAligned(ipa)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_bound                   pre:  (UInt(ipa) >= (2 ^ realm.ipa_width)
+                                        || AddrIsProtected(ipa, realm))
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  index_bound                 pre:  (realm.rtt_tree_per_plane == FEATURE_FALSE
+                                        || index == RMM_RTT_TREE_PRIMARY
+                                        || index > realm.num_aux_planes)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtte_state                  pre: walk.rtte.state != ASSIGNED_NS
+                              post: (ResultEqual(result, RMI_ERROR_RTT_AUX, walk.level)
+                                        && (top == walk_top))
+               B4.3.40.2.1   Failure condition ordering
+               [rd_bound, rd_state] < [rtte_state]
+               [ipa_bound, index_bound] < [rtte_state]
+                       ipa_align       rd_align         index_bound          ipa_bound           rd_state          rd_bound
+                                                                                                                  RMI_ERROR_INPUT
+                                                                                               rtte_state
+                                                                                            RMI_ERROR_RT T _AUX
+               B4.3.40.3 Success conditions
+  ID                          Condition
+  rtte_state                  post: walk.rtte.state == UNASSIGNED_NS
+  top                         post: top == walk_top
+  level                       post: level == walk.level
+               B4.3.40.4 Footprint
+    ID                        Value
+    rtte                      RttEntry(walk.rtt_addr, entry_idx)

@@ -1,0 +1,45 @@
+C2.33 RmmRealm type
+            The RmmRealm structure contains attributes of a Realm.
+            The RmmRealm structure is an abstract type.
+            The members of the RmmRealm structure are shown in the following table.
+            Name                  Type                                    Description
+            feat_lpa2             RmmFeature                              Whether LPA2 is enabled for this Realm
+            ipa_width             UInt8                                   IPA width in bits
+            measurements          RmmRealmMeasurement[5]                  Realm measurements
+            hash_algo             RmmHashAlgorithm                        Algorithm used to compute Realm measurements
+            rec_index             UInt64                                  Index of next REC to be created
+            rtt_base              Address[4]                              Realm Translation Table base addresses
+                                                                          If rtt_tree_per_plane is FEATURE_FALSE then only
+                                                                          the first entry is valid.
+                                                                          If rtt_tree_per_plane is FEATURE_TRUE then only the
+                                                                          first (num_aux_planes + 1) entries are valid.
+            rtt_level_start       Int64                                   RTT starting level
+            rtt_num_start         UInt64                                  Number of physically contiguous starting level RTTs
+            state                 RmmRealmState                           Lifecycle state
+            vmid                  Bits16[4]                               Virtual Machine Identifiers
+                                                                          If rtt_tree_per_plane is FEATURE_FALSE then only
+                                                                          the first entry is valid.
+                                                                          If rtt_tree_per_plane is FEATURE_TRUE then only the
+                                                                          first (num_aux_planes + 1) entries are valid.
+            rpv                   Bits512                                 Realm Personalization Value
+            feat_da               RmmFeature                              Whether Realm device assignment is enabled for this
+                                                                          Realm
+            feat_ats              RmmFeature                              Whether Address Translation Service is supported for
+                                                                          devices assigned to the Realm
+            ats_plane             UInt64                                  If ATS is enabled, determines the stage 2 translation
+                                                                          used by devices assigned to the Realm
+            rtt_tree_per_plane RmmFeature                                 Whether this Realm has an RTT tree per Plane
+            num_aux_planes        UInt64                                  Number of auxiliary Planes
+            rtt_s2ap_encoding RmmRttS2APEncoding                          S2AP encoding
+            overlay_perms         RmmMemPerms[4]                          Memory overlay permissions
+            overlay_locked        RmmMemPermLocked[16]                    Whether memory overlay value is locked
+            lfa_policy            RmmLfaPolicy                            Live Firmware Activation policy for components within
+                                                                          the Realm’s TCB
+            Name               Type                                    Description
+            mecid              Bits64                                  Memory Encryption Context Identifier
+            mec_policy         RmmMecPolicy                            MEC policy
+            num_recs           UInt64                                  Number of RECs owned by this Realm
+            num_vdevs          UInt64                                  Number of VDEVs owned by this Realm
+            vdev_count         UInt64                                  Number of VDEVs which have been assigned to this
+                                                                       Realm
+            num_vsmmus         UInt64                                  Number of VSMMUs owned by this Realm

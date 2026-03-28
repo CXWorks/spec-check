@@ -1,0 +1,41 @@
+B3.85 RmiFeatureRegisterEncode function
+             Encode feature register.
+             func RmiFeatureRegisterEncode(
+                 index : integer) => bits(64)
+             begin
+                 var impl : RmmFeatures = ImplFeatures();
+                 var result : bits(64) = Zeros();
+                  if (index == 0) then
+                      var reg : RmiFeatureRegister0;
+                       reg.S2SZ = impl.max_ipa_width;
+                       reg.LPA2 = FeatureToRmi(impl.feat_lpa2);
+                       reg.SVE = FeatureToRmi(impl.feat_sve);
+                       reg.SVE_VL = impl.max_sve_vl;
+                       assert impl.num_bps >= 2 && impl.num_bps <= 2^6;
+                       reg.NUM_BPS = impl.num_bps - 1;
+                       assert impl.num_wps >= 2 && impl.num_wps <= 2^6;
+                       reg.NUM_WPS = impl.num_wps - 1;
+                       reg.PMU = FeatureToRmi(impl.feat_pmu);
+                       reg.PMU_NUM_CTRS = impl.pmu_num_ctrs;
+                       reg.HASH_SHA_256 = FeatureToRmi(impl.feat_sha_256);
+                       reg.HASH_SHA_512 = FeatureToRmi(impl.feat_sha_512);
+                         reg.DA = FeatureToRmi(impl.feat_da);
+                         case impl.rtt_plane of
+                             when RTT_PLANE_AUX        => reg.RTT_PLANE = RMI_RTT_PLANE_AUX;
+                             when RTT_PLANE_AUX_SINGLE => reg.RTT_PLANE = RMI_RTT_PLANE_AUX_SINGLE;
+                             when RTT_PLANE_SINGLE     => reg.RTT_PLANE = RMI_RTT_PLANE_SINGLE;
+                         end;
+                         reg.RTT_S2AP_INDIRECT = FeatureToRmi(impl.rtt_s2ap_indirect);
+                         reg.MAX_NUM_AUX_PLANES = impl.max_num_aux_planes;
+                         reg.MAX_RECS_ORDER = impl.max_recs_order;
+                         assert impl.gicv3_num_lrs >= 1 && impl.gicv3_num_lrs <= 2^4;
+                         reg.GICV3_NUM_LRS = impl.gicv3_num_lrs - 1;
+                         // Omitted: encode reg into bits(64) value
+                  end;
+                  if (index == 1) then
+                      var reg : RmiFeatureRegister1;
+                         reg.MAX_MECID = impl.max_mecid;
+                         // Omitted: encode reg into bits(64) value
+                  end;
+                 return result;
+             end;

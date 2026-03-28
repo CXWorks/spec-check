@@ -1,0 +1,5 @@
+B3.147 TdiIdIsFree function
+             Returns TRUE if tdi_id is unused within the segment identified by segment_id.
+             func TdiIdIsFree(
+                 tdi_id : bits(64),
+                 segment_id : bits(8)) => boolean

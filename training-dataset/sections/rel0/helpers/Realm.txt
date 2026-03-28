@@ -1,0 +1,4 @@
+B3.29 Realm function
+             Returns the Realm whose RD is located at physical address addr.
+             func Realm(
+                 addr : Address) => RmmRealm

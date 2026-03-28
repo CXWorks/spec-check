@@ -1,0 +1,8 @@
+C2.49 RmmRttProtected type
+             The RmmRttProtected enumeration represents specifies whether an RTT entry is in Protected IPA space or
+             Unprotected IPA space.
+             The RmmRttProtected enumeration is an abstract type.
+             The values of the RmmRttProtected enumeration are shown in the following table.
+                    Name                                      Description
+                    RTT_PROTECTED                             Protected IPA space.
+                    RTT_UNPROTECTED                           Unprotected IPA space.

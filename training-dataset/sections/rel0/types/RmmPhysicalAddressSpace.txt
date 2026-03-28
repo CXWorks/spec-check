@@ -1,0 +1,9 @@
+C1.14 RmmPhysicalAddressSpace type
+              The RmmPhysicalAddressSpace enumeration represents the PAS of a Granule.
+              The RmmPhysicalAddressSpace enumeration is an abstract type.
+              The values of the RmmPhysicalAddressSpace enumeration are shown in the following table.
+                    Name                                      Description
+                    PAS_NS                                    Non-secure PAS.
+                    PAS_REALM                                 Realm PAS.
+                    PAS_ROOT                                  Root PAS.
+                    PAS_SECURE                                Secure PAS.

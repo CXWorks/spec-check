@@ -1,0 +1,4 @@
+B3.19 Granule function
+             Returns the Granule located at physical address addr.
+             func Granule(
+                 addr : Address) => RmmGranule

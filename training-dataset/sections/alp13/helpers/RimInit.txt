@@ -1,0 +1,5 @@
+B3.74 RimInit function
+             Initialize RIM.
+             func RimInit(
+                 hash_algo : RmmHashAlgorithm,
+                 params : RmiRealmParams) => RmmRealmMeasurement

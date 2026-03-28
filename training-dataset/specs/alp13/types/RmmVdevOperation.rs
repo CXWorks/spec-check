@@ -1,0 +1,9 @@
+pub enum RmmVdevOperation {
+  VDEV_OP_GET_MEAS,
+  VDEV_OP_GET_REPORT,
+  VDEV_OP_LOCK,
+  VDEV_OP_NONE,
+  VDEV_OP_P2P_BIND,
+  VDEV_OP_START,
+  VDEV_OP_UNLOCK,
+}

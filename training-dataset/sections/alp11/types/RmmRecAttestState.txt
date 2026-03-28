@@ -1,0 +1,10 @@
+C2.35 RmmRecAttestState type
+            The RmmRecAttestState enumeration represents whether an attestation token generation operation is ongoing on
+            this REC.
+            The RmmRecAttestState enumeration is an abstract type.
+            The values of the RmmRecAttestState enumeration are shown in the following table.
+                    Name                                   Description
+                    ATTEST_IN_PROGRESS                     An attestation token generation operation is in progress.
+                    NO_ATTEST_IN_PROGRESS                  No attestation token generation operation is in progress.
+            The RmmRecAttestState enumeration is used in the following types:
+                • RmmRec

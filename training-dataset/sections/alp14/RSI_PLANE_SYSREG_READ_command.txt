@@ -1,0 +1,38 @@
+B5.3.13 RSI_PLANE_SYSREG_READ command
+                Read a Plane register.
+                B5.3.13.1 Interface
+                B5.3.13.1.1    Input values
+         Name                 Register     Bits        Type                                  Description
+         fid                  X0           63:0        UInt64                                FID, value 0xC40001AE
+         plane_idx            X1           63:0        UInt64                                Index of target Plane
+         addr                 X2           63:0        RsiSysregAddress                      System register address
+                The encoding value is an architecturally-defined system register encoding.
+                B5.3.13.1.2    Context
+                The RSI_PLANE_SYSREG_READ command operates on the following context.
+         Name                 Type                        Value                                      Before    Description
+         realm                RmmRealm                    CurrentRealm()                             false     Current Realm
+         rec                  RmmRec                                                                 false     Current REC
+                                                          CurrentRec()
+                B5.3.13.1.3    Output values
+         Name                 Register     Bits        Type                                  Description
+         result               X0           63:0        RsiCommandReturnCode                  Command return status
+         value_low            X1           63:0        Bits64                                Lower 64 bits of system register value
+         value_high           X2           63:0        Bits64                                Upper 64 bits of system register value
+                B5.3.13.2 Failure conditions
+  ID                            Condition
+  idx_bound                     pre: plane_idx > realm.num_aux_planes
+                                post: result == RSI_ERROR_INPUT
+  sysreg_valid                  pre: !PlaneSysregValid(rec, addr, RMM_READ)
+                                post: result == RSI_ERROR_INPUT
+              B5.3.13.2.1   Failure condition ordering
+              The RSI_PLANE_SYSREG_READ command does not have any failure condition orderings.
+              B5.3.13.3 Success conditions
+  ID                         Condition
+  value_64                   pre: addr.d128 == RSI_FALSE
+                             post: (Zeros(64) :: value_low) ==
+                                       PlaneSysregValue(rec, plane_idx, addr)
+  value_128                  pre: addr.d128 == RSI_TRUE
+                             post: (value_high :: value_low) ==
+                                       PlaneSysregValue(rec, plane_idx, addr)
+              B5.3.13.4 Footprint
+              The RSI_PLANE_SYSREG_READ command does not have any footprint.

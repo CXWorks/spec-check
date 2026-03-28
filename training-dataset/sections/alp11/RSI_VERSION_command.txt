@@ -1,0 +1,51 @@
+B5.3.26 RSI_VERSION command
+               Returns RSI version.
+               On calling this command, the Realm provides a requested RSI version.
+               The output values include a status code and two revisions which are supported by the RMM: a lower revision and a
+               higher revision.
+                   • The higher revision value is the highest interface revision which is supported by the RMM.
+                   • The lower revision is less than or equal to the higher revision.
+               The status code and lower revision output values indicate which of the following is true, in order of precedence:
+                  a) The RMM supports an interface revision which is compatible with the requested revision.
+                       • The status code is RSI_SUCCESS.
+                       • The lower revision is equal to the requested revision.
+                  b) The RMM does not support an interface revision which is compatible with the requested revision. The RMM
+                     supports an interface revision which is incompatible with and less than the requested revision.
+                       • The status code is RSI_ERROR_INPUT.
+                       • The lower revision is the highest interface revision which is both less than the requested revision and
+                         supported by the RMM.
+                  c) The RMM does not support an interface revision which is compatible with the requested revision. The RMM
+                     supports an interface revision which is incompatible with and greater than the requested revision.
+                       • The status code is RSI_ERROR_INPUT.
+                       • The lower revision is equal to the higher revision.
+               B5.3.26.1 Interface
+               B5.3.26.1.1    Input values
+         Name                Register     Bits        Type                                  Description
+         fid                 X0           63:0        UInt64                                FID, value 0xC4000190
+         req                 X1           63:0        RsiInterfaceVersion                   Requested interface revision
+               B5.3.26.1.2    Output values
+         Name                Register     Bits        Type                                  Description
+         result              X0           63:0        RsiCommandReturnCode                  Command return status
+         lower               X1           63:0        RsiInterfaceVersion                   Lower supported interface revision
+         higher              X2           63:0        RsiInterfaceVersion                   Higher supported interface revision
+               B5.3.26.2 Failure conditions
+  ID                         Condition
+  incompat_lower             pre:  (!RsiVersionIsSupported(req)
+                                       && RsiVersionLowerIsSupported(req))
+                             post: (result == RSI_ERROR_INPUT
+                                       && VersionEqual(lower, RsiVersionHighestBelow(req))
+                                       && VersionEqual(higher, RsiVersionHighest()))
+  incompat_higher            pre:  (!RsiVersionIsSupported(req)
+                                       && !RsiVersionLowerIsSupported(req)
+                                       && RsiVersionHigherIsSupported(req))
+                             post: (result == RSI_ERROR_INPUT
+                                       && VersionEqual(lower, higher)
+                                       && VersionEqual(higher, RsiVersionHighest()))
+             B5.3.26.2.1    Failure condition ordering
+             The RSI_VERSION command does not have any failure condition orderings.
+             B5.3.26.3 Success conditions
+  ID                         Condition
+  lower                      VersionEqual(lower, req)
+  higher                     VersionEqual(higher, RsiVersionHighest())
+             B5.3.26.4 Footprint
+             The RSI_VERSION command does not have any footprint.

@@ -1,0 +1,45 @@
+B4.3.16 RMI_PDEV_IDE_RESET command
+               Reset non-coherent IDE connection between the Root Port and the endpoint device.
+               B4.3.16.1 Interface
+               B4.3.16.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000179
+        pdev_ptr             X1          63:0        Address                               PA of the PDEV
+               B4.3.16.1.2   Context
+               The RMI_PDEV_IDE_RESET command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        pdev                 RmmPdev                    PdevAt(pdev_ptr)
+               B4.3.16.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.16.2 Failure conditions
+  ID                          Condition
+  da_supp                     pre: ImplFeatures().feat_da != FEATURE_TRUE
+                              post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  pdev_align                  pre: !AddrIsGranuleAligned(pdev_ptr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_bound                  pre: !PaIsDelegable(pdev_ptr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_gran_state             pre: GranuleAt(pdev_ptr).state != PDEV
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_conn                   pre: pdev.ncoh_ide != IDE_TRUE
+                              post: ResultEqual(result, RMI_ERROR_DEVICE)
+  pdev_state                  pre: pdev.state != PDEV_READY
+                              post: ResultEqual(result, RMI_ERROR_DEVICE)
+               B4.3.16.2.1   Failure condition ordering
+               [da_supp] < [pdev_align, pdev_bound, pdev_gran_state]
+               [pdev_gran_state] < [pdev_conn, pdev_state]
+                                                             da_supp
+                                                  RMI_ERROR_NOT _SUPPORT ED
+                             pdev_bound                    pdev_align                     pdev_gran_state
+                                                                                                    RMI_ERROR_INPUT
+                                                                 pdev_state                   pdev_conn
+                                                                                            RMI_ERROR_DEVICE
+               B4.3.16.3 Success conditions
+  ID                          Condition
+  pdev_state                  post: pdev.state == PDEV_IDE_RESETTING
+  comm_state                  post: pdev.comm_state == DEV_COMM_PENDING
+               B4.3.16.4 Footprint
+    ID                          Value
+    state                       pdev.state
+    comm_state                  pdev.comm_state

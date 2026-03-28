@@ -1,0 +1,9 @@
+C2.41 RmmRecResponse type
+            The RmmRecResponse enumeration represents whether the Host accepted or rejected a Realm request.
+            The RmmRecResponse enumeration is an abstract type.
+            The values of the RmmRecResponse enumeration are shown in the following table.
+                   Name                                     Description
+                   ACCEPT                                   Host accepted the Realm request.
+                   REJECT                                   Host rejected the Realm request.
+            The RmmRecResponse enumeration is used in the following types:
+               • RmmRec

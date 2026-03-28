@@ -1,0 +1,14 @@
+C2.60 RmmVdevOperation type
+            The RmmVdevOperation enumeration represents operation performed on a VDEV.
+            The RmmVdevOperation enumeration is an abstract type.
+            The values of the RmmVdevOperation enumeration are shown in the following table.
+                   Name                                    Description
+                   VDEV_OP_GET_MEAS                        Request a measurement report.
+                   VDEV_OP_GET_REPORT                      Request an interface report.
+                   VDEV_OP_LOCK                            Change state to LOCKED.
+                   VDEV_OP_NONE                            No operation.
+                   VDEV_OP_P2P_BIND                        Create a P2P binding.
+                   VDEV_OP_START                           Change state to STARTED.
+                   VDEV_OP_UNLOCK                          Change state to UNLOCKED.
+            The RmmVdevOperation enumeration is used in the following types:
+               • RmmVdev

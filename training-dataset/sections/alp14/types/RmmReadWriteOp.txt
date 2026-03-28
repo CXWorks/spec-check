@@ -1,0 +1,7 @@
+C2.31 RmmReadWriteOp type
+            The RmmReadWriteOp enumeration represents a read or write operation.
+            The RmmReadWriteOp enumeration is an abstract type.
+            The values of the RmmReadWriteOp enumeration are shown in the following table.
+                      Name                                    Description
+                      RMM_READ                                Read operation
+                      RMM_WRITE                               Write operation

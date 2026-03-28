@@ -1,0 +1,6 @@
+B3.142 RttsGranuleState function
+              Inductive function which identifies the states of the starting-level RTT Granules.
+              This function is used in the definition of command footprint.
+              func RttsGranuleState(
+                  rtt_base : Address,
+                  rtt_num_start : integer)

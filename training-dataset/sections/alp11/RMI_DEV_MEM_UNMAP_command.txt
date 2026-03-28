@@ -1,0 +1,86 @@
+B4.3.5 RMI_DEV_MEM_UNMAP command
+                Unmaps device memory.
+     Issue      Consider how teardown of DRAM mappings (via RMI_DATA_DESTROY) composes with teardown of device
+                memory mappings (via RMI_DEV_MEM_UNMAP). In each case, the command returns the IPA of the next live
+                entry - but it doesn’t tell the caller whether this is DRAM or IO. How then can the caller know which of the two
+                commands to call next, while still avoiding a (race-prone) call to RMI_RTT_READ_ENTRY?
+                B4.3.5.1 Interface
+                B4.3.5.1.1   Input values
+        Name                 Register     Bits        Type                                  Description
+        fid                  X0           63:0        UInt64                                FID, value 0xC4000173
+        rd                   X1           63:0        Address                               PA of the RD which owns the target
+                                                                                            device memory Granule
+        ipa                  X2           63:0        Address                               IPA at which the Granule is mapped in
+                                                                                            the target Realm
+        level                X3           63:0        Int64                                 RTT level
+                B4.3.5.1.2   Context
+                The RMI_DEV_MEM_UNMAP command operates on the following context.
+        Name                 Type                        Value                                      Before   Description
+        realm                RmmRealm                    RealmAt(rd)                                false    Realm
+        walk                 RmmRttWalkResult            RttWalk(                                   false    RTT walk result
+                                                             realm, ipa, level,
+                                                             RMM_RTT_TREE_PRIMARY)
+        rtte_state_pre       RmmRttEntryState            walk.rtte.state                            true     RTT entry state
+        entry_idx            UInt64                      RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+        walk_top             Address                     RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                                             RttAt(walk.rtt_addr),                           RTT entries, from
+                                                             walk.level,                                     entry at which the
+                                                             ipa)                                            RTT walk terminated
+                B4.3.5.1.3   Output values
+        Name                 Register     Bits        Type                                  Description
+        result               X0           63:0        RmiCommandReturnCode                  Command return status
+        pa                   X1           63:0        Address                               PA of the device memory Granule which
+                                                                                            was unmapped
+         Name                   Register     Bits            Type                               Description
+         top                    X2           63:0            Address                            Top IPA of non-live RTT entries, from
+                                                                                                entry at which the RTT walk terminated
+                The values of the result and top output values for different command outcomes are summarized in the following
+                table.
+            Scenario                                result                              top           walk.rtte.state
+            ipa is mapped at the target level       RMI_SUCCESS                         > ipa         Before execution:
+                                                                                                      ASSIGNED_DEV
+                                                                                                      After execution: UNASSIGNED
+            ipa is not mapped                       (RMI_ERROR_RTT, <= level)           > ipa         UNASSIGNED
+            ipa is mapped at a lower level          (RMI_ERROR_RTT, < level)            == ipa        ASSIGNED_DEV
+            RTT walk was not performed,             Another error code                  0             Unknown
+            due to any other command failure
+                B4.3.5.2 Failure conditions
+  ID                             Condition
+  rd_align                       pre: !AddrIsGranuleAligned(rd)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                       pre: !PaIsDelegable(rd)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                       pre: GranuleAt(rd).state != RD
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_bound                    pre: !RttLevelIsBlockOrPage(realm, level)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                      pre: !AddrIsRttLevelAligned(ipa, level)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_bound                      pre: !AddrIsProtected(ipa, realm)
+                                 post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_walk                       pre: walk.level < level
+                                 post: (ResultEqual(result, RMI_ERROR_RTT, walk.level)
+                                           && (top == walk_top))
+  rtte_state                     pre: walk.rtte.state != ASSIGNED_DEV
+                                 post: (ResultEqual(result, RMI_ERROR_RTT, walk.level)
+                                           && (top == walk_top))
+                B4.3.5.2.1    Failure condition ordering
+                [rd_bound, rd_state] < [rtt_walk, rtte_state]
+                [level_bound, ipa_bound] < [rtt_walk, rtte_state]
+                      ipa_align           rd_align    ipa_bound           level_bound          rd_state       rd_bound
+                                                                                                             RMI_ERROR_INPUT
+                                                                            rtte_state        rtt_walk
+                                                                                            RMI_ERROR_RT
+               B4.3.5.3 Success conditions
+  ID                        Condition
+  state                     GranuleAt(walk.rtte.addr).state == DELEGATED
+  rtte_state                walk.rtte.state == UNASSIGNED
+  ripas_dev                 pre: walk.rtte.ripas == DEV
+                            post: walk.rtte.ripas == DESTROYED
+  pa                        pa == walk.rtte.addr
+  top                       top == walk_top
+               B4.3.5.4 Footprint
+       ID                         Value
+       state                      GranuleAt(walk.rtte.addr).state
+       rtte                       RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

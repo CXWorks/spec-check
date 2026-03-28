@@ -1,0 +1,110 @@
+B3.22 Equal function
+             Check whether concrete and abstract values are equal
+             func Equal(
+                 abstract : RmmFeature,
+                 concrete : RmiFeature) => boolean
+             func Equal(
+                 concrete : RmiFeature,
+                 abstract : RmmFeature) => boolean
+             func Equal(
+                 abstract : RmmHashAlgorithm,
+                 concrete : RmiHashAlgorithm) => boolean
+             func Equal(
+                 concrete : RmiHashAlgorithm,
+                 abstract : RmmHashAlgorithm) => boolean
+             func Equal(
+                 abstract : RmmLfaPolicy,
+                 concrete : RmiLfaPolicy) => boolean
+             func Equal(
+                 concrete : RmiLfaPolicy,
+                 abstract : RmmLfaPolicy) => boolean
+             func Equal(
+                 abstract : RmmPdevCoherent,
+                 concrete : RmiPdevCoherent) => boolean
+             func Equal(
+                 concrete : RmiPdevCoherent,
+                 abstract : RmmPdevCoherent) => boolean
+             func Equal(
+                 abstract : RmmPdevIde,
+                 concrete : RmiPdevIde) => boolean
+             func Equal(
+                 concrete : RmiPdevIde,
+                 abstract : RmmPdevIde) => boolean
+             func Equal(
+                 abstract : RmmPdevSpdm,
+                 concrete : RmiPdevSpdm) => boolean
+             func Equal(
+                 concrete : RmiPdevSpdm,
+                 abstract : RmmPdevSpdm) => boolean
+             func Equal(
+                 abstract : RmmPdevState,
+                 concrete : RmiPdevState) => boolean
+             func Equal(
+                 concrete : RmiPdevState,
+                 abstract : RmmPdevState) => boolean
+             func Equal(
+                 abstract : RmmRecRunnable,
+                 concrete : RmiRecRunnable) => boolean
+             func Equal(
+                 concrete : RmiRecRunnable,
+                 abstract : RmmRecRunnable) => boolean
+             func Equal(
+                 abstract : RmmRipas,
+                 concrete : RmiRipas) => boolean
+             func Equal(
+                 concrete : RmiRipas,
+                 abstract : RmmRipas) => boolean
+             func Equal(
+                 abstract : RmmRttPlaneFeature,
+                 concrete : RmiRttPlaneFeature) => boolean
+             func Equal(
+                 concrete : RmiRttPlaneFeature,
+                 abstract : RmmRttPlaneFeature) => boolean
+             func Equal(
+                 abstract : RmmRttS2APBase,
+                 concrete : RmiRttS2APBase) => boolean
+             func Equal(
+                 concrete : RmiRttS2APBase,
+                 abstract : RmmRttS2APBase) => boolean
+             func Equal(
+                 abstract : RmmRttS2APEncoding,
+                 concrete : RmiRttS2APEncoding) => boolean
+             func Equal(
+                 concrete : RmiRttS2APEncoding,
+                 abstract : RmmRttS2APEncoding) => boolean
+             func Equal(
+                 abstract : RmmVdevState,
+                 concrete : RmiVdevState) => boolean
+             func Equal(
+                 concrete : RmiVdevState,
+                 abstract : RmmVdevState) => boolean
+             func Equal(
+                 abstract : RmmFeature,
+                 concrete : RsiFeature) => boolean
+             func Equal(
+                  concrete : RsiFeature,
+                  abstract : RmmFeature) => boolean
+             func Equal(
+                 abstract : RmmHashAlgorithm,
+                 concrete : RsiHashAlgorithm) => boolean
+             func Equal(
+                 concrete : RsiHashAlgorithm,
+                 abstract : RmmHashAlgorithm) => boolean
+             func Equal(
+                 abstract : RmmRipas,
+                 concrete : RsiRipas) => boolean
+             func Equal(
+                 concrete : RsiRipas,
+                 abstract : RmmRipas) => boolean
+             func Equal(
+                 abstract : RmmRipasChangeDestroyed,
+                 concrete : RsiRipasChangeDestroyed) => boolean
+             func Equal(
+                 concrete : RsiRipasChangeDestroyed,
+                 abstract : RmmRipasChangeDestroyed) => boolean
+             func Equal(
+                 abstract : RmmVdevState,
+                 concrete : RsiVdevState) => boolean
+             func Equal(
+                 concrete : RsiVdevState,
+                 abstract : RmmVdevState) => boolean

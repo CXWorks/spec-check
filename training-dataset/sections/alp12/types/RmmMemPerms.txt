@@ -1,0 +1,10 @@
+C2.23 RmmMemPerms type
+            The RmmMemPerms structure contains memory permissions.
+            The RmmMemPerms structure is an abstract type.
+            The members of the RmmMemPerms structure are shown in the following table.
+            Name                Type                                    Description
+            values              Bits64[16]                              Mapping from memory permission index to memory
+                                                                        permission label
+                                                                        Values use architectural encodings.
+            The RmmMemPerms structure is used in the following types:
+               • RmmRealm

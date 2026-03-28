@@ -1,0 +1,6 @@
+B3.32 GranulesAllVdevUnvalidated function
+             Returns TRUE if the Granules within the range [base, top) have not been validated as belonging to any virtual
+             device.
+             func GranulesAllVdevUnvalidated(
+                 base : Address,
+                 top : Address) => boolean

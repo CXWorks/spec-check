@@ -1,0 +1,13 @@
+C1.10 RmmMeasurementDescriptorRec type
+              The RmmMeasurementDescriptorRec structure contains data structure used to calculate the contribution to the
+              RIM of a REC.
+              The RmmMeasurementDescriptorRec structure is a concrete type.
+              The width of the RmmMeasurementDescriptorRec structure is 256 (0x100) bytes.
+              The members of the RmmMeasurementDescriptorRec structure are shown in the following table.
+       Name                Byte offset       Type                                    Description
+       desc_type           0x0               Bits8                                   Measurement descriptor type, value 0x1
+       len                 0x8               UInt64                                  Length of this data structure in bytes
+       rim                 0x10              RmmRealmMeasurement                     Current RIM value
+       content             0x50              RmmRealmMeasurement                     Hash of 4KB page which contains REC
+                                                                                     parameters data structure
+              Unused bits of the RmmMeasurementDescriptorRec structure MBZ.

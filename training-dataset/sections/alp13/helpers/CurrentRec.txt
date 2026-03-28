@@ -1,0 +1,3 @@
+B3.20 CurrentRec function
+             Returns the current REC.
+             func CurrentRec() => RmmRec

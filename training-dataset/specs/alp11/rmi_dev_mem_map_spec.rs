@@ -1,0 +1,47 @@
+pub open spec fn rmi_dev_mem_map_spec(rd: Address, ipa: Address, level: Int64, addr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+  (!AddrIsGranuleAligned(old_s, addr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!PaIsDelegableDevMem(old_s, addr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (GranuleAt(old_s, addr).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!RttLevelIsBlockOrPage(old_s, RealmAt(old_s, rd), level as int) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!AddrIsGranuleAligned(old_s, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).level < level ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).level as int)))
+  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).level as int)))
+  && (result.is_Ok() ==> GranuleAt(new_s, addr).state == DEV_MAPPED)
+  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == ASSIGNED_DEV)
+  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == addr)
+  && (result.is_Ok() && PaIsDelegableNonCohDevMem(old_s, addr) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot == MEMATTR_NON_CACHEABLE)
+  && (result.is_Ok() && PaIsDelegableCohDevMem(old_s, addr) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot == MEMATTR_PASSTHROUGH)
+  && (result.is_Ok() && PaIsDelegableNonCohDevMem(old_s, addr) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh == SHAREABILITY_OUTER)
+  && (result.is_Ok() && PaIsDelegableCohDevMem(old_s, addr) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh == SHAREABILITY_INNER)
+  && ((AddrIsGranuleAligned(old_s, addr) &&
+       PaIsDelegableDevMem(old_s, addr) &&
+       !(GranuleAt(old_s, addr).state != DELEGATED) &&
+       AddrIsGranuleAligned(old_s, rd) &&
+       PaIsDelegable(old_s, rd) &&
+       !(GranuleAt(old_s, rd).state != RD) &&
+       RttLevelIsBlockOrPage(old_s, RealmAt(old_s, rd), level as int) &&
+       AddrIsGranuleAligned(old_s, ipa) &&
+       AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) &&
+       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).level < level) &&
+       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED))
+    ==> result.is_Ok())
+  && (result.is_Err()
+    ==> GranuleAt(new_s, addr).state == GranuleAt(old_s, addr).state)
+  && (result.is_Err()
+    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)
+  && (result.is_Err()
+    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)
+  && (result.is_Err()
+    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot == RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot)
+  && (result.is_Err()
+    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot == RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot)
+  && (result.is_Err()
+    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh == RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh)
+  && (result.is_Err()
+    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh == RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh)
+  && (RttWalk(new_s, RealmAt(new_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s, RealmAt(old_s, rd), ipa,level as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas)
+}

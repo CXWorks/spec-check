@@ -1,0 +1,10 @@
+B3.77 RttUpperBound function
+             Returns the first IPA beyond the bounds of the RTT at level level which contains an entry identified by IPA addr,
+             in a Realm with an IPA width of ipa_width.
+             The IPA width is necessary because an RTT may extend beyond the IPA width, therefore meaning that some entries
+             at the end of the RTT are unused. For example, when the IPA width is 47 bits, only the first 256 entries of a level 0
+             table are within the IPA width.
+             func RttUpperBound(
+                 addr : Address,
+                 level : integer,
+                 ipa_width : integer) => Address

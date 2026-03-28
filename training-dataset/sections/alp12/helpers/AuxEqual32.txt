@@ -1,0 +1,15 @@
+B3.15 AuxEqual32 function
+             Returns TRUE if the first count entries in two lists of auxiliary Granule addresses are equal.
+             func AuxEqual32(
+                 aux1 : array [32] of Address,
+                 aux2 : array [32] of Address,
+                 count : integer) => boolean
+             begin
+                 assert 0 <= count && count <= 32;
+                 for i = 0 to count - 1 do
+                     if aux1[i] != aux2[i] then
+                         return FALSE;
+                     end
+                 end
+                 return TRUE;
+             end

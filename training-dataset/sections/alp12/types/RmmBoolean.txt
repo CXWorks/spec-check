@@ -1,0 +1,12 @@
+C2.2 RmmBoolean type
+            The RmmBoolean enumeration represents whether a feature is enabled.
+            The RmmBoolean enumeration is an abstract type.
+            The values of the RmmBoolean enumeration are shown in the following table.
+                      Name                                   Description
+                      RMM_FALSE                              False
+                      RMM_TRUE                               True
+            The RmmBoolean enumeration is used in the following types:
+               • RmmPdev
+               • RmmRttWalkNotAligned
+               • RmmRttS2APDirect
+               • RmmRec

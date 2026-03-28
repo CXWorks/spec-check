@@ -1,0 +1,4 @@
+B3.94 RmiRecRunAt function
+             Returns the RecRun object stored at physical address addr.
+             func RmiRecRunAt(
+                 addr : Address) => RmiRecRun

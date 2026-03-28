@@ -1,0 +1,9 @@
+B3.53 PlaneSysregValid function
+             Whether addr identifies an accessible Plane system register.
+             If addr.d128 is TRUE and either of the following is false then the function returns FALSE.
+                • FEAT_SYSREG128 is implemented
+                • addr identifies a 128-bit system register
+             func PlaneSysregValid(
+                 rec : RmmRec,
+                 addr : RsiSysregAddress,
+                 op : RmmReadWriteOp) => boolean

@@ -1,0 +1,102 @@
+B4.3.52 RMI_VDEV_COMMUNICATE command
+               Perform device communication associated with a VDEV.
+               B4.3.52.1 Interface
+               B4.3.52.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000186
+        pdev_ptr             X1          63:0        Address                               PA of the PDEV
+        vdev_ptr             X2          63:0        Address                               PA of the VDEV
+        data_ptr             X3          63:0        Address                               PA of the communication data structure
+U0457          An implementation may store state in a PDEV object which is required for communication with the child
+               VDEVs. For this reason, and to simplify locking of PDEV and VDEV objects which may be performed by the
+               implementation, a PDEV pointer is passed to RMI_VDEV_COMMUNICATE.
+               B4.3.52.1.2   Context
+               The RMI_VDEV_COMMUNICATE command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        pdev                 RmmPdev                    PdevAt(pdev_ptr)                           false    PDEV
+        vdev_pre             RmmVdev                    VdevAt(vdev_ptr)                           true     VDEV
+        vdev                 RmmVdev                    VdevAt(vdev_ptr)                           false    VDEV
+        data                 RmiDevCommData             RmiDevCommDataAt(data_ptr)                 false    Device
+                                                                                                            communication object
+               B4.3.52.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.52.2 Failure conditions
+  ID                          Condition
+  da_supp                     pre: ImplFeatures().feat_da != FEATURE_TRUE
+                              post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  pdev_align                  pre: !AddrIsGranuleAligned(pdev_ptr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                                    Condition
+  pdev_bound                            pre: !PaIsDelegable(pdev_ptr)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_gran_state                       pre: GranuleAt(pdev_ptr).state != PDEV
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_align                            pre: !AddrIsGranuleAligned(vdev_ptr)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_bound                            pre: !PaIsDelegable(vdev_ptr)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_gran_state                       pre: GranuleAt(vdev_ptr).state != VDEV
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  data_align                            pre: !AddrIsGranuleAligned(data_ptr)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  data_pas                              pre: !GranuleAccessPermitted(data_ptr, PAS_NS)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  req_align                             pre: !AddrIsGranuleAligned(data.enter.req_addr)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  req_pas                               pre: !GranuleAccessPermitted(data.enter.req_addr, PAS_NS)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  resp_align                            pre: !AddrIsGranuleAligned(data.enter.resp_addr)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  resp_pas                              pre: !GranuleAccessPermitted(data.enter.resp_addr, PAS_NS)
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  resp_len                              pre: data.enter.resp_len > RMM_GRANULE_SIZE
+                                        post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_pdev                             pre: vdev.pdev != pdev_ptr
+                                        post: ResultEqual(result, RMI_ERROR_DEVICE)
+  comm_state                            pre: vdev.comm_state == DEV_COMM_IDLE
+                                        post: ResultEqual(result, RMI_ERROR_DEVICE)
+               B4.3.52.2.1          Failure condition ordering
+               [da_supp] < [pdev_align, pdev_bound, pdev_gran_state, vdev_align,
+                    vdev_bound, vdev_gran_state, data_align, data_pas, req_align,
+                    req_pas, resp_align, resp_pas, resp_len]
+               [pdev_gran_state, vdev_gran_state] < [vdev_pdev, comm_state]
+                                                                                                                                                    da_supp
+                                                                                                                                            RMI_ERROR_NOT _SUPPORT ED
+                  resp_len   resp_pas     resp_align   req_pas   req_align   data_pas   data_align   vdev_bound   vdev_align   pdev_bound         pdev_align            vdev_gran_state     pdev_gran_state
+                                                                                                                                                                                                  RMI_ERROR_INPUT
+                                                                                                                                                                               comm_state     vdev_pdev
+                                                                                                                                                                                             RMI_ERROR_DEVICE
+               B4.3.52.3 Success conditions
+  ID                        Condition
+  comm_state                post: vdev.comm_state == DeviceCommunicate(vdev, data)
+  error                     pre: DeviceCommunicate(vdev, data) == DEV_COMM_ERROR
+                            post: vdev.vdev_state == VDEV_ERROR
+  unlock_state              pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_UNLOCK)
+                            post: vdev.vdev_state == VDEV_UNLOCKED
+  lock_state                pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_LOCK)
+                            post: vdev.vdev_state == VDEV_LOCKED
+  lock_nonce                pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_LOCK)
+                            post: vdev.lock_nonce == VdevGenerateNonce(vdev_pre)
+  start_state               pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_START)
+                            post: vdev.vdev_state == VDEV_STARTED
+  meas_nonce                pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_GET_MEAS)
+                            post: vdev.meas_nonce == VdevGenerateNonce(vdev_pre)
+  intf_count                pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_GET_REPORT)
+                            post: vdev.report_nonce == VdevGenerateNonce(vdev_pre)
+  op                        pre: DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                            post: vdev.op == VDEV_OP_NONE
+                B4.3.52.4 Footprint
+    ID                        Value
+    state                     vdev.vdev_state
+    op                        vdev.op
+    comm_state                vdev.comm_state
+    lock_nonce                vdev.lock_nonce
+    meas_nonce                vdev.meas_nonce
+    report_nonce              vdev.report_nonce

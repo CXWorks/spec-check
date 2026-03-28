@@ -1,0 +1,4 @@
+B3.34 RealmParamsSupported function
+             Returns TRUE if the Realm parameters are supported by the implementation.
+             func RealmParamsSupported(
+                 value : RmiRealmParams) => boolean

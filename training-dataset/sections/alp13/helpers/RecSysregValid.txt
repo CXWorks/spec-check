@@ -1,0 +1,10 @@
+B3.66 RecSysregValid function
+             Whether encoding identifies an accessible REC system register.
+             If is_write is TRUE, a write access is indicated. Otherwise, a read access is indicated.
+             If addr.d128 is TRUE and either of the following is false then the function returns FALSE.
+                • FEAT_SYSREG128 is implemented
+                • addr identifies a 128-bit system register
+             func RecSysregValid(
+                 rec : RmmRec,
+                 addr : RsiSysregAddress,
+                 is_write : boolean) => boolean

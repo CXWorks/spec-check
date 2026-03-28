@@ -1,0 +1,4 @@
+B3.55 PsciReturnCodeEncode function
+             Return encoding for a PsciReturnCode value.
+             func PsciReturnCodeEncode(
+                 value : PsciReturnCode) => bits(64)

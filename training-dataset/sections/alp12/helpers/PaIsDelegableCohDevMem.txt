@@ -1,0 +1,4 @@
+B3.40 PaIsDelegableCohDevMem function
+             Returns TRUE if the Granule located at physical address addr is Delegable coherent device memory.
+             func PaIsDelegableCohDevMem(
+                 addr : Address) => boolean

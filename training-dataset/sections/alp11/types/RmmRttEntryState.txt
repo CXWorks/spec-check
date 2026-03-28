@@ -1,0 +1,25 @@
+C2.46 RmmRttEntryState type
+             The RmmRttEntryState enumeration represents the state of an RTTE.
+             The RmmRttEntryState enumeration is an abstract type.
+             The values of the RmmRttEntryState enumeration are shown in the following table.
+                     Name                                    Description
+                     ASSIGNED                                This RTTE is identified by a Protected IPA.
+                                                             The output address of this RTTE points to a DATA Granule.
+                     ASSIGNED_DEV                            This RTTE is identified by a Protected IPA.
+                                                             The output address of this RTTE points to a DEV_MAPPED
+                                                             Granule.
+                     ASSIGNED_NS                             This RTTE is identified by an Unprotected IPA.
+                                                             The output address of this RTTE points to a Granule-aligned
+                                                             address within NS PAS.
+                     ASSIGNED_VSMMU                          This RTTE is identified by a Protected IPA.
+                                                             The output address of this RTTE points to a VSMMU Granule.
+                    Name                                    Description
+                    AUX_DESTROYED                           An auxiliary RTT was destroyed while a corresponding primary
+                                                            RTT entry was live.
+                    TABLE                                   The output address of this RTTE points to the next-level RTT.
+                    UNASSIGNED                              This RTTE is identified by a Protected IPA.
+                                                            This RTTE is not associated with any Granule.
+                    UNASSIGNED_NS                           This RTTE is identified by an Unprotected IPA.
+                                                            This RTTE is not associated with any Granule.
+            The RmmRttEntryState enumeration is used in the following types:
+               • RmmRttEntry

@@ -1,0 +1,4 @@
+B3.100 RsiDevMeasureParamsAt function
+             Returns device measurement parameters stored at IPA addr, mapped in the current Realm.
+             func RsiDevMeasureParamsAt(
+                 addr : Address) => RsiDevMeasureParams

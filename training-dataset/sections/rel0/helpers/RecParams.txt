@@ -1,0 +1,5 @@
+B3.39 RecParams function
+             Returns REC parameters stored at physical address addr.
+             If the PAS of addr is not NS, the return value is UNKNOWN.
+             func RecParams(
+                 addr : Address) => RmiRecParams

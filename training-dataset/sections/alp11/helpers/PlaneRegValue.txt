@@ -1,0 +1,6 @@
+B3.51 PlaneRegValue function
+             Value of a Plane register.
+             func PlaneRegValue(
+                 realm : RmmRealm,
+                 plane_idx : integer,
+                 encoding : bits(64)) => bits(64)

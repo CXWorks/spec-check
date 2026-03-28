@@ -1,0 +1,24 @@
+B3.122 RttEntriesInRangeOutputContiguous function
+            Returns TRUE if all entries in the RTT at address rtt at level level, within IPA range [base, top), map to a
+            contiguous range of output addresses starting from out.
+            func RttEntriesInRangeOutputContiguous(
+                rtt : RmmRtt,
+                level : integer,
+                base : Address,
+                top : Address,
+                out : Address) => boolean
+            begin
+                var in_addr : Address = base;
+                var out_addr : Address = out;
+                var size : integer = RttLevelSize(level);
+                 while (UInt(in_addr) < UInt(top)) do
+                     var index : integer = RttEntryIndex(in_addr, level);
+                     var rtte : RmmRttEntry = RttEntryAt(rtt, index);
+                        if (rtte.addr != out_addr) then
+                            return FALSE;
+                        end;
+                         in_addr = ToAddress(UInt(in_addr) + size);
+                         out_addr = ToAddress(UInt(out_addr) + size);
+                  end;
+                 return TRUE;
+             end;

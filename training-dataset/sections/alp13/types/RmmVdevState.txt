@@ -1,0 +1,12 @@
+C2.61 RmmVdevState type
+            The RmmVdevState enumeration represents the state of a VDEV.
+            The RmmVdevState enumeration is an abstract type.
+            The values of the RmmVdevState enumeration are shown in the following table.
+                      Name                                   Description
+                      VDEV_ERROR                             Device interface has reported a fatal error.
+                      VDEV_LOCKED                            Device interface is locked.
+                      VDEV_NEW                               Initial state of the device interface.
+                      VDEV_STARTED                           Device interface is started.
+                      VDEV_UNLOCKED                          Device interface is unlocked.
+            The RmmVdevState enumeration is used in the following types:
+                  • RmmVdev

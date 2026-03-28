@@ -1,0 +1,9 @@
+pub enum RmiStatusCode {
+  RMI_ERROR_INPUT,
+  RMI_ERROR_REALM(int),
+  RMI_ERROR_REC,
+  RMI_ERROR_RTT(int),
+  RMI_ERROR_NOT_SUPPORTED,
+  RMI_ERROR_DEVICE,
+  RMI_ERROR_RTT_AUX(int),
+}

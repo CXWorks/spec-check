@@ -1,0 +1,7 @@
+B3.30 GranulesAllVdevValidated function
+             Returns TRUE if the Granules within the range [base, top) have been validated as belonging to the virtual
+             device vdev.
+             func GranulesAllVdevValidated(
+                 base : Address,
+                 top : Address,
+                 vdev : RmmVdev) => boolean

@@ -1,0 +1,13 @@
+C2.25 RmmPdevProtection type
+            The RmmPdevProtection enumeration represents configuration of protection between system and device.
+            The RmmPdevProtection enumeration is an abstract type.
+            The values of the RmmPdevProtection enumeration are shown in the following table.
+                       Name                                   Description
+                       PDEV_FCOH_E2E_IDE                      Fully-coherent device with end-to-end protection provided by IDE.
+                       PDEV_FCOH_E2E_SYS                      Fully-coherent device with end-to-end protection provided by
+                                                              system construction.
+                       PDEV_IOCOH_E2E_IDE                     IO-coherent device with end-to-end protection provided by IDE.
+                       PDEV_IOCOH_E2E_SYS                     IO-coherent device with end-to-end protection provided by system
+                                                              construction.
+            The RmmPdevProtection enumeration is used in the following types:
+                • RmmPdev

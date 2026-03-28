@@ -1,0 +1,8 @@
+C1.2 RmmDataMeasureContent type
+               The RmmDataMeasureContent enumeration represents whether to measure DATA Granule contents.
+               The RmmDataMeasureContent enumeration is a concrete type.
+               The width of the RmmDataMeasureContent enumeration is 1 bits.
+               The values of the RmmDataMeasureContent enumeration are shown in the following table.
+           Encoding        Name                                   Description
+           0               NO_MEASURE_CONTENT                     Do not measure DATA Granule contents.
+           1               MEASURE_CONTENT                        Measure DATA Granule contents.

@@ -1,0 +1,6 @@
+C2.44 RmmRtt type
+            The RmmRtt structure contains an RTT.
+            The RmmRtt structure is an abstract type.
+            The members of the RmmRtt structure are shown in the following table.
+            Name                 Type                                    Description
+            entries              RmmRttEntry[512]                        Entries

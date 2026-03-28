@@ -1,0 +1,7 @@
+pub enum RmmVdevState {
+  VDEV_ERROR,
+  VDEV_LOCKED,
+  VDEV_NEW,
+  VDEV_STARTED,
+  VDEV_UNLOCKED,
+}

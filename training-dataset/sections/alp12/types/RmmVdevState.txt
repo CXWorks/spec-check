@@ -1,0 +1,15 @@
+C2.61 RmmVdevState type
+            The RmmVdevState enumeration represents the state of a VDEV.
+            The RmmVdevState enumeration is an abstract type.
+            The values of the RmmVdevState enumeration are shown in the following table.
+                      Name                                   Description
+                      VDEV_COMMUNICATING                     The RMM is communicating with the VDEV.
+                      Name                                   Description
+                      VDEV_ERROR                             Device interface has reported a fatal error.
+                      VDEV_NEW                               Initial state of the device.
+                      VDEV_READY                             No device transaction is associated with the VDEV.
+                      VDEV_STOPPED                           Device interface is stopped.
+                      VDEV_STOPPING                          The RMM is communicating with the VDEV to stop the device
+                                                             interface.
+            The RmmVdevState enumeration is used in the following types:
+                  • RmmVdev

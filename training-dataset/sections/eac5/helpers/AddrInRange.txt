@@ -1,0 +1,10 @@
+B3.1 AddrInRange function
+           Returns TRUE if addr is within [base, base+size].
+           func AddrInRange(
+               addr : Address,
+               base : Address,
+               size : integer) => boolean
+           begin
+               return ((UInt(addr) >= UInt(base))
+                   && (UInt(addr) <= UInt(base) + size));
+           end

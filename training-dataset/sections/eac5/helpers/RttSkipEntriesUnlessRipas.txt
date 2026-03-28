@@ -1,0 +1,9 @@
+B3.72 RttSkipEntriesUnlessRipas function
+              Scanning rtt starting from ipa, returns the IPA of the first entry whose RIPAS is ripas.
+              If no entry is found whose RIPAS is ripas, returns the next IPA after the last entry in rtt.
+              The return value is aligned to the size of the address range described by an entry at RTT level.
+              func RttSkipEntriesUnlessRipas(
+                  rtt : RmmRtt,
+                  level : integer,
+                  ipa : Address,
+                  ripas : RmmRipas) => Address

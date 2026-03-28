@@ -1,0 +1,13 @@
+B3.7 AddrIsWithin function
+             Returns TRUE if address addr is within the outer range [base, top).
+             func AddrIsWithin(
+                 addr : Address,
+                 base : Address,
+                 top : Address) => boolean
+             begin
+                 var addr_int : integer = UInt(addr);
+                 var top_int : integer = UInt(top);
+                 var base_int : integer = UInt(base);
+                 return ((UInt(addr) >= UInt(base))
+                     && (UInt(addr) < UInt(top)));
+             end;

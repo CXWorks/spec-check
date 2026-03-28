@@ -1,0 +1,9 @@
+B3.55 RttEntriesInRangeRipas function
+             Returns TRUE if all entries in the RTT at address rtt at level level, within IPA range [base, top), have RIPAS
+             ripas.
+             func RttEntriesInRangeRipas(
+                 rtt : RmmRtt,
+                 level : integer,
+                 base : Address,
+                 top : Address,
+                 ripas : RmmRipas) => boolean

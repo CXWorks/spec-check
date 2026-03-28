@@ -1,0 +1,10 @@
+B3.27 FeatureToRmi function
+             Convert feature bit to RMI type.
+             func FeatureToRmi(
+                 value : RmmFeature) => RmiFeature
+             begin
+                 case value of
+                     when FEATURE_FALSE => return RMI_FEATURE_FALSE;
+                     when FEATURE_TRUE => return RMI_FEATURE_TRUE;
+                 end
+             end

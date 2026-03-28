@@ -1,0 +1,16 @@
+pub enum RmmGranuleState {
+  DATA,
+  DELEGATED,
+  DEV_MAPPED,
+  P2P_STREAM,
+  PDEV,
+  PDEV_AUX,
+  RD,
+  REC,
+  REC_AUX,
+  RTT,
+  UNDELEGATED,
+  VDEV,
+  VDEV_AUX,
+  VSMMU,
+}

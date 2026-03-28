@@ -1,0 +1,4 @@
+B3.30 RealmHostCall function
+             Returns Host call data stored at IPA addr, mapped in the current Realm.
+             func RealmHostCall(
+                 addr : Address) => RsiHostCall

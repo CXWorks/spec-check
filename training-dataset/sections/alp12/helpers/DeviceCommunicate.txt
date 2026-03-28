@@ -1,0 +1,10 @@
+B3.21 DeviceCommunicate function
+             Process device communication data and return the new state of the device transaction.
+             func DeviceCommunicate(
+                  pdev : RmmPdev,
+                  data : RmiDevCommData) => RmmDevCommState
+             func DeviceCommunicate(
+                 vdev : RmmVdev,
+                 data : RmiDevCommData) => RmmDevCommState
+             func DeviceCommunicate(
+                 vdev : RmmVdev) => RmmDevCommState

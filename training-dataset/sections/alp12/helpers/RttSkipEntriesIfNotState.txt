@@ -1,0 +1,11 @@
+B3.137 RttSkipEntriesIfNotState function
+              Scanning rtt starting from base and terminating at top, returns the IPA of the first entry whose state is not
+              state.
+              If no entry is found whose state is state, returns the next IPA after the last entry in rtt.
+              The return value is aligned to the size of the address range described by an entry at RTT level.
+              func RttSkipEntriesIfNotState(
+                  rtt : RmmRtt,
+                  level : integer,
+                  base : Address,
+                  top : Address,
+                  state : RmmRttEntryState) => Address

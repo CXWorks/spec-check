@@ -1,0 +1,4 @@
+B3.40 MsiAddrIsValid function
+             Returns TRUE if addr is a valid MSI address.
+             func MsiAddrIsValid(
+                 addr : Address) => boolean

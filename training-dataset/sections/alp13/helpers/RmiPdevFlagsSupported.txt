@@ -1,0 +1,4 @@
+B3.83 RmiPdevFlagsSupported function
+             Returns TRUE if the provided PDEV flags are supported by the implementation.
+             func RmiPdevFlagsSupported(
+                 flags : RmiPdevFlags) => boolean

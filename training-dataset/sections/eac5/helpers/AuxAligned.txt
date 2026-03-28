@@ -1,0 +1,14 @@
+B3.10 AuxAligned function
+             Returns TRUE if the first count entries in a list of auxiliary Granule addresses are aligned to the size of a Granule.
+             func AuxAligned(
+                 aux : array [16] of Address,
+                 count : integer) => boolean
+             begin
+                 assert 0 <= count && count <= 16;
+                 for i = 0 to count - 1 do
+                     if !AddrIsGranuleAligned(aux[i]) then
+                         return FALSE;
+                     end
+                 end
+                 return TRUE;
+             end

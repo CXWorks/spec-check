@@ -1,0 +1,6 @@
+B3.9 AddrRangeIsAuxLive function
+             Returns TRUE if any IPA in range [base, top) is auxiliary-live, that is live in any auxiliary RTT.
+             func AddrRangeIsAuxLive(
+                 base : Address,
+                 top : Address,
+                 realm : RmmRealm) => boolean

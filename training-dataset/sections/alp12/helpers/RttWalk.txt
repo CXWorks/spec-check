@@ -1,0 +1,8 @@
+B3.143 RttWalk function
+             Returns the result of an RTT walk from the base of RTT tree index owned by rd, to address addr.
+             The walk does not progress beyond level.
+             func RttWalk(
+                 realm : RmmRealm,
+                 addr : Address,
+                 level : integer,
+                 index : integer) => RmmRttWalkResult

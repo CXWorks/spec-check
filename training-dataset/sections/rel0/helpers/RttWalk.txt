@@ -1,0 +1,10 @@
+B3.78 RttWalk function
+             Returns the result of an RTT walk from the RTT base of rd to address addr.
+             If level is provided, the walk terminates at level.
+             func RttWalk(
+                 rd : Address,
+                 addr : Address) => RmmRttWalkResult
+             func RttWalk(
+                 rd : Address,
+                 addr : Address,
+                 level : integer) => RmmRttWalkResult

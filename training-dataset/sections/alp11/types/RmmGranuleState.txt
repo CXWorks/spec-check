@@ -1,0 +1,20 @@
+C2.13 RmmGranuleState type
+            The RmmGranuleState enumeration represents the state of a granule.
+            The RmmGranuleState enumeration is an abstract type.
+            The values of the RmmGranuleState enumeration are shown in the following table.
+                   Name                                    Description
+                   DATA                                    Realm code or data.
+                   DELEGATED                               Delegated for use by the RMM.
+                   DEV_MAPPED                              Device memory, mapped into a Realm.
+                   PDEV                                    Physical device.
+                   PDEV_AUX                                Physical device auxiliary Granule.
+                   RD                                      Realm Descriptor.
+                   REC                                     Realm Execution Context.
+                   REC_AUX                                 Realm Execution Context auxiliary Granule.
+                   RTT                                     Realm Translation Table.
+                   UNDELEGATED                             Not delegated for use by the RMM.
+                   VDEV                                    Virtual device.
+                   VDEV_AUX                                Virtual device auxiliary Granule.
+                   VSMMU                                   Virtual SMMU.
+            The RmmGranuleState enumeration is used in the following types:
+               • RmmGranule

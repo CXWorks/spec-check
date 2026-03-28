@@ -1,0 +1,13 @@
+B3.60 RttEntryState function
+             Encodes the state of an RTTE.
+             func RttEntryState(
+                 state : RmmRttEntryState) => RmiRttEntryState
+             begin
+                 case state of
+                     when UNASSIGNED    => return RMI_UNASSIGNED;
+                     when ASSIGNED      => return RMI_ASSIGNED;
+                     when UNASSIGNED_NS => return RMI_UNASSIGNED;
+                     when ASSIGNED_NS   => return RMI_ASSIGNED;
+                     when TABLE         => return RMI_TABLE;
+                 end
+             end

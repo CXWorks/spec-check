@@ -1,0 +1,7 @@
+B3.135 RttsAllProtectedEntriesRipas function
+              Returns TRUE if the RIPAS of all entries identified by Protected IPAs in all of the starting-level RTT Granules is
+              equal to ripas.
+              func RttsAllProtectedEntriesRipas(
+                  rtt_base : Address,
+                  rtt_num_start : integer,
+                  ripas : RmmRipas) => boolean

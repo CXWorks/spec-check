@@ -1,0 +1,5 @@
+B3.152 VdevFromVdevId function
+             Returns the VDEV identified by vdev_id and assigned to realm.
+             func VdevFromVdevId(
+                 realm : RmmRealm,
+                 vdev_id : bits(64)) => RmmVdev

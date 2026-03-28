@@ -1,0 +1,7 @@
+B3.44 RimExtendData function
+             Extend RIM with contribution from DATA creation.
+             func RimExtendData(
+                 realm : RmmRealm,
+                 ipa : Address,
+                 data : Address,
+                 flags : RmiDataFlags) => RmmRealmMeasurement

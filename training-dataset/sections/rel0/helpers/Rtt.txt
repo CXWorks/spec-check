@@ -1,0 +1,4 @@
+B3.51 Rtt function
+             Returns the RTT at address rtt.
+             func Rtt(
+                 addr : Address) => RmmRtt

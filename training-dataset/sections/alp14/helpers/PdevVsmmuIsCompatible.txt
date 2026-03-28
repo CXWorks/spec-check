@@ -1,0 +1,6 @@
+B3.52 PdevVsmmuIsCompatible function
+             Returns TRUE if the attributes of vsmmu are compatible with pdev.
+             If the PSMMU associated with the PDEV does not support two stages of translation, this function returns FALSE.
+             func PdevVsmmuIsCompatible(
+                 pdev : RmmPdev,
+                 vsmmu : RmmVsmmu) => boolean

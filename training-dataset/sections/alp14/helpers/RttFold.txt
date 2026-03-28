@@ -1,0 +1,4 @@
+B3.131 RttFold function
+             Returns the RTTE which results from folding the homogeneous RTT at address rtt.
+             func RttFold(
+                 rtt : RmmRtt) => RmmRttEntry

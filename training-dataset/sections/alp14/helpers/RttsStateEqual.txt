@@ -1,0 +1,16 @@
+B3.148 RttsStateEqual function
+             Returns TRUE if the state of all of the starting-level RTT Granules is equal to state.
+             func RttsStateEqual(
+                 rtt_base : Address,
+                 rtt_num_start : integer,
+                 state : RmmGranuleState) => boolean
+             begin
+                 for i = 0 to rtt_num_start - 1 do
+                      var addr = (UInt(rtt_base) + i * RMM_GRANULE_SIZE)[(ADDRESS_WIDTH-1):0];
+                      if (!PaIsDelegable(addr)
+                              || GranuleAt(addr).state != state) then
+                          return FALSE;
+                      end;
+                 end;
+                 return TRUE;
+             end;

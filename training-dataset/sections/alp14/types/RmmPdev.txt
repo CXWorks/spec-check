@@ -1,0 +1,43 @@
+C2.25 RmmPdev type
+            The RmmPdev structure contains attributes of a PDEV.
+            The RmmPdev structure is an abstract type.
+            The members of the RmmPdev structure are shown in the following table.
+            Name               Type                                    Description
+            pdev_id            Bits64                                  Device identifier
+            spdm               RmmPdevSpdm                             Whether communication with the device uses SPDM
+            ncoh_ide           RmmPdevIde                              Whether non-coherent traffic to the device is protected
+                                                                       using IDE
+            ncoh_addr          RmmFeature                              Whether non-coherent device address ranges are
+                                                                       validated by the RMM
+            coh_ide            RmmPdevIde                              Whether coherent traffic to the device is protected using
+                                                                       IDE
+            coh_addr           RmmFeature                              Whether coherent device address ranges are validated by
+                                                                       the RMM
+            segment_id         Bits8                                   Segment identifier
+                                                                       PCIe Segment identifier of the Root Port and endpoint.
+            ecam_addr          Address                                 ECAM base address of the PCIe configuration space.
+            root_id            Bits16                                  Root Port identifier
+                                                                       Physical PCIe routing identifier of the Root Port to
+                                                                       which the endpoint is connected.
+            cert_id            UInt64                                  Certificate identifier
+            rid_base           Bits16                                  Base of requester ID range (inclusive).
+                                                                       The value is in PCI BDF format.
+            rid_top            Bits16                                  Top of requester ID range (exclusive).
+                                                                       The value is in PCI BDF format.
+            hash_algo          RmmHashAlgorithm                        Algorithm used to generate device digests
+            ncoh_ide_sid       UInt64                                  Non-coherent IDE stream ID
+            ncoh_num_addr_range
+                             UInt64                                    Number of device non-coherent address ranges
+            ncoh_addr_range    RmmAddressRange[16]                     Device non-coherent address range
+            coh_num_addr_range
+                             UInt64                                    Number of device coherent address ranges
+            coh_addr_range     RmmAddressRange[4]                      Device coherent address range
+            aux                Address[32]                             Addresses of auxiliary Granules
+            num_aux            UInt64                                  Number of auxiliary Granules
+            state              RmmPdevState                            Lifecycle state
+            comm_state         RmmDevCommState                         Device communication state
+            num_vdevs          UInt64                                  Number of VDEVs associated with this PDEV
+            p2p_enabled        RmmFeature                              TRUE if this device can be associated with a P2P stream
+            p2p_stream_valid RmmBoolean                                TRUE if this device is associated with a P2P stream
+            p2p_stream         Address                                 PA of P2P_STREAM associated with this device
+            vca_digest         Bits512                                 VCA digest

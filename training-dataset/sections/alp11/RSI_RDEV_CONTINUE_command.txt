@@ -1,0 +1,68 @@
+B5.3.15 RSI_RDEV_CONTINUE command
+                 Continue an interruptible Realm device operation.
+                 B5.3.15.1 Interface
+                 B5.3.15.1.1   Input values
+          Name                 Register    Bits        Type                                  Description
+          fid                  X0          63:0        UInt64                                FID, value 0xC40001A4
+          vdev_id              X1          63:0        Bits64                                Realm device identifier
+          inst_id              X2          63:0        UInt64                                Device instance identifier
+                 B5.3.15.1.2   Context
+                 The RSI_RDEV_CONTINUE command operates on the following context.
+          Name                 Type                       Value                                      Before    Description
+          realm                RmmRealm                   CurrentRealm()                             false     Current Realm
+          rdev                 RmmRdev                    RdevFromInstId(                            false     Realm device
+                                                              realm,
+                                                              inst_id)
+                 B5.3.15.1.3   Output values
+          Name                 Register    Bits        Type                                  Description
+          result               X0          63:0        RsiCommandReturnCode                  Command return status
+                 B5.3.15.2 Failure conditions
+  ID                            Condition
+  da_en                         pre: realm.feat_da != FEATURE_TRUE
+                                post: result == RSI_ERROR_STATE
+  vdev_id                       pre: !RdevIdsAreValid(realm, vdev_id, inst_id)
+                                post: result == RSI_ERROR_INPUT
+  state                         pre:  (rdev.state != RDEV_UNLOCKED_BUSY
+                                          && rdev.state != RDEV_LOCKED_BUSY
+                                          && rdev.state != RDEV_STARTED_BUSY
+                                          && rdev.state != RDEV_STOPPING)
+                                post: result == RSI_ERROR_INPUT
+              B5.3.15.2.1   Failure condition ordering
+              [da_en] < [vdev_id]
+              [vdev_id] < [state]
+                                                                                                da_en
+                                                                                          RSI_ERROR_STAT E
+                                                                                               vdev_id
+                                                                                                 state
+                                                                                         RSI_ERROR_INPUT
+              B5.3.15.3 Success conditions
+  ID                         Condition
+  error                      pre:  (DeviceCommunicate(rdev) == DEV_COMM_ERROR
+                                       && rdev.state != RDEV_STOPPING)
+                             post: rdev.state == RDEV_ERROR
+  new                        pre:  (DeviceCommunicate(rdev) == DEV_COMM_IDLE
+                                       && rdev.state == RDEV_UNLOCKED_BUSY
+                                       && rdev.operation != RDEV_OP_LOCK)
+                             post: rdev.state == RDEV_UNLOCKED
+  to_locked                  pre:  (DeviceCommunicate(rdev) == DEV_COMM_IDLE
+                                       && rdev.state == RDEV_UNLOCKED_BUSY
+                                       && rdev.operation == RDEV_OP_LOCK)
+                             post: rdev.state == RDEV_LOCKED
+  locked                     pre:  (DeviceCommunicate(rdev) == DEV_COMM_IDLE
+                                       && rdev.state == RDEV_LOCKED_BUSY
+                                       && rdev.operation != RDEV_OP_LOCK)
+                             post: rdev.state == RDEV_LOCKED
+  ID                         Condition
+  to_started                 pre:  (DeviceCommunicate(rdev) == DEV_COMM_IDLE
+                                       && rdev.state == RDEV_LOCKED_BUSY
+                                       && rdev.operation == RDEV_OP_START)
+                             post: rdev.state == RDEV_STARTED
+  started                    pre:  (DeviceCommunicate(rdev) == DEV_COMM_IDLE
+                                       && rdev.state == RDEV_STARTED_BUSY)
+                             post: rdev.state == RDEV_STARTED
+  stopped                    pre:  (DeviceCommunicate(rdev) != DEV_COMM_ACTIVE
+                                       && rdev.state == RDEV_STOPPING)
+                             post: rdev.state == RDEV_STOPPED
+               B5.3.15.4 Footprint
+    ID                          Value
+    state                       rdev.state

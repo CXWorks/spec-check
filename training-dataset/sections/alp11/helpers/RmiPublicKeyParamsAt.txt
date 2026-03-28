@@ -1,0 +1,5 @@
+B3.90 RmiPublicKeyParamsAt function
+             Returns public key parameters stored at physical address addr.
+             If the PAS of addr is not NS, the return value is UNKNOWN.
+             func RmiPublicKeyParamsAt(
+                 addr : Address) => RmiPublicKeyParams

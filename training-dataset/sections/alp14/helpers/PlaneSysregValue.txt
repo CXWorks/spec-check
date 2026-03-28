@@ -1,0 +1,6 @@
+B3.54 PlaneSysregValue function
+             Value of a Plane system register.
+             func PlaneSysregValue(
+                 rec : RmmRec,
+                 plane_idx : integer,
+                 addr : RsiSysregAddress) => bits(128)

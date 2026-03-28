@@ -1,0 +1,22 @@
+B3.120 RttEntriesInRangeMemAttr function
+             Returns TRUE if all entries in the RTT at address rtt at level level, within Protected IPA range [base, top), have
+             memory attributes attr.
+             func RttEntriesInRangeMemAttr(
+                 rtt : RmmRtt,
+                 level : integer,
+                 base : Address,
+                 top : Address,
+                 attr : RmmRttMemAttr) => boolean
+             begin
+                 var addr : Address = base;
+                 var size : integer = RttLevelSize(level);
+                  while (UInt(addr) < UInt(top)) do
+                      var index : integer = RttEntryIndex(addr, level);
+                      var rtte : RmmRttEntry = RttEntryAt(rtt, index);
+                         if (rtte.attr_prot != attr) then
+                             return FALSE;
+                        end;
+                        addr = ToAddress(UInt(addr) + size);
+                 end;
+                return TRUE;
+            end;

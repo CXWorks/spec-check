@@ -1,0 +1,4 @@
+B3.105 RsiVersionHigherIsSupported function
+             Returns TRUE if the RMM supports an RSI revision which is incompatible with and greater than version.
+             func RsiVersionHigherIsSupported(
+                 version : RsiInterfaceVersion) => boolean

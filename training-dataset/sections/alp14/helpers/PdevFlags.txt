@@ -1,0 +1,28 @@
+B3.51 PdevFlags function
+             Get RmiPdevFlags value.
+             func PdevFlags(
+                 pdev : RmmPdev) => RmiPdevFlags
+             begin
+                 var flags : RmiPdevFlags;
+                  case pdev.spdm of
+                       when SPDM_FALSE => flags.spdm = RMI_SPDM_FALSE;
+                       when SPDM_TRUE => flags.spdm = RMI_SPDM_TRUE;
+                  end;
+                  case pdev.ncoh_ide of
+                       when IDE_FALSE => flags.ncoh_ide = RMI_IDE_FALSE;
+                       when IDE_TRUE => flags.ncoh_ide = RMI_IDE_TRUE;
+                  end;
+                  case pdev.ncoh_addr of
+                      when FEATURE_FALSE => flags.ncoh_addr = RMI_FEATURE_FALSE;
+                         when FEATURE_TRUE => flags.ncoh_addr = RMI_FEATURE_TRUE;
+                  end;
+                  case pdev.coh_ide of
+                       when IDE_FALSE => flags.coh_ide = RMI_IDE_FALSE;
+                       when IDE_TRUE => flags.coh_ide = RMI_IDE_TRUE;
+                  end;
+                  case pdev.coh_addr of
+                       when FEATURE_FALSE => flags.coh_addr = RMI_FEATURE_FALSE;
+                       when FEATURE_TRUE => flags.coh_addr = RMI_FEATURE_TRUE;
+                  end;
+                 return flags;
+             end;

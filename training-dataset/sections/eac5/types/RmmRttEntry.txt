@@ -1,0 +1,11 @@
+C1.27 RmmRttEntry type
+            The RmmRttEntry structure contains attributes of an RTT Entry.
+            The RmmRttEntry structure is an abstract type.
+             The members of the RmmRttEntry structure are shown in the following table.
+             Name                Type                                    Description
+             addr                Address                                 Output address
+             ripas               RmmRipas                                RIPAS
+             state               RmmRttEntryState                        State
+             MemAttr             Bits3                                   MemAttr
+             S2AP                Bits2                                   S2AP
+             SH                  Bits2                                   SH

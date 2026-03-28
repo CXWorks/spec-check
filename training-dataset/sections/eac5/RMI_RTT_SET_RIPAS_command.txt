@@ -1,0 +1,93 @@
+B4.3.21 RMI_RTT_SET_RIPAS command
+               Completes a request made by the Realm to change the RIPAS of a target IPA range.
+               B4.3.21.1 Interface
+               B4.3.21.1.1   Input values
+        Name                 Register     Bits        Type                                  Description
+        fid                  X0           63:0        UInt64                                FID, value 0xC4000169
+        rd                   X1           63:0        Address                               PA of the RD for the target Realm
+        rec                  X2           63:0        Address                               PA of the target REC
+        base                 X3           63:0        Address                               Base of target IPA region
+        top                  X4           63:0        Address                               Top of target IPA region
+               B4.3.21.1.2   Context
+               The RMI_RTT_SET_RIPAS command operates on the following context.
+        Name                 Type                        Value                                      Before    Description
+        realm                RmmRealm                    Realm(rd)                                  true      Realm
+        walk                 RmmRttWalkResult            RttWalk(                                   false     RTT walk result
+                                                             rd, base,
+                                                             RMM_RTT_PAGE_LEVEL)
+        walk_top             Address                     RttSkipEntriesWithRipas(                   true      Top IPA of entries
+                                                             Rtt(walk.rtt_addr),                              which have associated
+                                                             walk.level,                                      RIPAS values,
+                                                             base, top,                                       starting from entry at
+                                                             Rec(rec).                                        which the RTT walk
+                                                                 ripas_destroyed
+                                                                                                              terminated
+                                                                 !=
+                                                                 CHANGE_DESTROYED)
+               B4.3.21.1.3   Output values
+        Name                 Register     Bits        Type                                  Description
+        result               X0           63:0        RmiCommandReturnCode                  Command return status
+        out_top              X1           63:0        Address                               Top IPA of range whose RIPAS was
+                                                                                            modified
+               The out_top output value is valid only when the command result is RMI_SUCCESS.
+               When the out_top output value is valid, it is aligned to the size of the address range described by the RTT entry
+               at the level where the RTT walk terminated.
+               B4.3.21.2 Failure conditions
+  ID                          Condition
+  rd_align                    pre: !AddrIsGranuleAligned(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                    pre: !PaIsDelegable(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                    pre: Granule(rd).state != RD
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_align                   pre: !AddrIsGranuleAligned(rec)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_bound                   pre: !PaIsDelegable(rec)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_gran_state              pre: Granule(rec).state != REC
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_state                   pre: Rec(rec).state == REC_RUNNING
+                              post: ResultEqual(result, RMI_ERROR_REC)
+  rec_owner                   pre: Rec(rec).owner != rd
+                              post: ResultEqual(result, RMI_ERROR_REC)
+  size_valid                  pre: UInt(top) <= UInt(base)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  base_bound                  pre: base != Rec(rec).ripas_addr
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_bound                   pre: UInt(top) > UInt(Rec(rec).ripas_top)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  base_align                  pre: !AddrIsRttLevelAligned(base, walk.level)
+                              post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  top_gran_align              pre: !AddrIsGranuleAligned(top)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_rtt_align               pre:  ((UInt(top) < UInt(RttUpperBound(
+                                            base, walk.level, realm.ipa_width)))
+                                        && RttEntryHasRipas(RttEntry(
+                                            walk.rtt_addr,
+                                            RttEntryIndex(top, walk.level)))
+                                        && !AddrIsRttLevelAligned(top, walk.level))
+                              post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+               B4.3.21.2.1   Failure condition ordering
+               [rd_bound, rd_state] < [base_align]
+               [rd_bound, rd_state] < [top_rtt_align]
+               [rec_bound, rec_gran_state] < [rec_state, rec_owner]
+               [base_bound] < [base_align]
+               [top_gran_align] < [top_rtt_align]
+                   top_bound   size_valid   rec_align   rd_align   top_gran_align   rd_state           rd_bound            base_bound   rec_gran_state   rec_bound
+                                                                                                                                                         RMI_ERROR_INPUT
+                                                                                       top_rtt_align              base_align                 rec_owner   rec_state
+                                                                                                                                                         RMI_ERROR_REC
+                                                                                                                   RMI_ERROR_RT
+               B4.3.21.3 Success conditions
+  ID                           Condition
+  rtte_ripas                   RttEntriesInRangeRipas(
+                                   Rtt(walk.rtt_addr),
+                                   walk.level,
+                                   base, walk_top,
+                                   Rec(rec).ripas_value)
+  ripas_addr                   Rec(rec).ripas_addr == walk_top
+  out_top                      out_top == walk_top
+               B4.3.21.4 Footprint
+    ID                             Value
+    rtte                           Rtt(walk.rtt_addr)
+    ripas_addr                     Rec(rec).ripas_addr

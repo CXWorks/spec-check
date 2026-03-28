@@ -1,0 +1,6 @@
+B3.67 RecSysregValue function
+             Value of a REC system register.
+             func RecSysregValue(
+                 rec : RmmRec,
+                 plane_idx : integer,
+                 addr : RsiSysregAddress) => (bits(64), bits(64))

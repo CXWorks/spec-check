@@ -1,0 +1,4 @@
+B3.45 PaIsDelegableNonCohDevMem function
+             Returns TRUE if the Granule located at physical address addr is Delegable non-coherent device memory.
+             func PaIsDelegableNonCohDevMem(
+                 addr : Address) => boolean

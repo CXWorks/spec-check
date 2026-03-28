@@ -1,0 +1,12 @@
+B3.67 RemExtend function
+             Extend a REM.
+             The input to the hash function is constructed by concatenating the following, to form a 1024-bit value:
+                • old_value
+                • The least significant size bits from new_value
+                • 512 - size zero bits
+             This value is hashed using the algorithm identified by hash_algo.
+             func RemExtend(
+                 hash_algo : RmmHashAlgorithm,
+                 old_value : RmmRealmMeasurement,
+                 new_value : RmmRealmMeasurement,
+                 size : integer) => RmmRealmMeasurement

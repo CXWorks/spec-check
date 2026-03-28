@@ -1,0 +1,3 @@
+B3.21 ImplFeatures function
+             Returns features supported by the implementation.
+             func ImplFeatures() => RmmFeatures

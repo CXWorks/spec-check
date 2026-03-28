@@ -1,0 +1,47 @@
+B4.3.24 RMI_PDEV_STOP command
+               Stop a PDEV.
+               B4.3.24.1 Interface
+               B4.3.24.1.1    Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400017C
+        pdev_ptr              X1          63:0        Address                               PA of the PDEV
+               B4.3.24.1.2    Context
+               The RMI_PDEV_STOP command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        pdev                  RmmPdev                    PdevAt(pdev_ptr)                           false    PDEV
+               B4.3.24.1.3    Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.24.2 Failure conditions
+  ID                           Condition
+  da_supp                      pre: ImplFeatures().feat_da != FEATURE_TRUE
+                               post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  pdev_align                   pre: !AddrIsGranuleAligned(pdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_bound                   pre: !PaIsDelegable(pdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_gran_state              pre: GranuleAt(pdev_ptr).state != PDEV
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_state                   pre:  (pdev.state == PDEV_COMMUNICATING
+                                         || pdev.state == PDEV_STOPPING
+                                         || pdev.state == PDEV_STOPPED)
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+  num_vdevs                    pre: pdev.num_vdevs != 0
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+               B4.3.24.2.1   Failure condition ordering
+               [da_supp] < [pdev_align, pdev_bound, pdev_gran_state]
+               [pdev_gran_state] < [pdev_state, num_vdevs]
+                                                             da_supp
+                                                  RMI_ERROR_NOT _SUPPORT ED
+                             pdev_bound                    pdev_align                     pdev_gran_state
+                                                                                                    RMI_ERROR_INPUT
+                                                                num_vdevs                     pdev_state
+                                                                                            RMI_ERROR_DEVICE
+               B4.3.24.3 Success conditions
+  ID                          Condition
+  pdev_state                  pdev.state == PDEV_STOPPING
+  comm_state                  pdev.comm_state == DEV_COMM_PENDING
+               B4.3.24.4 Footprint
+    ID                          Value
+    state                       pdev.state
+    comm_state                  pdev.comm_state

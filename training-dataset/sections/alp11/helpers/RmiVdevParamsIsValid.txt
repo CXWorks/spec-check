@@ -1,0 +1,4 @@
+B3.97 RmiVdevParamsIsValid function
+             Returns TRUE if the memory location contains a valid encoding of the RmiPdevParams type.
+             func RmiVdevParamsIsValid(
+                 addr : Address) => boolean

@@ -1,0 +1,14 @@
+C2.60 RmmVdevAttestInfo type
+             The RmmVdevAttestInfo structure contains attestation information for a VDEV.
+             The RmmVdevAttestInfo structure is an abstract type.
+             The members of the RmmVdevAttestInfo structure are shown in the following table.
+             Name                Type                                    Description
+             lock_nonce          UInt64                                  Nonce generated on most recent transition to LOCKED
+                                                                         state
+             meas_nonce          UInt64                                  Nonce generated on most recent
+                                                                         GET_MEASUREMENT request
+             report_nonce        UInt64                                  Nonce generated on most recent
+                                                                         GET_INTERFACE_REPORT request
+             The RmmVdevAttestInfo structure is used in the following types:
+                • RmmVdev
+                • RmmRec

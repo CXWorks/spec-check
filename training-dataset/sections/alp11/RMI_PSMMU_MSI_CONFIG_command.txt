@@ -1,0 +1,40 @@
+B4.3.23 RMI_PSMMU_MSI_CONFIG command
+               Program the MSI configuration for the Realm side of the physical SMMU.
+               B4.3.23.1 Interface
+               B4.3.23.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC400016E
+        psmmu                X1          63:0        Address                               PA of PSMMU
+        gerr_addr            X2          63:0        Address                               MSI address of the GERROR interrupt
+        gerr_data            X3          63:0        Bits64                                MSI data of the GERROR interrupt
+        eventq_addr          X4          63:0        Address                               MSI address of the EVENTQ interrupt
+        eventq_data          X5          63:0        Bits64                                MSI data of the EVENTQ interrupt
+        priq_addr            X6          63:0        Address                               MSI address of the PRIQ interrupt
+        priq_data            X7          63:0        Bits64                                MSI data of the PRIQ interrupt
+               B4.3.23.1.2   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.23.2 Failure conditions
+  ID                          Condition
+  psmmu_valid                 pre: !PsmmuAddrIsValid(psmmu)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  psmmu_msi                   pre: !PsmmuSupportsMsi(psmmu)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  gerror_valid                pre: !MsiAddrIsValid(gerr_addr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  eventq_valid                pre: !MsiAddrIsValid(eventq_addr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  priq_valid                  pre: !MsiAddrIsValid(priq_addr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+               B4.3.23.2.1   Failure condition ordering
+               The RMI_PSMMU_MSI_CONFIG command does not have any failure condition orderings.
+              B4.3.23.3 Success conditions
+  ID                        Condition
+  gerr_addr                 gerr_addr is programmed to SMMU_R_GERROR_IRQ_CFG0 with NS bit set.
+  gerr_data                 gerr_data is programmed to SMMU_R_GERROR_IRQ_CFG1.
+  eventq_addr               eventq_addr is programmed to SMMU_R_EVENTQ_IRQ_CFG0 with NS bit set.
+  eventq_data               eventq_data is programmed to SMMU_R_EVENTQ_IRQ_CFG1.
+  priq_addr                 priq_addr is programmed to SMMU_R_PRIQ_IRQ_CFG0 with NS bit set.
+  priq_data                 priq_data is programmed to SMMU_R_PRIQ_IRQ_CFG1.
+              B4.3.23.4 Footprint
+              The RMI_PSMMU_MSI_CONFIG command does not have any footprint.

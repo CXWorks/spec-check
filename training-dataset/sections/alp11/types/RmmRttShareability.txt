@@ -1,0 +1,9 @@
+C2.53 RmmRttShareability type
+             The RmmRttShareability enumeration represents shareability attributes.
+             The RmmRttShareability enumeration is an abstract type.
+             The values of the RmmRttShareability enumeration are shown in the following table.
+                    Name                                     Description
+                    SHAREABILITY_INNER                       Inner Shareable.
+                    SHAREABILITY_OUTER                       Outer Shareable.
+             The RmmRttShareability enumeration is used in the following types:
+                • RmmRttEntry

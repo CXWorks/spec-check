@@ -1,0 +1,12 @@
+C2.6 RmmDevMemCoherent type
+                The RmmDevMemCoherent enumeration represents whether a device memory location is within the system
+                coherent memory space.
+                The RmmDevMemCoherent enumeration is an abstract type.
+                The values of the RmmDevMemCoherent enumeration are shown in the following table.
+                    Name                                    Description
+                    DEV_MEM_COHERENT                        A device memory location is within the system coherent memory
+                                                            space
+                    DEV_MEM_NON_COHERENT                    A device memory location is not within the system coherent
+                                                            memory space
+            The RmmDevMemCoherent enumeration is used in the following types:
+               • RmmDevMemFlags

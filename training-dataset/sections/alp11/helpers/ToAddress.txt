@@ -1,0 +1,6 @@
+B3.152 ToAddress function
+             Convert integer to Address.
+             func ToAddress(value : integer) => Address
+             begin
+                 return value[(ADDRESS_WIDTH-1):0];
+             end

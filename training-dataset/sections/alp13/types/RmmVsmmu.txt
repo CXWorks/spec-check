@@ -1,0 +1,12 @@
+C2.62 RmmVsmmu type
+            The RmmVsmmu structure contains attributes of a VSMMU.
+            The RmmVsmmu structure is an abstract type.
+            The members of the RmmVsmmu structure are shown in the following table.
+            Name                 Type                                    Description
+            state                RmmVsmmuState                           State of the VSMMU
+            realm                Address                                 PA of RD of Realm which owns this VSMMU
+            reg_base             Address                                 Base IPA of register base in Realm’s Protected IPA
+                                                                         space
+            reg_top              Address                                 Top IPA of register base in Realm’s Protected IPA space
+            aidr                 Bits64                                  SMMU_AIDR register value
+            idr                  Bits64[7]                               SMMU_IDR register values

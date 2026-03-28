@@ -1,0 +1,5 @@
+B3.66 RttLevelIsValid function
+             Returns TRUE if level is a valid RTT level for the Realm described by rd.
+             func RttLevelIsValid(
+                 rd : Address,
+                 level : integer) => boolean

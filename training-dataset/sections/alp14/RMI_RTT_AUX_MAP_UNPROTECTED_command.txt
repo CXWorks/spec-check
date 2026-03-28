@@ -1,0 +1,66 @@
+B4.3.35 RMI_RTT_AUX_MAP_UNPROTECTED command
+              Copies a valid or table descriptor at an Unprotected IPA from the starting level of the primary RTT to an auxiliary
+              RTT.
+              B4.3.35.1 Interface
+              B4.3.35.1.1    Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID, value 0xC4000181
+        rd                  X1           63:0        Address                               PA of the RD for the target Realm
+        ipa                 X2           63:0        Address                               IPA in the target Realm
+        index               X3           63:0        UInt64                                RTT tree index
+              B4.3.35.1.2    Context
+              The RMI_RTT_AUX_MAP_UNPROTECTED command operates on the following context.
+        Name                Type                        Value                                      Before   Description
+        realm               RmmRealm                    RealmAt(rd)                                false    Realm
+        walk_pri            RmmRttWalkResult            RttWalk(                                   false    Primary RTT walk
+                                                            realm, ipa,                                     result
+                                                            realm.rtt_level_start,
+                                                            RMM_RTT_TREE_PRIMARY)
+        walk_aux            RmmRttWalkResult            RttWalk(                                   false    Auxiliary RTT walk
+                                                            realm, ipa,                                     result
+                                                            realm.rtt_level_start,
+                                                            index)
+        entry_idx           UInt64                      RttEntryIndex(                             false    RTTE index
+                                                            ipa, walk_aux.level)
+              B4.3.35.1.3    Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        RmiCommandReturnCode                  Command return status
+              B4.3.35.2 Failure conditions
+  ID                          Condition
+  rd_align                    pre: !AddrIsGranuleAligned(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                    pre: !PaIsDelegable(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                    pre: GranuleAt(rd).state != RD
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                   pre: !AddrIsRttLevelAligned(ipa, realm.rtt_level_start)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_bound                   pre:  (UInt(ipa) >= (2 ^ realm.ipa_width)
+                                        || AddrIsProtected(ipa, realm))
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  index_bound                 pre:  (realm.rtt_tree_per_plane == FEATURE_FALSE
+                                        || index == RMM_RTT_TREE_PRIMARY
+                                        || index > realm.num_aux_planes)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  pri_state                   pre: walk_pri.rtte.state == UNASSIGNED_NS
+                              post: ResultEqual(result, RMI_ERROR_RTT, walk_pri.level)
+               B4.3.35.2.1   Failure condition ordering
+               [rd_bound, rd_state] < [pri_state]
+               [ipa_bound, index_bound] < [pri_state]
+                       ipa_align       rd_align         index_bound          ipa_bound           rd_state       rd_bound
+                                                                                                               RMI_ERROR_INPUT
+                                                                                                pri_state
+                                                                                              RMI_ERROR_RT
+               B4.3.35.3 Success conditions
+  ID                          Condition
+  rtte_state                  post: walk_aux.rtte.state == walk_pri.rtte.state
+  rtte_attr                   post: (RttMemAttrEqual(
+                                        walk_aux.rtte, walk_pri.rtte,
+                                        RTT_UNPROTECTED)
+                                        && RttS2APEqual(
+                                            walk_aux.rtte, walk_pri.rtte,
+                                            realm.rtt_s2ap_encoding))
+  rtte_addr                   post: walk_aux.rtte.addr == walk_pri.rtte.addr
+             B4.3.35.4 Footprint
+    ID                        Value
+    rtte                      RttEntry(walk_aux.rtt_addr, entry_idx)

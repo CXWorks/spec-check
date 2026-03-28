@@ -1,0 +1,26 @@
+B3.142 RttSkipEntriesWithRipas function
+              Scan rtt starting from base and terminating at top.
+                 • If stop_at_destroyed is FALSE then return IPA of the first entry whose state is TABLE.
+                 • If stop_at_destroyed is TRUE then return IPA of the first entry whose state is TABLE or whose RIPAS is
+                   DESTROYED.
+              If no such entry is found, returns the smaller of:
+                 • The next IPA after the last entry in rtt
+                 • The top argument.
+              The return value is aligned to the size of the address range described by an entry at RTT level.
+              func RttSkipEntriesWithRipas(
+                  rtt : RmmRtt,
+                  level : integer,
+                  base : Address,
+                  top : Address,
+                  stop_at_destroyed : boolean) => Address
+              begin
+                  var result : Address = RttSkipEntriesUnlessState(
+                                   rtt, level, base, TABLE);
+                  if stop_at_destroyed then
+                       result = MinAddress(result,
+                           RttSkipEntriesUnlessRipas(
+                               rtt, level, base, DESTROYED));
+                  end;
+                  result = MinAddress(result, top);
+                 return AlignDownToRttLevel(result, level);
+             end;

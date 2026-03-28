@@ -1,0 +1,13 @@
+C2.43 RmmRipas type
+            The RmmRipas enumeration represents realm IPA state.
+            The RmmRipas enumeration is an abstract type.
+            The values of the RmmRipas enumeration are shown in the following table.
+                   Name                                    Description
+                   DESTROYED                               Address which is inaccessible to the Realm due to an action taken
+                                                           by the Host.
+                   DEV                                     Address where memory of an assigned Realm device is mapped.
+                   EMPTY                                   Address where no Realm resources are mapped.
+                   RAM                                     Address where private code or data owned by the Realm is mapped.
+            The RmmRipas enumeration is used in the following types:
+               • RmmRttEntry
+               • RmmRec

@@ -1,0 +1,7 @@
+C1.8 RmmHostCallPending type
+               The RmmHostCallPending enumeration represents whether a Host call is pending.
+               The RmmHostCallPending enumeration is an abstract type.
+               The values of the RmmHostCallPending enumeration are shown in the following table.
+                       Name                                   Description
+                       HOST_CALL_PENDING                      No Host call is pending.
+                       NO_HOST_CALL_PENDING                   A Host call is pending.

@@ -1,0 +1,58 @@
+B4.3.56 RMI_VDEV_LOCK command
+               Lock VDEV.
+               B4.3.56.1 Interface
+               B4.3.56.1.1   Input values
+        Name                 Register    Bits         Type                                 Description
+        fid                  X0          63:0         UInt64                               FID, value 0xC40001D2
+        rd                   X1          63:0         Address                              PA of the RD
+        vdev_ptr             X2          63:0         Address                              PA of the VDEV
+               B4.3.56.1.2   Context
+               The RMI_VDEV_LOCK command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        realm                RmmRealm                   RealmAt(rd)                                false    Realm
+        vdev                 RmmVdev                    VdevAt(vdev_ptr)                           false    VDEV
+               B4.3.56.1.3   Output values
+        Name                 Register    Bits         Type                                 Description
+        result               X0          63:0         RmiCommandReturnCode                 Command return status
+               B4.3.56.2 Failure conditions
+  ID                          Condition
+  da_supp                     pre: ImplFeatures().feat_da != FEATURE_TRUE
+                              post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  rd_align                    pre: !AddrIsGranuleAligned(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                    pre: !PaIsDelegable(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                    pre: GranuleAt(rd).state != RD
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_align                  pre: !AddrIsGranuleAligned(vdev_ptr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_bound                  pre: !PaIsDelegable(vdev_ptr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                            Condition
+  vdev_gran_state               pre: GranuleAt(vdev_ptr).state != VDEV
+                                post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_realm                    pre: vdev.realm != rd
+                                post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_state                    pre: vdev.vdev_state != VDEV_UNLOCKED
+                                post: ResultEqual(result, RMI_ERROR_DEVICE)
+  comm_state                    pre: vdev.comm_state != DEV_COMM_IDLE
+                                post: ResultEqual(result, RMI_ERROR_DEVICE)
+               B4.3.56.2.1     Failure condition ordering
+               [rd_bound, rd_state, vdev_bound, vdev_gran_state] < [vdev_realm]
+               [da_supp] < [rd_bound, rd_state, vdev_align, vdev_bound,
+                    vdev_gran_state, vdev_realm]
+               [vdev_gran_state] < [vdev_state, comm_state]
+                                                                               da_supp
+                                                                       RMI_ERROR_NOT _SUPPORT ED
+                    rd_align     vdev_align   vdev_bound    rd_state          rd_bound             vdev_gran_state
+                                                                             vdev_realm                                      comm_state    vdev_state
+                                                                                                                                          RMI_ERROR_DEVICE
+                                                                                                           RMI_ERROR_INPUT
+               B4.3.56.3 Success conditions
+  ID                            Condition
+  op                            post: vdev.op == VDEV_OP_LOCK
+  comm_state                    post: vdev.comm_state == DEV_COMM_PENDING
+               B4.3.56.4 Footprint
+    ID                            Value
+    op                            vdev.op
+    comm_state                    vdev.comm_state

@@ -1,0 +1,11 @@
+B3.31 MecPolicy function
+             Returns policy associated with a given MEC.
+             func MecPolicy(
+                 mecid : bits(64)) => RmmMecPolicy
+             begin
+                 case MecState(mecid) of
+                     when MEC_STATE_SHARED             => return MEC_POLICY_SHARED;
+                     when MEC_STATE_PRIVATE_ASSIGNED   => return MEC_POLICY_PRIVATE;
+                     when MEC_STATE_PRIVATE_UNASSIGNED => return MEC_POLICY_PRIVATE;
+                 end
+             end

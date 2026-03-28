@@ -1,0 +1,3 @@
+B3.22 CurrentRealm function
+             Returns the current Realm.
+             func CurrentRealm() => RmmRealm

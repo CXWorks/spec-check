@@ -1,0 +1,7 @@
+pub enum RmmRttEntryState {
+  ASSIGNED,
+  ASSIGNED_NS,
+  TABLE,
+  UNASSIGNED,
+  UNASSIGNED_NS,
+}

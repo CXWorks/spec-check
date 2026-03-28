@@ -1,0 +1,7 @@
+pub enum RmiVdevState {
+  RMI_VDEV_NEW,
+  RMI_VDEV_UNLOCKED,
+  RMI_VDEV_LOCKED,
+  RMI_VDEV_STARTED,
+  RMI_VDEV_ERROR,
+}

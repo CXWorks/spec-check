@@ -1,0 +1,4 @@
+B3.95 RmiVersionHigherIsSupported function
+             Returns TRUE if the RMM supports an RMI revision which is incompatible with and greater than version.
+             func RmiVersionHigherIsSupported(
+                 version : RmiInterfaceVersion) => boolean

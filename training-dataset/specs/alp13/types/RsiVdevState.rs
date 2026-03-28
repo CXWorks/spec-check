@@ -1,0 +1,7 @@
+pub enum RsiVdevState {
+  RSI_VDEV_NEW,
+  RSI_VDEV_UNLOCKED,
+  RSI_VDEV_LOCKED,
+  RSI_VDEV_STARTED,
+  RSI_VDEV_ERROR,
+}

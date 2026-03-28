@@ -1,0 +1,4 @@
+B3.89 RmiVdevFlagsDecode function
+             Decode RmiVdevFlags value.
+             func RmiVdevFlagsDecode(
+                 value : bits(64)) => RmiVdevFlags

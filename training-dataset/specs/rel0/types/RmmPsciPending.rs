@@ -1,0 +1,4 @@
+pub enum RmmPsciPending {
+  NO_PSCI_REQUEST_PENDING,
+  PSCI_REQUEST_PENDING,
+}

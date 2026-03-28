@@ -1,0 +1,4 @@
+B3.107 RsiVersionHighestBelow function
+             Returns the highest RSI revision which is both less than version and supported by the RMM.
+             func RsiVersionHighestBelow(
+                 version : RsiInterfaceVersion) => RsiInterfaceVersion

@@ -1,0 +1,5 @@
+B3.76 RimExtendRec function
+             Extend RIM with contribution from REC creation.
+             func RimExtendRec(
+                 realm : RmmRealm,
+                 params : RmiRecParams) => RmmRealmMeasurement

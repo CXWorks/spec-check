@@ -1,0 +1,7 @@
+B3.80 RmiPdevEventIsValid function
+             Returns TRUE if ev is a valid encoding, and the event is supported by pdev.
+             func RmiPdevEventIsValid(
+                 ev : RmiPdevEvent) => boolean
+             begin
+                 return (ev == RMI_IDE_KEY_REFRESH);
+             end

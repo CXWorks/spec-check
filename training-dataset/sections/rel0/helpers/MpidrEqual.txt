@@ -1,0 +1,11 @@
+B3.23 MpidrEqual function
+             Returns TRUE if the specified MPIDR values are logically equivalent.
+             func MpidrEqual(
+                 rmm_mpidr : bits(64),
+                 rmi_mpidr : RmiRecMpidr) => boolean
+             begin
+                 return (rmm_mpidr[ 3: 0] == rmi_mpidr.aff0
+                     && rmm_mpidr[15: 8] == rmi_mpidr.aff1
+                     && rmm_mpidr[23:16] == rmi_mpidr.aff2
+                     && rmm_mpidr[31:24] == rmi_mpidr.aff3);
+             end

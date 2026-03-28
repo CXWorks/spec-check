@@ -1,0 +1,5 @@
+B3.92 RmiVdevMeasureParamsAt function
+             Returns device measurement parameters stored at physical address addr.
+             If the PAS of addr is not NS, the return value is UNKNOWN.
+             func RmiVdevMeasureParamsAt(
+                 addr : Address) => RmiVdevMeasureParams

@@ -1,0 +1,4 @@
+B3.97 RmiVersionHighestBelow function
+             Returns the highest RMI revision which is both less than version and supported by the RMM.
+             func RmiVersionHighestBelow(
+                 version : RmiInterfaceVersion) => RmiInterfaceVersion

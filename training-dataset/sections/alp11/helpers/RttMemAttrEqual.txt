@@ -1,0 +1,14 @@
+B3.137 RttMemAttrEqual function
+             Returns TRUE if the memory attributes of the two RTT entries match.
+             func RttMemAttrEqual(
+                 rtte1 : RmmRttEntry,
+                 rtte2 : RmmRttEntry,
+                 prot : RmmRttProtected) => boolean
+             begin
+                 case prot of
+                     when RTT_PROTECTED =>
+                         return rtte1.attr_prot == rtte2.attr_prot;
+                     when RTT_UNPROTECTED =>
+                         return rtte1.attr_unprot == rtte2.attr_unprot;
+                 end
+             end

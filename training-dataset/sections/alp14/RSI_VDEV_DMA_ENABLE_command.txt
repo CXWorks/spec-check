@@ -1,0 +1,48 @@
+B5.3.16 RSI_VDEV_DMA_ENABLE command
+                  Enable DMA.
+                  B5.3.16.1 Interface
+                  B5.3.16.1.1   Input values
+          Name                  Register    Bits        Type                                  Description
+          fid                   X0          63:0        UInt64                                FID, value 0xC400019C
+          vdev_id               X1          63:0        Bits64                                Realm device identifier
+          flags                 X2          63:0        RsiVdevDmaFlags                       Flags
+          lock_nonce            X3          63:0        UInt64                                Nonce generated on most recent
+                                                                                              transition to LOCKED state
+          meas_nonce            X4          63:0        UInt64                                GET_MEASUREMENT request
+                                                                                              sequence number
+          report_nonce          X5          63:0        UInt64                                GET_INTERFACE_REPORT request
+                  B5.3.16.1.2   Context
+                  The RSI_VDEV_DMA_ENABLE command operates on the following context.
+          Name                  Type                       Value                                      Before    Description
+          realm                 RmmRealm                   CurrentRealm()                             false     Current Realm
+          vdev                  RmmVdev                                                               false     Realm device
+                                                           VdevFromVdevId(
+                                                               realm,
+                                                               vdev_id)
+                  B5.3.16.1.3   Output values
+          Name                  Register    Bits        Type                                  Description
+          result                X0          63:0        RsiCommandReturnCode                  Command return status
+                  B5.3.16.2 Failure conditions
+  ID                             Condition
+  da_en                          pre: realm.feat_da != FEATURE_TRUE
+                                 post: result == RSI_ERROR_STATE
+  vdev_id                        pre: VdevIdIsFree(realm, vdev_id)
+                                 post: result == RSI_ERROR_INPUT
+  ID                           Condition
+  attest_info                  pre:  !VdevAttestInfoEqual(
+                                         lock_nonce,
+                                         meas_nonce,
+                                         report_nonce,
+                                         vdev.attest_info)
+                               post: result == RSI_ERROR_DEVICE
+                B5.3.16.2.1   Failure condition ordering
+                [da_en] < [vdev_id]
+                                                             da_en  T                       attest_info
+                                                   RSI_ERROR_STAT E                       RSI_ERROR_DEVICE
+                                                            vdev_id
+                                                     RSI_ERROR_INPUT
+                B5.3.16.3 Success conditions
+  ID                           Condition
+  dma_state                    post: vdev.dma_state == VDEV_DMA_ENABLED
+                B5.3.16.4 Footprint
+                The RSI_VDEV_DMA_ENABLE command does not have any footprint.

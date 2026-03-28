@@ -1,0 +1,30 @@
+B5.3.13 RSI_PLANE_REG_READ command
+               Read a Plane register.
+               B5.3.13.1 Interface
+               B5.3.13.1.1    Input values
+         Name                Register     Bits        Type                                  Description
+         fid                 X0           63:0        UInt64                                FID, value 0xC40001AE
+         plane_idx           X1           63:0        UInt64                                Index of target Plane
+         encoding            X2           63:0        Bits64                                Encoding of target register
+               The encoding value is an architecturally-defined system register encoding.
+               B5.3.13.1.2    Context
+               The RSI_PLANE_REG_READ command operates on the following context.
+         Name                Type                        Value                                      Before     Description
+         realm               RmmRealm                    CurrentRealm()                             false      Current Realm
+               B5.3.13.1.3    Output values
+         Name                Register     Bits        Type                                  Description
+         result              X0           63:0        RsiCommandReturnCode                  Command return status
+         value               X1           63:0        Bits64                                Value of target register
+               B5.3.13.2 Failure conditions
+  ID                           Condition
+  idx_bound                    pre: plane_idx > realm.num_aux_planes
+                               post: result == RSI_ERROR_INPUT
+  reg_valid                    pre: !PlaneRegIsValid(realm, encoding)
+                               post: result == RSI_ERROR_INPUT
+               B5.3.13.2.1    Failure condition ordering
+               The RSI_PLANE_REG_READ command does not have any failure condition orderings.
+             B5.3.13.3 Success conditions
+  ID                         Condition
+  value                      value == PlaneRegValue(realm, plane_idx, encoding)
+             B5.3.13.4 Footprint
+             The RSI_PLANE_REG_READ command does not have any footprint.

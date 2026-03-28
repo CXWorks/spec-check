@@ -1,0 +1,5 @@
+B3.132 RttLevelSize function
+             Returns the size of the address space described by each entry in an RTT at level.
+             If level is invalid, the return value is UNKNOWN.
+             func RttLevelSize(
+                 level : integer) => integer

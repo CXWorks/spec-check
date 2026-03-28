@@ -1,0 +1,4 @@
+B3.63 RttIsLive function
+             Returns TRUE if the RTT at address rtt is live.
+             func RttIsLive(
+                 rtt : RmmRtt) => boolean

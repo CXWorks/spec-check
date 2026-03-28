@@ -1,0 +1,12 @@
+C2.48 RmmRttPlaneFeature type
+            The RmmRttPlaneFeature enumeration represents RTT usage models supported for multi-Plane Realms.
+            The RmmRttPlaneFeature enumeration is an abstract type.
+            The values of the RmmRttPlaneFeature enumeration are shown in the following table.
+                    Name                                    Description
+                    RTT_PLANE_AUX                           A multi-Plane Realm uses auxiliary RTTs
+                     Name                                     Description
+                     RTT_PLANE_AUX_SINGLE                     A multi-Plane Realm can be configured to either use auxiliary
+                                                              RTTs, or a single RTT
+                     RTT_PLANE_SINGLE                         A multi-Plane Realm uses a single RTT
+             The RmmRttPlaneFeature enumeration is used in the following types:
+                • RmmFeatures

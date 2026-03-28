@@ -1,0 +1,7 @@
+B3.6 AddrIsRttLevelAligned function
+             Returns TRUE if Address addr is aligned to the size of the address range described by an RTTE in a level level
+             RTT.
+             Returns FALSE if level is invalid.
+             func AddrIsRttLevelAligned(
+                 addr : Address,
+                 level : integer) => boolean

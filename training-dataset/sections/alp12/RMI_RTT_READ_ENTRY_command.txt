@@ -1,0 +1,102 @@
+B4.3.48 RMI_RTT_READ_ENTRY command
+                Reads an entry from a primary RTT.
+                B4.3.48.1 Interface
+                B4.3.48.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000161
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               Realm Address for which to read the
+                                                                                            RTTE
+        level                 X3          63:0        Int64                                 RTT level at which to read the RTTE
+                B4.3.48.1.2   Context
+                The RMI_RTT_READ_ENTRY command operates on the following context.
+        Name                  Type                       Value                                      Before    Description
+        realm                 RmmRealm                   RealmAt(rd)                                false     Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                             realm, ipa, level,
+                                                             RMM_RTT_TREE_PRIMARY)
+        rtte                  RmmRttEntry                RttDescriptorDecode(                       false     RTT entry value
+                                                             desc,                                            returned to Host
+                                                             realm.rtt_s2ap_encoding
+                                                                 ,→)
+                B4.3.48.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        walk_level            X1          63:0        UInt64                                RTT level reached by the RTT walk
+        state                 X2          7:0         RmiRttEntryState                      State of RTTE reached by the walk
+        desc                  X3          63:0        Bits64                                RTTE descriptor
+        ripas                 X4          7:0         RmiRipas                              RIPAS of RTTE reached by the walk
+                The following unused bits of RMI_RTT_READ_ENTRY output values MBZ: X2[63:8], X4[63:8].
+                The layout and encoding of fields in the rtte output value match “Attribute fields in stage 2 VMSAv8-64 Block
+                and Page descriptors” in Arm Architecture Reference Manual for A-Profile architecture [3].
+               B4.3.48.2 Failure conditions
+  ID                          Condition
+  rd_align                    pre: !AddrIsGranuleAligned(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                    pre: !PaIsDelegable(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                    pre: GranuleAt(rd).state != RD
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_bound                 pre: !RttLevelIsValid(realm, level)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                   pre: !AddrIsRttLevelAligned(ipa, level)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_bound                   pre: UInt(ipa) >= (2 ^ realm.ipa_width)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+               B4.3.48.2.1   Failure condition ordering
+               The RMI_RTT_READ_ENTRY command does not have any failure condition orderings.
+               B4.3.48.3 Success conditions
+  ID                          Condition
+  walk_level                  walk_level == walk.level
+  state                       state == RttEntryStateToRmi(walk.rtte.state)
+  state_invalid               pre:  (walk.rtte.state == UNASSIGNED
+                                        || walk.rtte.state == UNASSIGNED_NS)
+                              post: (rtte.attr_unprot == Zeros(3)
+                                        && rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS
+                                        && rtte.s2ap_indirect.overlay_index == 0
+                                        && rtte.s2ap_direct.read == RMM_FALSE
+                                        && rtte.s2ap_direct.write == RMM_FALSE
+                                        && rtte.addr == Zeros(ADDRESS_WIDTH))
+  state_prot                  pre:  (walk.rtte.state == ASSIGNED
+                                        || walk.rtte.state == ASSIGNED_DEV
+                                        || walk.rtte.state == ASSIGNED_VSMMU
+                                        || walk.rtte.state == TABLE)
+                              post: (rtte.attr_unprot == Zeros(3)
+                                        && rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS
+                                        && rtte.s2ap_indirect.overlay_index == 0
+                                        && rtte.s2ap_direct.read == RMM_FALSE
+                                        && rtte.s2ap_direct.write == RMM_FALSE
+                                        && rtte.addr == walk.rtte.addr)
+  ID                        Condition
+  state_unprot              pre: walk.rtte.state == ASSIGNED_NS
+                            post: (rtte.attr_unprot == walk.rtte.attr_unprot
+                                      && rtte.s2ap_indirect.base_index
+                                          == walk.rtte.s2ap_indirect.base_index
+                                      && rtte.s2ap_indirect.overlay_index == 0
+                                      && rtte.s2ap_direct.read
+                                          == walk.rtte.s2ap_direct.read
+                                      && rtte.s2ap_direct.write
+                                          == walk.rtte.s2ap_direct.write
+                                      && rtte.addr == walk.rtte.addr)
+  state_io                  pre: walk.rtte.state == ASSIGNED_DEV
+                            post: (rtte.attr_unprot == Zeros(3)
+                                      && rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS
+                                      && rtte.s2ap_indirect.overlay_index == 0
+                                      && rtte.s2ap_direct.read == RMM_FALSE
+                                      && rtte.s2ap_direct.write == RMM_FALSE
+                                      && rtte.addr == walk.rtte.addr)
+  state_vsmmu               pre: walk.rtte.state == ASSIGNED_VSMMU
+                            post: (rtte.attr_unprot == Zeros(3)
+                                      && rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS
+                                      && rtte.s2ap_indirect.overlay_index == 0
+                                      && rtte.s2ap_direct.read == RMM_FALSE
+                                      && rtte.s2ap_direct.write == RMM_FALSE
+                                      && rtte.addr == walk.rtte.addr)
+  ripas_prot                pre:  (walk.rtte.state == UNASSIGNED
+                                      || walk.rtte.state == ASSIGNED)
+                            post: ripas == RipasToRmi(walk.rtte.ripas)
+  ripas_unprot              pre:  (walk.rtte.state == UNASSIGNED_NS
+                                      || walk.rtte.state == ASSIGNED_NS)
+                            post: ripas == RMI_EMPTY
+               B4.3.48.4 Footprint
+               The RMI_RTT_READ_ENTRY command does not have any footprint.

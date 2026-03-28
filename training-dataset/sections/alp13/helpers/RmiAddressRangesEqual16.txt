@@ -1,0 +1,18 @@
+B3.76 RmiAddressRangesEqual16 function
+             Returns TRUE if the first count entries in two arrays of address ranges are equal.
+             func RmiAddressRangesEqual16(
+                 ranges1 : array [[16]] of RmmAddressRange,
+                 ranges2 : array [[16]] of RmiAddressRange,
+                 count : integer) => boolean
+             begin
+                 assert 0 <= count && count <= 16;
+                 for i = 0 to count - 1 do
+                      if ranges1[[i]].base != ranges2[[i]].base then
+                          return FALSE;
+                      end;
+                      if ranges1[[i]].top != ranges2[[i]].top then
+                          return FALSE;
+                      end;
+                 end;
+                 return TRUE;
+             end;

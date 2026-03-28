@@ -1,0 +1,13 @@
+C2.49 RmmRttMemAttr type
+            The RmmRttMemAttr enumeration represents memory type and cacheability attributes.
+            The RmmRttMemAttr enumeration is an abstract type.
+            The values of the RmmRttMemAttr enumeration are shown in the following table.
+                    Name                                    Description
+                    MEMATTR_CACHEABLE                       Memory type and cacheability attributes for a mapping to a
+                                                            cacheable location.
+                    MEMATTR_NON_CACHEABLE                   Memory type and cacheability attributes for a mapping to a
+                                                            non-cacheable location.
+                    MEMATTR_PASSTHROUGH                     Pass through memory type and cacheability attributes from stage 1
+                                                            translation.
+            The RmmRttMemAttr enumeration is used in the following types:
+               • RmmRttEntry

@@ -1,0 +1,7 @@
+C1.15 RmmPsciPending type
+            The RmmPsciPending enumeration represents whether a PSCI request is pending.
+            The RmmPsciPending enumeration is an abstract type.
+            The values of the RmmPsciPending enumeration are shown in the following table.
+                    Name                                        Description
+                    NO_PSCI_REQUEST_PENDING                     A PSCI request is pending.
+                    PSCI_REQUEST_PENDING                        No PSCI request is pending.

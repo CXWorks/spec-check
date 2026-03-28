@@ -1,0 +1,14 @@
+B3.48 PdevFlags function
+             Get RmiPdevFlags value.
+             func PdevFlags(
+                 pdev : RmmPdev) => RmiPdevFlags
+             begin
+                 var flags : RmiPdevFlags;
+                   case pdev.prot of
+                       when PDEV_IOCOH_E2E_IDE => flags.prot = RMI_PDEV_IOCOH_E2E_IDE;
+                       when PDEV_IOCOH_E2E_SYS => flags.prot = RMI_PDEV_IOCOH_E2E_SYS;
+                       when PDEV_FCOH_E2E_IDE => flags.prot = RMI_PDEV_FCOH_E2E_IDE;
+                       when PDEV_FCOH_E2E_SYS => flags.prot = RMI_PDEV_FCOH_E2E_SYS;
+                   end
+                   return flags;
+             end

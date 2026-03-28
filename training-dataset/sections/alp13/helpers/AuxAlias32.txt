@@ -1,0 +1,20 @@
+B3.13 AuxAlias32 function
+             Returns TRUE if any of the first count entries in a list of auxiliary Granule addresses are aliased - either among
+             themselves, or with the address of another RMM object.
+             func AuxAlias32(
+                 obj : Address,
+                 aux : array [[32]] of Address,
+                 count : integer) => boolean
+             begin
+                 assert 0 <= count && count <= 32;
+                 var sorted = AuxSort(aux, count);
+                 for i = 0 to count - 1 do
+                      if sorted[[i]] == obj then
+                          return TRUE;
+                      end;
+                      if i >= 1 && sorted[[i]] == sorted[[i - 1]] then
+                          return TRUE;
+                      end;
+                 end;
+                 return FALSE;
+             end;

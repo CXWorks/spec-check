@@ -1,0 +1,9 @@
+C2.52 RmmRttS2APIndirect type
+             The RmmRttS2APIndirect structure contains indirectly-encoded S2AP.
+             The RmmRttS2APIndirect structure is an abstract type.
+             The members of the RmmRttS2APIndirect structure are shown in the following table.
+             Name                Type                                    Description
+             base_index          UInt4                                   Base permission index
+             overlay_index       UInt4
+             The RmmRttS2APIndirect structure is used in the following types:
+                • RmmRttEntry

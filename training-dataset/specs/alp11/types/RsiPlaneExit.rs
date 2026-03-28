@@ -1,0 +1,16 @@
+struct RsiPlaneExit {
+  pub reason: RsiPlaneExitReason,
+  pub elr_el2: UInt64,
+  pub esr_el2: UInt64,
+  pub far_el2: UInt64,
+  pub hpfar_el2: UInt64,
+  pub gicv3_hcr: UInt64,
+  pub gicv3_misr: UInt64,
+  pub gicv3_vmcr: UInt64,
+  pub cntp_ctl: UInt64,
+  pub cntp_cval: UInt64,
+  pub cntv_ctl: UInt64,
+  pub cntv_cval: UInt64,
+  pub gprs: [UInt64; 31],
+  pub gicv3_lrs: [UInt64; 16],
+}

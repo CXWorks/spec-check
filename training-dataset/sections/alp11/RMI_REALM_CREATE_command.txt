@@ -1,0 +1,128 @@
+B4.3.25 RMI_REALM_CREATE command
+              Creates a Realm.
+              B4.3.25.1 Interface
+              B4.3.25.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 X0          63:0        UInt64                                FID, value 0xC4000158
+        rd                  X1          63:0        Address                               PA of the RD
+        params_ptr          X2          63:0        Address                               PA of Realm parameters
+              B4.3.25.1.2   Context
+              The RMI_REALM_CREATE command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        params              RmiRealmParams             RmiRealmParamsAt(                          false    Realm parameters
+                                                           params_ptr)
+        realm               RmmRealm                   RealmAt(rd)                                false    Realm
+        mec_members_pre UInt64                         MecMembers(params.mecid)                   true     Number of Realms
+                                                                                                           which are members of
+                                                                                                           the Realm’s MEC
+        mec_state_pre       RmmMecState                MecState(params.mecid)                     true     MECID state
+              B4.3.25.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              X0          63:0        RmiCommandReturnCode                  Command return status
+              B4.3.25.2 Failure conditions
+  ID                         Condition
+  params_align               pre: !AddrIsGranuleAligned(params_ptr)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_pas                 pre: !GranuleAccessPermitted(params_ptr, PAS_NS)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                           Condition
+  params_valid                 pre: !RmiRealmParamsIsValid(params_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_supp                  pre: !RealmParamsSupported(params)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  alias                        pre:  AddrInRange(rd, params.rtt_base,
+                                         (params.rtt_num_start - 1) * RMM_GRANULE_SIZE)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                     pre: !PaIsDelegableDram(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != DELEGATED
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_align                    pre:  !AddrIsAligned(params.rtt_base,
+                                         params.rtt_num_start * RMM_GRANULE_SIZE)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_num_level                pre:  !RttConfigIsValid(
+                                         params.s2sz,
+                                         params.rtt_level_start, params.rtt_num_start)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_state                    pre:  !RttsStateEqual(
+                                         params.rtt_base, params.rtt_num_start, DELEGATED)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vmid_valid                   pre:  (!VmidsAreValid(params.vmid, params.aux_vmid)
+                                         || !VmidsAreFree(params.vmid, params.aux_vmid))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  mecid_bound                  pre: UInt(params.mecid) > UInt(ImplFeatures().max_mecid)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  mecid_state                  pre: MecState(params.mecid) == MEC_STATE_PRIVATE_ASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+                B4.3.25.2.1   Failure condition ordering
+                The RMI_REALM_CREATE command does not have any failure condition orderings.
+                B4.3.25.3 Success conditions
+  ID                           Condition
+  rd_state                     GranuleAt(rd).state == RD
+  realm_state                  realm.state == REALM_NEW
+  rec_index                    realm.rec_index == 0
+  rtt_base                     RealmRttBaseEqual(
+                                   realm, params.rtt_base, params.aux_rtt_base)
+  rtt_state                    RttsStateEqual(
+                                   realm.rtt_base[0], realm.rtt_num_start, RTT)
+  ID                            Condition
+  rtte_p_states                 RttsAllProtectedEntriesState(
+                                    realm.rtt_base[0], realm.rtt_num_start,
+                                    UNASSIGNED)
+  rtte_up_states                RttsAllUnprotectedEntriesState(
+                                    realm.rtt_base[0], realm.rtt_num_start,
+                                    UNASSIGNED_NS)
+  rtte_ripas                    RttsAllProtectedEntriesRipas(
+                                    realm.rtt_base[0], realm.rtt_num_start,
+                                    EMPTY)
+  lpa2                          Equal(realm.feat_lpa2, params.flags0.lpa2)
+  ipa_width                     realm.ipa_width == params.s2sz
+  hash_algo                     Equal(realm.hash_algo, params.hash_algo)
+  rim                           realm.measurements[0] == RimInit(
+                                    realm.hash_algo, params)
+  rem                           (realm.measurements[1] == Zeros(RMM_REALM_MEASUREMENT_WIDTH)
+                                    && realm.measurements[2] == Zeros(RMM_REALM_MEASUREMENT_WIDTH)
+                                    && realm.measurements[3] == Zeros(RMM_REALM_MEASUREMENT_WIDTH)
+                                    && realm.measurements[4] == Zeros(RMM_REALM_MEASUREMENT_WIDTH))
+  rtt_level                     realm.rtt_level_start == params.rtt_level_start
+  rtt_num
+                                realm.rtt_num_start == params.rtt_num_start
+  vmid                          RealmVmidEqual(
+                                    realm, params.vmid, params.aux_vmid)
+  rpv                           realm.rpv == params.rpv
+  da                            Equal(realm.feat_da, params.flags0.da)
+  rtt_tree_per_plane            Equal(realm.rtt_tree_per_plane, params.flags1.rtt_tree_per_plane)
+  num_aux_planes                realm.num_aux_planes == params.num_aux_planes
+  rtt_s2ap_encoding             Equal(realm.rtt_s2ap_encoding, params.flags1.rtt_s2ap_encoding)
+  lfa_policy                    Equal(realm.lfa_policy, params.flags0.lfa_policy)
+  mecid                         realm.mecid == params.mecid
+  mec_policy                    realm.mec_policy == MecPolicy(realm.mecid)
+  mecid_private                 pre: mec_state_pre == MEC_STATE_PRIVATE_UNASSIGNED
+                                post: MecState(params.mecid) == MEC_STATE_PRIVATE_ASSIGNED
+  mec_members                   pre: mec_state_pre == MEC_STATE_SHARED
+                                post: MecMembers(params.mecid) == mec_members_pre + 1
+  num_recs                      realm.num_recs == 0
+  num_vdevs                     realm.num_vdevs == 0
+  vdev_count                    realm.vdev_count == 0
+               B4.3.25.4 RMI_REALM_CREATE initialization of RIM
+               On successful execution of RMI_REALM_CREATE, the initial RIM value of the target Realm is calculated by the
+               RMM as follows:
+                   1. Allocate a zero-filled RmiRealmParams data structure to hold the measured Realm parameters.
+                  2. Copy the following attributes from the Host-provided RmiRealmParams data structure into the measured
+                     Realm parameters data structure:
+                   • flags0
+                   • s2sz
+                   • sve_vl
+                   • num_bps
+                   • num_wps
+                   • pmu_num_ctrs
+                   • hash_algo
+                  3. Using the RHA of the target Realm, compute the hash of the measured Realm parameters data structure. Set
+                     the RIM of the target Realm to this value, zero filling upper bytes if the RHA output is smaller than the size
+                     of the RIM.
+                B4.3.25.5 Footprint
+    ID                            Value
+    rd_state                      GranuleAt(rd).state
+    rtt_state                     RttsGranuleState( realm.rtt_base[0], realm.rtt_num_start)

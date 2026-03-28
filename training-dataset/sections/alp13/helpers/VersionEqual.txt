@@ -1,0 +1,8 @@
+B3.155 VersionEqual function
+             Returns TRUE if command result matches the stated value.
+             func VersionEqual(
+                 ver1 : RmiInterfaceVersion,
+                 ver2 : RmiInterfaceVersion) => boolean
+             func VersionEqual(
+                 ver1 : RsiInterfaceVersion,
+                 ver2 : RsiInterfaceVersion) => boolean

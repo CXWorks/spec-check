@@ -1,0 +1,11 @@
+C2.8 RmmDevMemOrdering type
+            The RmmDevMemOrdering enumeration represents ordering properties of a device memory location.
+            The RmmDevMemOrdering enumeration is an abstract type.
+            The values of the RmmDevMemOrdering enumeration are shown in the following table.
+                    Name                                          Description
+                    DEV_MEM_LIMITED_ORDER                         A device memory location is within a Limited Order Region
+                                                                  (LOR)
+                    DEV_MEM_NOT_LIMITED_ORDER                     A device memory location is not within a Limited Order
+                                                                  Region (LOR)
+            The RmmDevMemOrdering enumeration is used in the following types:
+               • RmmDevMemFlags

@@ -1,0 +1,9 @@
+C2.1 RmmAddressRange type
+            The RmmAddressRange structure contains address range.
+            The RmmAddressRange structure is an abstract type.
+            The members of the RmmAddressRange structure are shown in the following table.
+            Name               Type                                    Description
+            base               Address                                 Base of address range (inclusive)
+            top                Address                                 Top of address range (exclusive)
+            The RmmAddressRange structure is used in the following types:
+               • RmmPdev

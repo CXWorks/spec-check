@@ -1,0 +1,4 @@
+B3.37 MecState function
+             Returns state of a given MEC.
+             func MecState(
+                 mecid : bits(64)) => RmmMecState

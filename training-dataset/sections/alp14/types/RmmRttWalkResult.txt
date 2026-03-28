@@ -1,0 +1,11 @@
+C2.57 RmmRttWalkResult type
+             The RmmRttWalkResult structure contains result of an RTT walk.
+             The RmmRttWalkResult structure is an abstract type.
+             The members of the RmmRttWalkResult structure are shown in the following table.
+             Name                Type                                   Description
+             level               Int8                                   RTT level reached by the walk
+             rtt_addr            Address                                Address of RTT reached by the walk
+            Name                 Type                                   Description
+            rtte                 RmmRttEntry                            RTTE reached by the walk
+            The RmmRttWalkResult structure is used in the following types:
+                 • RmmRttWalkNotAligned

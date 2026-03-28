@@ -1,0 +1,10 @@
+B3.24 FeatureToRsi function
+             Convert feature bit to RSI type.
+             func FeatureToRsi(
+                 value : RmmFeature) => RsiFeature
+             begin
+                 case value of
+                         when FEATURE_FALSE => return RSI_FEATURE_FALSE;
+                         when FEATURE_TRUE => return RSI_FEATURE_TRUE;
+                 end;
+             end;

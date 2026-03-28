@@ -1,0 +1,8 @@
+B3.4 AddrIsProtected function
+             Returns TRUE if address addr is a Protected IPA for realm.
+             func AddrIsProtected(
+                 addr : Address,
+                 realm : RmmRealm) => boolean
+             begin
+                 return UInt(addr) < 2^(realm.ipa_width - 1);
+             end

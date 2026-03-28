@@ -1,0 +1,9 @@
+B3.22 AuxStates function
+             Inductive function which identifies the states of the first count entries in a list of auxiliary Granules.
+             This function is used in the definition of command footprint.
+             func AuxStates(
+                 aux : array [16] of Address,
+                 count : integer)
+             func AuxStates(
+                 aux : array [32] of Address,
+                 count : integer)

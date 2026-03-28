@@ -1,0 +1,9 @@
+C2.51 RmmRttS2APEncoding type
+             The RmmRttS2APEncoding enumeration represents encoding used for S2AP.
+             The RmmRttS2APEncoding enumeration is an abstract type.
+             The values of the RmmRttS2APEncoding enumeration are shown in the following table.
+                    Name                                     Description
+                    S2AP_DIRECT                              Direct S2AP encoding.
+                    S2AP_INDIRECT                            Indirect S2AP encoding.
+             The RmmRttS2APEncoding enumeration is used in the following types:
+                • RmmRealm

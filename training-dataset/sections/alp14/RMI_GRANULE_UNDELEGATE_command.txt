@@ -1,0 +1,29 @@
+B4.3.6 RMI_GRANULE_UNDELEGATE command
+               Undelegates a Granule.
+               B4.3.6.1 Interface
+               B4.3.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID, value 0xC4000152
+        addr                X1           63:0        Address                               PA of the target Granule
+               B4.3.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        RmiCommandReturnCode                  Command return status
+               B4.3.6.2 Failure conditions
+  ID                          Condition
+  gran_align                  pre: !AddrIsGranuleAligned(addr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  gran_bound                  pre: !PaIsDelegable(addr)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  gran_state                  pre: GranuleAt(addr).state != DELEGATED
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+               B4.3.6.2.1   Failure condition ordering
+               The RMI_GRANULE_UNDELEGATE command does not have any failure condition orderings.
+               B4.3.6.3 Success conditions
+  ID                          Condition
+  gran_gpt                    post: GranuleAt(addr).gpt != GPT_REALM
+  gran_state                  post: GranuleAt(addr).state == UNDELEGATED
+  gran_content                post: Contents of target Granule are wiped.
+               B4.3.6.4 Footprint
+    ID                        Value
+    gran_gpt                  GranuleAt(addr).gpt
+    gran_state                GranuleAt(addr).state

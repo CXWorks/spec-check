@@ -1,0 +1,81 @@
+B4.3.38 RMI_RTT_CREATE command
+                Creates a primary RTT.
+                B4.3.38.1 Interface
+                B4.3.38.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400015D
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        rtt                   X2          63:0        Address                               PA of the target RTT
+        ipa                   X3          63:0        Address                               Base of the IPA range described by the
+                                                                                            RTT
+        level                 X4          63:0        Int64                                 RTT level
+                B4.3.38.1.2   Context
+                The RMI_RTT_CREATE command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                                             realm, ipa,
+                                                             level - 1,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+        walk_pre              RmmRttWalkResult           RttWalk(                                   true     RTT walk result
+                                                             realm, ipa,                                     before command
+                                                             level - 1,                                      execution
+                                                             RMM_RTT_TREE_PRIMARY)
+        rtte_pre              RmmRttEntry                walk_pre.rtte                              true     RTTE before
+                                                                                                             command execution
+                B4.3.38.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.38.2 Failure conditions
+  ID                              Condition
+  rd_align                        pre: !AddrIsGranuleAligned(rd)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                        pre: !PaIsDelegable(rd)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                        pre: GranuleAt(rd).state != RD
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_bound                     pre:  (!RttLevelIsValid(realm, level)
+                                            || RttLevelIsStarting(realm, level))
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                       pre: !AddrIsRttLevelAligned(ipa, level - 1)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_bound                       pre: UInt(ipa) >= (2 ^ realm.ipa_width)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_align                       pre: !AddrIsGranuleAligned(rtt)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_bound                       pre: !PaIsDelegableDram(rtt)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_state                       pre: GranuleAt(rtt).state != DELEGATED
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_bound2                      pre:  ((realm.feat_lpa2 == FEATURE_FALSE)
+                                            && (UInt(rtt) >= 2^48))
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_walk                        pre: walk.level < level - 1
+                                  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  rtte_state                      pre: walk.rtte.state == TABLE
+                                  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+               B4.3.38.2.1       Failure condition ordering
+               [rd_bound, rd_state] < [rtt_walk, rtte_state]
+               [level_bound, ipa_bound] < [rtt_walk, rtte_state]
+                    rtt_bound2     rtt_state   rtt_bound   rtt_align   ipa_align   rd_align   ipa_bound   level_bound       rd_state       rd_bound
+                                                                                                                                          RMI_ERROR_INPUT
+                                                                                                            rtte_state     rtt_walk
+                                                                                                                         RMI_ERROR_RT
+               B4.3.38.3 Success conditions
+  ID                              Condition
+  rtt_state                       GranuleAt(rtt).state == RTT
+  rtte_state                      walk.rtte.state == TABLE
+  ID                        Condition
+  rtte_addr                 walk.rtte.addr == rtt
+  rtte_c_ripas              pre: AddrIsProtected(ipa, realm)
+                            post: RttAllEntriesRipas(RttAt(rtt), rtte_pre.ripas)
+  rtte_c_state              RttAllEntriesState(RttAt(rtt), rtte_pre.state)
+  rtte_c_addr               pre:  (rtte_pre.state != UNASSIGNED
+                                      && rtte_pre.state != UNASSIGNED_NS)
+                            post: RttAllEntriesContiguous(RttAt(rtt), rtte_pre.addr, level)
+                 B4.3.38.4 Footprint
+    ID                        Value
+    rtt_state                 GranuleAt(rtt).state
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

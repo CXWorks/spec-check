@@ -1,0 +1,4 @@
+pub enum RmmDevMemOrdering {
+  DEV_MEM_LIMITED_ORDER,
+  DEV_MEM_NOT_LIMITED_ORDER,
+}

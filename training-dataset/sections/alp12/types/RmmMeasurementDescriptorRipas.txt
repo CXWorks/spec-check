@@ -1,0 +1,13 @@
+C2.19 RmmMeasurementDescriptorRipas type
+                The RmmMeasurementDescriptorRipas structure contains data structure used to calculate the contribution to the
+                RIM of a RIPAS change.
+                The RmmMeasurementDescriptorRipas structure is a concrete type.
+                The width of the RmmMeasurementDescriptorRipas structure is 256 (0x100) bytes.
+                The members of the RmmMeasurementDescriptorRipas structure are shown in the following table.
+        Name               Byte offset        Type                                    Description
+        desc_type          0x0                Bits8                                   Measurement descriptor type, value 0x2
+        len                0x8                UInt64                                  Length of this data structure in bytes
+        rim                0x10               RmmRealmMeasurement                     Current RIM value
+        base               0x50               Address                                 Base IPA of the RIPAS change
+        top                0x58               Address                                 Top IPA of the RIPAS change
+               Unused bits of the RmmMeasurementDescriptorRipas structure MBZ.

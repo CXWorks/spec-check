@@ -1,0 +1,127 @@
+B4.3.44 RMI_RTT_DEV_MEM_VALIDATE command
+               Completes a request made by the Realm to validate mappings to device memory from a target IPA range.
+     Issue     In RMI_RTT_DEV_MEM_VALIDATE, consider how to combine:
+                  • Modification of a range of RTT entries in a single command, and
+                  • Checking of output address and HIPAS values against rec.ripas_dev_pa.
+               B4.3.44.1 Interface
+               B4.3.44.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000163
+        rd                   X1          63:0        Address                               PA of the RD for the target Realm
+        rec_ptr              X2          63:0        Address                               PA of the target REC
+        base                 X3          63:0        Address                               Base of target IPA region
+        top                  X4          63:0        Address                               Top of target IPA region
+               B4.3.44.1.2   Context
+               The RMI_RTT_DEV_MEM_VALIDATE command operates on the following context.
+        Name                 Type                       Value                                      Before    Description
+        realm                RmmRealm                   RealmAt(rd)                                false     Realm
+        realm_pre            RmmRealm                   RealmAt(rd)                                true      Realm
+        rec                  RmmRec                     RecAt(rec_ptr)                             false     REC
+        pa_pre               Address                    rec.dev_mem_pa                             true      Output base address
+        walk                 RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                            realm, base,
+                                                            RMM_RTT_PAGE_LEVEL,
+                                                            RMM_RTT_TREE_PRIMARY)
+        walk_top_pre         Address                    RttSkipEntriesWithRipas(                   true      Top IPA of entries
+                                                            RttAt(walk.rtt_addr),                            which have associated
+                                                            walk.level,                                      RIPAS values,
+                                                            base, top,                                       starting from entry at
+                                                            FALSE)                                           which the RTT walk
+                                                                                                             terminated
+               B4.3.44.1.3   Output values
+        Name               Register     Bits        Type                                  Description
+        result             X0           63:0        RmiCommandReturnCode                  Command return status
+        out_top            X1           63:0        Address                               Top IPA of range whose RIPAS was
+                                                                                          modified
+               The out_top output value is valid only when the command result is RMI_SUCCESS.
+               B4.3.44.2 Failure conditions
+  ID                         Condition
+  rd_align                   pre: !AddrIsGranuleAligned(rd)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                   pre: !PaIsDelegable(rd)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                   pre: GranuleAt(rd).state != RD
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_align                  pre: !AddrIsGranuleAligned(rec_ptr)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_bound                  pre: !PaIsDelegable(rec_ptr)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_gran_state             pre: GranuleAt(rec_ptr).state != REC
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_state                  pre: rec.state == REC_RUNNING
+                             post: ResultEqual(result, RMI_ERROR_REC)
+  rec_owner                  pre: rec.owner != rd
+                             post: ResultEqual(result, RMI_ERROR_REC)
+  size_valid                 pre: UInt(top) <= UInt(base)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  base_bound                 pre: base != rec.dev_mem_addr
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_bound                  pre: UInt(top) > UInt(rec.dev_mem_top)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  base_align                 pre: !AddrIsRttLevelAligned(base, walk.level)
+                             post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  top_gran_align             pre: !AddrIsGranuleAligned(top)
+                             post: ResultEqual(result, RMI_ERROR_INPUT)
+  no_progress                pre: UInt(base) == UInt(walk_top_pre)
+                             post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  ncoh_attr                  pre:  (rec.dev_mem_flags.coh == DEV_MEM_NON_COHERENT
+                                       && !RttEntriesInRangeMemAttr(
+                                           RttAt(walk.rtt_addr),
+                                           walk.level,
+                                           base, walk_top_pre,
+                                           MEMATTR_NON_CACHEABLE))
+                             post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  ID                               Condition
+  ncoh_pa                          pre:  (rec.dev_mem_flags.coh == DEV_MEM_NON_COHERENT
+                                             && !RttEntriesInRangeNonCohDevMem(
+                                                 RttAt(walk.rtt_addr),
+                                                 walk.level,
+                                                 base, walk_top_pre))
+                                   post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  coh_attr                         pre:  (rec.dev_mem_flags.coh == DEV_MEM_COHERENT
+                                             && !RttEntriesInRangeMemAttr(
+                                                 RttAt(walk.rtt_addr),
+                                                 walk.level,
+                                                 base, walk_top_pre,
+                                                 MEMATTR_PASSTHROUGH))
+                                   post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  coh_pa                           pre:  (rec.dev_mem_flags.coh == DEV_MEM_COHERENT
+                                             && !RttEntriesInRangeCohDevMem(
+                                                 RttAt(walk.rtt_addr),
+                                                 walk.level,
+                                                 base, walk_top_pre))
+                                   post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  linear_map                       pre:  !RttEntriesInRangeOutputContiguous(
+                                             RttAt(walk.rtt_addr),
+                                             walk.level,
+                                             base, walk_top_pre,
+                                             rec.dev_mem_pa)
+                                   post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  aux_live                         pre: AddrRangeIsAuxLive(base, top, realm_pre)
+                                   post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+               B4.3.44.2.1        Failure condition ordering
+               [rd_bound, rd_state] < [base_align]
+               [rd_bound, rd_state] < [no_progress]
+               [rec_bound, rec_gran_state] < [rec_state, rec_owner]
+               [base_bound] < [base_align]
+               [top_gran_align] < [no_progress]
+                    top_bound      size_valid    rec_align   rd_align   top_gran_align           rd_state         rd_bound      base_bound     rec_gran_state   rec_bound
+                                                                                                                                                                RMI_ERROR_INPUT
+                       aux_live     linear_map     coh_pa    coh_attr   ncoh_pa          ncoh_attr          no_progress      base_align             rec_owner   rec_state
+                                                                                                                                                                RMI_ERROR_REC
+                                                                                                                              RMI_ERROR_RT
+               B4.3.44.3 Success conditions
+  ID                        Condition
+  rtte_ripas                RttEntriesInRangeRipas(
+                                RttAt(walk.rtt_addr),
+                                walk.level,
+                                base, walk_top_pre,
+                                DEV)
+  dev_mem_addr              rec.dev_mem_addr == MinAddress(top, walk_top_pre)
+  dev_mem_pa                rec.dev_mem_pa == ToAddress(
+                                UInt(pa_pre) + (UInt(walk_top_pre) - UInt(base)))
+  out_top                   out_top == MinAddress(top, walk_top_pre)
+               B4.3.44.4 Footprint
+    ID                        Value
+    rtte                      RttAt(walk.rtt_addr)
+    dev_mem_addr              rec.dev_mem_addr

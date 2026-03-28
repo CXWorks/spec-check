@@ -1,0 +1,9 @@
+C2.41 RmmRecRunnable type
+            The RmmRecRunnable enumeration represents whether a REC is eligible for execution.
+            The RmmRecRunnable enumeration is an abstract type.
+            The values of the RmmRecRunnable enumeration are shown in the following table.
+                   Name                                    Description
+                   NOT_RUNNABLE                            Not eligible for execution.
+                   RUNNABLE                                Eligible for execution.
+            The RmmRecRunnable enumeration is used in the following types:
+               • RmmRecFlags

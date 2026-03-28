@@ -1,0 +1,7 @@
+B3.141 RttsAllUnprotectedEntriesState function
+              Returns TRUE if the state of all entries identified by Unprotected IPAs in all of the starting-level RTT Granules is
+              equal to state.
+              func RttsAllUnprotectedEntriesState(
+                  rtt_base : Address,
+                  rtt_num_start : integer,
+                  state : RmmRttEntryState) => boolean

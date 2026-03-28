@@ -1,0 +1,18 @@
+struct RmiPdevParams {
+  pub flags: RmiPdevFlags,
+  pub pdev_id: UInt64,
+  pub segment_id: UInt8,
+  pub ecam_addr: Address,
+  pub cert_id: UInt64,
+  pub rid_base: UInt16,
+  pub rid_top: UInt16,
+  pub hash_algo: RmiHashAlgorithm,
+  pub num_aux: UInt64,
+  pub ide_sid: UInt64,
+  pub aux: [Address; 32],
+  pub coh_addr_range: [RmiAddressRange; 4],
+  pub coh_num_addr_range: UInt64,
+  pub ncoh_num_addr_range: UInt64,
+  pub ncoh_addr_range: [RmiAddressRange; 16],
+  pub root_id: UInt16,
+}

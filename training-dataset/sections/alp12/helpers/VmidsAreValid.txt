@@ -1,0 +1,7 @@
+B3.156 VmidsAreValid function
+             Returns TRUE if vmid is valid on the platform.
+             func VmidsAreValid(
+                 vmid : bits(16),
+                 aux_vmid : array [3] of bits(16)) => boolean
+             If the underlying hardware platform does not implement FEAT_VMID16 then a VMID value with
+             vmid[15:8] != 0 is invalid.

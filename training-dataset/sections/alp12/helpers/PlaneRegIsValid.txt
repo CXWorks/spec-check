@@ -1,0 +1,5 @@
+B3.48 PlaneRegIsValid function
+             Whether encoding identifies a Plane register.
+             func PlaneRegIsValid(
+                 realm : RmmRealm,
+                 encoding : bits(64)) => boolean

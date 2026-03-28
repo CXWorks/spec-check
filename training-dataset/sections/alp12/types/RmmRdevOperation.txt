@@ -1,0 +1,14 @@
+C2.31 RmmRdevOperation type
+            The RmmRdevOperation enumeration represents operation being performed by an RDEV.
+            The RmmRdevOperation enumeration is an abstract type.
+            The values of the RmmRdevOperation enumeration are shown in the following table.
+                   Name                                                Description
+                   RDEV_OP_GET_INTERFACE_REPORT                        RDEV is handling an
+                                                                       RSI_RDEV_GET_INTERFACE_REPORT request.
+                   RDEV_OP_GET_MEASUREMENTS                            RDEV is handling an
+                                                                       RSI_RDEV_GET_MEASUREMENTS request.
+                   RDEV_OP_LOCK                                        RDEV is handling an RSI_RDEV_LOCK request.
+                   RDEV_OP_NONE                                        No operation is being performed.
+                   RDEV_OP_START                                       RDEV is handling an RSI_RDEV_START request.
+            The RmmRdevOperation enumeration is used in the following types:
+               • RmmVdev

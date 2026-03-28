@@ -1,0 +1,18 @@
+C2.5 RmmDevCommState type
+                The RmmDevCommState enumeration represents the state of communication between an RMM device object and
+                a device.
+                The RmmDevCommState enumeration is an abstract type.
+                The values of the RmmDevCommState enumeration are shown in the following table.
+                       Name                                   Description
+                       DEV_COMM_ACTIVE                        The RMM has initiated a device transaction. One or more device
+                                                              requests associated with this device transaction have been sent from
+                                                              the RMM to the device. The RMM has not received all the expected
+                                                              device responses associated with this device transaction.
+                       DEV_COMM_ERROR                         The RMM encountered an error during communication with the
+                                                              device.
+                       DEV_COMM_IDLE                          The RMM is not communicating with the device.
+                       DEV_COMM_PENDING                       The RMM has a device request which is ready to be sent to the
+                                                              device.
+                The RmmDevCommState enumeration is used in the following types:
+                   • RmmPdev
+                   • RmmVdev

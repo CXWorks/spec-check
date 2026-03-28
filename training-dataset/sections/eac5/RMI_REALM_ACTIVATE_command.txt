@@ -1,0 +1,32 @@
+B4.3.8 RMI_REALM_ACTIVATE command
+                Activates a Realm.
+                B4.3.8.1 Interface
+                B4.3.8.1.1   Input values
+        Name                 Register     Bits        Type                                  Description
+        fid                  X0           63:0        UInt64                                FID, value 0xC4000157
+        rd                   X1           63:0        Address                               PA of the RD
+                B4.3.8.1.2   Output values
+        Name                 Register     Bits        Type                                  Description
+        result               X0           63:0        RmiCommandReturnCode                  Command return status
+                B4.3.8.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                     pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: Granule(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  realm_state                  pre: Realm(rd).state != REALM_NEW
+                               post: ResultEqual(result, RMI_ERROR_REALM)
+                B4.3.8.2.1   Failure condition ordering
+                [rd_bound, rd_state] < [realm_state]
+                              rd_align                      rd_state                        rd_bound
+                                                                                         RMI_ERROR_INPUT
+                                                                                         realm_state
+                                                                                         RMI_ERROR_REALM
+                B4.3.8.3 Success conditions
+  ID                        Condition
+  realm_state               Realm(rd).state == REALM_ACTIVE
+                B4.3.8.4 Footprint
+    ID                        Value
+    realm_state               Realm(rd).state

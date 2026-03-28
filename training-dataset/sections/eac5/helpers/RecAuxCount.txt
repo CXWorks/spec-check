@@ -1,0 +1,4 @@
+B3.35 RecAuxCount function
+             Returns the number of auxiliary Granules required for a REC in the Realm described by rd.
+             func RecAuxCount(
+                 rd : Address) => integer

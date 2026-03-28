@@ -1,0 +1,9 @@
+C2.59 RmmVdevDmaState type
+            The RmmVdevDmaState enumeration represents the state of DMA for a VDEV.
+            The RmmVdevDmaState enumeration is an abstract type.
+            The values of the RmmVdevDmaState enumeration are shown in the following table.
+                   Name                                    Description
+                   VDEV_DMA_DISABLED                       DMA is disabled.
+                   VDEV_DMA_ENABLED                        DMA is enabled.
+            The RmmVdevDmaState enumeration is used in the following types:
+               • RmmVdev

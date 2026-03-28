@@ -1,0 +1,5 @@
+pub enum RmiDevCommStatus {
+  RMI_DEV_COMM_NONE,
+  RMI_DEV_COMM_RESPONSE,
+  RMI_DEV_COMM_ERROR,
+}

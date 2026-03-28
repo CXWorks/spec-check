@@ -1,0 +1,6 @@
+B3.4 AddrIsGranuleAligned function
+             Returns TRUE if address addr is aligned to the size of a Granule.
+             func AddrIsGranuleAligned(
+                 addr : Address) => boolean
+             func AddrIsGranuleAligned(
+                 addr : integer) => boolean

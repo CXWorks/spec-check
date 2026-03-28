@@ -1,0 +1,10 @@
+B3.70 RecIndex function
+            Returns the REC index which corresponds to mpidr.
+            func RecIndex(
+                mpidr : RmiRecMpidr) => integer
+            begin
+                return (UInt(mpidr.aff0)
+                    + 16 * UInt(mpidr.aff1)
+                    + 16 * 256 * UInt(mpidr.aff2)
+                    + 16 * 256 * 256 * UInt(mpidr.aff3));
+            end

@@ -1,0 +1,7 @@
+C2.26 RmmPdevCoherent type
+            The RmmPdevCoherent enumeration represents coherency of device accesses.
+            The RmmPdevCoherent enumeration is an abstract type.
+            The values of the RmmPdevCoherent enumeration are shown in the following table.
+                    Name                                   Description
+                    COH                                    Coherent
+                    NCOH                                   Non-coherent

@@ -1,0 +1,5 @@
+B3.65 RttLevelIsStarting function
+             Returns TRUE if level is the starting level of the RTT for the Realm described by rd.
+             func RttLevelIsStarting(
+                 rd : Address,
+                 level : integer) => boolean

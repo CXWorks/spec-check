@@ -1,0 +1,12 @@
+C1.7 RmmGranuleState type
+            The RmmGranuleState enumeration represents the state of a granule.
+            The RmmGranuleState enumeration is an abstract type.
+            The values of the RmmGranuleState enumeration are shown in the following table.
+                    Name                                     Description
+                    DATA                                     Realm code or data.
+                    DELEGATED                                Delegated for use by the RMM.
+                    RD                                       Realm Descriptor.
+                    REC                                      Realm Execution Context.
+                    REC_AUX                                  Realm Execution Context auxiliary Granule.
+                    RTT                                      Realm Translation Table.
+                    UNDELEGATED                              Not delegated for use by the RMM.

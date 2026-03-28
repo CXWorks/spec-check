@@ -1,0 +1,13 @@
+B3.146 RttWalkAnyNotAligned function
+             Performs one or more RTT walks within the IPA range [base, top), on one or more RTT trees owned by rd.
+             For a Realm which is configured to use an RTT tree per Plane, it is permitted for an implementation to either walk
+             just one of the RTTs, or to walk all of them.
+             It is permitted for an implementation to perform multiple walks, at successive IPAs, on the same RTT.
+             If one of the walks performed terminates earlier than level then the return value indicates the RTT index and the
+             IPA at which the walk was performed. In this case, the result’s “valid” value is TRUE.
+             If none of the walks performed terminates earlier than level then the result’s “valid” value is FALSE.
+             func RttWalkAnyNotAligned(
+                 realm : RmmRealm,
+                 base : Address,
+                 top : Address,
+                 level : integer) => RmmRttWalkNotAligned

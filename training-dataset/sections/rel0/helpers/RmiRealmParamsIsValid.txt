@@ -1,0 +1,4 @@
+B3.50 RmiRealmParamsIsValid function
+             Returns TRUE if the memory location contains a valid encoding of the RmiRealmParams type.
+             func RmiRealmParamsIsValid(
+                 addr : Address) => boolean

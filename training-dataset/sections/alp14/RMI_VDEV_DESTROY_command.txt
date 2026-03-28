@@ -1,0 +1,85 @@
+B4.3.52 RMI_VDEV_DESTROY command
+               Destroy a VDEV.
+               B4.3.52.1 Interface
+               B4.3.52.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000188
+        rd                   X1          63:0        Address                               PA of the RD
+        pdev_ptr             X2          63:0        Address                               PA of the PDEV
+        vdev_ptr             X3          63:0        Address                               PA of the VDEV
+               B4.3.52.1.2   Context
+               The RMI_VDEV_DESTROY command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        realm_pre            RmmRealm                   RealmAt(rd)                                true     Realm
+        realm                RmmRealm                   RealmAt(rd)                                false    Realm
+        vdev_pre             RmmVdev                    VdevAt(vdev_ptr)                           true     VDEV
+        pdev_pre             RmmPdev                                                               true     PDEV
+                                                        PdevAt(pdev_ptr)
+        pdev                 RmmPdev                    PdevAt(pdev_ptr)                           false    PDEV
+               B4.3.52.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.52.2 Failure conditions
+  ID                          Condition
+  da_supp                     pre: ImplFeatures().feat_da != FEATURE_TRUE
+                              post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  rd_align                    pre: !AddrIsGranuleAligned(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_bound                    pre: !PaIsDelegable(rd)
+                              post: ResultEqual(result, RMI_ERROR_INPUT)
+  ID                              Condition
+  rd_gran_state                   pre: GranuleAt(rd).state != RD
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_align                      pre: !AddrIsGranuleAligned(pdev_ptr)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_bound                      pre: !PaIsDelegable(pdev_ptr)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_gran_state                 pre: GranuleAt(pdev_ptr).state != PDEV
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_align                      pre: !AddrIsGranuleAligned(vdev_ptr)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_bound                      pre: !PaIsDelegable(vdev_ptr)
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_gran_state                 pre: GranuleAt(vdev_ptr).state != VDEV
+                                  post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_realm                      pre: vdev_pre.realm != rd
+                                  post: ResultEqual(result, RMI_ERROR_DEVICE)
+  vdev_pdev                       pre: vdev_pre.pdev != pdev_ptr
+                                  post: ResultEqual(result, RMI_ERROR_DEVICE)
+  vdev_state                      pre:  (vdev_pre.vdev_state != VDEV_NEW
+                                            && vdev_pre.vdev_state != VDEV_UNLOCKED
+                                            && vdev_pre.vdev_state != VDEV_ERROR)
+                                  post: ResultEqual(result, RMI_ERROR_DEVICE)
+  num_map                         pre: vdev_pre.num_map != 0
+                                  post: ResultEqual(result, RMI_ERROR_DEVICE)
+               B4.3.52.2.1       Failure condition ordering
+               [da_supp] < [rd_align, rd_bound, rd_gran_state, pdev_align,
+                    pdev_bound, pdev_gran_state, vdev_align, vdev_bound,
+                    vdev_gran_state]
+               [rd_gran_state, pdev_gran_state, vdev_gran_state] < [vdev_realm,
+                    vdev_pdev, vdev_state, num_map]
+                                                                                             da_supp
+                                                                                     RMI_ERROR_NOT _SUPPORT ED
+                    vdev_bound     vdev_align   pdev_bound   pdev_align   rd_bound           rd_align            vdev_gran_state            pdev_gran_state    rd_gran_state
+                                                                                                                                                                  RMI_ERROR_INPUT
+                                                                                                            num_map            vdev_state          vdev_pdev    vdev_realm
+                                                                                                                                                               RMI_ERROR_DEVICE
+               B4.3.52.3 Success conditions
+  ID                              Condition
+  gran_state                      post: GranuleAt(vdev_ptr).state == DELEGATED
+  ID                        Condition
+  aux_state                 post: AuxStateEqual32(
+                                      vdev_pre.aux, vdev_pre.num_aux,
+                                      DELEGATED)
+  vdev_id_free              post: VdevIdIsFree(realm, vdev_pre.vdev_id)
+  tdi_id_free               post: TdiIdIsFree(vdev_pre.tdi_id, pdev_pre.segment_id)
+  realm_num_vdevs           post: realm.num_vdevs == realm_pre.num_vdevs - 1
+  pdev_num_vdevs            post: pdev.num_vdevs == pdev_pre.num_vdevs - 1
+  vsid_free                 pre: vdev_pre.vsmmu == FEATURE_TRUE
+                            post: VsidIsFree( VsmmuAt(vdev_pre.vsmmu_addr), vdev_pre.vsid)
+                B4.3.52.4 Footprint
+    ID                        Value
+    state                     GranuleAt(vdev_ptr).state
+    aux_state                 AuxStates(vdev_pre.aux, vdev_pre.num_aux)
+    realm_num_vdevs           realm.num_vdevs
+    pdev_num_vdevs            pdev.num_vdevs

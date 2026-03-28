@@ -1,0 +1,5 @@
+B3.58 RdevIdIsValid function
+             Returns TRUE if vdev_id identifies a Realm device which is assigned to realm.
+             func RdevIdIsValid(
+                 realm : RmmRealm,
+                 vdev_id : bits(64)) => boolean

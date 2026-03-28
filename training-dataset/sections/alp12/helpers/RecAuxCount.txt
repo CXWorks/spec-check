@@ -1,0 +1,7 @@
+B3.61 RecAuxCount function
+             Returns the number of auxiliary Granules required for a REC in the Realm described by rd.
+             The return value is IMPLEMENTATION DEFINED based on the attributes of the Realm.
+             The return value is guaranteed not to be greater than 16.
+             For a given Realm, this function always returns the same value.
+             func RecAuxCount(
+                 rd : Address) => integer

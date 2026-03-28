@@ -1,0 +1,17 @@
+B3.45 RimExtendRipas function
+             Extend RIM with contribution from RIPAS change for an IPA range.
+             func RimExtendRipas(
+                 realm : RmmRealm,
+                 base : Address,
+                 top : Address,
+                 level : integer) => RmmRealmMeasurement
+             begin
+                 var rim = realm.measurements[0];
+                 var size = RttLevelSize(level);
+                 var addr = base;
+                   while (UInt(addr) < UInt(top)) do
+                       rim = RimExtendRipasForEntry(rim, addr, level);
+                       addr = ToAddress(UInt(addr) + size);
+                   end
+                   return rim;
+             end
