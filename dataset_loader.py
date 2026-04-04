@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-Phase 1: Dataset Loader & Pipeline Skeleton
+Phase 1: Dataset Loader & Evaluation Metrics
 
-Tasks:
 1. Load dataset from JSONL (test.jsonl / train.jsonl)
 2. Extract spec text (user message) → oracle code (assistant message)
-3. Create inference pipeline skeleton with fake model
-4. Verify pipeline end-to-end
+3. Evaluation metrics for pipeline verification
+4. End-to-end pipeline skeleton
 """
 
 import json
@@ -95,46 +94,7 @@ def load_dataset(jsonl_path: str) -> List[SpecOracle]:
 
 
 # ============================================================================
-# Task 2: Fake Model (for pipeline verification)
-# ============================================================================
-
-class FakeModel:
-    """
-    Placeholder model that returns a dummy output.
-    Used to verify pipeline structure before connecting real Claude API.
-    Node: skip this for now
-    """
-    def __init__(self, mode: str = "dummy", oracle_dict: Dict[str, str] = None):
-        """
-        mode:
-          - "dummy": Return placeholder code
-          - "echo_oracle": Return oracle (cheating, for testing evaluation)
-          - "empty": Return empty string
-        oracle_dict: For echo_oracle mode, map spec → oracle (pass from outside)
-        """
-        self.mode = mode
-        self.call_count = 0
-        self.oracle_dict = oracle_dict or {}
-    
-    def generate(self, spec_text: str, oracle: str = None) -> str:
-        """Generate Verus code from spec text."""
-        self.call_count += 1
-        
-        if self.mode == "echo_oracle":
-            # This is cheating - for testing evaluation logic
-            # Return the oracle directly (pass it as argument)
-            return oracle if oracle else "ERROR: no oracle provided"
-        elif self.mode == "dummy":
-            # Realistic dummy response
-            return "pub open spec fn placeholder_spec(...) -> bool {\n  true\n}"
-        elif self.mode == "empty":
-            return ""
-        else:
-            raise ValueError(f"Unknown mode: {self.mode}")
-
-
-# ============================================================================
-# Task 3: Evaluation Skeleton
+# Task 2: Evaluation Metrics
 # ============================================================================
 
 class EvaluationMetrics:
@@ -170,14 +130,14 @@ def evaluate_sample(generated: str, oracle: str) -> EvaluationMetrics:
 # Task 4: Pipeline Skeleton
 # ============================================================================
 
-def run_pipeline(dataset: List[SpecOracle], model: FakeModel, limit: int = None) -> Dict[str, Any]:
+def run_pipeline(dataset: List[SpecOracle], model: Any, limit: int = None) -> Dict[str, Any]:
     """
     End-to-end pipeline:
       spec → model → evaluation
     
     Args:
         dataset: List of SpecOracle samples
-        model: Model (fake or real)
+        model: Model instance for generation
         limit: Max samples to process (None = all)
     
     Returns:
@@ -196,7 +156,7 @@ def run_pipeline(dataset: List[SpecOracle], model: FakeModel, limit: int = None)
     }
     
     print(f"\n{'='*70}")
-    print(f"Running pipeline on {len(dataset)} samples (model mode: {model.mode})")
+    print(f"Running pipeline on {len(dataset)} samples")
     print(f"{'='*70}\n")
     
     for i, sample in enumerate(dataset, 1):
@@ -266,8 +226,9 @@ def run_pipeline(dataset: List[SpecOracle], model: FakeModel, limit: int = None)
 # ============================================================================
 
 def main():
-    # Determine dataset path
-    dataset_dir = Path("/Users/xiangzhushan/Desktop/spec-check/training-dataset/dataset")
+    # Determine dataset path (relative to script location)
+    script_dir = Path(__file__).parent
+    dataset_dir = script_dir / "training-dataset" / "dataset"
     test_jsonl = dataset_dir / "test.jsonl"
     
     if len(sys.argv) > 1:
@@ -288,15 +249,6 @@ def main():
     print(f"  Spec length: {len(sample.spec)} chars")
     print(f"  Oracle length: {len(sample.oracle)} chars")
     print(f"  Spec preview: {sample.spec[:120].replace(chr(10), ' ')}...\n")
-    
-    # Run pipeline with fake model
-    print("\nTesting pipeline with FAKE model (mode=dummy)...")
-    model = FakeModel(mode="dummy")
-    result = run_pipeline(dataset, model, limit=10)
-    
-    print("\nTesting pipeline with FAKE model (mode=echo_oracle) - should get 100% match...")
-    model = FakeModel(mode="echo_oracle")
-    result = run_pipeline(dataset, model, limit=10)
 
 
 if __name__ == "__main__":
