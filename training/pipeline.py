@@ -25,24 +25,70 @@ import os
 import sys
 import re
 
+import subprocess
+import tempfile
+
+from unsloth import FastLanguageModel
+import torch
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+VERUSFMT = os.path.join(BASE_DIR, "verusfmt/target/release/verusfmt")
+
+
+def fmt_code(code: str) -> str:
+    """Format a Verus snippet with verusfmt (--verus-only); return original on failure."""
+    if not os.path.exists(VERUSFMT):
+        return code
+    with tempfile.NamedTemporaryFile(suffix=".rs", mode="w", delete=False) as f:
+        f.write(f"use vstd::prelude::*;\nverus! {{\n{code}\n}}\n")
+        fname = f.name
+    try:
+        r = subprocess.run([VERUSFMT, "--verus-only", fname],
+                           capture_output=True, timeout=10)
+        if r.returncode == 0:
+            txt = open(fname).read()
+            inner = re.search(
+                r'verus!\s*\{(.*)\}\s*(?://[^\n]*)?\s*$', txt, re.DOTALL)
+            if inner:
+                return inner.group(1).strip()
+    except Exception:
+        pass
+    finally:
+        os.unlink(fname)
+    return code
 
 # ---------------------------------------------------------------------------
 # Model interface (stub — implement for GPU inference)
 # ---------------------------------------------------------------------------
 
 def load_model(model_path: str):
-    """Load a fine-tuned model. Returns a model handle."""
-    raise NotImplementedError(
-        f"Implement load_model() to load fine-tuned model from {model_path}"
-    )
+    """Load a fine-tuned model. Returns a (model, tokenizer) handle."""
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_path, max_seq_length=8192, load_in_4bit=True, dtype=None)
+    FastLanguageModel.for_inference(model)
+    return model, tokenizer
 
 
 def run_model(model, system_prompt: str, user_content: str) -> str:
     """Run inference on a loaded model. Returns the assistant response."""
-    raise NotImplementedError(
-        "Implement run_model() to call your inference backend"
+    m, tokenizer = model
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user",   "content": user_content},
+    ]
+    raw = tokenizer.apply_chat_template(
+        messages, return_tensors="pt", add_generation_prompt=True
     )
+    # apply_chat_template may return a BatchEncoding or a plain tensor
+    if hasattr(raw, "input_ids"):
+        input_ids = raw.input_ids.to("cuda")
+    else:
+        input_ids = raw.to("cuda")
+    input_len = input_ids.shape[1]
+    with torch.no_grad():
+        out = m.generate(input_ids, max_new_tokens=2048, temperature=0.1,
+                         do_sample=True, pad_token_id=tokenizer.eos_token_id)
+    return tokenizer.decode(out[0][input_len:], skip_special_tokens=True).strip()
 
 
 # ---------------------------------------------------------------------------
@@ -173,45 +219,66 @@ def run_pipeline(args):
         print(f"  L2: {len(type_defs)} types, L3: {len(helper_stubs)} helpers, "
               f"cmds: {len(cmd_specs)} commands")
     else:
-        # Real model mode
-        if not args.txt:
-            print("[ERROR] --txt required when not in oracle mode", file=sys.stderr)
-            sys.exit(1)
-
-        extractor = load_extractor()
-        cleaned = extractor.preprocess(args.txt)
+        # Real model mode — use pre-extracted sections dir or raw txt
+        if args.sections_dir:
+            sdir = args.sections_dir
+            type_sections = {
+                f[:-4]: open(os.path.join(sdir, "types", f)).read()
+                for f in sorted(os.listdir(os.path.join(sdir, "types")))
+                if f.endswith(".txt")
+            }
+            helper_sections = {
+                f[:-4]: open(os.path.join(sdir, "helpers", f)).read()
+                for f in sorted(os.listdir(os.path.join(sdir, "helpers")))
+                if f.endswith(".txt")
+            }
+            cmd_sections = {
+                f[:-12]: open(os.path.join(sdir, f)).read()
+                for f in sorted(os.listdir(sdir))
+                if f.endswith("_command.txt")
+            }
+        else:
+            if not args.txt:
+                print("[ERROR] --txt or --sections-dir required when not in oracle mode",
+                      file=sys.stderr)
+                sys.exit(1)
+            extractor = load_extractor()
+            cleaned = extractor.preprocess(args.txt)
+            type_sections    = extractor.extract_types(cleaned)
+            helper_sections  = extractor.extract_helper_fns(cleaned)
+            cmd_sections     = extractor.extract_commands(cleaned)
 
         # Layer 2: generate type definitions
         l2_model = load_model(args.l2_model)
-        type_sections = extractor.extract_types(cleaned)
         type_defs = {}
         print(f"[L2] Generating {len(type_sections)} type definitions...")
         for type_name, section_text in type_sections.items():
-            resp = run_model(l2_model, _SYSTEM_TYPES, f"## Type Specification\n\n{section_text}")
-            type_defs[type_name] = resp
+            resp = run_model(l2_model, _SYSTEM_TYPES,
+                             f"## Type Specification (from RMM spec PDF)\n\n{section_text}")
+            type_defs[type_name] = fmt_code(resp)
             print(f"  {type_name}")
 
         # Layer 3: generate helper stubs
         l3_model = load_model(args.l3_model)
-        helper_sections = extractor.extract_helper_fns(cleaned)
         helper_stubs = {}
         print(f"[L3] Generating {len(helper_sections)} helper stubs...")
         for fn_name, section_text in helper_sections.items():
             resp = run_model(l3_model, _SYSTEM_HELPERS,
-                             f"## Helper Function Specification\n\n{section_text}")
-            helper_stubs[fn_name] = resp
+                             f"## Helper Function Specification (from RMM spec PDF)\n\n{section_text}")
+            helper_stubs[fn_name] = fmt_code(resp)
             print(f"  {fn_name}")
 
-        # Commands: build preamble context from L1+L2+L3
+        # Commands: build preamble context from L1+L2+L3, last 200 lines
         cmd_model = load_model(args.cmd_model)
-        cmd_sections = extractor.extract_commands(cleaned)
-        context = layer1_text + "\n".join(type_defs.values()) + "\n".join(helper_stubs.values())
+        context_full = (layer1_text + "\n".join(type_defs.values()) +
+                        "\n".join(helper_stubs.values()))
+        context_tail = "\n".join(context_full.splitlines()[-200:])
         cmd_specs = {}
         print(f"[CMD] Generating {len(cmd_sections)} command specs...")
         for cmd_title, section_text in cmd_sections.items():
             user_content = (
                 "## Context (shared Verus types and helper function signatures)\n\n"
-                f"```rust\n{context[-3000:]}\n```\n\n"
+                f"```rust\n{context_tail}\n```\n\n"
                 "## Command Specification (from RMM spec PDF)\n\n"
                 f"{section_text}"
             )
@@ -239,24 +306,33 @@ def run_pipeline(args):
 
 
 _SYSTEM_TYPES = (
-    "You are a formal specification assistant for Arm CCA RMM. "
-    "Given a type specification in ASL pseudocode, generate the Verus/Rust type definition."
+    "You are a formal specification assistant for Arm CCA (Confidential Compute "
+    "Architecture) Realm Management Monitor (RMM). "
+    "Given the specification text for an RMM type definition (enumeration, structure, "
+    "or fieldset), generate the corresponding Verus/Rust type definition. "
+    "Output only the type definition (pub enum or struct block) in valid Verus syntax."
 )
 _SYSTEM_HELPERS = (
-    "You are a formal specification assistant for Arm CCA RMM. "
-    "Given a helper function specification in ASL pseudocode, "
-    "generate the Verus uninterpreted spec function stub (single line ending with ';')."
+    "You are a formal specification assistant for Arm CCA (Confidential Compute "
+    "Architecture) Realm Management Monitor (RMM). "
+    "Given the specification text for an RMM helper function in ASL pseudocode, "
+    "generate the Verus uninterpreted spec function stub (a single line ending with ';'). "
+    "Output only the stub declaration in valid Verus syntax."
 )
 _SYSTEM_COMMANDS = (
-    "You are a formal specification assistant for Arm CCA RMM. "
+    "You are a formal specification assistant for Arm CCA (Confidential Compute "
+    "Architecture) Realm Management Monitor (RMM). "
     "Given the specification text for an RMM command and the shared Verus type/function "
-    "context, generate the Verus specification function for that command."
+    "context (preamble), generate the Verus specification function for that command. "
+    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in "
+    "valid Verus syntax."
 )
 
 
 def main():
     parser = argparse.ArgumentParser(description="RMM spec → Verus pipeline")
-    parser.add_argument("--txt",       help="Pre-extracted spec text file (ccaspec/*.txt)")
+    parser.add_argument("--txt",         help="Pre-extracted spec text file (ccaspec/*.txt)")
+    parser.add_argument("--sections-dir", help="Pre-extracted sections dir (e.g. sections/alp14)")
     parser.add_argument("--target",    required=True, help="Version name (e.g. alp15)")
     parser.add_argument("--l1-rs",     default=os.path.join(BASE_DIR, "boilerplate", "layer1.rs"),
                         help="Layer 1 boilerplate .rs file")

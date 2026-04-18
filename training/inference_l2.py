@@ -5,10 +5,14 @@ to produce generated_types/{version}_types.rs for cascaded training (Step 2)."""
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 
+import argparse
 import torch
 from unsloth import FastLanguageModel
 
-MODEL_PATH = "models/layer2_best"
+parser = argparse.ArgumentParser()
+parser.add_argument("--model", default="models/layer2_best")
+_args = parser.parse_args()
+MODEL_PATH = _args.model
 MAX_NEW_TOKENS = 512
 VERSIONS = ["eac5", "rel0", "alp11", "alp12"]
 
@@ -40,12 +44,17 @@ for version in VERSIONS:
             {"role": "system", "content": SYSTEM},
             {"role": "user",   "content": f"## Type Specification (from RMM spec PDF)\n\n{section_text}"},
         ]
-        input_ids = tokenizer.apply_chat_template(
+        raw = tokenizer.apply_chat_template(
             messages,
             tokenize=True,
             add_generation_prompt=True,
             return_tensors="pt",
-        ).to(model.device)
+        )
+        if hasattr(raw, "input_ids"):
+            input_ids = raw.input_ids.to(model.device)
+        else:
+            input_ids = raw.to(model.device)
+        input_len = input_ids.shape[-1]
 
         with torch.no_grad():
             out = model.generate(
@@ -55,7 +64,7 @@ for version in VERSIONS:
                 pad_token_id=tokenizer.eos_token_id,
             )
         response = tokenizer.decode(
-            out[0][input_ids.shape[-1]:], skip_special_tokens=True
+            out[0][input_len:], skip_special_tokens=True
         ).strip()
         all_defs.append(response)
         print(f"  [{version}] {fname[:-4]}: {response[:60]}...")
