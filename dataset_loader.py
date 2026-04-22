@@ -1,104 +1,186 @@
 #!/usr/bin/env python3
 """
-Phase 1: Dataset Loader & Evaluation Metrics
+Phase 1: Dataset Loader & Evaluation Metrics (Prompt Engineering Path)
 
-1. Load dataset from JSONL (test.jsonl / train.jsonl)
-2. Extract spec text (user message) → oracle code (assistant message)
-3. Evaluation metrics for pipeline verification
-4. End-to-end pipeline skeleton
+Loads data directly from raw PDF sections + gold Verus specs.
+
+Data sources:
+  - Raw input:  training-dataset/sections/{version}/{CMD}_command.txt
+  - Context:    training-dataset/specs/{version}/preamble.rs  (last N lines)
+  - Gold output: training-dataset/specs/{version}/{cmd}_spec.rs
+
+Version splits:
+  Train: eac5, rel0, alp11, alp12
+  Val:   alp13
+  Test:  alp14
 """
 
-import json
 import sys
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 # ============================================================================
-# Dataset Loader
+# Config
+# ============================================================================
+
+TRAIN_VERSIONS = ["eac5", "rel0", "alp11", "alp12"]
+VAL_VERSIONS = ["alp13"]
+TEST_VERSIONS = ["alp14"]
+ALL_VERSIONS = TRAIN_VERSIONS + VAL_VERSIONS + TEST_VERSIONS
+
+PREAMBLE_TAIL_LINES = 200
+
+
+# ============================================================================
+# Data Classes
 # ============================================================================
 
 class SpecOracle:
-    """Single sample: spec text + oracle (ground truth) Verus code"""
-    def __init__(self, spec: str, oracle: str, version: str, command: str):
-        self.spec = spec
-        self.oracle = oracle
-        self.version = version
-        self.command = command
+    """Single sample: raw PDF section + preamble context + gold Verus code."""
+
+    def __init__(
+        self,
+        command: str,
+        version: str,
+        section_text: str,
+        preamble: str,
+        oracle: str,
+    ):
+        self.command = command          # e.g. "RMI_DATA_CREATE"
+        self.version = version          # e.g. "alp14"
+        self.section_text = section_text  # raw PDF text from _command.txt
+        self.preamble = preamble        # preamble context (tail of preamble.rs)
+        self.oracle = oracle            # gold Verus spec function
 
     def __repr__(self):
-        spec_preview = self.spec[:100].replace('\n', ' ') + "..."
-        oracle_preview = self.oracle[:80].replace('\n', ' ') + "..."
-        return f"SpecOracle(cmd={self.command}, v={self.version}, spec={spec_preview}, oracle={oracle_preview})"
+        sec_preview = self.section_text[:80].replace('\n', ' ') + "..."
+        return f"SpecOracle(cmd={self.command}, v={self.version}, sec={sec_preview})"
 
 
-def load_dataset(jsonl_path: str) -> List[SpecOracle]:
-    """
-    Load dataset from JSONL file.
-    Expected format:
-    {
-        "messages": [
-            {"role": "system", "content": "..."},
-            {"role": "user", "content": "...spec text..."},
-            {"role": "assistant", "content": "...oracle verus code..."}
-        ],
-        "metadata": {
-            "version": "alp14",
-            "command": "PSCI_AFFINITY_INFO",
-            "source_section": "..."
-        }
-    }
-    """
-    dataset = []
-    path = Path(jsonl_path)
-    
+# ============================================================================
+# Raw File Loaders
+# ============================================================================
+
+def _find_data_root() -> Path:
+    """Locate the training-dataset directory relative to this script."""
+    return Path(__file__).parent / "training-dataset"
+
+
+def load_preamble(version: str, tail_lines: int = PREAMBLE_TAIL_LINES) -> str:
+    """Load the last `tail_lines` lines of preamble.rs for a version."""
+    path = _find_data_root() / "specs" / version / "preamble.rs"
     if not path.exists():
-        print(f"File not found: {jsonl_path}")
-        return dataset
-    
-    with open(path, 'r') as f:
-        for line_num, line in enumerate(f, 1):
-            try:
-                data = json.loads(line)
-                
-                # Extract messages
-                messages = data.get("messages", [])
-                metadata = data.get("metadata", {})
-                
-                # Find user (spec) and assistant (oracle) messages
-                spec_text = None
-                oracle_code = None
-                for msg in messages:
-                    if msg.get("role") == "user":
-                        spec_text = msg.get("content", "")
-                    elif msg.get("role") == "assistant":
-                        oracle_code = msg.get("content", "")
-                
-                if spec_text and oracle_code:
-                    sample = SpecOracle(
-                        spec=spec_text,
-                        oracle=oracle_code,
-                        version=metadata.get("version", "unknown"),
-                        command=metadata.get("command", "unknown")
-                    )
-                    dataset.append(sample)
-                else:
-                    print(f"Line {line_num}: Missing user or assistant message")
-            
-            except json.JSONDecodeError as e:
-                print(f"Line {line_num}: JSON decode error: {e}")
-            except Exception as e:
-                print(f"Line {line_num}: Unexpected error: {e}")
-    
-    print(f"Loaded {len(dataset)} samples from {jsonl_path}")
+        print(f"Warning: preamble not found: {path}")
+        return ""
+    lines = path.read_text().splitlines(keepends=True)
+    tail = lines[-tail_lines:]
+    return "".join(tail).strip()
+
+
+def load_section(version: str, command: str) -> Optional[str]:
+    """Load raw PDF section text for a command (e.g. 'RMI_DATA_CREATE')."""
+    path = _find_data_root() / "sections" / version / f"{command}_command.txt"
+    if not path.exists():
+        return None
+    return path.read_text().strip()
+
+
+def load_gold_spec(version: str, command: str) -> Optional[str]:
+    """Load gold Verus spec function for a command."""
+    filename = command.lower() + "_spec.rs"
+    path = _find_data_root() / "specs" / version / filename
+    if not path.exists():
+        return None
+    text = path.read_text().strip()
+    if "[EXCLUDED]" in text:
+        return None
+    return text
+
+
+def list_commands(version: str) -> List[str]:
+    """List all commands available for a version (from sections directory)."""
+    sec_dir = _find_data_root() / "sections" / version
+    if not sec_dir.exists():
+        return []
+    cmds = []
+    for f in sorted(sec_dir.iterdir()):
+        if f.name.endswith("_command.txt"):
+            cmds.append(f.name[:-len("_command.txt")])
+    return cmds
+
+
+# ============================================================================
+# Dataset Loading
+# ============================================================================
+
+def load_version(version: str) -> List[SpecOracle]:
+    """Load all command samples for a single version from raw files."""
+    preamble = load_preamble(version)
+    commands = list_commands(version)
+    samples = []
+
+    for cmd in commands:
+        section = load_section(version, cmd)
+        if section is None:
+            continue
+        gold = load_gold_spec(version, cmd)
+        if gold is None:
+            continue
+        samples.append(SpecOracle(
+            command=cmd,
+            version=version,
+            section_text=section,
+            preamble=preamble,
+            oracle=gold,
+        ))
+
+    return samples
+
+
+def load_dataset(
+    versions: Optional[List[str]] = None,
+    split: Optional[str] = None,
+) -> List[SpecOracle]:
+    """
+    Load dataset from raw section files + gold specs.
+
+    Args:
+        versions: Explicit list of versions to load, e.g. ["alp14"].
+                  Mutually exclusive with `split`.
+        split:    One of "train", "val", "test", "all".
+                  Ignored if `versions` is provided.
+
+    Returns:
+        List of SpecOracle samples.
+    """
+    if versions is None:
+        split = split or "test"
+        versions = {
+            "train": TRAIN_VERSIONS,
+            "val": VAL_VERSIONS,
+            "test": TEST_VERSIONS,
+            "all": ALL_VERSIONS,
+        }.get(split)
+        if versions is None:
+            raise ValueError(f"Unknown split '{split}'. Use train/val/test/all.")
+
+    dataset = []
+    for v in versions:
+        samples = load_version(v)
+        dataset.extend(samples)
+        print(f"  {v}: {len(samples)} commands loaded")
+
+    print(f"Total: {len(dataset)} samples from {versions}")
     return dataset
 
 
 # ============================================================================
-# Task 2: Evaluation Metrics
+# Evaluation Metrics
 # ============================================================================
 
 class EvaluationMetrics:
-    """Metrics for a single sample"""
+    """Metrics for a single sample."""
+
     def __init__(self, command: str, version: str):
         self.command = command
         self.version = version
@@ -106,149 +188,44 @@ class EvaluationMetrics:
         self.oracle = None
         self.exact_match = False
         self.error_msg = None
-    
+
     def evaluate(self, generated: str, oracle: str):
-        """Basic evaluation: exact match"""
         self.generated = generated
         self.oracle = oracle
         self.exact_match = (generated.strip() == oracle.strip())
-    
+
     def __repr__(self):
-        status = "good" if self.exact_match else "not good"
-        return f"{status} {self.command} ({self.version}): exact_match={self.exact_match}"
-
-
-def evaluate_sample(generated: str, oracle: str) -> EvaluationMetrics:
-    """Evaluate a single sample"""
-    # NOTE: will add more sophisticated evaluation (semantic match, constraint coverage, etc.) later
-    metric = EvaluationMetrics("temp", "temp")
-    metric.evaluate(generated, oracle)
-    return metric
+        status = "PASS" if self.exact_match else "FAIL"
+        return f"[{status}] {self.command} ({self.version})"
 
 
 # ============================================================================
-# Task 4: Pipeline Skeleton
-# ============================================================================
-
-def run_pipeline(dataset: List[SpecOracle], model: Any, limit: int = None) -> Dict[str, Any]:
-    """
-    End-to-end pipeline:
-      spec → model → evaluation
-    
-    Args:
-        dataset: List of SpecOracle samples
-        model: Model instance for generation
-        limit: Max samples to process (None = all)
-    
-    Returns:
-        Summary dict with metrics
-    """
-    if limit is not None:
-        dataset = dataset[:limit]
-    
-    results = []
-    summary = {
-        "total": len(dataset),
-        "exact_matches": 0,
-        "errors": 0,
-        "by_version": {},
-        "by_command": {}
-    }
-    
-    print(f"\n{'='*70}")
-    print(f"Running pipeline on {len(dataset)} samples")
-    print(f"{'='*70}\n")
-    
-    for i, sample in enumerate(dataset, 1):
-        # Generate
-        try:
-            generated = model.generate(sample.spec, oracle=sample.oracle)
-        except Exception as e:
-            print(f"[{i}/{len(dataset)}] Error generating for {sample.command}: {e}")
-            summary["errors"] += 1
-            continue
-        
-        # Evaluate
-        metric = EvaluationMetrics(sample.command, sample.version)
-        metric.evaluate(generated, sample.oracle)
-        results.append(metric)
-        
-        # Update summary
-        if metric.exact_match:
-            summary["exact_matches"] += 1
-        
-        # By version
-        if sample.version not in summary["by_version"]:
-            summary["by_version"][sample.version] = {"total": 0, "correct": 0}
-        summary["by_version"][sample.version]["total"] += 1
-        if metric.exact_match:
-            summary["by_version"][sample.version]["correct"] += 1
-        
-        # By command
-        if sample.command not in summary["by_command"]:
-            summary["by_command"][sample.command] = {"total": 0, "correct": 0}
-        summary["by_command"][sample.command]["total"] += 1
-        if metric.exact_match:
-            summary["by_command"][sample.command]["correct"] += 1
-        
-        # Print progress
-        if i % 5 == 0 or i == len(dataset):
-            print(f"[{i}/{len(dataset)}] {metric}")
-    
-    # Aggregate summary
-    summary["accuracy"] = summary["exact_matches"] / len(dataset) if len(dataset) > 0 else 0
-    
-    print(f"\n{'='*70}")
-    print(f"Summary:")
-    print(f"  Total samples: {summary['total']}")
-    print(f"  Exact matches: {summary['exact_matches']}")
-    print(f"  Accuracy: {summary['accuracy']:.1%}")
-    print(f"  Errors: {summary['errors']}")
-    print(f"\nBy version:")
-    for version, counts in summary["by_version"].items():
-        acc = counts["correct"] / counts["total"] if counts["total"] > 0 else 0
-        print(f"  {version}: {counts['correct']}/{counts['total']} ({acc:.1%})")
-    print(f"\nTop 10 commands:")
-    cmd_list = sorted(summary["by_command"].items(), key=lambda x: x[1]["total"], reverse=True)[:10]
-    for cmd, counts in cmd_list:
-        acc = counts["correct"] / counts["total"] if counts["total"] > 0 else 0
-        print(f"  {cmd}: {counts['correct']}/{counts['total']} ({acc:.1%})")
-    print(f"{'='*70}\n")
-    
-    return {
-        "summary": summary,
-        "results": results
-    }
-
-
-# ============================================================================
-# Main
+# Main — quick sanity check
 # ============================================================================
 
 def main():
-    # Determine dataset path (relative to script location)
-    script_dir = Path(__file__).parent
-    dataset_dir = script_dir / "training-dataset" / "dataset"
-    test_jsonl = dataset_dir / "test.jsonl"
-    
-    if len(sys.argv) > 1:
-        test_jsonl = Path(sys.argv[1])
-    
-    print(f"Loading dataset from: {test_jsonl}")
-    
-    # Load dataset
-    dataset = load_dataset(str(test_jsonl))
+    split = sys.argv[1] if len(sys.argv) > 1 else "test"
+    print(f"Loading split={split}...")
+
+    dataset = load_dataset(split=split)
     if not dataset:
-        print("No data loaded. Exiting.")
+        print("No data loaded.")
         return
-    
-    # Show sample
-    print(f"\nFirst sample:")
-    sample = dataset[0]
-    print(f"  Command: {sample.command} (v{sample.version})")
-    print(f"  Spec length: {len(sample.spec)} chars")
-    print(f"  Oracle length: {len(sample.oracle)} chars")
-    print(f"  Spec preview: {sample.spec[:120].replace(chr(10), ' ')}...\n")
+
+    print(f"\n--- Sample #{1} ---")
+    s = dataset[0]
+    print(f"  Command:      {s.command}")
+    print(f"  Version:      {s.version}")
+    print(f"  Section len:  {len(s.section_text)} chars")
+    print(f"  Preamble len: {len(s.preamble)} chars")
+    print(f"  Oracle len:   {len(s.oracle)} chars")
+    print(f"  Section head: {s.section_text[:120].replace(chr(10), ' ')}...")
+    print(f"  Oracle head:  {s.oracle[:120].replace(chr(10), ' ')}...")
+
+    # Summary by version
+    from collections import Counter
+    by_v = Counter(s.version for s in dataset)
+    print(f"\nBy version: {dict(by_v)}")
 
 
 if __name__ == "__main__":

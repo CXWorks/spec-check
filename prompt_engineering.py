@@ -12,7 +12,7 @@ import json
 import sys
 from pathlib import Path
 from typing import List, Dict, Any, Callable
-from dataset_loader import SpecOracle, load_dataset, EvaluationMetrics
+from dataset_loader import SpecOracle, load_dataset, EvaluationMetrics, load_preamble
 
 # ============================================================================
 # Prompt Variants
@@ -212,7 +212,7 @@ class ClaudeHaikuModel:
             
             return response.content[0].text.strip()
         except Exception as e:
-            print(f"⚠️  Claude API error (call #{self.call_count}): {e}")
+            print(f"Claude API error (call #{self.call_count}): {e}")
             return "ERROR"
 
 
@@ -271,10 +271,9 @@ def evaluate_prompt_variant(
     print(f"\n  Testing {prompt_variant.name}...")
     
     for i, sample in enumerate(dataset[:limit], 1):
-        # Extract context from spec (everything before "## Command Specification")
-        parts = sample.spec.split("## Command Specification")
-        context = parts[0] if len(parts) > 1 else ""
-        spec = "## Command Specification" + parts[1] if len(parts) > 1 else sample.spec
+        # Raw section text is the spec; preamble is the context
+        context = sample.preamble
+        spec = sample.section_text
         
         # Format messages using prompt variant
         messages_dict = prompt_variant.format(spec, context, sample.command)
@@ -345,7 +344,7 @@ def run_ab_testing(dataset: List[SpecOracle], limit: int = 10, api_key: str = No
     # Find best
     best_key = max(all_results.keys(), key=lambda k: all_results[k]['accuracy'])
     best_result = all_results[best_key]
-    print(f"\n🏆 Best: {best_result['prompt']} (accuracy={best_result['accuracy']:.1%})")
+    print(f"\nBest: {best_result['prompt']} (accuracy={best_result['accuracy']:.1%})")
     print(f"{'='*70}\n")
     
     return best_key, all_results
@@ -358,11 +357,9 @@ def run_ab_testing(dataset: List[SpecOracle], limit: int = 10, api_key: str = No
 def main():
     import os
     
-    # Load dataset (relative path from script location)
-    script_dir = Path(__file__).parent
-    dataset_path = script_dir / "training-dataset" / "dataset" / "test.jsonl"
-    print(f"Loading dataset from: {dataset_path}")
-    dataset = load_dataset(str(dataset_path))
+    # Load dataset from raw section files (not JSONL)
+    print("Loading test split from raw sections...")
+    dataset = load_dataset(split="test")
     
     if not dataset:
         print("No data loaded")
