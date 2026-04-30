@@ -28,6 +28,7 @@ def main():
     parser.add_argument("--out",     required=True)
     parser.add_argument("--max-seq",   type=int, default=4096)
     parser.add_argument("--batch-size", type=int, default=4)
+    parser.add_argument("--epochs",    type=int, default=10)
     args = parser.parse_args()
 
     model, tokenizer = FastLanguageModel.from_pretrained(
@@ -60,7 +61,7 @@ def main():
         args=SFTConfig(
             output_dir=args.out,
             max_seq_length=args.max_seq,
-            num_train_epochs=10,
+            num_train_epochs=args.epochs,
             per_device_train_batch_size=args.batch_size,
             gradient_accumulation_steps=4,
             learning_rate=2e-4,

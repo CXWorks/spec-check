@@ -31,6 +31,7 @@ Usage:
 
 import os
 import json
+import random
 
 # ---------------------------------------------------------------------------
 # Config
@@ -38,9 +39,9 @@ import json
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 DATASET_DIR = os.path.join(BASE_DIR, "dataset")
 
-TRAIN_VERSIONS = ["eac5", "rel0", "alp11", "alp12"]
-VAL_VERSIONS   = ["alp13"]
-TEST_VERSIONS  = ["alp14"]
+ALL_VERSIONS = ["eac5", "rel0", "alp11", "alp12", "alp13", "alp14"]
+EVAL_VERSION = "alp14"   # val and test items use only this version
+SPLIT_SEED   = 42
 
 SYSTEM_PROMPT_HELPERS = (
     "You are a formal specification assistant for Arm CCA (Confidential Compute "
@@ -258,49 +259,39 @@ def make_example(version: str, cmd_name: str, preamble: str) -> dict | None:
 
 
 # ---------------------------------------------------------------------------
+# Item-based split helpers
+# ---------------------------------------------------------------------------
+
+def split_names(names: list[str], fracs=(0.80, 0.10, 0.10), seed=SPLIT_SEED):
+    """Split a sorted list of item names into (train, val, test) sets."""
+    names = sorted(names)
+    rng = random.Random(seed)
+    rng.shuffle(names)
+    n = len(names)
+    n_train = int(n * fracs[0])
+    n_val   = int(n * fracs[1])
+    train_set = set(names[:n_train])
+    val_set   = set(names[n_train:n_train + n_val])
+    test_set  = set(names[n_train + n_val:])
+    return train_set, val_set, test_set
+
+
+def all_item_names(kind: str) -> list[str]:
+    """Collect unique item names across ALL_VERSIONS for a given kind."""
+    names = set()
+    for version in ALL_VERSIONS:
+        if kind == "command":
+            names.update(list_commands(version))
+        elif kind == "type":
+            names.update(list_types(version))
+        elif kind == "helper":
+            names.update(list_helpers(version))
+    return sorted(names)
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
-def build_split(versions: list[str], split_name: str, cascaded_dir: str | None = None):
-    os.makedirs(DATASET_DIR, exist_ok=True)
-    out_path = os.path.join(DATASET_DIR, f"{split_name}.jsonl")
-
-    examples = []
-    preamble_cache: dict[str, str] = {}
-
-    for version in versions:
-        if version not in preamble_cache:
-            preamble_cache[version] = load_preamble(version, cascaded_dir)
-        preamble = preamble_cache[version]
-
-        # Command spec examples
-        for cmd_name in list_commands(version):
-            ex = make_example(version, cmd_name, preamble)
-            if ex is None:
-                print(f"  [SKIP] {version}/{cmd_name}")
-                continue
-            examples.append(ex)
-
-        # Type definition examples
-        for type_name in list_types(version):
-            ex = make_type_example(version, type_name)
-            if ex is None:
-                continue  # type has no corresponding PDF section (hardcoded layer)
-            examples.append(ex)
-
-        # Helper function stub examples
-        for fn_name in list_helpers(version):
-            ex = make_helper_example(version, fn_name)
-            if ex is None:
-                continue
-            examples.append(ex)
-
-    with open(out_path, "w") as fh:
-        for ex in examples:
-            fh.write(json.dumps(ex, ensure_ascii=False) + "\n")
-
-    print(f"  {split_name}: {len(examples)} examples → {out_path}")
-    return examples
-
 
 def main():
     import argparse
@@ -311,37 +302,88 @@ def main():
     args = parser.parse_args()
     cascaded_dir = args.cascaded_context
 
-    label = " (cascaded)" if cascaded_dir else ""
-    print(f"Building train split{label}...")
-    train_exs = build_split(TRAIN_VERSIONS, "train", cascaded_dir)
+    os.makedirs(DATASET_DIR, exist_ok=True)
 
-    print("Building val split...")
-    val_exs = build_split(VAL_VERSIONS, "val")
+    # --- Split item names independently per kind (no overlap between train and test) ---
+    cmd_train,    cmd_val,    cmd_test    = split_names(all_item_names("command"))
+    type_train,   type_val,   type_test   = split_names(all_item_names("type"))
+    helper_train, helper_val, helper_test = split_names(all_item_names("helper"))
 
-    print("Building test split...")
-    test_exs = build_split(TEST_VERSIONS, "test")
+    print(f"Commands — train:{len(cmd_train)} val:{len(cmd_val)} test:{len(cmd_test)}")
+    print(f"Types    — train:{len(type_train)} val:{len(type_val)} test:{len(type_test)}")
+    print(f"Helpers  — train:{len(helper_train)} val:{len(helper_val)} test:{len(helper_test)}")
+
+    preamble_cache: dict[str, str] = {}
+
+    def get_preamble(version: str) -> str:
+        if version not in preamble_cache:
+            preamble_cache[version] = load_preamble(version, cascaded_dir)
+        return preamble_cache[version]
+
+    train_exs: list[dict] = []
+    val_exs:   list[dict] = []
+    test_exs:  list[dict] = []
+
+    # Commands: train items use all versions; val/test use EVAL_VERSION only
+    for version in ALL_VERSIONS:
+        preamble = get_preamble(version)
+        for cmd in list_commands(version):
+            ex = make_example(version, cmd, preamble)
+            if ex is None:
+                continue
+            ex["metadata"]["kind"] = "command"
+            if cmd in cmd_train:
+                train_exs.append(ex)
+            elif cmd in cmd_val and version == EVAL_VERSION:
+                val_exs.append(ex)
+            elif cmd in cmd_test and version == EVAL_VERSION:
+                test_exs.append(ex)
+
+    # Types: same rule
+    for version in ALL_VERSIONS:
+        for t in list_types(version):
+            ex = make_type_example(version, t)
+            if ex is None:
+                continue
+            if t in type_train:
+                train_exs.append(ex)
+            elif t in type_val and version == EVAL_VERSION:
+                val_exs.append(ex)
+            elif t in type_test and version == EVAL_VERSION:
+                test_exs.append(ex)
+
+    # Helpers: same rule
+    for version in ALL_VERSIONS:
+        for fn in list_helpers(version):
+            ex = make_helper_example(version, fn)
+            if ex is None:
+                continue
+            if fn in helper_train:
+                train_exs.append(ex)
+            elif fn in helper_val and version == EVAL_VERSION:
+                val_exs.append(ex)
+            elif fn in helper_test and version == EVAL_VERSION:
+                test_exs.append(ex)
+
+    # Write JSONL files
+    for name, exs in [("train", train_exs), ("val", val_exs), ("test", test_exs)]:
+        path = os.path.join(DATASET_DIR, f"{name}.jsonl")
+        with open(path, "w") as fh:
+            for ex in exs:
+                fh.write(json.dumps(ex, ensure_ascii=False) + "\n")
+        print(f"  {name}: {len(exs)} examples → {path}")
 
     total = len(train_exs) + len(val_exs) + len(test_exs)
-    print(f"\nDataset summary:")
-    print(f"  train : {len(train_exs):4d} examples  ({', '.join(TRAIN_VERSIONS)})")
-    print(f"  val   : {len(val_exs):4d} examples  ({', '.join(VAL_VERSIONS)})")
-    print(f"  test  : {len(test_exs):4d} examples  ({', '.join(TEST_VERSIONS)})")
-    print(f"  total : {total:4d} examples")
+    print(f"\nDataset summary: {len(train_exs)} train / {len(val_exs)} val / {len(test_exs)} test = {total} total")
 
-    from collections import Counter
-    for split_name, exs in [("train", train_exs), ("val", val_exs), ("test", test_exs)]:
-        counts = Counter(ex["metadata"]["version"] for ex in exs)
-        for v, n in sorted(counts.items()):
-            print(f"    {split_name}/{v}: {n}")
-
-    # Write helpers-only train split for layer 3 training
+    # Write helpers-only train split for staged training
     helpers_only = [ex for ex in train_exs if ex["metadata"].get("kind") == "helper_stub"]
     if helpers_only:
         helpers_path = os.path.join(DATASET_DIR, "train_helpers.jsonl")
         with open(helpers_path, "w") as fh:
             for ex in helpers_only:
                 fh.write(json.dumps(ex, ensure_ascii=False) + "\n")
-        print(f"\n  helpers: {len(helpers_only)} examples → {helpers_path}")
+        print(f"  helpers: {len(helpers_only)} examples → {helpers_path}")
 
     print("\nDone.")
 

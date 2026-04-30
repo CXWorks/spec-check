@@ -1,0 +1,113 @@
+To: errata@arm.com
+Subject: Specification inconsistencies in ARM DEN0054C and ARM DEN0113
+
+Dear ARM Engineers,
+
+We are conducting research that leverages LLMs and SAT solvers to formally audit
+hardware specification documents. While evaluating ARM firmware interface
+specifications, we found the following inconsistencies. We have machine-checked
+each one using the Verus verification framework. Could you please help us take
+a look and share your opinions?
+
+---
+
+Issue 1
+-------
+Title:    Software Delegated Exception Interface
+Document: ARM DEN0054C
+Pages:    35–36 (§5.1.14 SDEI_INTERRUPT_BIND)
+
+The return-value table in §5.1.14 states:
+
+  "Binding any type of interrupt that is already bound will return the same
+   event number."
+
+This implies a success return (a positive event number) when the interrupt is
+already bound.
+
+The Client Responsibilities section (§5.1.14.3, same page) states:
+
+  "DENIED is returned if the interrupt is not in Inactive state."
+
+An interrupt that has already been bound to an SDEI event is no longer in the
+Inactive state — it is promoted to an SDEI event and managed exclusively by the
+dispatcher. Therefore, both rules apply simultaneously in the state
+{interrupt_already_bound = true}, yielding:
+
+  result > 0           (from the return table)
+  result == DENIED     (== −3, from §5.1.14.3)
+
+which is a contradiction.
+
+---
+
+Issue 2
+-------
+Title:    Software Delegated Exception Interface
+Document: ARM DEN0054C
+Pages:    40–41 (§5.1.19 SDEI_SHARED_RESET)
+
+The return-value table in §5.1.19 defines the DENIED return code as:
+
+  "Event was running while this call was invoked."
+  i.e., DENIED ⟺ some_shared_event_running
+
+The Usage section (§5.1.19.1) and Client Responsibilities section (§5.1.19.2)
+on the same pages state:
+
+  "The call will return a DENIED error if there was at least one shared event
+   that was running or at least one interrupt-event binding (private or shared)
+   that was still registered."
+  i.e., DENIED ⟺ some_shared_event_running ∨ some_interrupt_binding_exists
+
+In the state {no shared event running, at least one interrupt still bound}:
+
+  - The return table implies result ≠ DENIED
+  - The usage text implies result == DENIED
+
+which is a contradiction.
+
+---
+
+Issue 3
+-------
+Title:    Dynamic Root of Trust for Measurement
+Document: ARM DEN0113 v1.4
+Pages:    48–49 (§3.11 DRTM_ENABLE_SECURE_INTERRUPTS)
+
+The return-value table in §3.11 defines the DENIED return code as:
+
+  "A dynamic launch has not occurred, or Secure interrupts are not disabled."
+  i.e., DENIED ⟺ ¬(launch_occurred ∧ sec_interrupts_disabled)
+
+The Implementation Responsibilities section (§3.11.3, page 49) states:
+
+  "If the disabling of Secure interrupts was not requested in
+   DRTM_PARAMETERS, the implementation must return DENIED."
+  i.e., ¬disable_requested_in_params → DENIED
+
+The Usage section (§3.11.1) states that for a hardware-backed implementation,
+Secure interrupts are always disabled during a dynamic launch regardless of
+whether disabling was requested in DRTM_PARAMETERS:
+
+  "Hardware-backed implementation: Secure interrupts are always disabled
+   during a dynamic launch by a hardware-backed implementation of DRTM."
+
+Therefore, in a hardware-backed system where a dynamic launch has occurred but
+disabling was not explicitly requested in DRTM_PARAMETERS:
+
+  - launch_occurred = true, sec_interrupts_disabled = true
+    → Table: result ≠ DENIED (should return SUCCESS)
+  - disable_requested_in_params = false
+    → §3.11.3: result must be DENIED
+
+which is a contradiction.
+
+---
+
+We would be happy to provide the formal Verus proof code for any or all of these
+if that would be helpful for your review.
+
+Best regards,
+[Your name]
+[Affiliation]
