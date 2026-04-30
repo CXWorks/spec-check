@@ -1,13 +1,43 @@
 # spec-check
 
-**Detecting Inconsistencies in ARM CCA's Formally Verified Specification** (ASPLOS 2026)
+**Detecting Inconsistencies in Formally Verified Firmware Specifications** (ASPLOS 2026)
 
-This repository contains two complementary approaches for converting ARM Confidential Compute Architecture (CCA) Realm Management Monitor (RMM) specification PDFs into [Verus](https://github.com/verus-lang/verus) formal verification code:
+This repository contains two complementary approaches for converting firmware specification PDFs into [Verus](https://github.com/verus-lang/verus) formal verification code, plus an automated inconsistency checker that has found **5 machine-checked spec bugs** across ARM CCA RMM, SDEI, and DRTM specifications.
 
 1. **SCOPE** — a hand-written 2,400-line Python pipeline (submodule)
 2. **Fine-tuned LLM pipeline** — a Qwen3-4B model trained to replace SCOPE's heuristics
 
-The generated Verus code encodes each RMM command's preconditions and postconditions as `pub open spec fn` functions, enabling formal inconsistency detection across specification versions.
+The generated Verus code encodes each command's preconditions and postconditions as `pub open spec fn` functions. A `proof fn ... ensures false` sweep then detects logical contradictions in the spec text.
+
+---
+
+## Key Results
+
+### Spec Generation (alp14 test set, 98 RMM commands)
+
+| Model | Epochs | Best epoch | Eval loss | CodeBLEU |
+|-------|--------|------------|-----------|----------|
+| Item-split 2-epoch (**current best**) | 2 | 2 | 0.2910 | **0.639** |
+| Item-split 10-epoch (overfit) | 10 | 9 | 0.3809 | 0.594 |
+| Round 2 — verusfmt-formatted | 10 | 1 | 0.7458 | 0.416 |
+| Round 1 — baseline cascade | 10 | — | — | 0.637† |
+
+† Round 1 evaluated against unformatted gold (not directly comparable to later rounds).
+
+The item-split model trains all item types (commands, types, helpers) jointly without the 3-layer cascade, and uses early stopping at 2 epochs to avoid overfitting.
+
+### Spec Bug Findings (machine-checked with Verus)
+
+| Spec | Section | Bug type | Status |
+|------|---------|----------|--------|
+| ARM CCA RMM (alp14) | §B4.3.20.2.1 RMI_PDEV_STOP | Missing failure-condition ordering edge → dual error code contradiction | **Confirmed bug** |
+| ARM CCA RMM (alp14) | §B5.3.1.2.1 RSI_ATTESTATION_TOKEN_CONTINUE | "No ordering" + two conflicting error clauses | **Confirmed bug** |
+| ARM SDEI (DEN0054C) | §5.1.19 SDEI_SHARED_RESET | Contradictory precondition | **Confirmed bug** |
+| ARM SDEI (DEN0054C) | §5.1.14 SDEI_INTERRUPT_BIND | Conflicting state requirement | **Confirmed bug** |
+| ARM DRTM (DEN0113) | §3.11 DRTM_ENABLE_SECURE_INTERRUPTS | Dual error code contradiction | **Confirmed bug** |
+| ARM CCA RMM (alp14) | §B5.3.19.2.1 RSI_VDEV_VALIDATE_MAPPING | Annotation false positive (spec is correct) | Annotation error |
+
+See [`training/rmm_spec_bug_report.md`](training/rmm_spec_bug_report.md), [`training/spec_bug_report.md`](training/spec_bug_report.md), and [`training/BUG_REPORT.md`](training/BUG_REPORT.md) for details.
 
 ---
 
@@ -15,59 +45,97 @@ The generated Verus code encodes each RMM command's preconditions and postcondit
 
 ```
 spec-check/
-├── scope/                    # SCOPE tool (git submodule)
-├── training/                 # LLM fine-tuning scripts and docs
-│   ├── train.py              # Unsloth+Qwen3-4B SFTTrainer
-│   ├── inference_l2.py       # L2 model inference → cascaded context
-│   ├── pipeline.py           # End-to-end inference pipeline
-│   ├── build_dataset.py      # Build JSONL datasets from PDF sections + gold specs
-│   ├── extract_sections.py   # Extract per-command/type/helper sections from PDF text
-│   ├── split_specs.py        # Split gold .rs files into per-command components
-│   ├── substitute_context.py # Replace golden L2 context with model-generated context
-│   ├── test_e2e_oracle.py    # Validate pipeline assembly without GPU
-│   ├── boilerplate/layer1.rs # Hardcoded type aliases and constants (never trained)
-│   ├── README_training.md    # Full GPU training guide
-│   ├── CONTEXT.md            # Architecture overview and GPU server briefing
-│   └── STATUS.md             # Training progress and lessons learned
-└── training-dataset/         # Prepared dataset and gold specifications
-    ├── dataset/              # JSONL training/val/test splits (1,584 examples)
-    ├── gold/                 # Complete gold Verus files for all 6 versions
-    ├── sections/{version}/   # Per-command/type/helper raw PDF text
-    └── specs/{version}/      # Gold Verus split into per-command components
+├── scope/                         # SCOPE tool (git submodule)
+├── training/                      # LLM fine-tuning scripts and results
+│   ├── train.py                   # Unsloth+Qwen3-4B SFTTrainer
+│   ├── pipeline.py                # End-to-end inference pipeline (7 spec types)
+│   ├── build_dataset.py           # Build JSONL datasets from PDF sections + gold specs
+│   ├── extract_sections.py        # RMM section extractor
+│   ├── extract_sections_{spec}.py # Per-spec extractors: psci, sdei, drtm, scmi, ffa, sbi, tdx
+│   ├── cleanup_base.py            # Shared post-processing logic
+│   ├── cleanup_{spec}.py          # Per-spec cleanup: psci, sdei, drtm, scmi, ffa, sbi, tdx
+│   ├── eval_codebleu.py           # CodeBLEU evaluation against gold
+│   ├── eval_item_split.py         # Item-split model comparison script
+│   ├── inconsistency_analysis.py  # Automated Verus inconsistency sweep
+│   ├── inconsistency_analysis_rmm.py  # RMM-specific sweep (with known-bug skip list)
+│   ├── rmm_bugs.rs                # Machine-checked Verus proofs for RMM bugs
+│   ├── spec_bugs.rs               # Machine-checked proofs for SDEI/DRTM bugs
+│   ├── rmm_spec_bug_report.md     # Formal report for RMM spec bugs
+│   ├── spec_bug_report.md         # Formal report for SDEI/DRTM bugs
+│   ├── BUG_REPORT.md              # Summary of all 5 confirmed bugs
+│   ├── boilerplate/               # Layer 1 type aliases and constants
+│   │   ├── layer1.rs              # RMM
+│   │   ├── layer1_psci.rs         # PSCI
+│   │   ├── layer1_sdei.rs         # SDEI
+│   │   ├── layer1_drtm.rs         # DRTM
+│   │   ├── layer1_scmi.rs         # SCMI
+│   │   ├── layer1_ffa.rs          # FF-A
+│   │   ├── layer1_sbi.rs          # RISC-V SBI (new)
+│   │   └── layer1_tdx.rs          # Intel TDX ABI (new)
+│   ├── STATUS.md                  # Training history and lessons learned
+│   └── README_training.md         # Full GPU training guide
+└── training-dataset/              # Prepared dataset and gold specifications
+    ├── dataset/                   # JSONL training/val/test splits
+    ├── results/                   # Model predictions (item_split_e2, item_split_e10)
+    ├── gold/                      # Complete gold Verus files for all 6 RMM versions
+    ├── sections/{version}/        # Per-command/type/helper raw PDF text
+    └── specs/{version}/           # Gold Verus split into per-command components
 ```
 
 ---
 
 ## Supported Specifications
 
-| Target | Version    | Split    |
-|--------|------------|----------|
-| eac5   | 1.0-eac5   | Train    |
-| rel0   | 1.0-rel0   | Train    |
-| alp11  | 1.1-alp11  | Train    |
-| alp12  | 1.1-alp12  | Train    |
-| alp13  | 1.1-alp13  | Val      |
-| alp14  | 1.1-alp14  | Test     |
+### Training / Evaluation (RMM, gold annotations available)
+
+| Version | Split |
+|---------|-------|
+| eac5 (1.0-eac5) | Train |
+| rel0 (1.0-rel0) | Train |
+| alp11 (1.1-alp11) | Train |
+| alp12 (1.1-alp12) | Train |
+| alp13 (1.1-alp13) | Val |
+| alp14 (1.1-alp14) | **Test** |
+
+### Zero-shot Extension (no gold annotations)
+
+| Spec | Source | Analog | Status |
+|------|--------|--------|--------|
+| ARM PSCI (DEN0022F.b) | Arm public PDF | PSCI | Pipeline ready |
+| ARM SDEI (DEN0054C) | Arm public PDF | — | Pipeline ready, 3 bugs found |
+| ARM DRTM (DEN0113) | Arm public PDF | — | Pipeline ready, 1 bug found |
+| ARM SCMI (DEN0056E) | Arm public PDF | — | Pipeline ready |
+| ARM FF-A (DEN0077A) | Arm public PDF | — | Pipeline ready |
+| RISC-V SBI v2.0 | RISC-V non-ISA GitHub | ARM PSCI | Extractor ready, PDF needed |
+| Intel TDX ABI v1.5 | Intel CDN | ARM RMM | Extractor ready, PDF needed |
 
 ---
 
 ## Approach 1: SCOPE
 
-SCOPE (*spectroscope*) is the baseline hand-written pipeline. It parses RMM specification PDFs and generates Verus `.rs` files with three processing modes:
-
-| Mode    | Description                                      |
-|---------|--------------------------------------------------|
-| `reason`| Full conversion to Verus verification code       |
-| `rule`  | Rule-based analysis and validation (no codegen)  |
-| `raw`   | Document parsing only                            |
-
-See [`scope/README.md`](scope/README.md) and [`scope/USAGE.md`](scope/USAGE.md) for installation and usage.
+SCOPE (*spectroscope*) is the baseline hand-written pipeline. See [`scope/README.md`](scope/README.md) and [`scope/USAGE.md`](scope/USAGE.md).
 
 ---
 
 ## Approach 2: LLM Fine-Tuning Pipeline
 
-The training pipeline trains a **Qwen3-4B** model (via Unsloth QLoRA) using a three-layer cascaded architecture:
+### Item-Split Training (current best)
+
+The simplest and best-performing approach: train a single **Qwen3-4B** model on all item types (commands, types, helpers) jointly, using the shared per-item format without cascaded context:
+
+```bash
+# Train (2 epochs — early stopping critical)
+python3 train.py \
+    --train dataset/train.jsonl \
+    --val   dataset/val.jsonl \
+    --out   models/item_split \
+    --epochs 2
+
+# Evaluate
+python3 eval_item_split.py
+```
+
+### Cascaded 3-Layer Pipeline (original architecture)
 
 ```
 PDF → [L2 model] → type definitions  (pub enum / struct)
@@ -75,79 +143,31 @@ PDF → [L3 model] → helper stubs      (pub open spec fn ...;)
 PDF + L2+L3 context → [CMD model]  → spec functions
 ```
 
-**Layer 1** (`boilerplate/layer1.rs`): hardcoded type aliases and constants; never trained.
+See [`training/README_training.md`](training/README_training.md) for the full cascaded guide.
 
-**Layer 2** (type definitions): fine-tuned on 179 `kind=type_definition` examples. Input: raw PDF type section. Output: Verus `pub enum` / `struct`.
-
-**Layer 3** (helper stubs): fine-tuned on 480 `kind=helper_stub` examples. Input: B3.x helper function spec text. Output: single-line `pub open spec fn` stub.
-
-**Command model**: fine-tuned on cascaded command examples (model-generated L2 context, not gold) to avoid covariate shift at inference time. Input: PDF command section + preamble context. Output: `pub open spec fn {cmd}_spec(...)`.
-
-### Dataset
-
-| Split | Versions           | Commands | Types | Helpers | Total |
-|-------|--------------------|----------|-------|---------|-------|
-| Train | eac5, rel0, alp11, alp12 | 379 | 163 | 496 | 938 |
-| Val   | alp13              | 99       | 56    | 165     | 320   |
-| Test  | alp14              | 98       | 57    | 171     | 326   |
-
-All examples fit within an 8,192-token context window.
-
-### Training Configuration
-
-```
-Base model:  unsloth/Qwen3-4B (4-bit QLoRA)
-LoRA:        r=16, alpha=32, dropout=0.05
-LR:          2e-4, cosine scheduler, 3% warmup
-Epochs:      10
-Precision:   FP16
-max_seq:     4096 (L2/L3) | 6144 (CMD)
-```
-
-### Quick Start (GPU server)
+### Zero-Shot Extension to Other Specs
 
 ```bash
-pip install unsloth trl peft transformers datasets accelerate bitsandbytes xformers
-
-# Step 1 — Train L2 (type definitions)
-python3 train.py --train dataset/train_types.jsonl --val dataset/val_types.jsonl \
-    --out models/layer2 --max-seq 4096
-
-# Step 2 — Generate cascaded context and build train_cascaded.jsonl
-python3 inference_l2.py       # → generated_types/{version}_types.rs
-python3 substitute_context.py --input dataset/train.jsonl \
-    --gen-dir generated_types/ --output dataset/train_cascaded.jsonl
-
-# Step 3 — Train L3 (helper stubs, runs in parallel with Step 2)
-python3 train.py --train dataset/train_helpers.jsonl --val dataset/val_helpers.jsonl \
-    --out models/layer3 --max-seq 4096
-
-# Step 4 — Train CMD model (cascaded)
-python3 train.py --train dataset/train_cmds_cascaded.jsonl --val dataset/val_cmds.jsonl \
-    --out models/commands --max-seq 8192
-
-# Step 5 — End-to-end evaluation on alp14
-python3 pipeline.py --txt ccaspec/alp14.txt --target alp14 \
-    --l2-model models/layer2_best --l3-model models/layer3_best \
-    --cmd-model models/commands_best --out alp14_generated.rs
+# Run on a new spec (e.g., RISC-V SBI) after PDF text extraction
+python3 pipeline.py \
+    --txt       ccaspec/sbi_2.txt \
+    --target    sbi_2 \
+    --l1-rs     boilerplate/layer1_sbi.rs \
+    --cmd-model models/item_split_e2_best \
+    --spec-type sbi \
+    --out       sbi_generated.rs
+python3 cleanup_sbi.py
 ```
 
-See [`training/README_training.md`](training/README_training.md) for the full guide, and [`training/STATUS.md`](training/STATUS.md) for current training status.
-
-### Sanity Check (no GPU needed)
+### Inconsistency Checking
 
 ```bash
-# Verify split + reassemble = gold for all 6 versions
-for v in eac5 rel0 alp11 alp12 alp13 alp14; do
-    python3 test_e2e_oracle.py --version $v
-done
-# Expected: PASS for all 6
+# Sweep all RMM gold specs for contradictions
+python3 inconsistency_analysis_rmm.py
+
+# Sweep generated specs from a new architecture
+python3 inconsistency_analysis.py sbi   # checks sbi_generated_clean.rs
 ```
-
-### Success Criteria
-
-- **Primary**: `alp14_generated.rs` compiles under Verus without errors
-- **Secondary**: BLEU/CodeBLEU vs `alp14_gold.rs`, predicate recall (fraction of `&&`-clauses recovered)
 
 ---
 
