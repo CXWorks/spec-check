@@ -1,6 +1,6 @@
 # Prompt Engineering: Experiment Results
 
-**Date:** 2026-04-27  
+**Date:** 2026-05-05  
 **Eval target:** alp14 (98 gold command specs)  
 **Model:** Claude Haiku (`claude-haiku-4-5-20251001`)  
 **Approach:** Zero-shot / few-shot prompt engineering via Claude API  
@@ -46,13 +46,13 @@ whitespace/indentation noise.
 
 | Prompt | Best@1 | Best@3 | Best@5 |
 |---|---|---|---|
-| **V3-Structured** ⭐ | **0.4026** | **0.4378** | **0.4507** |
-| V4-BestPractices | 0.3864 | 0.4352 | 0.4487 |
-| V2-FewShot | 0.3799 | 0.4161 | 0.4286 |
-| V0-Baseline | 0.2909 | 0.3304 | 0.3469 |
-| V1-Minimal | 0.2426 | 0.2707 | 0.2837 |
+| **V3-Structured** ⭐ | **0.3898** | **0.4359** | **0.4494** |
+| V4-BestPractices | 0.3737 | 0.4209 | 0.4359 |
+| V2-FewShot | 0.3791 | 0.4125 | 0.4199 |
+| V0-Baseline | 0.2978 | 0.3345 | 0.3455 |
+| V1-Minimal | 0.2495 | 0.2745 | 0.2877 |
 
-**Winner: V3-Structured** (`Best@1 = 0.4026`, Best@3 = 0.4378, Best@5 = 0.4507`)
+**Winner: V3-Structured** (`Best@1 = 0.3898`, Best@3 = 0.4359, Best@5 = 0.4494`)
 
 ### Best@k Interpretation
 
@@ -61,7 +61,7 @@ With n_samples=5, Best@k scores show monotonic improvement for all variants:
 - **Best@3** (top 3 candidates): improves by ~0.8-0.9% on average
 - **Best@5** (top 5 candidates): further gains of ~1.2-1.4%
 
-V3-Structured maintains its lead across all k (0.4026 → 0.4378 → 0.4507),
+V3-Structured maintains its lead across all k (0.3898 → 0.4359 → 0.4494),
 indicating consistent output quality even with multiple samples.
 
 ---
@@ -70,14 +70,14 @@ indicating consistent output quality even with multiple samples.
 
 | Prompt Variant | Avg Raw | Avg Formatted | Δ Improvement |
 |---|---|---|---|
-| v2-fewshot | 0.3674 | 0.3811 | +0.0137 |
-| v0-baseline | 0.2824 | 0.2930 | +0.0106 |
-| v3-structured | 0.3838 | **0.3933** | +0.0095 |
-| v4-bestpractices | 0.3671 | 0.3750 | +0.0079 |
-| v1-minimal | 0.2379 | 0.2309 | **−0.0070** |
+| v4-bestpractices | 0.4222 | 0.4406 | +0.0184 |
+| v2-fewshot | 0.4115 | 0.4267 | +0.0152 |
+| v3-structured | 0.4371 | **0.4517** | +0.0147 |
+| v0-baseline | 0.3328 | 0.3459 | +0.0131 |
+| v1-minimal | 0.2877 | 0.2898 | +0.0021 |
 
-> verusfmt consistently improves CodeBLEU for all variants except V1-Minimal, which is too
-> unstable to benefit from formatting.
+> verusfmt consistently improves CodeBLEU for all variants (including V1-Minimal in this run).
+> Note: These values represent average per-sample CodeBLEU, distinct from Best@k metrics.
 
 ---
 
@@ -87,21 +87,21 @@ indicating consistent output quality even with multiple samples.
 
 | Command | Raw | Formatted | Δ |
 |---|---|---|---|
-| rsi_features | 0.3853 | 0.4597 | +7.44% |
-| rmi_rec_enter | 0.3119 | 0.3731 | +6.12% |
-| psci_system_reset | 0.5481 | 0.5967 | +4.87% |
-| psci_features | 0.3431 | 0.3898 | +4.67% |
-| psci_cpu_suspend | 0.4512 | 0.4935 | +4.23% |
+| psci_features | 0.4380 | 0.5481 | +11.01% |
+| rsi_features | 0.3664 | 0.4699 | +10.36% |
+| rmi_features | 0.4054 | 0.4807 | +7.53% |
+| rsi_plane_enter | 0.4056 | 0.4783 | +7.27% |
+| rmi_vdev_create | 0.3722 | 0.4349 | +6.28% |
 
 **Worst 5 (formatted performs worse than raw):**
 
 | Command | Raw | Formatted | Δ |
 |---|---|---|---|
-| rmi_pdev_communicate | 0.3803 | 0.3603 | −2.00% |
-| rmi_psmmu_msi_config | 0.5344 | 0.5162 | −1.82% |
-| rsi_plane_sysreg_write | 0.4052 | 0.3905 | −1.47% |
-| rmi_rtt_aux_fold | 0.3045 | 0.2912 | −1.33% |
-| rmi_version | 0.4006 | 0.3913 | −0.94% |
+| rmi_psci_complete | 0.3680 | 0.3653 | −0.27% |
+| rmi_vsmmu_unmap | 0.3899 | 0.3813 | −0.87% |
+| rmi_pdev_ide_key_refresh | 0.5339 | 0.5216 | −1.24% |
+| rmi_mec_set_private | 0.5143 | 0.4960 | −1.83% |
+| rmi_psmmu_msi_config | 0.6424 | 0.6034 | −3.90% |
 
 ---
 
@@ -114,12 +114,13 @@ For reference, the fine-tuning approach (teammate's work in `training/`) achieve
 | Fine-tuned (unformatted train data) | 0.637 |
 | Fine-tuned (verusfmt-formatted train data) | 0.416 |
 | **Prompt Engineering V3-Structured (n=1)** | 0.4037 |
-| **Prompt Engineering V3-Structured (n=5, Best@1)** | **0.4026** |
-| **Prompt Engineering V3-Structured (n=5, Best@5)** | **0.4507** |
+| **Prompt Engineering V3-Structured (n=5, Best@1)** | **0.3898** |
+| **Prompt Engineering V3-Structured (n=5, Best@5)** | **0.4494** |
 
-> Prompt engineering with V3-Structured using Best@5 (0.4507) **exceeds** the fine-tuned formatted
-> model (0.416), without requiring any training infrastructure or GPU. Slight variance in Best@1
-> (0.4026 vs 0.4037) is expected due to different random samples across runs.
+> Prompt engineering with V3-Structured using Best@5 (0.4494) **exceeds** the fine-tuned formatted
+> model (0.416), without requiring any training infrastructure or GPU. Best@1 in this rerun
+> (0.3898) is somewhat lower than the earlier n=1 report (0.4037), which is consistent with run-to-run
+> sampling variance and the fact that these are different evaluation settings.
 
 ---
 
@@ -129,7 +130,7 @@ For reference, the fine-tuning approach (teammate's work in `training/`) achieve
    conditions step-by-step produces the most consistent output.
 2. **verusfmt helps, but is not universal** — V1-Minimal outputs are too loosely structured;
    formatting can actually hurt if the generated code doesn't parse cleanly.
-3. **Prompt engineering is competitive with fine-tuning** — at 0.404 vs 0.416 for the formatted
+3. **Prompt engineering is competitive with fine-tuning** — at 0.390 vs 0.416 for the formatted
    fine-tuned model. The gap disappears when factoring in that fine-tuning with formatted data
    introduced overfitting.
 4. **Ceiling is around 0.40** for the current prompt design — further gains likely require
