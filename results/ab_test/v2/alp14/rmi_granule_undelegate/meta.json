@@ -1,0 +1,14 @@
+{
+  "command": "RMI_GRANULE_UNDELEGATE",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 4,
+  "best_codebleu": 0.4549708872187464,
+  "candidate_scores": [
+    0.40217382644122435,
+    0.4233448415284728,
+    0.398969107567546,
+    0.4020676606752623,
+    0.4549708872187464
+  ]
+}

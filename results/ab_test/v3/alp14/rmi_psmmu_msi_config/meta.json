@@ -1,0 +1,14 @@
+{
+  "command": "RMI_PSMMU_MSI_CONFIG",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 4,
+  "best_codebleu": 0.660205374990472,
+  "candidate_scores": [
+    0.6588601096557244,
+    0.5051864306756527,
+    0.5559093263240875,
+    0.5003784443851894,
+    0.660205374990472
+  ]
+}

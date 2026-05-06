@@ -1,0 +1,14 @@
+{
+  "command": "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 2,
+  "best_codebleu": 0.33932069956902444,
+  "candidate_scores": [
+    0.29080814182268366,
+    0.24361975481423045,
+    0.33932069956902444,
+    0.33782798036904294,
+    0.3231785365482982
+  ]
+}

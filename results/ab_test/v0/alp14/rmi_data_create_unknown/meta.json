@@ -1,0 +1,14 @@
+{
+  "command": "RMI_DATA_CREATE_UNKNOWN",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 0,
+  "best_codebleu": 0.21588341400341549,
+  "candidate_scores": [
+    0.21588341400341549,
+    0.19536913466349654,
+    0.19068061622941518,
+    0.19841828662574235,
+    0.20533142150734773
+  ]
+}

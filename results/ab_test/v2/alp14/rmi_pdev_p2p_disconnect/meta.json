@@ -1,0 +1,14 @@
+{
+  "command": "RMI_PDEV_P2P_DISCONNECT",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 1,
+  "best_codebleu": 0.4961425757393553,
+  "candidate_scores": [
+    0.346054959818875,
+    0.4961425757393553,
+    0.42182278962802333,
+    0.3530173309387213,
+    0.4501836662555747
+  ]
+}

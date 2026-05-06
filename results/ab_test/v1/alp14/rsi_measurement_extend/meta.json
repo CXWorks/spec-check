@@ -1,0 +1,14 @@
+{
+  "command": "RSI_MEASUREMENT_EXTEND",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 4,
+  "best_codebleu": 0.32542634896775746,
+  "candidate_scores": [
+    0.2581729669239197,
+    0.27664903928407214,
+    0.255192047038851,
+    0.2953971988323172,
+    0.32542634896775746
+  ]
+}

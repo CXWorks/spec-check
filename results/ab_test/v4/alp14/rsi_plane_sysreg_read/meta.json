@@ -1,0 +1,14 @@
+{
+  "command": "RSI_PLANE_SYSREG_READ",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 3,
+  "best_codebleu": 0.361017177080406,
+  "candidate_scores": [
+    0.3170271793695774,
+    0.32245096697820863,
+    0.32423179124906176,
+    0.361017177080406,
+    0.3211802190779379
+  ]
+}

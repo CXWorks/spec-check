@@ -1,0 +1,14 @@
+{
+  "command": "RMI_PDEV_IDE_KEY_REFRESH",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 0,
+  "best_codebleu": 0.5639525441667396,
+  "candidate_scores": [
+    0.5639525441667396,
+    0.4810792598200645,
+    0.4662546699956036,
+    0.43078286880753514,
+    0.37904194363642213
+  ]
+}
