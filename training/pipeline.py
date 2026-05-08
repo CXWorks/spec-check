@@ -248,41 +248,69 @@ def run_pipeline(args):
             helper_sections  = extractor.extract_helper_fns(cleaned)
             cmd_sections     = extractor.extract_commands(cleaned)
 
+        # Select system prompts based on spec type
+        spec_type = getattr(args, "spec_type", "rmm")
+        _TYPES_MAP = {
+            "psci": (_SYSTEM_TYPES_PSCI,    _SYSTEM_COMMANDS_PSCI,    "PSCI spec PDF"),
+            "sdei": (_SYSTEM_TYPES_SDEI,    _SYSTEM_COMMANDS_SDEI,    "SDEI spec PDF"),
+            "drtm": (_SYSTEM_TYPES_DRTM,    _SYSTEM_COMMANDS_DRTM,    "DRTM spec PDF"),
+            "scmi": (_SYSTEM_TYPES_SCMI,    _SYSTEM_COMMANDS_SCMI,    "SCMI spec PDF"),
+            "ffa":  (_SYSTEM_TYPES_FFA,     _SYSTEM_COMMANDS_FFA,     "FF-A spec PDF"),
+            "sbi":  (_SYSTEM_TYPES_SBI,     _SYSTEM_COMMANDS_SBI,     "RISC-V SBI spec"),
+            "tdx":  (_SYSTEM_TYPES_TDX,     _SYSTEM_COMMANDS_TDX,     "Intel TDX ABI spec"),
+        }
+        if spec_type in _TYPES_MAP:
+            sys_types, sys_cmds, spec_label = _TYPES_MAP[spec_type]
+        else:
+            sys_types, sys_cmds, spec_label = _SYSTEM_TYPES, _SYSTEM_COMMANDS, "RMM spec PDF"
+        sys_helpers = _SYSTEM_HELPERS
+
         # Layer 2: generate type definitions
         l2_model = load_model(args.l2_model)
         type_defs = {}
         print(f"[L2] Generating {len(type_sections)} type definitions...")
         for type_name, section_text in type_sections.items():
-            resp = run_model(l2_model, _SYSTEM_TYPES,
-                             f"## Type Specification (from RMM spec PDF)\n\n{section_text}")
+            resp = run_model(l2_model, sys_types,
+                             f"## Type Specification (from {spec_label})\n\n{section_text}")
             type_defs[type_name] = fmt_code(resp)
             print(f"  {type_name}")
 
-        # Layer 3: generate helper stubs
-        l3_model = load_model(args.l3_model)
+        # Layer 3: generate helper stubs (skipped if no helper sections)
         helper_stubs = {}
-        print(f"[L3] Generating {len(helper_sections)} helper stubs...")
-        for fn_name, section_text in helper_sections.items():
-            resp = run_model(l3_model, _SYSTEM_HELPERS,
-                             f"## Helper Function Specification (from RMM spec PDF)\n\n{section_text}")
-            helper_stubs[fn_name] = fmt_code(resp)
-            print(f"  {fn_name}")
+        if helper_sections:
+            l3_model = load_model(args.l3_model)
+            print(f"[L3] Generating {len(helper_sections)} helper stubs...")
+            for fn_name, section_text in helper_sections.items():
+                resp = run_model(l3_model, sys_helpers,
+                                 f"## Helper Function Specification (from {spec_label})\n\n{section_text}")
+                helper_stubs[fn_name] = fmt_code(resp)
+                print(f"  {fn_name}")
+        else:
+            print(f"[L3] No helper sections found — skipping L3 inference")
 
         # Commands: build preamble context from L1+L2+L3, last 200 lines
         cmd_model = load_model(args.cmd_model)
         context_full = (layer1_text + "\n".join(type_defs.values()) +
                         "\n".join(helper_stubs.values()))
         context_tail = "\n".join(context_full.splitlines()[-200:])
+        # Truncate section text to avoid exceeding model context window.
+        # Qwen3-4B has 40960 token context; limit spec text to ~12000 chars
+        # (~3000 tokens) to leave room for context_tail and generation.
+        MAX_SECTION_CHARS = 12000
+
         cmd_specs = {}
         print(f"[CMD] Generating {len(cmd_sections)} command specs...")
         for cmd_title, section_text in cmd_sections.items():
+            trunc_section = section_text[:MAX_SECTION_CHARS]
+            if len(section_text) > MAX_SECTION_CHARS:
+                trunc_section += "\n... [TRUNCATED FOR CONTEXT WINDOW]"
             user_content = (
                 "## Context (shared Verus types and helper function signatures)\n\n"
                 f"```rust\n{context_tail}\n```\n\n"
-                "## Command Specification (from RMM spec PDF)\n\n"
-                f"{section_text}"
+                f"## Command Specification (from {spec_label})\n\n"
+                f"{trunc_section}"
             )
-            resp = run_model(cmd_model, _SYSTEM_COMMANDS, user_content)
+            resp = run_model(cmd_model, sys_cmds, user_content)
             cmd_name = cmd_title.replace(" command", "").replace(" ", "_")
             cmd_specs[cmd_name] = resp
             print(f"  {cmd_name}")
@@ -328,6 +356,116 @@ _SYSTEM_COMMANDS = (
     "valid Verus syntax."
 )
 
+# PSCI-specific system prompts
+_SYSTEM_TYPES_PSCI = (
+    "You are a formal specification assistant for the ARM Power State Coordination Interface "
+    "(PSCI, DEN0022). "
+    "Given the specification text for a PSCI data type, generate the corresponding Verus/Rust "
+    "type definition. "
+    "Output only the type definition (pub enum or struct block) in valid Verus syntax."
+)
+_SYSTEM_COMMANDS_PSCI = (
+    "You are a formal specification assistant for the ARM Power State Coordination Interface "
+    "(PSCI, DEN0022). "
+    "Given the specification text for a PSCI function and the shared Verus type context, "
+    "generate the Verus specification function for that PSCI command. "
+    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in "
+    "valid Verus syntax, encoding the preconditions and postconditions as boolean implications."
+)
+
+# SDEI-specific system prompts
+_SYSTEM_TYPES_SDEI = (
+    "You are a formal specification assistant for the ARM Software Delegated Exception "
+    "Interface (SDEI, DEN0054C). "
+    "Given the specification text for an SDEI data type, generate the corresponding Verus/Rust "
+    "type definition. Output only the type definition in valid Verus syntax."
+)
+_SYSTEM_COMMANDS_SDEI = (
+    "You are a formal specification assistant for the ARM Software Delegated Exception "
+    "Interface (SDEI, DEN0054C). "
+    "Given the specification text for an SDEI function and the shared Verus type context, "
+    "generate the Verus specification function for that SDEI command. "
+    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in "
+    "valid Verus syntax, encoding preconditions and postconditions as boolean implications."
+)
+
+# DRTM-specific system prompts
+_SYSTEM_TYPES_DRTM = (
+    "You are a formal specification assistant for the ARM Dynamic Root of Trust for "
+    "Measurement (DRTM, DEN0113). "
+    "Given the specification text for a DRTM data type, generate the corresponding Verus/Rust "
+    "type definition. Output only the type definition in valid Verus syntax."
+)
+_SYSTEM_COMMANDS_DRTM = (
+    "You are a formal specification assistant for the ARM Dynamic Root of Trust for "
+    "Measurement (DRTM, DEN0113). "
+    "Given the specification text for a DRTM function and the shared Verus type context, "
+    "generate the Verus specification function for that DRTM command. "
+    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in "
+    "valid Verus syntax, encoding preconditions and postconditions as boolean implications."
+)
+
+# SCMI-specific system prompts
+_SYSTEM_TYPES_SCMI = (
+    "You are a formal specification assistant for the ARM System Control and Management "
+    "Interface (SCMI, DEN0056F). "
+    "Given the specification text for an SCMI data type, generate the corresponding Verus/Rust "
+    "type definition. Output only the type definition in valid Verus syntax."
+)
+_SYSTEM_COMMANDS_SCMI = (
+    "You are a formal specification assistant for the ARM System Control and Management "
+    "Interface (SCMI, DEN0056F), Base Protocol and Power Domain Protocol. "
+    "Given the specification text for an SCMI message and the shared Verus type context, "
+    "generate the Verus specification function for that SCMI message. "
+    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in "
+    "valid Verus syntax, encoding preconditions and postconditions as boolean implications."
+)
+
+# FF-A-specific system prompts
+_SYSTEM_TYPES_FFA = (
+    "You are a formal specification assistant for the ARM Firmware Framework for Arm A-profile "
+    "(FF-A, DEN0077A). "
+    "Given the specification text for an FF-A data type, generate the corresponding Verus/Rust "
+    "type definition. Output only the type definition in valid Verus syntax."
+)
+_SYSTEM_COMMANDS_FFA = (
+    "You are a formal specification assistant for the ARM Firmware Framework for Arm A-profile "
+    "(FF-A, DEN0077A). "
+    "Given the specification text for an FF-A function and the shared Verus type context, "
+    "generate the Verus specification function for that FF-A function. "
+    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in "
+    "valid Verus syntax, encoding preconditions and postconditions as boolean implications."
+)
+
+
+# RISC-V SBI-specific system prompts
+_SYSTEM_TYPES_SBI = (
+    "You are a formal specification assistant for the RISC-V Supervisor Binary Interface (SBI). "
+    "Given the specification text for an SBI data structure, generate an uninterpreted Verus stub. "
+    "Output only the stub declaration in valid Verus syntax."
+)
+_SYSTEM_COMMANDS_SBI = (
+    "You are a formal specification assistant for the RISC-V Supervisor Binary Interface (SBI). "
+    "Given the specification text for an SBI function and the shared Verus context, generate "
+    "the Verus specification function. "
+    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in valid "
+    "Verus syntax, encoding preconditions and postconditions as boolean implications."
+)
+
+# Intel TDX-specific system prompts
+_SYSTEM_TYPES_TDX = (
+    "You are a formal specification assistant for Intel TDX Module ABI. "
+    "Given the specification text for a TDX data structure, generate the Verus type definition. "
+    "Output only the type definition in valid Verus syntax."
+)
+_SYSTEM_COMMANDS_TDX = (
+    "You are a formal specification assistant for Intel TDX Module ABI. "
+    "Given the specification text for a TDCALL leaf function and the shared Verus context, generate "
+    "the Verus specification function. "
+    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in valid "
+    "Verus syntax, encoding preconditions and postconditions as boolean implications."
+)
+
 
 def main():
     parser = argparse.ArgumentParser(description="RMM spec → Verus pipeline")
@@ -343,6 +481,9 @@ def main():
     parser.add_argument("--cmd-model", default="models/commands/",
                         help="Path to fine-tuned command model")
     parser.add_argument("--out",       help="Output .rs file path")
+    parser.add_argument("--spec-type", default="rmm",
+                        choices=["rmm", "psci", "sdei", "drtm", "scmi", "ffa", "sbi", "tdx"],
+                        help="Spec domain — rmm (default), psci, sdei, drtm, scmi, ffa, sbi, tdx")
     parser.add_argument("--oracle",    action="store_true",
                         help="Oracle mode: use golden files instead of models")
     parser.add_argument("--verify",    action="store_true",

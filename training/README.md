@@ -1,124 +1,127 @@
 # spec-gen Training
 
-Fine-tune Qwen3-4B to generate Verus formal specifications from Arm CCA RMM PDF sections.
+Fine-tune Qwen3-4B to generate Verus formal specifications from firmware spec PDF sections.
 
 ## What this does
 
-Given a chapter of the RMM specification PDF (text), the trained pipeline outputs a
-`pub open spec fn {cmd}_spec(...)` Verus function body. The generation is split into
-three cascaded layers:
+Given a chapter of a firmware specification PDF (text), the trained pipeline outputs a
+`pub open spec fn {cmd}_spec(...)` Verus function body encoding preconditions and
+postconditions. The same model is used for zero-shot transfer to new firmware specs (PSCI,
+SDEI, DRTM, SCMI, FF-A, RISC-V SBI, Intel TDX).
 
-| Layer | Input | Output | Model |
-|-------|-------|--------|-------|
-| L1 | — | type aliases, constants | hardcoded (`boilerplate/layer1.rs`) |
-| L2 | PDF type section | `pub enum` / `struct` definitions | `models/layer2_fmt_best/` |
-| L3 | PDF helper fn section | `pub open spec fn ...;` stubs | `models/layer3_fmt_best/` |
-| CMD | PDF command section + L1–L3 context | `pub open spec fn {cmd}_spec(...)` | `models/commands_fmt_best/` |
+## Current Results (alp14 test set, 98 RMM commands)
 
-L2 must be trained first; its outputs replace the golden context in CMD training
-examples (cascaded training) to avoid covariate shift at inference time.
+| Model | Epochs | Eval loss | CodeBLEU |
+|-------|--------|-----------|----------|
+| **Item-split 2-epoch (current best)** | 2 | 0.2910 | **0.639** |
+| Item-split 10-epoch (overfit) | 10 | 0.3809 | 0.594 |
+| Round 2 — verusfmt cascade | 10 | 0.903 | 0.416 |
+| Round 1 — baseline cascade | 10 | 0.968 | 0.637† |
 
-## Current Results (alp14 test set, 98 commands)
+† Round 1 evaluated against unformatted gold (not directly comparable).
 
-**Training data reformatted with `verusfmt` (Round 2, Apr 2026)**
+Key finding: **training for 2 epochs is optimal**. The 10-epoch model memorizes training examples; the 2-epoch model generalizes better despite lower training loss.
 
-| Metric | Round 2 (fmt models) | Round 1 (baseline) |
-|--------|---------------------|--------------------|
-| CodeBLEU | **0.416** | 0.637† |
-| ngram_match | 0.151 | 0.406 |
-| weighted_ngram | 0.236 | 0.427 |
-| syntax_match | 0.561 | 0.812 |
-| dataflow_match | 0.715 | 0.902 |
-| Commands matched | **90 / 98** | 79 / 98 |
+See [`STATUS.md`](STATUS.md) for full training history and [`verusfmt-retraining-results.md`](verusfmt-retraining-results.md) for Round 2 analysis.
 
-† Round 1 baseline evaluated against reformatted gold (not a clean comparison — see
-[`verusfmt-retraining-results.md`](verusfmt-retraining-results.md) for details).
-
-Coverage improved by +11 commands. The CodeBLEU drop is primarily caused by CMD model
-overfitting (train_loss=0.094, eval_loss=0.903 after 10 epochs on 279 examples). Fix
-in progress: early stopping / reduced epochs for CMD.
-
-## Quick Start
+## Quick Start (Item-Split — Recommended)
 
 ```bash
-# 1. Train L2 (type definitions)
+pip install unsloth trl peft transformers datasets accelerate bitsandbytes xformers
+
+# Train single model on all item types (2 epochs)
 python3 train.py \
-    --train dataset/train_types.jsonl \
-    --val   dataset/val_types.jsonl \
-    --out   models/layer2_fmt
+    --train dataset/train.jsonl \
+    --val   dataset/val.jsonl \
+    --out   models/item_split \
+    --epochs 2 \
+    --max-seq 6144
 
-# 2. Generate cascaded context with trained L2
-python3 inference_l2.py --model models/layer2_fmt_best
-python3 substitute_context.py \
-    --input   dataset/train.jsonl \
-    --gen-dir generated_types/ \
-    --output  dataset/train_cascaded.jsonl
+# Evaluate on alp14 test set
+python3 eval_item_split.py
 
-# 3. Train L3 (helper stubs)
-python3 train.py \
-    --train dataset/train_helpers.jsonl \
-    --val   dataset/val_helpers.jsonl \
-    --out   models/layer3_fmt
-
-# 4. Train CMD (command specs, cascaded)
-python3 train.py \
-    --train    dataset/train_cmds_cascaded.jsonl \
-    --val      dataset/val_cmds.jsonl \
-    --out      models/commands_fmt \
-    --max-seq  6144 \
-    --batch-size 2
-
-# 5. Run pipeline on a new spec version
+# Run pipeline on a new spec (zero-shot)
 CUDA_VISIBLE_DEVICES=0 python3 pipeline.py \
     --sections-dir sections/alp14 \
     --target       alp14 \
-    --l2-model     models/layer2_fmt_best \
-    --l3-model     models/layer3_fmt_best \
-    --cmd-model    models/commands_fmt_best \
+    --cmd-model    models/item_split_e2_best \
+    --spec-type    rmm \
     --out          alp14_generated.rs
-
-# 6. Evaluate with CodeBLEU
-python3 eval_codebleu.py
 ```
+
+## Cascaded 3-Layer Pipeline (original architecture)
+
+```
+PDF → [L2 model] → type definitions  (pub enum / struct)
+PDF → [L3 model] → helper stubs      (pub open spec fn ...;)
+PDF + L2+L3 context → [CMD model]  → spec functions
+```
+
+See [`README_training.md`](README_training.md) for the full cascaded guide.
 
 ## Training Config
 
 ```
 Base model:  unsloth/Qwen3-4B (4-bit QLoRA)
 LoRA:        r=16, alpha=32, targets=q/k/v/o/gate/up/down_proj
-Epochs:      10 (early stopping recommended for CMD)
+Epochs:      2 (item-split), early stopping critical
 LR:          2e-4, cosine scheduler, 3% warmup
-Batch:       4 (L2/L3), 2 (CMD)  ×  grad_acc=4
-max_seq:     4096 (L2/L3), 6144 (CMD)
+Batch:       4 × grad_acc=4  (effective batch 16)
+max_seq:     6144
 GPU:         Quadro RTX 8000 48 GB, fp16, xformers attention
 ```
 
-## Dataset
+## Dataset (RMM, 6 versions)
 
-Training data covers 4 versions of the RMM spec (eac5, rel0, alp11, alp12);
-validation on alp13; test on alp14.
+| Split | Versions | Cmd | Type | Helper | Total |
+|-------|----------|-----|------|--------|-------|
+| train | eac5, rel0, alp11, alp12 | 476 | 276 | 832 | 1584 |
+| val | alp13 | 99 | 56 | 165 | 320 |
+| test | alp14 | 98 | 57 | 171 | 326 |
 
-| Split | Cmd | Type | Helper | Total |
-|-------|-----|------|--------|-------|
-| train | 279 | 179 | 480 | 938 |
-| val (alp13) | 99 | 56 | 165 | 320 |
-| test (alp14) | 98 | 57 | 171 | 326 |
+## Spec Bug Findings
 
-All spec files are formatted with `verusfmt` as of Apr 2026.
+The automated inconsistency checker found **5 confirmed spec document bugs**:
+
+| Spec | Bug |
+|------|-----|
+| ARM CCA RMM §B4.3.20.2.1 | RMI_PDEV_STOP: missing ordering edge → dual error |
+| ARM CCA RMM §B5.3.1.2.1 | RSI_ATTESTATION_TOKEN_CONTINUE: "no ordering" + conflicting errors |
+| ARM SDEI DEN0054C §5.1.19 | SDEI_SHARED_RESET: contradictory precondition |
+| ARM SDEI DEN0054C §5.1.14 | SDEI_INTERRUPT_BIND: conflicting state requirement |
+| ARM DRTM DEN0113 §3.11 | DRTM_ENABLE_SECURE_INTERRUPTS: dual error code |
+
+```bash
+# Reproduce bug sweep
+python3 inconsistency_analysis_rmm.py    # RMM sweep (0 new bugs in 74 specs)
+python3 inconsistency_analysis.py        # Other specs
+```
+
+## Multi-Spec Extension
+
+`pipeline.py` supports 8 spec types via `--spec-type`:
+
+```bash
+python3 pipeline.py --spec-type {rmm|psci|sdei|drtm|scmi|ffa|sbi|tdx} ...
+```
+
+Each spec type has a corresponding `extract_sections_{spec}.py`, `cleanup_{spec}.py`, and `boilerplate/layer1_{spec}.rs`.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
 | `train.py` | SFTTrainer + Unsloth QLoRA fine-tuning |
-| `inference_l2.py` | Run L2 model over train-split type sections |
-| `pipeline.py` | End-to-end inference (L2 → L3 → CMD → assembled .rs) |
+| `pipeline.py` | End-to-end inference (multi-spec, 8 spec types) |
 | `build_dataset.py` | Build JSONL from spec files |
-| `substitute_context.py` | Replace golden preamble with L2 output |
-| `extract_sections.py` | Extract PDF text sections per command/type/helper |
-| `split_specs.py` | Split gold .rs into per-command files |
-| `test_e2e_oracle.py` | Oracle assembly smoke test (no GPU needed) |
-| `STATUS.md` | Detailed training progress and per-epoch loss curves |
-| `verusfmt-retraining-results.md` | Round 2 analysis and CodeBLEU breakdown |
-| `README_training.md` | Extended training guide and dataset documentation |
-| `boilerplate/layer1.rs` | Hardcoded L1 type aliases (not trained) |
+| `eval_codebleu.py` | CodeBLEU evaluation |
+| `eval_item_split.py` | Item-split model comparison |
+| `inconsistency_analysis.py` | Automated Verus inconsistency sweep |
+| `inconsistency_analysis_rmm.py` | RMM-specific sweep with known-bug skip list |
+| `rmm_bugs.rs` / `spec_bugs.rs` | Machine-checked Verus proofs for confirmed bugs |
+| `extract_sections_*.py` | Per-spec PDF section extractors (8 specs) |
+| `cleanup_base.py` + `cleanup_*.py` | Post-processing model output (7 non-RMM specs) |
+| `boilerplate/layer1*.rs` | Hardcoded type aliases per spec (8 files) |
+| `STATUS.md` | Training history, per-epoch loss, lessons learned |
+| `verusfmt-retraining-results.md` | Round 2 detailed analysis |
+| `README_training.md` | Extended cascaded training guide |

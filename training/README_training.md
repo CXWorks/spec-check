@@ -80,15 +80,27 @@ All examples fit within an 8192-token context window.
 
 ---
 
-## Recommended Base Model
+## Recommended Approach
 
-**Qwen2.5-Coder-7B-Instruct** (or 14B if GPU memory allows).
-Rationale: strong Rust/formal-verification awareness from pretraining,
-good instruction following, fits on a single A100 80 GB with QLoRA.
+**Use the item-split single-model approach (not the 3-layer cascade) with 2 epochs.**
 
-Alternatives:
-- `deepseek-coder-v2-lite-instruct` (16B MoE, 2×A100 with QLoRA)
-- `meta-llama/Llama-3.1-8B-Instruct`
+The item-split model trains all item types (commands, types, helpers) in a single SFTTrainer run on `dataset/train.jsonl`. Best results: CodeBLEU 0.639 at epoch 2 vs 0.594 at epoch 10 (overfit).
+
+```bash
+python3 train.py \
+    --train dataset/train.jsonl \
+    --val   dataset/val.jsonl \
+    --out   models/item_split \
+    --epochs 2 \
+    --max-seq 6144
+```
+
+The cascaded 3-layer approach below is kept for reference.
+
+## Base Model
+
+**`unsloth/Qwen3-4B`** (4-bit QLoRA via Unsloth).
+Trained on Quadro RTX 8000 (48 GB, fp16, xformers). Use `load_in_4bit=True` and xformers attention to stay within VRAM limits for long CMD sequences.
 
 ---
 
@@ -104,12 +116,12 @@ Alternatives:
 | Batch size             | 4 (grad acc 4) | 4 (grad acc 4) |
 | Learning rate          | 2e-4          | 2e-4          |
 | LR scheduler           | cosine 3% warmup | cosine 3% warmup |
-| Epochs                 | 5–10          | 5–10          |
+| Epochs                 | 2 (item-split), 5–10 (cascaded) | 2 (item-split), 5–10 (cascaded) |
 | Optimizer              | adamw_torch_fused | adamw_torch_fused |
-| BF16                   | true          | true          |
+| FP16                   | true (bf16 not supported on Turing/CUDA 7.5) | same |
 | Eval strategy          | every epoch   | every epoch   |
 
-Monitor val loss and use early stopping (patience 3 epochs).
+**Use early stopping (patience 1–2 epochs).** CMD model overfits severely at 10 epochs with ~279–476 examples. The optimal checkpoint is always at epoch 1–2.
 
 ---
 
@@ -232,7 +244,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer, SFTConfig
 
-MODEL_ID = "Qwen/Qwen2.5-Coder-7B-Instruct"
+MODEL_ID = "unsloth/Qwen3-4B"
 
 def load_jsonl(path):
     with open(path) as f:
@@ -283,7 +295,7 @@ def main():
             learning_rate=2e-4,
             lr_scheduler_type="cosine",
             warmup_ratio=0.03,
-            bf16=True,
+            fp16=True,  # Quadro RTX 8000 (Turing) has no bf16
             evaluation_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
@@ -313,11 +325,11 @@ if __name__ == "__main__":
 python3 -c "
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
-model = AutoModelForCausalLM.from_pretrained('Qwen/Qwen2.5-Coder-7B-Instruct')
+model = AutoModelForCausalLM.from_pretrained('unsloth/Qwen3-4B')
 model = PeftModel.from_pretrained(model, 'models/commands/_best')
 model = model.merge_and_unload()
 model.save_pretrained('models/commands_merged')
-AutoTokenizer.from_pretrained('Qwen/Qwen2.5-Coder-7B-Instruct').save_pretrained('models/commands_merged')
+AutoTokenizer.from_pretrained('unsloth/Qwen3-4B').save_pretrained('models/commands_merged')
 "
 ```
 
