@@ -1,0 +1,14 @@
+{
+  "command": "RMI_VDEV_COMMUNICATE",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 2,
+  "best_codebleu": 0.3509176580082054,
+  "candidate_scores": [
+    0.3273737972667524,
+    0.338113426172415,
+    0.3509176580082054,
+    0.3436961158424947,
+    0.31081508452263396
+  ]
+}

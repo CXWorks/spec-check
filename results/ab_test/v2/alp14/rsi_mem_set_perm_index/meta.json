@@ -1,0 +1,14 @@
+{
+  "command": "RSI_MEM_SET_PERM_INDEX",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 4,
+  "best_codebleu": 0.4580506963170516,
+  "candidate_scores": [
+    0.3936466541028127,
+    0.4487100325494888,
+    0.4527354655849052,
+    0.4320269997537693,
+    0.4580506963170516
+  ]
+}

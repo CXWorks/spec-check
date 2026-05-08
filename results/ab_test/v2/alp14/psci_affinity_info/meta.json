@@ -1,0 +1,14 @@
+{
+  "command": "PSCI_AFFINITY_INFO",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 0,
+  "best_codebleu": 0.531428001350059,
+  "candidate_scores": [
+    0.531428001350059,
+    0.531428001350059,
+    0.5300127824908504,
+    0.531428001350059,
+    0.5293274062664698
+  ]
+}

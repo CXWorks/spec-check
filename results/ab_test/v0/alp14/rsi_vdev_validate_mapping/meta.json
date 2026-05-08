@@ -1,0 +1,14 @@
+{
+  "command": "RSI_VDEV_VALIDATE_MAPPING",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 1,
+  "best_codebleu": 0.3351616649838507,
+  "candidate_scores": [
+    0.31078335235023735,
+    0.3351616649838507,
+    0.3082340534238397,
+    0.21515630984725048,
+    0.2158502520638431
+  ]
+}

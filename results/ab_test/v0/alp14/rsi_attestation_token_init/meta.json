@@ -1,0 +1,14 @@
+{
+  "command": "RSI_ATTESTATION_TOKEN_INIT",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 3,
+  "best_codebleu": 0.25923278209179673,
+  "candidate_scores": [
+    0.22781265093701966,
+    0.22338984583530125,
+    0.24892570937848535,
+    0.25923278209179673,
+    0.227370636517185
+  ]
+}

@@ -2,10 +2,11 @@
 
 **Detecting Inconsistencies in Formally Verified Firmware Specifications** (ASPLOS 2026)
 
-This repository contains two complementary approaches for converting firmware specification PDFs into [Verus](https://github.com/verus-lang/verus) formal verification code, plus an automated inconsistency checker that has found **5 machine-checked spec bugs** across ARM CCA RMM, SDEI, and DRTM specifications.
+This repository contains three complementary approaches for converting firmware specification PDFs into [Verus](https://github.com/verus-lang/verus) formal verification code, plus an automated inconsistency checker that has found **5 machine-checked spec bugs** across ARM CCA RMM, SDEI, and DRTM specifications.
 
 1. **SCOPE** — a hand-written 2,400-line Python pipeline (submodule)
 2. **Fine-tuned LLM pipeline** — a Qwen3-4B model trained to replace SCOPE's heuristics
+3. **Prompt Engineering + Claude** — zero-shot / few-shot prompting with Claude API (no fine-tuning)
 
 The generated Verus code encodes each command's preconditions and postconditions as `pub open spec fn` functions. A `proof fn ... ensures false` sweep then detects logical contradictions in the spec text.
 
@@ -168,6 +169,62 @@ python3 inconsistency_analysis_rmm.py
 # Sweep generated specs from a new architecture
 python3 inconsistency_analysis.py sbi   # checks sbi_generated_clean.rs
 ```
+
+---
+
+## Approach 3: Prompt Engineering + Claude API
+
+An alternative to fine-tuning: use a large commercial model (Claude) with carefully designed prompts to generate Verus spec functions directly — no training required.
+
+### Data Flow
+
+```
+sections/{version}/{CMD}_command.txt     ← Raw input (PDF-extracted command text)
+specs/{version}/preamble.rs (tail 200L)  ← Context (Verus type/function signatures)
+            ↓
+    [Prompt Template + Claude API]
+            ↓
+pub open spec fn {cmd}_spec(...) -> bool  ← Generated output
+            ↓
+specs/{version}/{cmd}_spec.rs            ← Gold label (for evaluation)
+```
+
+This approach sends the raw command text + preamble context to Claude in a single call.
+
+### Prompt Variants
+
+Five prompt strategies are implemented for A/B testing:
+
+| Variant | Strategy | Description |
+|---------|----------|-------------|
+| V0 | Baseline | System role + structured input/output template |
+| V1 | Minimal | Spec + context only, minimal instructions |
+| V2 | Few-shot | Includes an example input/output pair in system prompt |
+| V3 | Structured | Step-by-step generation instructions (extract params → conditions → combine) |
+| V4 | Best Practices | Explicit Verus idiom rules (implications, conjunctions, state pattern) |
+
+### Quick Start
+
+```bash
+pip install anthropic
+
+# Set API key
+export ANTHROPIC_API_KEY="sk-..."
+
+# Run A/B test on test split (alp14, 98 commands)
+python3 prompt_engineering.py
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `dataset_loader.py` | Loads raw PDF sections + preamble context + gold specs from disk |
+| `prompt_engineering.py` | 5 prompt variants, Claude Haiku API integration, A/B testing framework |
+
+### Evaluation
+
+Results are compared against the same `alp14` gold specs used by the fine-tuning pipeline, enabling direct comparison between approaches.
 
 ---
 

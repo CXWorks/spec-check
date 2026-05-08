@@ -1,0 +1,14 @@
+{
+  "command": "RMI_VDEV_GET_MEASUREMENTS",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 1,
+  "best_codebleu": 0.3227554105924851,
+  "candidate_scores": [
+    0.23743423960454613,
+    0.3227554105924851,
+    0.2731572517501993,
+    0.26987696605582917,
+    0.2684905545148062
+  ]
+}

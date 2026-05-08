@@ -1,0 +1,14 @@
+{
+  "command": "RMI_GRANULE_DELEGATE",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 2,
+  "best_codebleu": 0.5143381048362033,
+  "candidate_scores": [
+    0.4343954206172951,
+    0.441448593354268,
+    0.5143381048362033,
+    0.49277048598553924,
+    0.3984441883478828
+  ]
+}

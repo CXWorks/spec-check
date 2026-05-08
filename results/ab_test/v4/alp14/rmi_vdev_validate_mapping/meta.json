@@ -1,0 +1,14 @@
+{
+  "command": "RMI_VDEV_VALIDATE_MAPPING",
+  "version": "alp14",
+  "n_samples": 5,
+  "best_index": 2,
+  "best_codebleu": 0.41697255428498603,
+  "candidate_scores": [
+    0.35666433900199046,
+    0.24700388583898317,
+    0.41697255428498603,
+    0.35652112179910017,
+    0.3909779920557289
+  ]
+}
