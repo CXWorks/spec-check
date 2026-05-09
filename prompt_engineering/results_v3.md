@@ -207,3 +207,37 @@ Run a medium/full comparable evaluation to validate recovery trend:
 
 Then compare per-command deltas vs the retained backup baseline to verify whether complex-family regressions are reduced.
 
+## Latest Full Evaluation Update (Scoped RTT/VDEV/DATA Rules)
+
+We ran the full comparable setting again after scoping RTT/VDEV/DATA targeted prescriptions to only relevant command families.
+
+- Command: `python3 prompt_engineering/prompt_engineering_v3.py --limit 98 --n-samples 5 --save-results`
+- Model: Claude 4.5 Haiku
+- Prompt: V3-Structured
+
+### Result Snapshot
+
+- **Best@1 = 0.4398**
+- **Best@3 = 0.4709**
+- **Best@5 = 0.4811**
+
+### Comparison to Previous Iteration (Post-Addendum Regression Run)
+
+Previous run:
+
+- Best@1 = 0.3597
+- Best@3 = 0.3967
+- Best@5 = 0.4138
+
+Current deltas:
+
+- **Best@1: +0.0801**
+- **Best@3: +0.0742**
+- **Best@5: +0.0673**
+
+### Interpretation
+
+This is a strong recovery and supports the hypothesis that RTT/VDEV/DATA-targeted constraints should be family-scoped rather than globally enforced. The update appears to reduce collateral damage on unrelated families while preserving guidance for difficult RMI tails.
+
+In short, the scoped policy is currently the best-performing V3 configuration recorded in this report series so far.
+
