@@ -1,0 +1,209 @@
+# V3 Prompt Investigation Report
+
+## Overview
+
+This report summarizes a full comparison between `oracle` and `generated` outputs under the V3 prompt setup (`results/ab_test/v3/alp14`) and documents the prompt-tuning changes we introduced to improve output consistency.
+
+## Full-Scan Findings (V3: Oracle vs Generated)
+
+The following issue counts come from the full dataset scan:
+
+- **family_mismatch** (cross-family symbol mix-up): **13**
+- **state_param_order_diff** (`old_s` / `new_s` position mismatch): **84**
+- **result_type_diff** (`result` type mismatch): **33**
+- **bits_uint_type_diff** (`u64` / `u32` vs `Bits64` / `UInt64` / `UInt32`): **99**
+- **fn_name_case_diff** (function naming style mismatch, uppercase vs snake_case): **98**
+
+## What These Mismatches Mean
+
+### 1) Family mismatch
+Generated specs sometimes mixed symbol families that should remain domain-consistent, e.g.:
+
+- using `vdev` symbols inside `pdev` commands
+- using `psmmu` / `vsmmu` symbols interchangeably
+
+This creates semantic drift and directly hurts matching quality.
+
+### 2) `old_s` / `new_s` order mismatch
+Many generated signatures place `old_s` and `new_s` in positions that differ from the oracle pattern (often oracle places them near the end).
+
+### 3) `result` type mismatch
+In multiple commands, generated code used a different `result` type than oracle expectations (e.g., `RmiCommandReturnCode` vs `Result<(), ...>` style).
+
+### 4) Numeric type alias mismatch
+Generated code frequently used primitive Rust numeric types (`u64`, `u32`) where oracle uses project aliases (`Bits64`, `UInt64`, `UInt32`).
+
+### 5) Function name style mismatch
+Generated function names were often uppercase command-style (e.g., `RMI_..._spec`) while oracle consistently uses lowercase snake_case (e.g., `rmi_..._spec`).
+
+## V3 Prompt Tuning Changes We Added
+
+To reduce these recurring errors, we upgraded `prompt_engineering_v3.py` in several ways:
+
+### A) Borrowed from V2: Added a worked example
+We added a few-shot style template example (`REC_EXIT`) to show the target implication structure:
+
+- failure conditions as implications to error results
+- success condition as implication to success postconditions
+
+This provides concrete output shape guidance, not just abstract instructions.
+
+### B) Strengthened hard constraints
+We added stricter constraints in V3 prompt text, including:
+
+- function must be lowercase snake_case: `{cmd_name_lower}_spec`
+- explicitly use `result` parameter (no `old_s.result` / `new_s.result`)
+- keep predicate/function arity aligned with provided context
+
+### C) Added output self-check rules
+Based on the full-scan findings, we introduced an explicit "Output self-check" block requiring the model to verify before final output:
+
+1. **Family consistency** (no pdev/vdev or psmmu/vsmmu cross-mixing)
+2. **Signature order consistency** (match established style; place `old_s/new_s` at end when that pattern is used)
+3. **Type alias consistency** (prefer `Bits64` / `UInt64` / `UInt32` over raw primitives when aliases are available)
+4. **Naming consistency** (exact lowercase snake_case function name)
+
+## Follow-up Run: Observed Regression and Diagnosis
+
+After introducing the stronger constraints and self-check guidance, we ran a full V3 evaluation:
+
+- Command: `python3 prompt_engineering/prompt_engineering_v3.py --limit 98 --n-samples 5 --save-results`
+- Result snapshot:
+  - **Best@1 = 0.3851**
+  - **Best@3 = 0.4177**
+  - **Best@5 = 0.4303**
+
+This was lower than the previous V3 backup baseline, so we performed a differential diagnosis against the retained backup artifacts.
+
+### Differential Findings vs Backup
+
+- **58 commands dropped**, **40 commands improved**
+- No mass failure artifacts (no broad "all-zero" collapse)
+- Degradation concentrated in more complex command families (notably `pdev` / `vdev` / `rtt` / `psmmu`)
+
+Representative drops:
+
+- `rmi_psmmu_msi_config`: −0.1887
+- `rmi_pdev_p2p_disconnect`: −0.1800
+- `rmi_vdev_map`: −0.1770
+
+Representative gains:
+
+- `psci_cpu_off`: +0.3465
+- `rsi_host_call`: +0.2137
+- `rsi_measurement_extend`: +0.2080
+
+Interpretation: stronger formatting/style constraints improved some simpler commands, but likely over-constrained semantic choices in complex families.
+
+## Iteration 2: V3 "Semantic-First" Refinement
+
+To address the regression pattern, we updated `prompt_engineering_v3.py` again with a semantic-first policy.
+
+### What Changed
+
+1. Replaced "hard-format emphasis" with **semantic-priority policy**:
+	- semantic correctness > cosmetic formatting
+	- avoid inventing behavior beyond context/spec
+2. Kept critical correctness constraints (result usage, arity consistency, implication discipline), but softened purely cosmetic pressure.
+3. Upgraded self-check to include **domain symbol anchoring** for complex families:
+	- for `pdev` / `vdev` / `rtt` / `psmmu`, prefer helper/accessor names already present in context
+	- avoid analogy-based renaming across families
+4. Template requirements now explicitly state:
+	- prefer aliases when available, **but not at the expense of semantic correctness**
+	- prioritize correct helper/function selection for complex families
+
+## Quick Validation After Refinement
+
+We executed a small smoke test after the semantic-first update:
+
+- Command: `python3 prompt_engineering/prompt_engineering_v3.py --limit 5 --n-samples 1`
+- Output confirmed the updated prompt text is active
+- Smoke metrics:
+  - **Best@1 = 0.6009**
+  - **Best@3 = 0.6009**
+  - **Best@5 = 0.6009**
+
+This smoke run is not directly comparable to full evaluation, but it verifies:
+
+- the revised prompt is being used
+- the pipeline runs cleanly end-to-end after changes
+
+## Iteration 2 Addendum: Targeted Fixes for Very Low-Score Commands
+
+As part of Iteration 2 (semantic-first refinement), we further inspected the hardest commands (especially those with Best@1 around 0.1–0.2 and/or very low Best@5) and added targeted guidance.
+
+### Commands Selected for Deep Inspection
+
+Representative low-score set included:
+
+- `rmi_rtt_aux_fold`
+- `rmi_rtt_aux_destroy`
+- `rmi_rtt_aux_create`
+- `rmi_vdev_map`
+- `rmi_rtt_unmap_unprotected`
+- `rmi_data_destroy`
+
+### Root Causes Observed (Oracle vs Generated)
+
+1. **Signature incompleteness / implicit operand substitution**
+	- Generated specs occasionally omitted explicit command operands and relied on hidden state fields (e.g., `old_s.cmd_input_x*`) where oracle used explicit parameters.
+
+2. **Invalid state-transition formulation**
+	- In some cases, postconditions compared `new_s` against itself (e.g., `X(new_s) == X(new_s) + delta`) instead of writing an `old_s -> new_s` transition.
+
+3. **RTT error-branch payload inconsistency**
+	- `RMI_ERROR_RTT` / `RMI_ERROR_RTT_AUX` level payloads were sometimes derived inconsistently from walk conditions, mixing old/new references in unstable ways.
+
+4. **Map/Unmap coherence gaps**
+	- Entry-state transitions and granule-state transitions were not always paired coherently, and error-path unchanged-state framing was sometimes missing.
+
+### Prompt Updates Added for This Iteration
+
+We added a dedicated targeted-prescriptions block in `prompt_engineering_v3.py` for RTT/VDEV/DATA families:
+
+- enforce **signature completeness first** for command operands (`rd/ipa/level/index/rtt/top/data/vdev_ptr/addr`)
+- disallow replacing missing operands with hidden state fields unless explicitly required by context/spec style
+- enforce **state-transition sanity** (`old_s -> new_s`, never `new_s -> new_s` self-comparison updates)
+- require consistent derivation of RTT error payloads from the triggering walk condition
+- require map/unmap postcondition coherence and unchanged-state framing on error paths
+
+These additions are intended to specifically raise floor performance on the persistent low-score tail while preserving the semantic-first policy introduced in Iteration 2.
+
+## Latest Observation: Further Regression After Addendum
+
+A subsequent full run showed a further drop:
+
+- **Best@1 = 0.3597**
+- **Best@3 = 0.3967**
+- **Best@5 = 0.4138**
+
+Compared with the retained backup baseline (`v3_backup_20260508_221621`), this is still lower:
+
+- Best@1: **-0.0301**
+- Best@3: **-0.0391**
+- Best@5: **-0.0356**
+
+Per-command comparison also showed broad degradation (**64 drops / 34 gains**), with notably large drops in several PSCI commands (e.g., `psci_features`, `psci_system_reset`, `psci_cpu_suspend`).
+
+### Interpretation
+
+The RTT/VDEV/DATA-focused addendum likely improved guidance for targeted RMI tails, but applying these constraints globally appears to introduce collateral pressure on unrelated families (especially PSCI/RSI style outputs).
+
+### Prompt Adjustment Applied
+
+To reduce collateral damage, we updated `prompt_engineering_v3.py` to explicitly scope RTT/VDEV/DATA targeted prescriptions:
+
+- apply those constraints **only** when command semantics match RTT/VDEV/DATA families
+- do **not** force those rules onto unrelated families (e.g., PSCI/RSI)
+
+This keeps the targeted guidance for hard RMI commands while reducing over-constraint for other command groups.
+
+## Recommended Next Evaluation Step
+
+Run a medium/full comparable evaluation to validate recovery trend:
+
+- Medium check: `--limit 30 --n-samples 5 --save-results`
+- Full check: `--limit 98 --n-samples 5 --save-results`
+
+Then compare per-command deltas vs the retained backup baseline to verify whether complex-family regressions are reduced.
+
