@@ -1,80 +1,66 @@
-pub open spec fn RMI_VDEV_UNMAP_spec(
-    old_s: S,
-    new_s: S,
+pub open spec fn rmi_vdev_unmap_spec(
+    result: Result<(Address, Address), (RmiStatusCode, int)>,
     rd: Address,
     vdev_ptr: Address,
     ipa: Address,
     level: int,
-    result: RmiCommandReturnCode,
-    pa: Address,
-    top: Address,
+    old_s: S,
+    new_s: S,
 ) -> bool {
     let realm = RealmAt(old_s, rd);
     let vdev_pre = VdevAt(old_s, vdev_ptr);
     let walk = RttWalk(old_s, realm, ipa, level, RMM_RTT_TREE_PRIMARY);
     let pa_top = ToAddress(UInt(walk.rtte.addr) + RttLevelSize(old_s, walk.level));
-    let rtte_state_pre = walk.rtte.state;
-    let entry_idx = RttEntryIndex(old_s, ipa, walk.level);
     let walk_top = RttSkipNonLiveEntries(old_s, RttAt(old_s, walk.rtt_addr), walk.level, ipa);
 
-    // Failure conditions
-    let rd_align_fail = !AddrIsGranuleAligned(rd) ==> ResultEqual(result, RMI_ERROR_INPUT);
-    let rd_bound_fail = !PaIsDelegable(rd) ==> ResultEqual(result, RMI_ERROR_INPUT);
-    let rd_state_fail = GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT);
-    let vdev_align_fail = !AddrIsGranuleAligned(vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT);
-    let vdev_bound_fail = !PaIsDelegable(vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT);
-    let vdev_gran_state_fail = GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(
+    (!AddrIsGranuleAligned(rd) ==> ResultEqual(result, RMI_ERROR_INPUT)) && (!PaIsDelegable(rd)
+        ==> ResultEqual(result, RMI_ERROR_INPUT)) && (GranuleAt(old_s, rd).state != RD
+        ==> ResultEqual(result, RMI_ERROR_INPUT)) && (!AddrIsGranuleAligned(vdev_ptr)
+        ==> ResultEqual(result, RMI_ERROR_INPUT)) && (!PaIsDelegable(vdev_ptr) ==> ResultEqual(
         result,
         RMI_ERROR_INPUT,
-    );
-    let vdev_realm_fail = vdev_pre.realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT);
-    let level_bound_fail = (!RttLevelIsValid(old_s, realm, level) || level < 2) ==> ResultEqual(
+    )) && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT)) && (
+    vdev_pre.realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT)) && ((!RttLevelIsValid(
+        old_s,
+        realm,
+        level,
+    ) || level < 2) ==> ResultEqual(result, RMI_ERROR_INPUT)) && (!AddrIsRttLevelAligned(ipa, level)
+        ==> ResultEqual(result, RMI_ERROR_INPUT)) && (!AddrIsProtected(ipa, realm) ==> ResultEqual(
         result,
         RMI_ERROR_INPUT,
-    );
-    let ipa_align_fail = !AddrIsRttLevelAligned(ipa, level) ==> ResultEqual(
-        result,
-        RMI_ERROR_INPUT,
-    );
-    let ipa_bound_fail = !AddrIsProtected(ipa, realm) ==> ResultEqual(result, RMI_ERROR_INPUT);
-
-    let rtt_walk_fail = walk.level < level ==> (ResultEqual(result, RMI_ERROR_RTT, walk.level)
-        && top == walk_top);
-    let rtte_state_fail = walk.rtte.state != ASSIGNED_DEV ==> (ResultEqual(
-        result,
-        RMI_ERROR_RTT,
-        walk.level,
-    ) && top == walk_top);
-    let vdev_mapping_fail = (!GranulesAllVdevUnvalidated(old_s, walk.rtte.addr, pa_top)
-        && !GranulesAllVdevValidated(old_s, walk.rtte.addr, pa_top, vdev_pre)) ==> (ResultEqual(
-        result,
-        RMI_ERROR_RTT,
-        walk.level,
-    ) && top == walk_top);
-
-    // Success conditions
-    let state_success = (result.is_Ok() ==> GranulesAllState(
+    )) && (walk.level < level ==> (ResultEqual(result, RMI_ERROR_RTT) && result.get_Err_0().1
+        == walk.level && result.get_Err_0().1 > ipa)) && (walk.rtte.state != ASSIGNED_DEV ==> (
+    ResultEqual(result, RMI_ERROR_RTT) && result.get_Err_0().1 == walk.level)) && ((
+    !GranulesAllVdevUnvalidated(old_s, walk.rtte.addr, pa_top) && !GranulesAllVdevValidated(
+        old_s,
+        walk.rtte.addr,
+        pa_top,
+        vdev_pre,
+    )) ==> (ResultEqual(result, RMI_ERROR_RTT) && result.get_Err_0().1 == walk.level)) && (
+    AddrIsGranuleAligned(rd) && PaIsDelegable(rd) && GranuleAt(old_s, rd).state == RD
+        && AddrIsGranuleAligned(vdev_ptr) && PaIsDelegable(vdev_ptr) && GranuleAt(
+        old_s,
+        vdev_ptr,
+    ).state == VDEV && vdev_pre.realm == rd && RttLevelIsValid(old_s, realm, level) && level >= 2
+        && AddrIsRttLevelAligned(ipa, level) && AddrIsProtected(ipa, realm) && walk.level >= level
+        && walk.rtte.state == ASSIGNED_DEV && (GranulesAllVdevUnvalidated(
+        old_s,
+        walk.rtte.addr,
+        pa_top,
+    ) || GranulesAllVdevValidated(old_s, walk.rtte.addr, pa_top, vdev_pre)) ==> (result.is_Ok()
+        && result.get_Ok_0().0 == walk.rtte.addr && result.get_Ok_0().1 == walk_top
+        && GranulesAllState(new_s, walk.rtte.addr, pa_top, DELEGATED) && GranulesAllVdevUnvalidated(
         new_s,
         walk.rtte.addr,
         pa_top,
-        DELEGATED,
-    ));
-    let unvalidated_success = (result.is_Ok() ==> GranulesAllVdevUnvalidated(
+    ) && VdevAt(new_s, vdev_ptr).num_map == vdev_pre.num_map - (RttLevelSize(old_s, level)
+        << RMM_GRANULE_SIZE_ORDER) && RttEntryAt(
         new_s,
-        walk.rtte.addr,
-        pa_top,
-    ));
-    let num_map_success = (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).num_map == vdev_pre.num_map
-        - (RttLevelSize(old_s, level) << RMM_GRANULE_SIZE_ORDER));
-    let rtte_state_success = (result.is_Ok() ==> walk.rtte.state == UNASSIGNED);
-    let ripas_dev_success = (walk.rtte.ripas == DEV && result.is_Ok() ==> walk.rtte.ripas
-        == DESTROYED);
-    let pa_success = (result.is_Ok() ==> pa == walk.rtte.addr);
-    let top_success = (result.is_Ok() ==> top == walk_top);
-
-    rd_align_fail && rd_bound_fail && rd_state_fail && vdev_align_fail && vdev_bound_fail
-        && vdev_gran_state_fail && vdev_realm_fail && level_bound_fail && ipa_align_fail
-        && ipa_bound_fail && rtt_walk_fail && rtte_state_fail && vdev_mapping_fail && state_success
-        && unvalidated_success && num_map_success && rtte_state_success && ripas_dev_success
-        && pa_success && top_success
+        RttAt(new_s, walk.rtt_addr),
+        RttEntryIndex(old_s, ipa, walk.level),
+    ).state == UNASSIGNED && (walk.rtte.ripas == DEV ==> RttEntryAt(
+        new_s,
+        RttAt(new_s, walk.rtt_addr),
+        RttEntryIndex(old_s, ipa, walk.level),
+    ).ripas == DESTROYED)))
 }

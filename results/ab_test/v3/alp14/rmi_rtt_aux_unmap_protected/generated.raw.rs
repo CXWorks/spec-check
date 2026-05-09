@@ -1,38 +1,23 @@
-```verus
-pub open spec fn RMI_RTT_AUX_UNMAP_PROTECTED_spec(
-    old_s: S,
-    new_s: S,
+pub open spec fn rmi_rtt_aux_unmap_protected_spec(
+    result: RmiCommandReturnCode,
+    top: Address,
     rd: Address,
     ipa: Address,
     index: u64,
-    result: Result<(), RmiStatusCode>,
-    top: Address,
+    old_s: S,
+    new_s: S
 ) -> bool {
-    let realm = RealmAt(rd);
-    let walk = RttWalk(realm, ipa, RMM_RTT_PAGE_LEVEL, index);
-    let entry_idx = RttEntryIndex(ipa, walk.level);
-    let walk_top = RttSkipNonLiveEntries(RttAt(walk.rtt_addr), walk.level, ipa);
-
-    // Failure condition: rd_align
-    (!AddrIsGranuleAligned(rd) ==> ResultEqual(result, RMI_ERROR_INPUT)) &&
-    // Failure condition: rd_bound
-    (!PaIsDelegable(rd) ==> ResultEqual(result, RMI_ERROR_INPUT)) &&
-    // Failure condition: rd_state
-    (GranuleAt(rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT)) &&
-    // Failure condition: ipa_align
-    (!AddrIsGranuleAligned(ipa) ==> ResultEqual(result, RMI_ERROR_INPUT)) &&
-    // Failure condition: ipa_bound
-    (!AddrIsProtected(ipa, realm) ==> ResultEqual(result, RMI_ERROR_INPUT)) &&
-    // Failure condition: index_bound
-    ((realm.rtt_tree_per_plane == FEATURE_FALSE || 
-      index == RMM_RTT_TREE_PRIMARY || 
-      index > realm.num_aux_planes) ==> ResultEqual(result, RMI_ERROR_INPUT)) &&
-    // Failure condition: rtte_state (ordered after rd_bound, rd_state, ipa_bound, index_bound)
-    (walk.rtte.state != ASSIGNED ==> 
-        (ResultEqual(result, RMI_ERROR_RTT_AUX) && top == walk_top)) &&
-    // Success condition: rtte_state
-    (result.is_Ok() ==> walk.rtte.state == UNASSIGNED) &&
-    // Success condition: top
-    (result.is_Ok() ==> top == walk_top)
+    let realm = RealmAt(old_s, rd);
+    let walk = RttWalk(old_s, realm, ipa, RMM_RTT_PAGE_LEVEL, index);
+    let entry_idx = RttEntryIndex(old_s, ipa, walk.level);
+    let walk_top = RttSkipNonLiveEntries(old_s, RttAt(old_s, walk.rtt_addr), walk.level, ipa);
+    
+    (!AddrIsGranuleAligned(rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsProtected(ipa, realm) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && ((realm.rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > realm.num_aux_planes) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (walk.rtte.state != ASSIGNED ==> (ResultEqual(result, RMI_ERROR_RTT_AUX) && top == walk_top))
+    && (walk.rtte.state == ASSIGNED ==> (result == RMI_SUCCESS && walk.rtte.state == UNASSIGNED && top == walk_top))
 }
-```

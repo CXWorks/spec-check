@@ -1,3 +1,3 @@
-pub open spec fn PSCI_CPU_OFF_spec(s: S, rec: RmmRec) -> bool {
+pub open spec fn psci_cpu_off_spec(old_s: S, new_s: S) -> bool {
     true
 }

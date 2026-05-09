@@ -1,62 +1,29 @@
-```verus
-pub open spec fn RMI_VDEV_LOCK_spec(
-    old_s: S,
-    new_s: S,
-    rd: Address,
-    vdev_ptr: Address,
-    result: RmiCommandReturnCode,
-) -> bool {
-    let realm = RealmAt(old_s, rd);
-    let vdev = VdevAt(old_s, vdev_ptr);
-    
-    (
-        // Failure: da_supp
-        (!ImplFeatures(old_s).feat_da.is_FEATURE_TRUE() ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))
-        &&
-        // Failure: rd_align
-        (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // Failure: rd_bound
-        (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // Failure: rd_state
-        (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // Failure: vdev_align
-        (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // Failure: vdev_bound
-        (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // Failure: vdev_gran_state
-        (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // Failure: vdev_realm
-        (vdev.realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // Failure: vdev_state
-        (vdev.vdev_state != VDEV_UNLOCKED ==> ResultEqual(result, RMI_ERROR_DEVICE))
-        &&
-        // Failure: comm_state
-        (vdev.comm_state != DEV_COMM_IDLE ==> ResultEqual(result, RMI_ERROR_DEVICE))
-        &&
-        // Success conditions
-        (
-            (ImplFeatures(old_s).feat_da.is_FEATURE_TRUE() &&
-             AddrIsGranuleAligned(old_s, rd) &&
-             PaIsDelegable(old_s, rd) &&
-             GranuleAt(old_s, rd).state == RD &&
-             AddrIsGranuleAligned(old_s, vdev_ptr) &&
-             PaIsDelegable(old_s, vdev_ptr) &&
-             GranuleAt(old_s, vdev_ptr).state == VDEV &&
-             vdev.realm == rd &&
-             vdev.vdev_state == VDEV_UNLOCKED &&
-             vdev.comm_state == DEV_COMM_IDLE)
-            ==>
-            (result.is_Ok() &&
-             VdevAt(new_s, vdev_ptr).op == VDEV_OP_LOCK &&
-             VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_PENDING)
+pub open spec fn rmi_vdev_lock_spec(result: RmiCommandReturnCode, rd: Address, vdev_ptr: Address, old_s: S, new_s: S) -> bool {
+    (!ImplFeatures().feat_da.is_feature_true() ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))
+    && (!AddrIsGranuleAligned(rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (VdevAt(old_s, vdev_ptr).realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (VdevAt(old_s, vdev_ptr).vdev_state != VDEV_UNLOCKED ==> ResultEqual(result, RMI_ERROR_DEVICE))
+    && (VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE ==> ResultEqual(result, RMI_ERROR_DEVICE))
+    && (
+        ImplFeatures().feat_da.is_feature_true()
+        && AddrIsGranuleAligned(rd)
+        && PaIsDelegable(rd)
+        && GranuleAt(old_s, rd).state == RD
+        && AddrIsGranuleAligned(vdev_ptr)
+        && PaIsDelegable(vdev_ptr)
+        && GranuleAt(old_s, vdev_ptr).state == VDEV
+        && VdevAt(old_s, vdev_ptr).realm == rd
+        && VdevAt(old_s, vdev_ptr).vdev_state == VDEV_UNLOCKED
+        && VdevAt(old_s, vdev_ptr).comm_state == DEV_COMM_IDLE
+        ==> (
+            result.is_Ok()
+            && VdevAt(new_s, vdev_ptr).op == VDEV_OP_LOCK
+            && VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_PENDING
         )
     )
 }
-```

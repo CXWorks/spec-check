@@ -36,6 +36,10 @@ Priority policy:
 
 Core constraints:
 - Function name should be lowercase snake_case: {cmd_name_lower}_spec.
+- Output must be exactly ONE complete Verus function item (not a fragment), with this form:
+    pub open spec fn {cmd_name_lower}_spec(...) -> bool { ... }
+- Never output a bare boolean expression at top level; always wrap logic inside the function body.
+- Do not output markdown fences or prose (forbidden: ```verus, ```, headings, explanations).
 - Include an explicit result parameter when command returns a status/result code.
 - Do NOT use old_s.result or new_s.result; use the function argument `result`.
 - Do NOT invent helper/predicate/function names that are not present in the provided context/spec text.
@@ -48,9 +52,11 @@ Core constraints:
 Output self-check (must pass before final output):
 - Family consistency: command prefix and symbol family must match (do not mix pdev/vdev, psmmu/vsmmu, etc.).
 - Domain symbol anchoring for complex commands: for pdev/vdev/rtt/psmmu families, prefer helper/accessor names already present in context and avoid analogy-based renaming.
+- Symbol whitelist discipline: every called helper/predicate/type should be from provided context/spec text (or function parameters); do not introduce unseen names.
 - Signature and type alignment: follow context/spec conventions; if uncertain, preserve semantically correct clauses rather than forcing cosmetic ordering/alias changes.
 - State-parameter discipline: preserve oracle/context state style; do not collapse `old_s, new_s` into a single `s: S` parameter.
 - Naming consistency: function name should remain lowercase snake_case and match {cmd_name_lower}_spec.
+- Parse sanity: ensure balanced delimiters () [] {} and a single closing brace for the function.
 - For pure query / feature / version / count / get_* commands, preserve the oracle's signature order exactly when available; do not reorder arguments for stylistic reasons.
 
 Targeted prescriptions for historically low-scoring commands (RTT/VDEV/DATA families):
@@ -73,7 +79,7 @@ pub open spec fn rec_exit_spec(result: RmiCommandReturnCode, old_s: S, new_s: S)
     && (condition2(old_s) ==> <success postconditions>)
 }
 
-Output ONLY the function body."""
+Output ONLY one complete function item, with no extra text before or after."""
 
 PROMPT_V3_TEMPLATE = """{context}
 
@@ -81,6 +87,8 @@ PROMPT_V3_TEMPLATE = """{context}
 
 Requirements:
 - Signature: pub open spec fn {cmd_name_lower}_spec(...) -> bool
+- Output must be exactly one complete function item (start with `pub open spec fn` and end at its matching `}}`).
+- Do NOT output markdown fences/backticks or any explanation text.
 - Handle all failure/success cases
 - Use old_s/new_s for state before/after
 - Preserve state parameters as `old_s: S, new_s: S` when that is the established context/oracle pattern; do not replace them with a single `s: S`
@@ -94,6 +102,8 @@ Requirements:
 - For complex families (pdev/vdev/rtt/psmmu), prioritize correct helper/function selection over cosmetic signature ordering
 - For RTT/VDEV/DATA commands only, explicitly include command operands in the function signature and avoid deriving them implicitly from hidden state fields
 - For RTT/VDEV/DATA commands only, write mutable counter/field postconditions as old_s -> new_s transitions (never new_s -> new_s self-comparisons)
+- Every called helper/predicate/function/type must appear in provided context/spec text (or be a parameter/local binding); do not invent unseen names.
+- Ensure balanced delimiters and syntactically valid Verus function output.
 - Return: single boolean expression
 - No explanations, code only"""
 
