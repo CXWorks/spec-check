@@ -241,3 +241,37 @@ This is a strong recovery and supports the hypothesis that RTT/VDEV/DATA-targete
 
 In short, the scoped policy is currently the best-performing V3 configuration recorded in this report series so far.
 
+## Iteration 3: Hallucinated Symbol Elimination (missing_symbol fix)
+
+After running Verus verification on the generated outputs (`alp14_verus_check_summary_latest.json`), we found that 55/98 commands failed with `missing_symbol` errors. Analyzing the Verus compiler output revealed two dominant hallucination patterns:
+
+| Hallucinated symbol | Occurrences | Root cause |
+|---|---|---|
+| `UInt(x)` | 40 | `UInt`, `UInt64`, `UInt32` are TYPE ALIASES, not callable functions. Model invented a C-style cast. |
+| `RMI_SUCCESS` / `RMI_OK` / `RSI_OK` | 32 | `RmiStatusCode` has ONLY error variants. There is no success variant; success is `result.is_Ok()`. |
+
+Together these two patterns caused ~65% of all `missing_symbol` failures.
+
+### Prompt Updates Added
+
+We added 6 targeted rules to `prompt_engineering_v3.py` in 3 locations:
+
+**System prompt — Core constraints:**
+- `CRITICAL`: `RmiStatusCode` has only error variants. No `RMI_SUCCESS`/`RMI_OK`/`RSI_SUCCESS`/`RSI_OK`. Express success as `result.is_Ok()`.
+- `CRITICAL`: `UInt`, `UInt32`, `UInt64` are type aliases, not functions. Never write `UInt(x)`. Write integer bounds directly (e.g., `data >= (1u64 << 48)`).
+
+**System prompt — Output self-check:**
+- Reject any use of `RMI_SUCCESS`/`RMI_OK`/`RSI_SUCCESS`/`RSI_OK` → replace with `result.is_Ok()`.
+- Reject any expression of the form `UInt(...)` → remove and write the integer expression directly.
+
+**User template — Requirements list:**
+- Same two `CRITICAL` rules repeated closest to where the model generates code.
+
+### Verus Pass Rate Before/After (Pre-this-iteration)
+
+- Before environment fix: **0/98** (vstd runtime missing)
+- After environment fix only: **4/98 (4.1%)**
+- Expected improvement after this prompt fix: **TBD** (next run pending)
+
+The 4 currently passing commands are: `psci_cpu_off`, `psci_cpu_suspend`, `rmi_features`, `rsi_vdev_p2p_bind`.
+
