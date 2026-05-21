@@ -1,5 +1,7 @@
-pub open spec fn RSI_VDEV_P2P_BIND_spec(
+pub open spec fn rsi_vdev_p2p_bind_spec(
+    result: RsiCommandReturnCode,
     old_s: S,
+    new_s: S,
     vdev_id_1: u64,
     lock_nonce_1: u64,
     meas_nonce_1: u64,
@@ -8,8 +10,6 @@ pub open spec fn RSI_VDEV_P2P_BIND_spec(
     lock_nonce_2: u64,
     meas_nonce_2: u64,
     report_nonce_2: u64,
-    result: RsiCommandReturnCode,
-    new_s: S,
 ) -> bool {
     let realm = CurrentRealm(old_s);
     let vdev_1 = VdevFromVdevId(old_s, realm, vdev_id_1);
@@ -24,11 +24,5 @@ pub open spec fn RSI_VDEV_P2P_BIND_spec(
     ) ==> result == RSI_ERROR_INPUT) && (VdevIdIsFree(old_s, realm, vdev_id_2) ==> result
         == RSI_ERROR_INPUT) && ((pdev_1.p2p_stream_valid == RMM_FALSE || pdev_2.p2p_stream_valid
         == RMM_FALSE) ==> result == RSI_ERROR_INPUT) && (pdev_1.p2p_stream != pdev_2.p2p_stream
-        ==> result == RSI_ERROR_INPUT) && ((realm.feat_da == FEATURE_TRUE && !VdevIdIsFree(
-        old_s,
-        realm,
-        vdev_id_1,
-    ) && !VdevIdIsFree(old_s, realm, vdev_id_2) && pdev_1.p2p_stream_valid == RMM_TRUE
-        && pdev_2.p2p_stream_valid == RMM_TRUE && pdev_1.p2p_stream == pdev_2.p2p_stream) ==> result
-        == RSI_SUCCESS)
+        ==> result == RSI_ERROR_INPUT)
 }

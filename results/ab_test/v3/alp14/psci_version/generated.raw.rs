@@ -1,3 +1,3 @@
-pub open spec fn PSCI_VERSION_spec(old_s: S, new_s: S, result: PsciInterfaceVersion) -> bool {
+pub open spec fn psci_version_spec(result: PsciInterfaceVersion, old_s: S, new_s: S) -> bool {
     VersionEqual(result, PsciVersion())
 }

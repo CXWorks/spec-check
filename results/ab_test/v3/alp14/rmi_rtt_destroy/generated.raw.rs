@@ -1,81 +1,32 @@
-```verus
-pub open spec fn RMI_RTT_DESTROY_spec(
-    old_s: S,
-    new_s: S,
-    rd: Address,
-    ipa: Address,
-    level: int,
-    result: RmiCommandReturnCode,
-    rtt: Address,
-    top: Address,
-) -> bool
-{
-    let realm = RealmAt(old_s, rd);
-    let walk = RttWalk(old_s, realm, ipa, level - 1, RMM_RTT_TREE_PRIMARY);
-    let entry_idx = RttEntryIndex(old_s, ipa, walk.level);
-    let walk_rtt = RttAt(old_s, walk.rtt_addr);
-    let walk_top = RttSkipNonLiveEntries(old_s, walk_rtt, walk.level, ipa);
-    let walk_rtte = RttEntryAt(old_s, walk_rtt, entry_idx);
+pub open spec fn rmi_rtt_destroy_spec(result: RmiCommandReturnCode, rtt: Address, top: Address, rd: Address, ipa: Address, level: int, old_s: S, new_s: S) -> bool {
+    let realm = RealmAt(rd);
+    let walk = RttWalk(realm, ipa, level - 1, RMM_RTT_TREE_PRIMARY);
+    let entry_idx = RttEntryIndex(ipa, walk.level);
+    let walk_rtt = RttAt(walk.rtt_addr);
+    let walk_top = RttSkipNonLiveEntries(walk_rtt, walk.level, ipa);
+    let rtte_at_walk = RttEntryAt(walk_rtt, entry_idx);
 
-    // Failure conditions (checked in order)
-    (
-        // rd_align
-        (!AddrIsGranuleAligned(rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // rd_bound
-        (!PaIsDelegable(rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // rd_state
-        (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // level_bound
-        ((!RttLevelIsValid(old_s, realm, level) || RttLevelIsStarting(old_s, realm, level)) 
-            ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // ipa_align
-        (!AddrIsRttLevelAligned(ipa, level - 1) ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // ipa_bound
-        (UInt(ipa) >= (1 << realm.ipa_width) ==> ResultEqual(result, RMI_ERROR_INPUT))
-        &&
-        // rtt_walk (checked before rtte_state per ordering)
-        (walk.level < level - 1 ==> 
-            (ResultEqual(result, RMI_ERROR_RTT) && result.get_Err_0().1 == walk.level && top == walk_top))
-        &&
-        // rtte_state (ordered after rd checks, before rtt_live)
-        (walk_rtte.state != TABLE ==> 
-            (ResultEqual(result, RMI_ERROR_RTT) && result.get_Err_0().1 == walk.level && top == walk_top))
-        &&
-        // rtt_live (ordered after rtte_state)
-        (RttIsLive(old_s, RttAt(old_s, walk_rtte.addr)) ==> 
-            (ResultEqual(result, RMI_ERROR_RTT) && result.get_Err_0().1 == level && top == ipa))
-        &&
-        // aux_ref (ordered after rtte_state)
-        (AddrIsAuxRef(ipa, realm) ==> 
-            (ResultEqual(result, RMI_ERROR_RTT) && result.get_Err_0().1 == walk.level))
-    )
-    ||
-    // Success case (all preconditions satisfied)
-    (
-        AddrIsGranuleAligned(rd)
-        && PaIsDelegable(rd)
-        && GranuleAt(old_s, rd).state == RD
-        && RttLevelIsValid(old_s, realm, level)
-        && !RttLevelIsStarting(old_s, realm, level)
-        && AddrIsRttLevelAligned(ipa, level - 1)
-        && UInt(ipa) < (1 << realm.ipa_width)
-        && walk.level >= level - 1
-        && walk_rtte.state == TABLE
-        && !RttIsLive(old_s, RttAt(old_s, walk_rtte.addr))
-        && !AddrIsAuxRef(ipa, realm)
-        && result.is_Ok()
-        && rtt == walk_rtte.addr
+    (!AddrIsGranuleAligned(rd) ==> result == RMI_ERROR_INPUT)
+    && (!PaIsDelegable(rd) ==> result == RMI_ERROR_INPUT)
+    && (GranuleAt(old_s, rd).state != RD ==> result == RMI_ERROR_INPUT)
+    && ((!RttLevelIsValid(old_s, realm, level) || RttLevelIsStarting(old_s, realm, level)) ==> result == RMI_ERROR_INPUT)
+    && (!AddrIsRttLevelAligned(ipa, level - 1) ==> result == RMI_ERROR_INPUT)
+    && (UInt(ipa) >= (1 << realm.ipa_width) ==> result == RMI_ERROR_INPUT)
+    && (walk.level < level - 1 ==> (result == RMI_ERROR_RTT && top == walk_top))
+    && (rtte_at_walk.state != TABLE ==> (result == RMI_ERROR_RTT && top == walk_top))
+    && (RttIsLive(old_s, RttAt(old_s, rtte_at_walk.addr)) ==> (result == RMI_ERROR_RTT && top == ipa))
+    && (AddrIsAuxRef(ipa, realm) ==> (result == RMI_ERROR_RTT && top == walk_top))
+    && ((AddrIsGranuleAligned(rd) && PaIsDelegable(rd) && GranuleAt(old_s, rd).state == RD
+        && RttLevelIsValid(old_s, realm, level) && !RttLevelIsStarting(old_s, realm, level)
+        && AddrIsRttLevelAligned(ipa, level - 1) && UInt(ipa) < (1 << realm.ipa_width)
+        && walk.level == level - 1 && rtte_at_walk.state == TABLE
+        && !RttIsLive(old_s, RttAt(old_s, rtte_at_walk.addr))
+        && !AddrIsAuxRef(ipa, realm))
+      ==> (result == RMI_SUCCESS
+        && rtt == rtte_at_walk.addr
         && top == walk_top
-        && (AddrIsProtected(ipa, realm) ==>
-            (walk_rtte.state == UNASSIGNED && walk_rtte.ripas == DESTROYED))
-        && (!AddrIsProtected(ipa, realm) ==>
-            (walk_rtte.state == UNASSIGNED_NS))
-        && GranuleAt(new_s, walk_rtte.addr).state == DELEGATED
-    )
+        && (AddrIsProtected(ipa, realm) ==> RttEntryAt(RttAt(new_s, walk.rtt_addr), entry_idx).state == UNASSIGNED)
+        && (AddrIsProtected(ipa, realm) ==> RttEntryAt(RttAt(new_s, walk.rtt_addr), entry_idx).ripas == DESTROYED)
+        && (!AddrIsProtected(ipa, realm) ==> RttEntryAt(RttAt(new_s, walk.rtt_addr), entry_idx).state == UNASSIGNED_NS)
+        && GranuleAt(new_s, rtte_at_walk.addr).state == DELEGATED))
 }
-```

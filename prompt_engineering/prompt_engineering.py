@@ -165,6 +165,7 @@ class PromptVariant:
             context=context,
             spec=spec,
             cmd_name=cmd_name,
+            cmd_name_lower=cmd_name.lower(),
         )
         return {
             "system": self.system,
