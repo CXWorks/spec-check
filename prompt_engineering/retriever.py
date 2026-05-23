@@ -7,13 +7,13 @@ Dependencies: fastembed, numpy
 Usage:
     from retriever import RuleRetriever
     
-    retriever = RuleRetriever("index.pkl")
+    retriever = RuleRetriever("index")
     results = retriever.search("如何命名变量", top_k=5)
     for rule in results:
         print(rule["rule_id"], rule["title"])
 """
 
-import pickle
+import json
 import os
 import argparse
 from typing import List, Dict, Any
@@ -31,23 +31,35 @@ class RuleRetriever:
     """Retrieve relevant rules using semantic search."""
     
     def __init__(self, index_path):
-        """Load index from pickle file."""
-        if not os.path.exists(index_path):
-            raise FileNotFoundError(f"Index file not found: {index_path}")
-        
-        print(f"Loading index from {index_path}")
-        with open(index_path, 'rb') as f:
-            self.index_data = pickle.load(f)
-        
-        self.rules = self.index_data["rules"]
-        self.embeddings = self.index_data["embeddings"]
-        self.model_name = self.index_data["model_name"]
-        
+        """Load index from JSON + npz files (base path without extension)."""
+        # Strip known extensions so callers can pass either the base or a full path
+        base = index_path
+        for ext in (".json", ".npz", ".pkl"):
+            if base.endswith(ext):
+                base = base[: -len(ext)]
+                break
+
+        rules_path = base + ".json"
+        embeddings_path = base + ".npz"
+
+        if not os.path.exists(rules_path):
+            raise FileNotFoundError(f"Rules file not found: {rules_path}")
+        if not os.path.exists(embeddings_path):
+            raise FileNotFoundError(f"Embeddings file not found: {embeddings_path}")
+
+        print(f"Loading index from {rules_path} and {embeddings_path}")
+        with open(rules_path, 'r', encoding='utf-8') as f:
+            metadata = json.load(f)
+
+        self.rules = metadata["rules"]
+        self.model_name = metadata["model_name"]
+        self.embeddings = np.load(embeddings_path, allow_pickle=False)["embeddings"]
+
         print(f"Loaded {len(self.rules)} rules with model: {self.model_name}")
         
         # Load embedding model
         self.model = TextEmbedding(model_name=self.model_name)
-    
+
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """
         Search for relevant rules.
@@ -93,8 +105,8 @@ def main():
     parser.add_argument(
         "--index",
         type=str,
-        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.pkl"),
-        help="Path to vector index (default: index.pkl in script directory)",
+        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "index"),
+        help="Base path to vector index files (default: index in script directory, loads index.json + index.npz)",
     )
     parser.add_argument(
         "query",
