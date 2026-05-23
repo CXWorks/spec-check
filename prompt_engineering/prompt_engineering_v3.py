@@ -43,6 +43,8 @@ Core constraints:
 - Include an explicit result parameter when command returns a status/result code.
 - Do NOT use old_s.result or new_s.result; use the function argument `result`.
 - Do NOT invent helper/predicate/function names that are not present in the provided context/spec text.
+- CRITICAL — result success pattern: `RmiStatusCode` has ONLY error variants (RMI_ERROR_INPUT, RMI_ERROR_REALM, RMI_ERROR_REC, RMI_ERROR_RTT, etc.). There is NO `RMI_SUCCESS`, `RMI_OK`, `RSI_SUCCESS`, or `RSI_OK` variant. Express success as `result.is_Ok()`, never as `result == RMI_SUCCESS` or `result == RMI_OK`.
+- CRITICAL — no UInt() cast function: `UInt`, `UInt32`, `UInt64` etc. are TYPE ALIASES only, not callable functions. There is no `UInt(x)` conversion. For integer/address bounds checks, write the comparison directly on the value (e.g., `(addr as int) < 0x1_0000_0000_0000` or `addr >= (1u64 << 48)`), NOT `UInt(addr) >= (1 << 48)`.
 - If a convenient abstraction is not explicitly available in context/spec, write the condition directly or return `true` rather than fabricating a new helper.
 - Keep predicate/function arity consistent with provided context signatures.
 - Prefer precise implication style over free-form narrative or comments.
@@ -57,6 +59,8 @@ Output self-check (must pass before final output):
 - State-parameter discipline: preserve oracle/context state style; do not collapse `old_s, new_s` into a single `s: S` parameter.
 - Naming consistency: function name should remain lowercase snake_case and match {cmd_name_lower}_spec.
 - Parse sanity: ensure balanced delimiters () [] {} and a single closing brace for the function.
+- No invented success variant: reject any use of `RMI_SUCCESS`, `RMI_OK`, `RSI_SUCCESS`, `RSI_OK` — these do not exist; replace with `result.is_Ok()`.
+- No UInt() call: reject any expression of the form `UInt(...)` — it is not a function; remove it and write the integer expression directly.
 - For pure query / feature / version / count / get_* commands, preserve the oracle's signature order exactly when available; do not reorder arguments for stylistic reasons.
 
 Targeted prescriptions for historically low-scoring commands (RTT/VDEV/DATA families):
@@ -81,6 +85,8 @@ pub open spec fn rec_exit_spec(result: RmiCommandReturnCode, old_s: S, new_s: S)
 
 Output ONLY one complete function item, with no extra text before or after."""
 
+# 加一个auto-fix
+
 PROMPT_V3_TEMPLATE = """{context}
 
 {spec}
@@ -99,6 +105,8 @@ Requirements:
 - Do not introduce helper/predicate/function names unless they already appear in the provided context/spec
 - For pure query / feature / version / count / get_* commands, avoid inventing side effects or post-state transitions when the oracle/context indicates no state change
 - Prefer Bits64/UInt64/UInt32 aliases when present in context/spec, but do not sacrifice semantic correctness for alias formatting
+- CRITICAL — no RMI_SUCCESS/RMI_OK: `RmiStatusCode` has ONLY error variants. There is NO `RMI_SUCCESS`, `RMI_OK`, `RSI_SUCCESS`, or `RSI_OK`. Write `result.is_Ok()` for success, NOT `result == RMI_SUCCESS`.
+- CRITICAL — no UInt() function: `UInt`, `UInt64`, `UInt32` are TYPE ALIASES, not functions. Never write `UInt(x)`. Write integer bounds directly, e.g., `(addr as int) < 0x1_0000_0000_0000` or `data >= (1u64 << 48)`, NOT `UInt(data) >= (1 << 48)`.
 - For complex families (pdev/vdev/rtt/psmmu), prioritize correct helper/function selection over cosmetic signature ordering
 - For RTT/VDEV/DATA commands only, explicitly include command operands in the function signature and avoid deriving them implicitly from hidden state fields
 - For RTT/VDEV/DATA commands only, write mutable counter/field postconditions as old_s -> new_s transitions (never new_s -> new_s self-comparisons)
