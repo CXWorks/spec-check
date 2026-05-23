@@ -24,6 +24,11 @@ target
 **/__pycache__/
 *.pyc
 
+# Local environment files
+.env
+.env.*
+!.env.example
+
 # Local wrapped check logs
 wrapped_check_output.log
 wrapped_check_results.txt
