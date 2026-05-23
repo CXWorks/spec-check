@@ -23,7 +23,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # ===== 安装 Rust（Verus 需要）=====
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV RUSTUP_VERSION=1.27.1
+ENV RUSTUP_TARGET=x86_64-unknown-linux-gnu
+RUN curl -sSfL "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUSTUP_TARGET}/rustup-init" -o /tmp/rustup-init \
+    && chmod +x /tmp/rustup-init \
+    && /tmp/rustup-init -y --default-toolchain none \
+    && rm -f /tmp/rustup-init
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 # ===== 安装 Python 依赖（RAG 检索） =====
