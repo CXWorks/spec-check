@@ -13,7 +13,6 @@ import argparse
 import os
 import pickle
 import numpy as np
-from pathlib import Path
 
 try:
     from fastembed import TextEmbedding
