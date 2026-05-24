@@ -5,9 +5,9 @@ Retrieve relevant rules using semantic search.
 Dependencies: fastembed, numpy
 
 Usage:
-    from retriever import RuleRetriever
+    from rag.retriever import RuleRetriever
     
-    retriever = RuleRetriever("index.pkl")
+    retriever = RuleRetriever("rag/index.pkl")
     results = retriever.search("如何命名变量", top_k=5)
     for rule in results:
         print(rule["rule_id"], rule["title"])

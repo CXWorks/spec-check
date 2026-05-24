@@ -18,7 +18,7 @@ import sys
 import tempfile
 import time
 from pathlib import Path
-from typing import List, Dict, Any, Callable, Tuple
+from typing import List, Dict, Any, Callable, Tuple, Optional
 from dataset_loader import SpecOracle, load_dataset, EvaluationMetrics
 
 try:
@@ -158,7 +158,13 @@ class PromptVariant:
         self.system = system
         self.user_template = user_template
 
-    def format(self, spec: str, context: str, cmd_name: str) -> Dict[str, str]:
+    def format(
+        self,
+        spec: str,
+        context: str,
+        cmd_name: str,
+        retrieved_rules: str = "",
+    ) -> Dict[str, str]:
         """Format messages for API call"""
         user_content = self.user_template.format(
             system_prompt=self.system if "{system_prompt}" in self.user_template else "",
@@ -166,6 +172,7 @@ class PromptVariant:
             spec=spec,
             cmd_name=cmd_name,
             cmd_name_lower=cmd_name.lower(),
+            retrieved_rules=retrieved_rules,
         )
         return {
             "system": self.system,
@@ -181,6 +188,36 @@ PROMPTS = {
     "v3": PromptVariant("V3-Structured", PROMPT_V3_SYSTEM, PROMPT_V3_TEMPLATE),
     "v4": PromptVariant("V4-BestPractices", PROMPT_V4_SYSTEM, PROMPT_V4_TEMPLATE),
 }
+
+
+def format_retrieved_rules_block(results: List[Dict[str, Any]]) -> str:
+    """Render retrieved rules in a fixed, deterministic template block."""
+    if not results:
+        return ""
+
+    lines = ["[Retrieved Rust Coding Rules — fixed template]"]
+    for i, rule in enumerate(results, 1):
+        lines.append(
+            f"{i}. [{rule.get('rule_id', 'N/A')}] {rule.get('title', '').strip()} "
+            f"(score={rule.get('score', 0.0):.4f})"
+        )
+        content = (rule.get("content") or "").strip()
+        if content:
+            lines.append(f"   Rule: {content}")
+        lint_names = rule.get("lint_names") or []
+        if lint_names:
+            lines.append(f"   Lints: {', '.join(lint_names)}")
+
+    lines.extend(
+        [
+            "",
+            "Application policy:",
+            "- Treat the above as style/safety constraints.",
+            "- Do not invent new symbols beyond provided context/spec.",
+            "- If conflicts occur, prioritize command spec semantics.",
+        ]
+    )
+    return "\n".join(lines)
 
 
 # ============================================================================
@@ -497,6 +534,8 @@ def evaluate_prompt_variant(
     n_samples: int = 1,
     save_results: bool = False,
     resume: bool = False,
+    retriever: Optional[Any] = None,
+    rag_top_k: int = 0,
     results_root: Path = ROOT_DIR / "results" / "ab_test",
 ) -> Dict[str, Any]:
     """
@@ -529,7 +568,24 @@ def evaluate_prompt_variant(
         context = sample.preamble
         spec = sample.section_text
 
-        messages_dict = prompt_variant.format(spec, context, sample.command)
+        retrieved_rules_block = ""
+        if retriever is not None and rag_top_k > 0:
+            query = f"{sample.command}\n{sample.section_text}"
+            try:
+                retrieved = retriever.search(query, top_k=rag_top_k)
+                retrieved_rules_block = format_retrieved_rules_block(retrieved)
+            except Exception as e:
+                print(f"    [warn] RAG retrieval failed for {sample.command}: {e}")
+
+        if retrieved_rules_block:
+            context = f"{context}\n\n{retrieved_rules_block}"
+
+        messages_dict = prompt_variant.format(
+            spec,
+            context,
+            sample.command,
+            retrieved_rules=retrieved_rules_block,
+        )
         messages = [
             {"role": "system", "content": messages_dict["system"]},
             {"role": "user", "content": messages_dict["user"]},
@@ -569,6 +625,8 @@ def run_ab_testing(
     api_key: str = None,
     save_results: bool = False,
     resume: bool = False,
+    retriever: Optional[Any] = None,
+    rag_top_k: int = 0,
 ):
     """
     A/B test all prompt variants.
@@ -598,6 +656,8 @@ def run_ab_testing(
             n_samples=n_samples,
             save_results=save_results,
             resume=resume,
+            retriever=retriever,
+            rag_top_k=rag_top_k,
         )
         all_results[key] = result
 
@@ -636,6 +696,17 @@ def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
     parser.add_argument("--api-key", default=None)
     parser.add_argument("--save-results", action="store_true")
     parser.add_argument("--resume", action="store_true", help="Reuse successful saved commands and rerun only failed/missing ones")
+    parser.add_argument(
+        "--rag-index",
+        default=None,
+        help="Path to RAG index.pkl; if set with --rag-top-k > 0, inject retrieved rule block",
+    )
+    parser.add_argument(
+        "--rag-top-k",
+        type=int,
+        default=0,
+        help="How many retrieved rules to inject (default: 0 = disabled)",
+    )
     args = parser.parse_args(argv)
     return {
         "split": args.split,
@@ -644,6 +715,8 @@ def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
         "api_key": args.api_key,
         "save_results": args.save_results,
         "resume": args.resume,
+        "rag_index": args.rag_index,
+        "rag_top_k": args.rag_top_k,
     }
 
 
@@ -693,6 +766,26 @@ def main():
         print("ANTHROPIC_API_KEY not set")
         return
 
+    retriever = None
+    rag_top_k = max(0, int(cli.get("rag_top_k", 0)))
+    rag_index = cli.get("rag_index")
+    if rag_top_k > 0:
+        if not rag_index:
+            print("[warn] --rag-top-k > 0 but --rag-index not provided; RAG disabled")
+            rag_top_k = 0
+        else:
+            try:
+                if str(ROOT_DIR) not in sys.path:
+                    sys.path.insert(0, str(ROOT_DIR))
+                from rag.retriever import RuleRetriever
+
+                retriever = RuleRetriever(rag_index)
+                print(f"[info] RAG enabled: top_k={rag_top_k}, index={rag_index}")
+            except Exception as e:
+                print(f"[warn] Failed to initialize retriever: {e}; RAG disabled")
+                retriever = None
+                rag_top_k = 0
+
     # A/B test prompt variants
     best_key, _results = run_ab_testing(
         dataset,
@@ -701,6 +794,8 @@ def main():
         api_key=api_key,
         save_results=cli["save_results"],
         resume=cli["resume"],
+        retriever=retriever,
+        rag_top_k=rag_top_k,
     )
 
     if best_key is None:

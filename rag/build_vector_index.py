@@ -37,14 +37,18 @@ def load_rules(rules_path):
 def build_index(rules, model_name="sentence-transformers/all-MiniLM-L6-v2"):
     """Build vector index for rules."""
     print(f"Loading embedding model: {model_name}")
+    #load the embedding model (ONNX, no PyTorch)
     model = TextEmbedding(model_name=model_name)
     
     print(f"Vectorizing {len(rules)} rules...")
     contents = [rule.get("content", "") for rule in rules]
+
+    # Generate embeddings for all rules
     embeddings = np.array(list(model.embed(contents)))
     
     print(f"Embeddings shape: {embeddings.shape}")
     
+    # Create index data structure
     index_data = {
         "rules": rules,
         "embeddings": embeddings,

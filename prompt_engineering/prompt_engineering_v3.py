@@ -4,7 +4,7 @@
 import argparse
 import os
 import sys
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 from dataset_loader import load_dataset
 from prompt_engineering import (
@@ -130,6 +130,17 @@ def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
         action="store_true",
         help="Reuse successful saved commands and rerun only failed/missing ones",
     )
+    parser.add_argument(
+        "--rag-index",
+        default=None,
+        help="Path to RAG index.pkl; if set with --rag-top-k > 0, inject retrieved rule block",
+    )
+    parser.add_argument(
+        "--rag-top-k",
+        type=int,
+        default=0,
+        help="How many retrieved rules to inject (default: 0 = disabled)",
+    )
     args = parser.parse_args(argv)
     return {
         "split": args.split,
@@ -138,6 +149,8 @@ def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
         "api_key": args.api_key,
         "save_results": args.save_results,
         "resume": args.resume,
+        "rag_index": args.rag_index,
+        "rag_top_k": args.rag_top_k,
     }
 
 
@@ -148,6 +161,8 @@ def run_v3_only(
     api_key: str = None,
     save_results: bool = False,
     resume: bool = False,
+    retriever: Optional[Any] = None,
+    rag_top_k: int = 0,
 ) -> Dict[str, Any] | None:
     """Evaluate only the V3 prompt variant and report Best@k metrics."""
     print(f"\n{'=' * 70}")
@@ -172,6 +187,8 @@ def run_v3_only(
         n_samples=n_samples,
         save_results=save_results,
         resume=resume,
+        retriever=retriever,
+        rag_top_k=rag_top_k,
     )
 
     ks: Tuple[int, ...] = (1, 3, 5)
@@ -220,6 +237,26 @@ def main() -> None:
         print("ANTHROPIC_API_KEY not set")
         return
 
+    retriever = None
+    rag_top_k = max(0, int(cli.get("rag_top_k", 0)))
+    rag_index = cli.get("rag_index")
+    if rag_top_k > 0:
+        if not rag_index:
+            print("[warn] --rag-top-k > 0 but --rag-index not provided; RAG disabled")
+            rag_top_k = 0
+        else:
+            try:
+                if str(ROOT_DIR) not in sys.path:
+                    sys.path.insert(0, str(ROOT_DIR))
+                from rag.retriever import RuleRetriever
+
+                retriever = RuleRetriever(rag_index)
+                print(f"[info] RAG enabled: top_k={rag_top_k}, index={rag_index}")
+            except Exception as e:
+                print(f"[warn] Failed to initialize retriever: {e}; RAG disabled")
+                retriever = None
+                rag_top_k = 0
+
     result = run_v3_only(
         dataset,
         limit=limit,
@@ -227,6 +264,8 @@ def main() -> None:
         api_key=api_key,
         save_results=cli["save_results"],
         resume=cli["resume"],
+        retriever=retriever,
+        rag_top_k=rag_top_k,
     )
 
     if result is None:
