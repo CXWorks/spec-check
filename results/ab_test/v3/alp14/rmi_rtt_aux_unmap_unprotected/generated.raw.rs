@@ -8,8 +8,16 @@ pub open spec fn rmi_rtt_aux_unmap_unprotected_spec(result: RmiCommandReturnCode
     && (!PaIsDelegable(rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
     && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
     && (!AddrIsRttLevelAligned(ipa, realm.rtt_level_start) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && ((UInt(ipa) >= (2 ^ realm.ipa_width) || AddrIsProtected(ipa, realm)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (((ipa as int) >= (1 << realm.ipa_width) || AddrIsProtected(ipa, realm)) ==> ResultEqual(result, RMI_ERROR_INPUT))
     && ((realm.rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > realm.num_aux_planes) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && ((AddrIsGranuleAligned(rd) && PaIsDelegable(rd) && GranuleAt(old_s, rd).state == RD && AddrIsRttLevelAligned(ipa, realm.rtt_level_start) && !(UInt(ipa) >= (2 ^ realm.ipa_width) || AddrIsProtected(ipa, realm)) && !(realm.rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > realm.num_aux_planes))
-        ==> (result == RMI_OK && RttEntryAt(new_s, RttAt(new_s, walk.rtt_addr), entry_idx as int).state == UNASSIGNED_NS))
+    && (
+        AddrIsGranuleAligned(rd)
+        && PaIsDelegable(rd)
+        && GranuleAt(old_s, rd).state == RD
+        && AddrIsRttLevelAligned(ipa, realm.rtt_level_start)
+        && ((ipa as int) < (1 << realm.ipa_width) && !AddrIsProtected(ipa, realm))
+        && !(realm.rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > realm.num_aux_planes)
+        ==> (result.is_Ok()
+            && RttEntryAt(new_s, RttAt(new_s, walk.rtt_addr), entry_idx).state == UNASSIGNED_NS)
+    )
 }

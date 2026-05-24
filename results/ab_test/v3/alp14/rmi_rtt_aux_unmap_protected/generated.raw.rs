@@ -1,5 +1,6 @@
+```verus
 pub open spec fn rmi_rtt_aux_unmap_protected_spec(
-    result: RmiCommandReturnCode,
+    result: Result<(), RmiStatusCode>,
     top: Address,
     rd: Address,
     ipa: Address,
@@ -16,8 +17,9 @@ pub open spec fn rmi_rtt_aux_unmap_protected_spec(
     && (!PaIsDelegable(rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
     && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
     && (!AddrIsGranuleAligned(ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (!AddrIsProtected(ipa, realm) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsProtected(old_s, ipa, realm) ==> ResultEqual(result, RMI_ERROR_INPUT))
     && ((realm.rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > realm.num_aux_planes) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (walk.rtte.state != ASSIGNED ==> (ResultEqual(result, RMI_ERROR_RTT_AUX) && top == walk_top))
-    && (walk.rtte.state == ASSIGNED ==> (result == RMI_SUCCESS && walk.rtte.state == UNASSIGNED && top == walk_top))
+    && (walk.rtte.state != ASSIGNED ==> (result.is_Err() && result.get_Err_0() == RMI_ERROR_RTT_AUX && top == walk_top))
+    && ((AddrIsGranuleAligned(rd) && PaIsDelegable(rd) && GranuleAt(old_s, rd).state == RD && AddrIsGranuleAligned(ipa) && AddrIsProtected(old_s, ipa, realm) && !(realm.rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > realm.num_aux_planes) && walk.rtte.state == ASSIGNED) ==> (result.is_Ok() && walk.rtte.state == UNASSIGNED && top == walk_top))
 }
+```

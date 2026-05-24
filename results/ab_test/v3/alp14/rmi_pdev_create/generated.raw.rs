@@ -1,56 +1,60 @@
-pub open spec fn rmi_pdev_create_spec(result: RmiCommandReturnCode, pdev_ptr: Address, params_ptr: Address, old_s: S, new_s: S) -> bool {
-    let params = RmiPdevParamsAt(old_s, params_ptr);
-    let pdev = PdevAt(old_s, pdev_ptr);
-    (!ImplFeatures().feat_da_eq_feature_true() ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))
-    && (!AddrIsGranuleAligned(pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (!PaIsDelegableDram(pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (GranuleAt(old_s, pdev_ptr).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (!AddrIsGranuleAligned(params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (!GranuleAccessPermitted(old_s, params_ptr, PAS_NS) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (!RmiPdevParamsIsValid(old_s, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (!RmiPdevFlagsSupported(old_s, params.flags) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (params.num_aux != PdevAuxCount(old_s, params.flags) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (!AuxAligned32(params.aux, params.num_aux) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (AuxAlias32(pdev_ptr, params.aux, params.num_aux) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && (!AuxStateEqual32(old_s, params.aux, params.num_aux, DELEGATED) ==> ResultEqual(result, RMI_ERROR_INPUT))
-    && ((ImplFeatures().feat_da_eq_feature_true()
-        && AddrIsGranuleAligned(pdev_ptr)
-        && PaIsDelegableDram(pdev_ptr)
-        && GranuleAt(old_s, pdev_ptr).state == DELEGATED
-        && AddrIsGranuleAligned(params_ptr)
-        && GranuleAccessPermitted(old_s, params_ptr, PAS_NS)
-        && RmiPdevParamsIsValid(old_s, params_ptr)
-        && RmiPdevFlagsSupported(old_s, params.flags)
-        && params.num_aux == PdevAuxCount(old_s, params.flags)
-        && AuxAligned32(params.aux, params.num_aux)
-        && !AuxAlias32(pdev_ptr, params.aux, params.num_aux)
-        && AuxStateEqual32(old_s, params.aux, params.num_aux, DELEGATED))
-        ==> (result == RMI_SUCCESS
-            && GranuleAt(new_s, pdev_ptr).state == PDEV
-            && pdev.pdev_id == params.pdev_id
-            && Equal(pdev.spdm, params.flags.spdm)
-            && Equal(pdev.ncoh_ide, params.flags.ncoh_ide)
-            && Equal(pdev.ncoh_addr, params.flags.ncoh_addr)
-            && Equal(pdev.coh_ide, params.flags.coh_ide)
-            && Equal(pdev.coh_addr, params.flags.coh_addr)
-            && pdev.segment_id == params.segment_id
-            && pdev.ecam_addr == params.ecam_addr
-            && pdev.root_id == params.root_id
-            && pdev.cert_id == params.cert_id
-            && pdev.rid_base == params.rid_base
-            && pdev.rid_top == params.rid_top
-            && Equal(pdev.hash_algo, params.hash_algo)
-            && pdev.ncoh_ide_sid == params.ncoh_ide_sid
-            && pdev.ncoh_num_addr_range == params.ncoh_num_addr_range
-            && RmiAddressRangesEqual16(new_s, pdev.ncoh_addr_range, params.ncoh_addr_range, params.ncoh_num_addr_range)
-            && pdev.coh_num_addr_range == params.coh_num_addr_range
-            && RmiAddressRangesEqual4(new_s, pdev.coh_addr_range, params.coh_addr_range, params.coh_num_addr_range)
-            && pdev.state == PDEV_NEW
-            && pdev.comm_state == DEV_COMM_PENDING
-            && pdev.num_vdevs == 0
-            && AuxEqual32(pdev.aux, params.aux, PdevAuxCount(old_s, params.flags))
-            && pdev.num_aux == PdevAuxCount(old_s, params.flags)
-            && AuxStateEqual32(new_s, pdev.aux, PdevAuxCount(old_s, params.flags), PDEV_AUX)
-            && Equal(pdev.p2p_enabled, params.flags.p2p)
-            && pdev.p2p_stream_valid == RMM_FALSE))
-}
+pub open spec fn rmi_pdev_create_spec(result: Result<(), RmiStatusCode>, pdev_ptr: Address, params_ptr: Address, old_s: S, new_s: S) -> bool {
+    // da_supp failure
+    (!ImplFeatures(old_s).feat_da ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_NOT_SUPPORTED))
+    // pdev_align failure
+    && (!AddrIsGranuleAligned(pdev_ptr) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // pdev_bound failure
+    && (!PaIsDelegableDram(pdev_ptr) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // pdev_state failure
+    && (GranuleAt(old_s, pdev_ptr).state != RmmGranuleState::DELEGATED ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // params_align failure
+    && (!AddrIsGranuleAligned(params_ptr) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // params_pas failure
+    && (!GranuleAccessPermitted(old_s, params_ptr, RmmAddressSpace::PAS_NS) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // params_valid failure
+    && (!RmiPdevParamsIsValid(old_s, params_ptr) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // flags_supp failure
+    && (!RmiPdevFlagsSupported(old_s, RmiPdevParamsAt(old_s, params_ptr).flags) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // num_aux failure
+    && (RmiPdevParamsAt(old_s, params_ptr).num_aux != VdevAuxCount(old_s, RmiPdevParamsAt(old_s, params_ptr).flags) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // aux_align failure
+    && (!AuxAligned32(old_s, RmiPdevParamsAt(old_s, params_ptr).aux, RmiPdevParamsAt(old_s, params_ptr).num_aux) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // aux_alias failure
+    && (AuxAlias32(old_s, pdev_ptr, RmiPdevParamsAt(old_s, params_ptr).aux, RmiPdevParamsAt(old_s, params_ptr).num_aux) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // aux_state failure
+    && (!AuxStateEqual32(old_s, RmiPdevParamsAt(old_s, params_ptr).aux, RmiPdevParamsAt(old_s, params_ptr).num_aux, RmmGranuleState::DELEGATED) ==> ResultEqual(result, RmiStatusCode::RMI_ERROR_INPUT))
+    // Success condition: all preconditions pass
+    && (
+      (ImplFeatures(old_s).feat_da &&
+       AddrIsGranuleAligned(pdev_ptr) &&
+       PaIsDelegableDram(pdev_ptr) &&
+       GranuleAt(old_s, pdev_ptr).state == RmmGranuleState::DELEGATED &&
+       AddrIsGranuleAligned(params_ptr) &&
+       GranuleAccessPermitted(old_s, params_ptr, RmmAddressSpace::PAS_NS) &&
+       RmiPdevParamsIsValid(old_s, params_ptr) &&
+       RmiPdevFlagsSupported(old_s, RmiPdevParamsAt(old_s, params_ptr).flags) &&
+       RmiPdevParamsAt(old_s, params_ptr).num_aux == VdevAuxCount(old_s, RmiPdevParamsAt(old_s, params_ptr).flags) &&
+       AuxAligned32(old_s, RmiPdevParamsAt(old_s, params_ptr).aux, RmiPdevParamsAt(old_s, params_ptr).num_aux) &&
+       !AuxAlias32(old_s, pdev_ptr, RmiPdevParamsAt(old_s, params_ptr).aux, RmiPdevParamsAt(old_s, params_ptr).num_aux) &&
+       AuxStateEqual32(old_s, RmiPdevParamsAt(old_s, params_ptr).aux, RmiPdevParamsAt(old_s, params_ptr).num_aux, RmmGranuleState::DELEGATED))
+      ==>
+      (result.is_Ok() &&
+       GranuleAt(new_s, pdev_ptr).state == RmmGranuleState::PDEV &&
+       PdevAt(new_s, pdev_ptr).pdev_id == RmiPdevParamsAt(old_s, params_ptr).pdev_id &&
+       PdevAt(new_s, pdev_ptr).spdm == RmiPdevParamsAt(old_s, params_ptr).flags.spdm &&
+       PdevAt(new_s, pdev_ptr).ncoh_ide == RmiPdevParamsAt(old_s, params_ptr).flags.ncoh_ide &&
+       PdevAt(new_s, pdev_ptr).ncoh_addr == RmiPdevParamsAt(old_s, params_ptr).flags.ncoh_addr &&
+       PdevAt(new_s, pdev_ptr).coh_ide == RmiPdevParamsAt(old_s, params_ptr).flags.coh_ide &&
+       PdevAt(new_s, pdev_ptr).coh_addr == RmiPdevParamsAt(old_s, params_ptr).flags.coh_addr &&
+       PdevAt(new_s, pdev_ptr).segment_id == RmiPdevParamsAt(old_s, params_ptr).segment_id &&
+       PdevAt(new_s, pdev_ptr).ecam_addr == RmiPdevParamsAt(old_s, params_ptr).ecam_addr &&
+       PdevAt(new_s, pdev_ptr).root_id == RmiPdevParamsAt(old_s, params_ptr).root_id &&
+       PdevAt(new_s, pdev_ptr).cert_id == RmiPdevParamsAt(old_s, params_ptr).cert_id &&
+       PdevAt(new_s, pdev_ptr).rid_base == RmiPdevParamsAt(old_s, params_ptr).rid_base &&
+       PdevAt(new_s, pdev_ptr).rid_top == RmiPdevParamsAt(old_s, params_ptr).rid_top &&
+       PdevAt(new_s, pdev_ptr).hash_algo == RmiPdevParamsAt(old_s, params_ptr).hash_algo &&
+       PdevAt(new_s, pdev_ptr).ncoh_ide_sid == RmiPdevParamsAt(old_s, params_ptr).ncoh_ide_sid &&
+       PdevAt(new_s, pdev_ptr).ncoh_num_addr_range == RmiPdevParamsAt(old_s, params_ptr).ncoh_num_addr_range &&
+       RmiAddressRangesEqual16(new_s, PdevAt(new_s, pdev_ptr).ncoh_addr_range, RmiPdevParamsAt(old_s, params_ptr).ncoh_addr_range, RmiPdevParamsAt(old_s, params_ptr).ncoh_num_addr_range) &&
+       PdevAt(new_s, pdev_ptr).coh_num_addr_range == RmiPdevParamsAt(old_s, params_ptr).coh_num_addr_range &&
+       RmiAddressRangesEqual4(new_s, PdevAt(new_s, pdev_ptr).coh_addr_range, RmiPdevPar

@@ -1,3 +1,3 @@
-pub open spec fn rmi_features_spec(result: RmiCommandReturnCode, value: u64, index: u64, old_s: S, new_s: S) -> bool {
-    value == RmiFeatureRegisterEncode(old_s, index as int)
+pub open spec fn rmi_features_spec(result: Result<(), RmiStatusCode>, value: u64, old_s: S, new_s: S, index: u64) -> bool {
+    result.is_Ok() && value == RmiFeatureRegisterEncode(old_s, index as int)
 }
