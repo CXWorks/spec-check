@@ -271,7 +271,7 @@ class ClaudeHaikuModel:
             try:
                 response = self.client.messages.create(
                     model=self.name,
-                    max_tokens=2048,
+                    max_tokens=4096,
                     system=system_msg,
                     messages=user_msgs,
                 )

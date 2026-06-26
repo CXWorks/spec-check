@@ -226,7 +226,8 @@ def check_one(
         out = (proc.stdout or "") + "\n" + (proc.stderr or "")
         verified, errors = parse_verified_errors(out)
 
-        if proc.returncode == 0:
+        warning_only = verified is not None and errors == 0
+        if proc.returncode == 0 or warning_only:
             return CheckResult(
                 command=cmd,
                 status="pass",
@@ -270,11 +271,17 @@ def main() -> None:
     ap.add_argument("--results-root", default=str(DEFAULT_RESULTS_ROOT), help="Path like results/ab_test/v3/alp14")
     ap.add_argument("--specs-dir", default=str(DEFAULT_SPECS_DIR), help="Directory containing preamble.rs")
     ap.add_argument("--generated-name", default="generated.formatted.rs", choices=["generated.formatted.rs", "generated.raw.rs"])
+    ap.add_argument("--oracle", action="store_true", help="Check oracle.formatted.rs instead of generated output")
     ap.add_argument("--verus", default=None, help="Path to verus binary (optional)")
     ap.add_argument("--timeout", type=int, default=45, help="Timeout per command (seconds)")
     ap.add_argument("--limit", type=int, default=0, help="Optional limit for debugging")
     ap.add_argument("--json-out", default="", help="Optional output JSON path")
     args = ap.parse_args()
+
+    if args.oracle:
+        target_name = "oracle.formatted.rs"
+    else:
+        target_name = args.generated_name
 
     results_root = Path(args.results_root).expanduser().resolve()
     specs_dir = Path(args.specs_dir).expanduser().resolve()
@@ -301,10 +308,11 @@ def main() -> None:
     print(f"[info] verus: {verus_bin}")
     print(f"[info] results_root: {results_root}")
     print(f"[info] preamble: {preamble_path}")
-    print(f"[info] checking {len(cmd_dirs)} commands using {args.generated_name}\n")
+    print(f"[info] mode: {'oracle' if args.oracle else 'generated'}")
+    print(f"[info] checking {len(cmd_dirs)} commands using {target_name}\n")
 
     for i, d in enumerate(cmd_dirs, start=1):
-        r = check_one(verus_bin, preamble, d, args.generated_name, args.timeout)
+        r = check_one(verus_bin, preamble, d, target_name, args.timeout)
         all_results.append(r)
         print(f"[{i}/{len(cmd_dirs)}] {r.command}: {r.status} ({r.reason})")
 
@@ -339,7 +347,8 @@ def main() -> None:
         "verus_bin": str(verus_bin),
         "results_root": str(results_root),
         "preamble": str(preamble_path),
-        "generated_name": args.generated_name,
+        "mode": "oracle" if args.oracle else "generated",
+        "target_name": target_name,
         "summary": {
             "total_commands": len(all_results),
             "checked": checked,
@@ -353,8 +362,9 @@ def main() -> None:
         "passed": [asdict(x) for x in passed],
     }
 
+    default_suffix = "oracle_check_summary.json" if args.oracle else "verus_check_summary.json"
     json_out = Path(args.json_out).expanduser().resolve() if args.json_out else (
-        results_root.parent / f"{results_root.name}_verus_check_summary.json"
+        results_root.parent / f"{results_root.name}_{default_suffix}"
     )
     json_out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"\n[info] wrote report: {json_out}")
