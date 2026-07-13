@@ -36,3 +36,4 @@ wrapped_check_results.txt
 # Local logs and backup artifacts
 logs/
 results/ab_test/*_backup_*/
+results/ab_test/v3/alp14/
