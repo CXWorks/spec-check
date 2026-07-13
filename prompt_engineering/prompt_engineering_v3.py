@@ -119,34 +119,9 @@ PROMPT_V3_TEMPLATE = """{context}
 
 {spec}
 
-Requirements:
-- Signature: pub open spec fn {cmd_name_lower}_spec(...) -> bool
-- Output must be exactly one complete function item (start with `pub open spec fn` and end at its matching `}}`).
-- Do NOT output markdown fences/backticks or any explanation text.
-- Handle all failure/success cases
-- Use old_s/new_s for state before/after
-- Preserve state parameters as `old_s: S, new_s: S` when that is the established context/oracle pattern; do not replace them with a single `s: S`
-- Failure clauses should map to the correct error code
-- Success should assert both result code and state postconditions
-- Keep unchanged-state constraints when implied by the command behavior
-- Keep symbol family consistent with command domain (e.g., pdev command uses pdev symbols)
-- Do not introduce helper/predicate/function names unless they already appear in the provided context/spec
-- For pure query / feature / version / count / get_* commands, avoid inventing side effects or post-state transitions when the oracle/context indicates no state change
-- Prefer Bits64/UInt64/UInt32 aliases when present in context/spec, but do not sacrifice semantic correctness for alias formatting
-- CRITICAL — no RMI_SUCCESS/RMI_OK: `RmiStatusCode` has ONLY error variants. There is NO `RMI_SUCCESS`, `RMI_OK`, `RSI_SUCCESS`, or `RSI_OK`. Write `result.is_Ok()` for success, NOT `result == RMI_SUCCESS`.
-- CRITICAL — no UInt() function: `UInt`, `UInt64`, `UInt32` are TYPE ALIASES, not functions. Never write `UInt(x)`. Write integer bounds directly, e.g., `(addr as int) < 0x1_0000_0000_0000` or `data >= (1u64 << 48)`, NOT `UInt(data) >= (1 << 48)`.
-- For complex families (pdev/vdev/rtt/psmmu), prioritize correct helper/function selection over cosmetic signature ordering
-- For RTT/VDEV/DATA commands only, explicitly include command operands in the function signature and avoid deriving them implicitly from hidden state fields
-- For RTT/VDEV/DATA commands only, write mutable counter/field postconditions as old_s -> new_s transitions (never new_s -> new_s self-comparisons)
-- Every called helper/predicate/function/type must appear in provided context/spec text (or be a parameter/local binding); do not invent unseen names. If symbol X is not verbatim in context, replace the clause with `true`.
-- CRITICAL — no analogy-based names: do not construct names by stripping/adding prefixes or suffixes (e.g., `GranuleState` from `RmmGranuleState`, `RmmEmulatableAbort` from `RmmRecEmulatableAbort`). Copy names exactly.
-- CRITICAL — constant exact naming: enum variants and constants from preamble are ALREADY correct (e.g., RSI_ERROR_INPUT, MEM_PERM_LOCKED). Copy them verbatim; never apply case transformations or name inversions (e.g., RSI_ERROR_INPUT is correct, RsiErrorInput is WRONG).
-- CRITICAL — no namespace prefixes on constants: use bare symbols (RD, PAS_NS, VDEV_LOCKED, RSI_ERROR_INPUT) NOT namespaced versions (NOT RmmGranuleState::RD, NOT RmmPas::PAS_NS, NOT RsiStatusCode::RSI_ERROR_INPUT). Look at the preamble/context and copy exactly as written.
-- CRITICAL — unconstrained command handling: if spec text provides no meaningful constraints (e.g., pure query, feature detector), return `true` directly without fabricating logic.
-- CRITICAL — collection initialization: when initializing array/container elements, use only predicates from context. If none exist, simplify or use `true`; never invent helpers like ZeroRealmMeasurement or Zeros.
-- Ensure balanced delimiters and syntactically valid Verus function output.
-- Return: single boolean expression
-- No explanations, code only"""
+Signature: pub open spec fn {cmd_name_lower}_spec(...) -> bool
+Prefer Bits64/UInt64/UInt32 aliases when present in context/spec, but do not sacrifice semantic correctness for alias formatting.
+Keep unchanged-state constraints when implied by the command behavior."""
 
 V3_PROMPT = PromptVariant("V3-Structured", PROMPT_V3_SYSTEM, PROMPT_V3_TEMPLATE)
 
