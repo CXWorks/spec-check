@@ -5,15 +5,13 @@ Build vector index for Rust coding rules using fastembed (ONNX, no PyTorch).
 Dependencies: fastembed, numpy
 
 Usage:
-    python3 build_vector_index.py --input rules.jsonl --output index.pkl
+    python3 build_vector_index.py --input rules.jsonl --output index
 """
 
 import json
 import argparse
 import os
-import pickle
 import numpy as np
-from pathlib import Path
 
 try:
     from fastembed import TextEmbedding
@@ -60,10 +58,28 @@ def build_index(rules, model_name="sentence-transformers/all-MiniLM-L6-v2"):
 
 
 def save_index(index_data, output_path):
-    """Save index to pickle file."""
-    with open(output_path, 'wb') as f:
-        pickle.dump(index_data, f)
-    print(f"Index saved to {output_path}")
+    """Save index to JSON (rules/metadata) and npz (embeddings) files."""
+    # Strip extensions so users can pass either a base name or a full path
+    base = output_path
+    for ext in (".json", ".npz", ".pkl"):
+        if base.endswith(ext):
+            base = base[: -len(ext)]
+            break
+
+    rules_path = base + ".json"
+    embeddings_path = base + ".npz"
+
+    metadata = {
+        "rules": index_data["rules"],
+        "model_name": index_data["model_name"],
+        "num_rules": index_data["num_rules"],
+    }
+    with open(rules_path, 'w', encoding='utf-8') as f:
+        json.dump(metadata, f, ensure_ascii=False, indent=2)
+
+    np.savez(embeddings_path, embeddings=index_data["embeddings"], allow_pickle=False)
+
+    print(f"Index saved to {rules_path} and {embeddings_path}")
     print(f"  - {index_data['num_rules']} rules")
     print(f"  - Embedding shape: {index_data['embeddings'].shape}")
 
@@ -79,8 +95,8 @@ def main():
     parser.add_argument(
         "--output",
         type=str,
-        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.pkl"),
-        help="Path to save vector index (default: index.pkl in script directory)",
+        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "index"),
+        help="Base path to save vector index (default: index in script directory, writes index.json + index.npz)",
     )
     parser.add_argument(
         "--model",
