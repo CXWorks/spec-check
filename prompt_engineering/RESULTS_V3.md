@@ -465,3 +465,45 @@ Iteration 5 successfully demonstrates that:
 - Analyze the 3 remaining `missing_symbol` failures for common patterns
 - Consider adding symbol-whitelist validation rules if patterns are consistent
 - Document final V3 prompt as production baseline
+
+## Iteration 6: Preamble Removal + Train/Inference Prompt Alignment for the Local Qwen Model
+
+Iterations 1–5 above tuned the V3 prompt against **Claude 4.5 Haiku**. This iteration targets a separate, previously-undiagnosed problem specific to the **locally fine-tuned Qwen model** (`models/item_split_e2_best`, used by `run_qwen_v3.py`), so its CodeBLEU numbers are on a different model/benchmark than Iterations 1–5 and are not directly comparable to the 0.44-range scores above.
+
+### Problem Diagnosis
+
+Two separate issues were compounding poor Qwen results:
+
+1. **Preamble was redundant at inference.** `PROMPT_V3_TEMPLATE` included the full shared-Verus-types preamble (`{context}`) on every request, but the deployed Qwen checkpoint was fine-tuned on data where preamble was already embedded in every training example — so it didn't need to see it again at inference, and it was burning a large share of the token budget for no benefit.
+2. **Train/inference prompt mismatch (the bigger problem).** `training/build_dataset.py` — the script that actually built the fine-tuning dataset for `item_split_e2_best` — used a short, generic system prompt (~96 tokens, no anti-hallucination rules) and a different user-message template (`"## Context...\n{preamble}\n## Command Specification...\n{section}"`) than the much longer, structured `PROMPT_V3_SYSTEM`/`PROMPT_V3_TEMPLATE` that `run_qwen_v3.py` was actually using at inference. The model had never seen the V3 prompt's format during training — inference was effectively zero-shot-injecting a foreign prompt onto a model tuned for a different one.
+
+### Changes Applied
+
+1. **`prompt_engineering_v3.py`**:
+   - Deduped `PROMPT_V3_SYSTEM`: merged rules that were stated twice almost verbatim between "Core constraints" and "Output self-check" (no `RMI_SUCCESS`/`RMI_OK`, no `UInt()`, naming, one-function-item form, anti-hallucination symbol checks). No rule content was dropped — only literal restatement was removed. ~2310 → ~1690 tokens (−27%).
+   - Removed `{context}`/preamble entirely from `PROMPT_V3_TEMPLATE`; template is now just `{spec}` + a short signature/alias/unchanged-state reminder.
+2. **`training/build_dataset.py`**: command-kind training examples now use the same (deduped) V3 system prompt as inference, with preamble still embedded in the training user message — the model is meant to *learn* the symbols from preamble during training, then run without it at inference.
+3. **`training/train.py`** — three real bugs found and fixed while getting the retrain to actually run on the GPU (Quadro RTX 8000, Turing, no flash-attention):
+   - `SFTConfig(max_seq_length=...)` isn't a real field in the installed `trl` version (the real field is `max_length`); our sequence-length cap was silently never applied, causing repeated identical OOM crashes regardless of what value was passed.
+   - `padding_free` was being auto-enabled by Unsloth despite no flash-attention support on this GPU, which blew up attention memory; explicitly disabled.
+   - Installed `xformers` (prebuilt wheel, no source build needed) to get memory-efficient attention on this older GPU — without it, attention memory scales with sequence² instead of sequence, which is what made 12288-token training examples infeasible in the first place.
+4. Retrained: `models/item_split_v3_e2_best` (2 epochs, batch size 4, max-seq 12288, ~2h45m on GPU5).
+
+### Results (Qwen, full 98-command alp14 test set)
+
+| Metric | `item_split_e2_best` (old, mismatched prompt) | `item_split_v3_e2_best` (this iteration) |
+|---|---|---|
+| CodeBLEU Best@1 | 0.639 | **0.7627** |
+| Δ | — | **+0.1237 (+19.4%)** |
+
+Per-command spread: 10 commands scored a perfect 1.0 (e.g. `PSCI_CPU_OFF`, `RMI_GRANULE_DELEGATE`, `RMI_REALM_ACTIVATE`). The lowest scores (0.32–0.56) were concentrated in "fully unconstrained" commands (`RSI_VERSION`, `RSI_FEATURES`, `RMI_VERSION`) whose oracle is just `true` — CodeBLEU is noisy on very short targets, so this isn't necessarily a correctness problem.
+
+Full per-command results: `results/ab_test_qwen_v3retrained/v3_qwen/alp14/` (this session); old baseline for comparison: `results/ab_test_qwen/`.
+
+### Interpretation
+
+This confirms the train/inference prompt-mismatch hypothesis: aligning the two (same system prompt, preamble present at train time only) closed most of the gap on its own, independent of any further prompt-wording tuning. Unlike Iterations 1–5, none of this iteration's gain came from changing *what the prompt says* — it came from making sure the model that's actually running has seen the prompt shape it's being asked to use at inference.
+
+**Next steps (if continuing):**
+- Run the same before/after comparison through Verus (not just CodeBLEU) to confirm the gain holds under compilation, matching how Iterations 4–5 validated against Claude.
+- Consider whether Iterations 1–5's Claude-tuned rules (namespace prefixes, symbol whitelist, etc.) transfer as cleanly to Qwen now that the prompt format finally matches training.

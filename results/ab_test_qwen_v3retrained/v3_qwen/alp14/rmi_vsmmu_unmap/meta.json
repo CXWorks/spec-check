@@ -1,0 +1,10 @@
+{
+  "command": "RMI_VSMMU_UNMAP",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.7563025239282215,
+  "candidate_scores": [
+    0.7563025239282215
+  ]
+}

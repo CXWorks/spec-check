@@ -1,0 +1,10 @@
+{
+  "command": "RMI_RTT_AUX_DESTROY",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.669736024441773,
+  "candidate_scores": [
+    0.669736024441773
+  ]
+}

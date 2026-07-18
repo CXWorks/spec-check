@@ -1,0 +1,10 @@
+{
+  "command": "RMI_DATA_CREATE",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.7416580097136374,
+  "candidate_scores": [
+    0.7416580097136374
+  ]
+}

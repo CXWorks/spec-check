@@ -1,0 +1,10 @@
+{
+  "command": "RMI_VSMMU_DESTROY",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.926414895472999,
+  "candidate_scores": [
+    0.926414895472999
+  ]
+}

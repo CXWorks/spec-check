@@ -1,0 +1,10 @@
+{
+  "command": "RSI_PLANE_ENTER",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.9397960297250326,
+  "candidate_scores": [
+    0.9397960297250326
+  ]
+}

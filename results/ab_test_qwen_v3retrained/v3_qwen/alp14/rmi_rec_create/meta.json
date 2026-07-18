@@ -1,0 +1,10 @@
+{
+  "command": "RMI_REC_CREATE",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.6277886020463532,
+  "candidate_scores": [
+    0.6277886020463532
+  ]
+}

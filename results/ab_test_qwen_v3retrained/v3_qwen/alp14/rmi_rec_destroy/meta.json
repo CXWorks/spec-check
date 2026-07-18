@@ -1,0 +1,10 @@
+{
+  "command": "RMI_REC_DESTROY",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.9227137153065101,
+  "candidate_scores": [
+    0.9227137153065101
+  ]
+}

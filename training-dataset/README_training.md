@@ -90,10 +90,12 @@ The item-split model trains all item types (commands, types, helpers) in a singl
 python3 train.py \
     --train dataset/train.jsonl \
     --val   dataset/val.jsonl \
-    --out   models/item_split \
+    --out   models/item_split_v3_e2 \
     --epochs 2 \
-    --max-seq 6144
+    --max-seq 12288
 ```
+
+`--max-seq 12288` (was 6144): the command-kind system prompt now uses the longer V3 rules (~1690 tokens vs. ~96 before), which pushes per-example length (system + preamble + section + assistant target) past 6144 for 38% of real commands — SFTTrainer truncates from the end by default, silently cutting off the assistant target. 12288 covers all 476 real command examples with margin (measured max: 10,920 tokens, via the actual Qwen3-4B tokenizer).
 
 The cascaded 3-layer approach below is kept for reference.
 

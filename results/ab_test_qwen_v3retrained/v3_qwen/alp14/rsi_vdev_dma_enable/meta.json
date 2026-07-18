@@ -1,0 +1,10 @@
+{
+  "command": "RSI_VDEV_DMA_ENABLE",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.8328353937705659,
+  "candidate_scores": [
+    0.8328353937705659
+  ]
+}

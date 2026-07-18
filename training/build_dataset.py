@@ -7,15 +7,19 @@ Builds a fine-tuning dataset by aligning:
             + shared preamble context     (specs/{version}/preamble.rs)
   - Output: per-command Verus spec        (specs/{version}/{cmd}_spec.rs)
 
-Split strategy (only 4 versions available):
-  train  — eac5, rel0, alp11   (~82 % of examples)
-  val    — alp12               (~18 % of examples)
+Command examples use the V3 system prompt (prompt_engineering/prompt_engineering_v3.py)
+plus preamble+spec in the user message. Preamble is trained INTO the model here so
+it learns the symbol names, even though PROMPT_V3_TEMPLATE (used at inference by
+run_qwen_v3.py) no longer supplies preamble — the model is expected to already know
+it from training.
+
+Split strategy: item-based 80/10/10 split across all versions (see split_names()).
 
 Each JSONL line is one example in the OpenAI / HuggingFace chat format:
 {
   "messages": [
     {"role": "system",  "content": "<system prompt>"},
-    {"role": "user",    "content": "<preamble snippet + pdf section>"},
+    {"role": "user",    "content": "<preamble + pdf section + signature reminder>"},
     {"role": "assistant","content": "<verus spec function>"}
   ],
   "metadata": {
@@ -32,12 +36,20 @@ Usage:
 import os
 import json
 import random
+import sys
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 DATASET_DIR = os.path.join(BASE_DIR, "dataset")
+
+for _candidate in (os.path.join(BASE_DIR, "prompt_engineering"),        # server layout: spec-gen/build_dataset.py + spec-gen/prompt_engineering/
+                   os.path.join(BASE_DIR, "..", "prompt_engineering")):  # repo layout: training/build_dataset.py + prompt_engineering/
+    if os.path.isdir(_candidate):
+        sys.path.insert(0, _candidate)
+        break
+from prompt_engineering_v3 import V3_PROMPT  # command-kind prompt: no preamble, deduped rules
 
 ALL_VERSIONS = ["eac5", "rel0", "alp11", "alp12", "alp13", "alp14"]
 EVAL_VERSION = "alp14"   # val and test items use only this version
@@ -59,18 +71,14 @@ SYSTEM_PROMPT_TYPES = (
     "Output only the type definition (pub enum or struct block) in valid Verus syntax."
 )
 
-SYSTEM_PROMPT = (
-    "You are a formal specification assistant for Arm CCA (Confidential Compute "
-    "Architecture) Realm Management Monitor (RMM). "
-    "Given the specification text for an RMM command and the shared Verus type/function "
-    "context (preamble), generate the Verus specification function for that command. "
-    "The output should be a single `pub open spec fn {cmd}_spec(...)` function body in "
-    "valid Verus syntax."
-)
+SYSTEM_PROMPT = V3_PROMPT.system
 
-# Preamble can be very long; truncate to the last N lines which contain the
-# helper function signatures most relevant to the body (the enums/structs are
-# earlier and rarely referenced directly in spec bodies).
+# Preamble is trained INTO the model (embedded in every training example) so it
+# learns the symbol names, even though the V3 prompt used at inference time no
+# longer supplies preamble (see PROMPT_V3_TEMPLATE in prompt_engineering_v3.py).
+# Truncate to the last N lines, which contain the helper function signatures
+# most relevant to spec bodies (the enums/structs are earlier and rarely
+# referenced directly).
 PREAMBLE_TAIL_LINES = 200
 
 
@@ -89,7 +97,6 @@ def load_preamble(version: str, cascaded_dir: str | None = None) -> str:
         return ""
     with open(path) as fh:
         lines = fh.readlines()
-    # Keep only the tail (helper function signatures) to avoid ballooning context
     tail = lines[-PREAMBLE_TAIL_LINES:]
     return "".join(tail).strip()
 
@@ -129,12 +136,16 @@ def list_commands(version: str) -> list[str]:
     return cmds
 
 
-def build_user_message(preamble: str, section_text: str) -> str:
+def build_user_message(preamble: str, section_text: str, cmd_name: str) -> str:
+    # Same trailing "Signature / Prefer aliases / Keep unchanged-state" reminder as
+    # PROMPT_V3_TEMPLATE, but with preamble prepended — training sees preamble so the
+    # model learns the symbols; inference (PROMPT_V3_TEMPLATE) no longer supplies it.
     return (
-        "## Context (shared Verus types and helper function signatures)\n\n"
-        f"```rust\n{preamble}\n```\n\n"
-        "## Command Specification (from RMM spec PDF)\n\n"
-        f"{section_text}"
+        f"{preamble}\n\n"
+        f"{section_text}\n\n"
+        f"Signature: pub open spec fn {cmd_name.lower()}_spec(...) -> bool\n"
+        "Prefer Bits64/UInt64/UInt32 aliases when present in context/spec, but do not sacrifice semantic correctness for alias formatting.\n"
+        "Keep unchanged-state constraints when implied by the command behavior."
     )
 
 
@@ -247,7 +258,7 @@ def make_example(version: str, cmd_name: str, preamble: str) -> dict | None:
     return {
         "messages": [
             {"role": "system",    "content": SYSTEM_PROMPT},
-            {"role": "user",      "content": build_user_message(preamble, section_text)},
+            {"role": "user",      "content": build_user_message(preamble, section_text, cmd_name)},
             {"role": "assistant", "content": spec_text},
         ],
         "metadata": {
