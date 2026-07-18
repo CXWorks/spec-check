@@ -1,0 +1,10 @@
+{
+  "command": "RMI_RTT_READ_ENTRY",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.7041474380977228,
+  "candidate_scores": [
+    0.7041474380977228
+  ]
+}

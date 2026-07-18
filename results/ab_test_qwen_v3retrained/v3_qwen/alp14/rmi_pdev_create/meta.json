@@ -1,0 +1,10 @@
+{
+  "command": "RMI_PDEV_CREATE",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.7625874537859716,
+  "candidate_scores": [
+    0.7625874537859716
+  ]
+}

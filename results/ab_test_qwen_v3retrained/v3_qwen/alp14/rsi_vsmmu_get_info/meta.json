@@ -1,0 +1,10 @@
+{
+  "command": "RSI_VSMMU_GET_INFO",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.8003176701054167,
+  "candidate_scores": [
+    0.8003176701054167
+  ]
+}

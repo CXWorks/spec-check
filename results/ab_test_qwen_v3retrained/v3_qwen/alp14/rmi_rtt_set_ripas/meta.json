@@ -1,0 +1,10 @@
+{
+  "command": "RMI_RTT_SET_RIPAS",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.6739089172880874,
+  "candidate_scores": [
+    0.6739089172880874
+  ]
+}

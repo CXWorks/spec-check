@@ -60,7 +60,10 @@ def main():
         model=model,
         args=SFTConfig(
             output_dir=args.out,
-            max_seq_length=args.max_seq,
+            max_length=args.max_seq,
+            packing=False,
+            padding_free=False,  # this GPU has no flash-attn/xformers; padding-free's flattened-batch
+                                 # path silently falls back to a much more memory-hungry attention kernel
             num_train_epochs=args.epochs,
             per_device_train_batch_size=args.batch_size,
             gradient_accumulation_steps=4,

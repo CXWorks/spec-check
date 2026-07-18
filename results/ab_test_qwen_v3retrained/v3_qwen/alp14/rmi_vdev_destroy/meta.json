@@ -1,0 +1,10 @@
+{
+  "command": "RMI_VDEV_DESTROY",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.8869764469450162,
+  "candidate_scores": [
+    0.8869764469450162
+  ]
+}

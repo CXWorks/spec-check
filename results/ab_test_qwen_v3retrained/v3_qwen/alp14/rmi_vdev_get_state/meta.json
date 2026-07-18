@@ -1,0 +1,10 @@
+{
+  "command": "RMI_VDEV_GET_STATE",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.5854951723916543,
+  "candidate_scores": [
+    0.5854951723916543
+  ]
+}

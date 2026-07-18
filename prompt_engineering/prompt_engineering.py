@@ -195,28 +195,13 @@ def format_retrieved_rules_block(results: List[Dict[str, Any]]) -> str:
     if not results:
         return ""
 
-    lines = ["[Retrieved Rust Coding Rules — fixed template]"]
+    lines = ["[Retrieved Rust Coding Rules]"]
     for i, rule in enumerate(results, 1):
-        lines.append(
-            f"{i}. [{rule.get('rule_id', 'N/A')}] {rule.get('title', '').strip()} "
-            f"(score={rule.get('score', 0.0):.4f})"
-        )
         content = (rule.get("content") or "").strip()
         if content:
-            lines.append(f"   Rule: {content}")
-        lint_names = rule.get("lint_names") or []
-        if lint_names:
-            lines.append(f"   Lints: {', '.join(lint_names)}")
+            lines.append(f"{i}. {content}")
 
-    lines.extend(
-        [
-            "",
-            "Application policy:",
-            "- Treat the above as style/safety constraints.",
-            "- Do not invent new symbols beyond provided context/spec.",
-            "- If conflicts occur, prioritize command spec semantics.",
-        ]
-    )
+    lines.append("(Reference only; do not invent symbols beyond context/spec; command spec takes priority on conflict.)")
     return "\n".join(lines)
 
 

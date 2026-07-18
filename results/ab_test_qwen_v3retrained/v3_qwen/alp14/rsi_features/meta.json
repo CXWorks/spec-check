@@ -1,0 +1,10 @@
+{
+  "command": "RSI_FEATURES",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.4587701533295181,
+  "candidate_scores": [
+    0.4587701533295181
+  ]
+}

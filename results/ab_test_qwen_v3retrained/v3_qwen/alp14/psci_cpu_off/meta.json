@@ -1,0 +1,10 @@
+{
+  "command": "PSCI_CPU_OFF",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 1.0,
+  "candidate_scores": [
+    1.0
+  ]
+}

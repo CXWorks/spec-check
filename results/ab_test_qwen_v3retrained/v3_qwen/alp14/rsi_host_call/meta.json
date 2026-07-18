@@ -1,0 +1,10 @@
+{
+  "command": "RSI_HOST_CALL",
+  "version": "alp14",
+  "n_samples": 1,
+  "best_index": 0,
+  "best_codebleu": 0.8586323192626578,
+  "candidate_scores": [
+    0.8586323192626578
+  ]
+}

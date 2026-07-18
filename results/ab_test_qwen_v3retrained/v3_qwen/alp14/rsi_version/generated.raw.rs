@@ -1,0 +1,4 @@
+pub open spec fn rsi_version_spec(req: RsiInterfaceVersion, old_s: S, new_s: S) -> bool {
+  (!RsiVersionIsSupported(old_s, req) && !RsiVersionLowerIsSupported(old_s, req)) ==> (RsiCommandReturnCode(old_s).result == RSI_ERROR_INPUT && VersionEqual(RsiVersionHighestBelow(old_s, req), RsiInterfaceVersion(old_s).lower) && VersionEqual(RsiVersionHighest(old_s), RsiInterfaceVersion(old_s).higher))
+  && ((RsiVersionIsSupported(old_s, req) && RsiVersionLowerIsSupported(old_s, req)) ==> (RsiCommandReturnCode(old_s).result == RSI_SUCCESS && VersionEqual(RsiInterfaceVersion(old_s).lower, req) && VersionEqual(RsiInterfaceVersion(old_s).higher, RsiVersionHighest(old_s))))
+}
