@@ -156,6 +156,21 @@ def parse_verified_errors(output: str) -> tuple[Optional[int], Optional[int]]:
     return int(m.group(1)), int(m.group(2))
 
 
+def extract_output_head(output: str, max_lines: int = 24) -> str:
+    """Return the most relevant slice of verus output.
+
+    The preamble alone emits hundreds of `uninterp` warnings before any real
+    error, so a naive head-of-output slice usually shows only noise. Prefer
+    starting from the first real `error`/`error[Exxx]` line; fall back to the
+    raw head if no error line is present (e.g. timeouts, parse-only failures).
+    """
+    lines = output.strip().splitlines()
+    err_idx = next((i for i, l in enumerate(lines) if re.match(r"^error(\[|:)", l)), None)
+    if err_idx is not None:
+        return "\n".join(lines[err_idx : err_idx + max_lines])
+    return "\n".join(lines[:max_lines])
+
+
 def classify_failure(output: str, returncode: int) -> str:
     low = output.lower()
     if "unresolved" in low or "cannot find" in low:
@@ -171,32 +186,20 @@ def classify_failure(output: str, returncode: int) -> str:
     return "unknown"
 
 
-def check_one(
+def check_text(
     verus_bin: Path,
     preamble: str,
-    cmd_dir: Path,
-    generated_name: str,
+    cmd: str,
+    src: str,
     timeout_s: int,
 ) -> CheckResult:
-    cmd = cmd_dir.name
-    gen_file = cmd_dir / generated_name
-
-    if not gen_file.exists():
-        return CheckResult(
-            command=cmd,
-            status="skipped",
-            reason=f"missing_{generated_name}",
-            generated_file=str(gen_file),
-        )
-
-    src = gen_file.read_text(encoding="utf-8", errors="ignore")
+    """Verify generated Verus source text directly (no file backing required)."""
     fn_name, params_str, fn_text = extract_fn_block(src)
     if not fn_name or not params_str or not fn_text:
         return CheckResult(
             command=cmd,
             status="fail",
             reason="no_pub_open_spec_fn_found",
-            generated_file=str(gen_file),
             output_head=src[:280].replace("\n", " "),
         )
 
@@ -236,7 +239,6 @@ def check_one(
                 verified=verified,
                 errors=errors,
                 fn_name=fn_name,
-                generated_file=str(gen_file),
             )
 
         return CheckResult(
@@ -247,8 +249,7 @@ def check_one(
             verified=verified,
             errors=errors,
             fn_name=fn_name,
-            generated_file=str(gen_file),
-            output_head="\n".join(out.strip().splitlines()[:12]),
+            output_head=extract_output_head(out),
         )
 
     except subprocess.TimeoutExpired:
@@ -257,13 +258,36 @@ def check_one(
             status="fail",
             reason="timeout",
             fn_name=fn_name,
-            generated_file=str(gen_file),
         )
     finally:
         try:
             tmp_path.unlink(missing_ok=True)
         except Exception:
             pass
+
+
+def check_one(
+    verus_bin: Path,
+    preamble: str,
+    cmd_dir: Path,
+    generated_name: str,
+    timeout_s: int,
+) -> CheckResult:
+    cmd = cmd_dir.name
+    gen_file = cmd_dir / generated_name
+
+    if not gen_file.exists():
+        return CheckResult(
+            command=cmd,
+            status="skipped",
+            reason=f"missing_{generated_name}",
+            generated_file=str(gen_file),
+        )
+
+    src = gen_file.read_text(encoding="utf-8", errors="ignore")
+    result = check_text(verus_bin, preamble, cmd, src, timeout_s)
+    result.generated_file = str(gen_file)
+    return result
 
 
 def main() -> None:

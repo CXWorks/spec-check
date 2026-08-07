@@ -24,8 +24,8 @@ os.environ.setdefault("HF_HOME", "/mnt/md0/zhushan/hf_cache")
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 SPEC_GEN   = Path(__file__).resolve().parent          # repo root (spec-gen on server)
-MODEL_PATH = SPEC_GEN / "models" / "item_split_v3_e2_best"
-RESULTS_ROOT = SPEC_GEN / "results" / "ab_test_qwen_v3retrained"
+MODEL_PATH = SPEC_GEN / "models" / "item_split_v5_best"
+RESULTS_ROOT = SPEC_GEN / "results" / "ab_test_qwen_v5"
 
 # Add prompt_engineering/ to import path
 sys.path.insert(0, str(SPEC_GEN / "prompt_engineering"))
@@ -54,24 +54,22 @@ class QwenLocalModel:
         print(f"[model] Loading Qwen from {model_path} ...")
         self.model, self.tokenizer = FastLanguageModel.from_pretrained(
             model_path,
-            max_seq_length=8192,
+            max_seq_length=12288,
             load_in_4bit=True,
             dtype=None,           # auto: fp16 on Turing GPUs
         )
         FastLanguageModel.for_inference(self.model)
         print("[model] Ready.")
 
-    def generate(self, messages: list) -> str:
+    def generate(self, messages: list, temperature: float = 0.1) -> str:
         import torch
 
         self.call_count += 1
 
-        sys_msg = next((m["content"] for m in messages if m["role"] == "system"), "")
-        usr_msg = next((m["content"] for m in messages if m["role"] == "user"), "")
-
+        # Pass the full conversation through (system, user, and any
+        # assistant/user follow-up turns) so multi-turn repair loops work.
         ids = self.tokenizer.apply_chat_template(
-            [{"role": "system", "content": sys_msg},
-             {"role": "user",   "content": usr_msg}],
+            messages,
             return_tensors="pt",
             add_generation_prompt=True,
         ).to("cuda")
@@ -79,9 +77,9 @@ class QwenLocalModel:
         with torch.no_grad():
             out = self.model.generate(
                 ids,
-                max_new_tokens=2048,
-                temperature=0.1,
-                do_sample=True,
+                max_new_tokens=6144,
+                temperature=max(temperature, 1e-4),
+                do_sample=temperature > 0,
             )
 
         text = self.tokenizer.decode(out[0][ids.shape[1]:], skip_special_tokens=True)

@@ -50,8 +50,16 @@ Core constraints:
     - Need an RTT error level payload → inline `RttWalk(s, ...).level as int`, NOT `ResultGetErr1(result)`
     - Need a complex postcondition with no clear helper → simplify or omit the clause entirely (drop it), NOT invent a helper
     - Spec is fully unconstrained or helper is completely unknown → return `true` for that clause or the whole function
-- CRITICAL — result success pattern: `RmiStatusCode` has ONLY error variants (RMI_ERROR_INPUT, RMI_ERROR_REALM, RMI_ERROR_REC, RMI_ERROR_RTT, etc.). There is NO `RMI_SUCCESS`, `RMI_OK`, `RSI_SUCCESS`, or `RSI_OK` variant. Express success as `result.is_Ok()`, never as `result == RMI_SUCCESS` or `result == RMI_OK`.
+- CRITICAL — result success pattern differs by command family, do NOT mix them:
+    * RMI_* commands: `result` has type `Result<(), RmiStatusCode>` (always `()` as the Ok type, even when there are separate success-path output parameters). `RmiStatusCode` has ONLY error variants (RMI_ERROR_INPUT, RMI_ERROR_REALM, RMI_ERROR_REC, RMI_ERROR_RTT, etc.) — there is NO `RMI_SUCCESS`/`RMI_OK` variant. Express success as `result.is_Ok()`, failure as `result.is_Err()`, specific errors as `ResultEqual(result, RMI_ERROR_INPUT)` etc. Never write `result == RMI_SUCCESS`.
+    * RSI_* commands: `result` has type `RsiCommandReturnCode` — a plain enum, NOT wrapped in Result. It DOES have an `RSI_SUCCESS` variant (also RSI_ERROR_INPUT, RSI_ERROR_STATE, RSI_INCOMPLETE, RSI_ERROR_UNKNOWN). Compare directly: `result == RSI_SUCCESS`, `result == RSI_ERROR_INPUT`, etc. Never call `.is_Ok()`/`.is_Err()` on it — those methods do not exist on a plain enum.
 - CRITICAL — no UInt() cast function: `UInt`, `UInt32`, `UInt64` etc. are TYPE ALIASES only, not callable functions. There is no `UInt(x)` conversion. For integer/address bounds checks, write the comparison directly on the value (e.g., `(addr as int) < 0x1_0000_0000_0000` or `addr >= (1u64 << 48)`), NOT `UInt(addr) >= (1 << 48)`.
+- CRITICAL — explicit `as int` cast required at helper-function boundaries: preamble helper functions (e.g. AddrIsRttLevelAligned, RttWalk, RMI_ERROR_RTT_AUX) declare their numeric parameters as Verus's mathematical `int` type. Verus does NOT auto-coerce `u64`/`i64`/`UInt64`-typed values (including struct fields and expressions like `level - 1`) into `int` — you must write `as int` explicitly at the call site, every time.
+    WRONG:   AddrIsRttLevelAligned(old_s, ipa, RealmAt(old_s, rd).rtt_level_start)
+    CORRECT: AddrIsRttLevelAligned(old_s, ipa, RealmAt(old_s, rd).rtt_level_start as int)
+- CRITICAL — pick the exact matching helper overload for this command's family, never the closest-looking name: several preamble helpers exist in multiple near-identical versions for different families (`VersionEqual` for PSCI vs `VersionEqualRmi` for RMI vs `VersionEqualRsi` for RSI; `DeviceCommunicate`/`DeviceCommunicate1`/`DeviceCommunicate2` with different argument counts; `VdevAttestInfoEqual` (4 args) vs `VdevAttestInfoEqual1` (2 args); helpers like `RecAuxCount` that take a leading `s: S` argument that is easy to drop). Check the preamble for the exact overload defined for THIS command's prefix (RMI_*/RSI_*/PSCI_*) and its exact parameter list before calling it.
+    WRONG (RMI command):     VersionEqual(lower, RmiVersionHighestBelow(old_s, req))
+    CORRECT (RMI command):   VersionEqualRmi(lower, RmiVersionHighestBelow(old_s, req))
 - Keep predicate/function arity consistent with provided context signatures.
 - Prefer precise implication style over free-form narrative or comments.
 - **Fully unconstrained specs rule**: If you find NO meaningful constraints in the spec text for the command (e.g., pure query, feature detector, version/status check with no state change), return `true` directly. Do NOT attempt to fabricate constraint logic. Examples: PSCI_FEATURES (fully unconstrained, oracle returns `true`), RSI_FEATURES, version queries → all should return `true`. For these commands, preserve the oracle's signature order exactly when known; do not reorder arguments for stylistic reasons.
@@ -73,16 +81,16 @@ Targeted prescriptions for RTT/VDEV/DATA families (apply ONLY when the command b
 - RTT error branches: when returning RMI_ERROR_RTT / RMI_ERROR_RTT_AUX with a level payload, derive the payload from the relevant walk condition consistently (avoid mixing old/new state references arbitrarily).
 - Map/Unmap commands: pair assigned/unassigned state transitions with coherent granule-state transitions and unchanged-field framing for error paths.
 
-EXAMPLE (style template):
+EXAMPLE (style template, RMI command):
 Command: REC_EXIT
 Input:
     B3.1.2 REC_EXIT command...
     Failure conditions: ID1, pre: condition1, post: result == ERROR_X
     Success conditions: ID2, pre: condition2
 Output:
-pub open spec fn rec_exit_spec(result: RmiCommandReturnCode, old_s: S, new_s: S) -> bool {
-    (!condition1(old_s) ==> result == ERROR_X)
-    && (condition2(old_s) ==> <success postconditions>)
+pub open spec fn rec_exit_spec(result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+    (!condition1(old_s) ==> ResultEqual(result, ERROR_X))
+    && (condition2(old_s) ==> result.is_Ok() && <success postconditions>)
 }
 
 Output ONLY one complete function item, with no extra text before or after."""
