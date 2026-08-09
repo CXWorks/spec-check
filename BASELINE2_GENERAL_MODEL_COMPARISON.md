@@ -66,7 +66,7 @@ Iteration 6 removed from the template for the fine-tuned Qwen model (since
 that model had the preamble baked into its training examples and didn't need
 to see it again at inference), is **restored** in the GPT template. GPT has
 never seen this project's preamble/DSL at all — without it, the model can
-only guess at real struct/enum/helper names ("签字函数" — signature/helper
+only guess at real struct/enum/helper names (signature/helper
 symbols — would be invisible to it).
 
 Command: `python3 prompt_engineering/prompt_engineering_v3_gpt.py --split test --limit 98 --n-samples 5 --rag-index rag/index.json --rag-top-k 3 --save-results`
