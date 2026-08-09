@@ -27,94 +27,109 @@ independent metadata, so they can be reused. Script:
 2. Parse that dump into `{cmd_name: {outputs, footprints, ...}}`.
 3. For each command, read our own generated spec function
    (`results/ab_test_qwen_v3retrained/v3_qwen/alp14/<cmd>/generated.formatted.rs`)
-   and re-implement SCOPE's two checks against it:
-   - **Dangling-output check**: for each declared output (excluding the
-     `ReturnCode` field), does its variable name appear anywhere in our
-     generated spec body?
-   - **Footprint check**: for each `==`-clause under a `result.is_Ok()`/`is_Err()`
-     implication, does the LHS match a declared output or a declared footprint
-     value?
+   and check: for each declared output (excluding the `ReturnCode` field), does
+   its variable name appear anywhere in our generated spec body? If not, flag
+   it as a **dangling output**.
+
+**Important**: step 3 only tells you "our generated code never mentions this
+output name" — it says nothing about *why*. That requires a fourth, manual
+step: read the spec PDF's own structured `Success conditions` table
+(`Bx.y.z.3` sections) for the flagged command and check whether *it* ever
+defines the output either. Skipping this step conflates two very different
+findings:
+
+- **Genuine spec gap**: the PDF's own structured table never defines the
+  output — not our model's fault, nobody could translate something that isn't
+  there. This is the same shape of finding as SCOPE's original Table 7 bugs
+  (e.g. `RMI_RTT_READ_ENTRY`/`walk_level` on eac5/rel0).
+- **Generation defect**: the PDF's table clearly defines the output with a
+  formula, but our model dropped the parameter from the signature anyway.
+  This is a translation failure, unrelated to spec quality.
+
+All 11 dangling-output hits below were checked against the actual alp14 PDF
+(`scope/DEN0137_1.1-alp14_rmm-arch_external.pdf`) page by page to tell these
+apart.
 
 ## Results
 
-### Full flagged list (paper Table 7 style)
+### Dangling-output check — 11 / 98 commands flagged
 
-Same format as the SCOPE paper's Table 7 (ABI Name / Categorization / Verdict /
-Description), applied here to the dangling-output check's 11 hits on **our own**
-generated alp14 code (not SCOPE's own code, and not the spec text itself — see
-caveat below). "Categorization" reuses the paper's `H(d)` label since this is
-the dangling-output rule check; "Verdict" distinguishes the two confidence
-tiers explained below (`Confirmed` = output missing from the generated
-signature entirely, `Needs review` = present in signature but never
-constrained in the body).
+**2 are genuine spec gaps** — the PDF's own structured Success/Failure
+conditions tables never define the output, for anyone:
 
-| ABI Name | Missing/unconstrained output(s) | Categorization | Verdict | Description |
-|---|---|---|---|---|
-| RMI_DATA_DESTROY | `data`, `top` | H(d) | Confirmed | both output params entirely absent from generated fn signature |
-| RMI_FEATURES | `value` | H(d) | Confirmed | output param absent from generated fn signature |
-| RMI_PDEV_AUX_COUNT | `aux_count` | H(d) | Confirmed | output param absent from generated fn signature |
-| RMI_REC_AUX_COUNT | `aux_count` | H(d) | Confirmed | output param absent from generated fn signature |
-| RMI_RTT_AUX_UNMAP_UNPROTECTED | `top` | H(d) | Confirmed | output param absent from generated fn signature |
-| RSI_FEATURES | `value` | H(d) | Confirmed | output param absent from generated fn signature |
-| RSI_MEM_SET_PERM_INDEX | `new_cookie` | H(d) | Confirmed | output param absent from generated fn signature |
-| RSI_VSMMU_ACTIVATE | `new_base` | H(d) | Confirmed | output param absent from generated fn signature |
-| RMI_PSMMU_IRQ_NOTIFY | `action`, `rd`, `vsmmu`, `msi_addr`, `msi_data` | H(d) | Needs review | present in signature, only pinned on failure path; SCOPE's own PDF extraction *also* has empty success conditions here — may be a PDF ambiguity, not just a generation miss |
-| RMI_RTT_SET_S2AP | `rtt_tree` | H(d) | Needs review | present in signature but never constrained in body |
-| RMI_VDEV_VALIDATE_MAPPING | `out_top` | H(d) | Needs review | present in signature but never constrained in body |
+#### `RMI_RTT_SET_S2AP` — output `rtt_tree` (PDF p.395–397, section B4.3.45)
 
-**This is a different kind of finding from "spec text self-contradiction"**
-(what our `ensures false` sweep and SCOPE's `reason`-mode look for). These are
-*generation-completeness* gaps — our LLM silently dropping or under-specifying
-an output value — detected by re-using SCOPE's dangling-output *rule*, not a
-logical-inconsistency proof. Whether the underlying alp14 spec text itself is
-also self-contradictory for these 11 commands hasn't been checked here.
+Output values table (p.395) declares three outputs: `result`, `out_top`,
+`rtt_tree`. The only place `rtt_tree` is explained at all is a free-text
+sentence directly under that table:
 
-### Dangling-output check — 11 / 98 commands flagged, and these look real
+> If *result* is RMI_ERROR_RTT or RMI_ERROR_RTT_AUX then the following are true:
+> • *out_top* is the IPA of the RTTE at which the base alignment check failed.
+> • *rtt_tree* is the index of the RTT in which the base alignment check failed.
 
-Verified by hand (not just syntax mismatch): our generated spec functions split
-into two failure patterns:
+That's narrative prose, not a structured condition. The actual structured
+tables never pin down a value for it:
 
-**Output parameter dropped entirely from the function signature** (8 commands) —
-the LLM didn't just fail to constrain the value, it never declared it as a
-parameter at all:
+- **Failure conditions** (p.396, 13 conditions: `rd_align`, `rd_bound`,
+  `rd_state`, `rec_align`, `rec_bound`, `rec_gran_state`, `rec_state`,
+  `rec_owner`, `size_valid`, `base_bound`, `top_bound`, `top_gran_align`,
+  `base_align_pri`, `base_align_aux`) — every single `post:` is
+  `ResultEqual(result, ...)`. None mentions `rtt_tree`.
+- **Success conditions** (p.397):
+  ```
+  ID          Condition
+  s2ap_addr   post: rec.s2ap_addr == out_top
+  ```
+  Only defines `out_top`. `rtt_tree` does not appear anywhere in this table.
 
-| Command | Missing output(s) |
-|---|---|
-| `RMI_DATA_DESTROY` | `data`, `top` |
-| `RMI_FEATURES` | `value` |
-| `RMI_PDEV_AUX_COUNT` | `aux_count` |
-| `RMI_REC_AUX_COUNT` | `aux_count` |
-| `RMI_RTT_AUX_UNMAP_UNPROTECTED` | `top` |
-| `RSI_FEATURES` | `value` |
-| `RSI_MEM_SET_PERM_INDEX` | `new_cookie` |
-| `RSI_VSMMU_ACTIVATE` | `new_base` |
+So `rtt_tree` is declared as an output but never formally defined by any
+`pre:`/`post:` condition in the whole command — the same pattern as SCOPE's
+own `RMI_RTT_READ_ENTRY`/`walk_level` finding on eac5/rel0 (table exists,
+output name just never shows up in it). Our generated code not defining
+`rtt_tree` is therefore **not a translation mistake** — the spec gives no
+formula to translate.
+
+#### `RMI_PSMMU_IRQ_NOTIFY` — outputs `action`, `rd`, `vsmmu`, `msi_addr`, `msi_data` (PDF p.333, section B4.3.28)
+
+Output values table declares all 5 fields. Directly below it, the Success
+conditions section reads, in full:
+
+> **Success conditions**
+> The RMI_PSMMU_IRQ_NOTIFY command does not have any success conditions.
+
+The structured table is completely empty — the same pattern as `PSCI_VERSION`
+on eac5 (`"does not have any success conditions"`). None of the 5 success-path
+output values are defined anywhere in the spec text. Our generated code
+leaving them unconstrained on the success path is, again, **not a translation
+mistake** — there is nothing in the spec to constrain them to.
+
+### The other 9 are generation defects, not spec gaps
+
+Checked each one's structured Success conditions table directly; in every
+case the spec gives an explicit formula and our model simply dropped the
+output parameter from the generated function signature entirely:
+
+| Command | Missing output(s) | What the PDF's structured Success conditions table actually says | PDF page |
+|---|---|---|---|
+| `RMI_DATA_DESTROY` | `data`, `top` | `data post: data == walk.rtte.addr`; `top post: top == walk_top` | p.293 |
+| `RMI_FEATURES` | `value` | `value post: value == RmiFeatureRegisterEncode(index)` | p.294 |
+| `RMI_PDEV_AUX_COUNT` | `aux_count` | `aux_count post: aux_count == PdevAuxCount(flags)` | p.304 |
+| `RMI_REC_AUX_COUNT` | `aux_count` | `aux_count post: aux_count == RecAuxCount(rd)` | p.345 |
+| `RMI_RTT_AUX_UNMAP_UNPROTECTED` | `top` | `top post: top == walk_top` | p.373 |
+| `RSI_FEATURES` | `value` | `value post: value == RsiFeatureRegisterEncode(realm, index)` | p.503 |
+| `RSI_MEM_SET_PERM_INDEX` | `new_cookie` | `new_cookie post: New cookie is generated` (vague, but the output is at least named/addressed in the table — not silently absent like the two gaps above) | p.516 |
+| `RSI_VSMMU_ACTIVATE` | `new_base` | Appears repeatedly as a bound in the `ripas`/`start`/`complete` conditions (e.g. `new_base != vsmmu.reg_top`, `new_base == vsmmu.reg_top`) — referenced throughout the table, just not extracted by our model | p.540 |
+| `RMI_VDEV_VALIDATE_MAPPING` | `out_top` | `out_top post: out_top == MinAddress(top, walk_top_pre)` | p.447 |
 
 Example — `RMI_DATA_DESTROY` per the PDF has 3 outputs
-(`result`, `data`, `top`), and SCOPE's own extraction shows success conditions
-`data == walk.rtte.addr` and `top == walk_top`. Our generated signature is:
+(`result`, `data`, `top`) with clear formulas as shown above. Our generated
+signature is:
 ```rust
 pub open spec fn rmi_data_destroy_spec(rd: Address, ipa: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
 ```
 — no `data` or `top` parameter at all, so those two output values are simply
-absent from the formalization.
-
-**Output parameter present in the signature but never constrained anywhere in
-the body** (3 commands) — a subtler gap:
-
-| Command | Unconstrained output(s) |
-|---|---|
-| `RMI_PSMMU_IRQ_NOTIFY` | `action`, `rd`, `vsmmu`, `msi_addr`, `msi_data` |
-| `RMI_RTT_SET_S2AP` | `rtt_tree` |
-| `RMI_VDEV_VALIDATE_MAPPING` | `out_top` |
-
-Example — `RMI_PSMMU_IRQ_NOTIFY`'s generated body only pins these 5 values on
-the *failure* path (`result != RMI_SUCCESS ==> X(new_s) == X(old_s)`, i.e.
-"unchanged on failure") but never says what they equal on success. Notably,
-SCOPE's own PDF table-extraction for this command *also* has an empty
-success-conditions block — so this may not be purely an LLM mistake; it could
-reflect the PDF itself not stating these success values in the structured
-table SCOPE/we both parse from (worth a manual look at the PDF text for this
-command before calling it a generation bug vs. a spec documentation gap).
+absent from the formalization despite the spec spelling out exactly what they
+should equal.
 
 ### Footprint check — not usable as implemented (too noisy)
 
@@ -129,10 +144,17 @@ bound-variable form) to be a trustworthy signal — not attempted here.
 
 ## Takeaway
 
-The dangling-output check — the simpler, more syntax-robust of SCOPE's two
-rule-based checks — surfaces 11 concrete gaps in our alp14 generation that are
-independent of (and non-overlapping with) both SCOPE's original Table 7 bug
-list and our own `ensures false` sweep's 2 confirmed RMM bugs. 8 of these are
-clean, high-confidence findings (output silently dropped from the function
-signature). The footprint check needs more normalization work before its
-output can be trusted.
+Of the 11 commands the dangling-output check flags in our alp14 generation:
+
+- **2 are genuine spec-documentation gaps** — `RMI_RTT_SET_S2AP` (`rtt_tree`)
+  and `RMI_PSMMU_IRQ_NOTIFY` (5 outputs) — where the PDF's own structured
+  Success/Failure conditions tables never define the output for anyone, the
+  same shape of finding as SCOPE's original Table 7 bugs on eac5/rel0. These
+  are the closest thing to a *novel*, alp14-specific instance of a SCOPE-style
+  rule-mode bug found by this pipeline.
+- **9 are generation defects**, not spec bugs: the PDF clearly gives a formula
+  for the output, but our model dropped the parameter from the signature
+  during translation.
+
+The footprint check needs more normalization work before its output can be
+trusted (see above).
