@@ -22,15 +22,15 @@ weights.
 
 ## Setup: what's actually comparable
 
-Both sides were evaluated on the same benchmark: alp14, 98 commands,
-CodeBLEU against oracle + real Verus verification (not just similarity).
+All three were evaluated on the same benchmark: alp14, 98 commands, CodeBLEU
+against oracle + real Verus verification (not just similarity).
 
-| | General model (Claude 4.5 Haiku) | Our pipeline (fine-tuned Qwen) |
-|---|---|---|
-| Generator | Claude 4.5 Haiku via API, zero-shot/few-shot prompting | `item_split_v4_best` — Qwen 4B, LoRA fine-tuned on alp14-style train split |
-| Adaptation method | Prompt engineering only (5 iterations) | Fine-tuning on train split + prompt alignment + Verus-feedback repair loop |
-| Result artifacts | `results/ab_test/v3/alp14/`, `results/ab_test/v3/alp14_verus_check_summary.json` | `results/ab_test_qwen_v3retrained/`, `results/ab_test_qwen_v4/` |
-| Source doc | `prompt_engineering/RESULTS_V3.md` Iterations 1–5 | `prompt_engineering/RESULTS_V3.md` Iterations 6–7 |
+| | General model 1 (Claude 4.5 Haiku) | General model 2 (GPT `gpt-5.6-sol`) | Our pipeline (fine-tuned Qwen) |
+|---|---|---|---|
+| Generator | Claude 4.5 Haiku via API, zero-shot/few-shot prompting | GPT `gpt-5.6-sol` via OpenAI API, zero-shot/few-shot prompting | `item_split_v4_best` — Qwen 4B, LoRA fine-tuned on alp14-style train split |
+| Adaptation method | Prompt engineering only (5 iterations) | Same prompt as Claude (preamble restored, see below); no GPT-specific tuning | Fine-tuning on train split + prompt alignment + Verus-feedback repair loop |
+| Result artifacts | `results/ab_test/v3/alp14/`, `results/ab_test/v3/alp14_verus_check_summary.json` | `results/ab_test_gpt/v3_gpt/alp14/`, `results/ab_test_gpt/v3_gpt/alp14_verus_check_summary.json` | `results/ab_test_qwen_v3retrained/`, `results/ab_test_qwen_v4/` |
+| Source doc | `prompt_engineering/RESULTS_V3.md` Iterations 1–5 | This session (see below) | `prompt_engineering/RESULTS_V3.md` Iterations 6–7 |
 
 ## General model (Claude 4.5 Haiku): Iterations 1–5 summary
 
