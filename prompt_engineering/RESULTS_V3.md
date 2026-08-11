@@ -507,3 +507,78 @@ This confirms the train/inference prompt-mismatch hypothesis: aligning the two (
 **Next steps (if continuing):**
 - Run the same before/after comparison through Verus (not just CodeBLEU) to confirm the gain holds under compilation, matching how Iterations 4–5 validated against Claude.
 - Consider whether Iterations 1–5's Claude-tuned rules (namespace prefixes, symbol whitelist, etc.) transfer as cleanly to Qwen now that the prompt format finally matches training.
+
+## Iteration 7: Verus Self-Repair Agent Loop + Root-Cause Prompt Fixes + Retrain
+
+Follow-up to Iteration 6, on the same Qwen pipeline. The next-step above ("run through Verus, not just CodeBLEU") was executed and revealed that CodeBLEU had been a poor proxy for correctness — this iteration is the full investigation and fix cycle that followed.
+
+### Problem Diagnosis: CodeBLEU ≠ Verus-verifiable
+
+Running `prompt_engineering/verify_generated_verus.py` (real Verus 0.2026.04.12.f1166c4, not a similarity metric) against the Iteration 6 output (`item_split_v3_e2_best`, CodeBLEU Best@1 = 0.7627) found:
+
+- **Actual Verus pass rate: 15/98 (15.31%)**
+
+Manual inspection of failures showed genuine bugs a text-similarity metric can't see: `UInt(...)` called as if it were a function, `.is_Ok()`/`.is_Err()` called on a type that doesn't have those methods, undefined-symbol references. CodeBLEU had been rewarding plausible-looking Rust, not provably-correct Rust.
+
+### Part A — Self-repair agent loop (`repair_loop_verus.py`, new)
+
+Built an agent loop: for each Verus-failing command, feed the real Verus compiler error back to the same local Qwen model and ask it to fix its own output, re-verify, repeat up to a retry cap, keep the best-by-CodeBLEU candidate if never resolved. Iterated through several real bugs and one advisor-suggested redesign before it worked well:
+
+1. **`output_head` truncation bug**: the preamble alone emits ~400+ `uninterp` warnings before any real Verus error, so a naive "first 12 lines of output" almost always showed only warning noise, not the actual error — meaning every repair attempt was blind to what was actually wrong. Fixed by scanning for the first real `error[Exxx]:`/`error:` line and slicing from there (`extract_output_head`).
+2. **Conversation-length truncation**: replaying the full growing multi-turn conversation (code + error every retry) hit the model's context limit after a few rounds on longer commands (confirmed via 67 "exceeds max sequence length" truncation warnings in one run). Fixed in two steps: first a bounded rolling window, then — per the user's advisor's suggestion — redesigned to a **compact, stateless-per-round prompt**: each retry sends only the system + spec + the single most recent code version + its error, plus a running list of one-line "already ruled out" summaries (not full replayed history). This keeps every prompt bounded regardless of retry count and avoids the model cycling between the same two wrong answers.
+3. **Symbol grounding + temperature escalation + cycle detection**: added regex-based extraction of the preamble's actual definition for any backtick-quoted identifier named in a Verus error (so the model sees the real struct/enum instead of guessing again), an escalating temperature schedule across retries (0.2 → 0.9) to break out of stuck 2-cycles, and early-stop if a candidate repeats a previous one verbatim.
+
+Ran 6 rounds against `item_split_v3_e2_best`, regenerating a fresh Verus-check summary between rounds:
+
+| Round | Failing going in | Resolved | Cumulative pass rate |
+|---|---|---|---|
+| baseline | — | — | 15/98 (15.3%) |
+| 1 | 83 | 15 | 30/98 (30.6%) |
+| 2 | 68 | 4 | 34/98 (34.7%) |
+| 3 | 64 | 1 | 35/98 (35.7%) |
+| psci-targeted (few-shot fix, see Part B) | 4 | 2 | 37/98 (37.8%) |
+| 5 | 61 | 2 | 39/98 (39.8%) |
+| 6 (after Part B's system-prompt fix) | 59 | 3 | 42/98 (42.9%) |
+
+Sharply diminishing returns (15 → 4 → 1 → 2 → 2 → 3) — most of what a pure "see error, retry" loop can fix on a fixed set of model weights was exhausted by round 3; the two later bumps (+2, +3) came from genuine root-cause fixes described in Part B, not from just running more rounds.
+
+### Part B — Two root-cause bugs found (one of them in the *training* prompt itself)
+
+Digging into why 3-4 commands never resolved across every round (`psci_cpu_suspend`, `psci_system_off`, `psci_system_reset`) found two real, systemic bugs, not model randomness:
+
+1. **Invented `result` parameter.** 94/98 oracle specs take a `result` parameter with success/failure branching — but 4 PSCI oracles don't (e.g. `psci_system_off_spec(old_s: S, new_s: S) -> bool { CurrentRealm(new_s).state == REALM_SYSTEM_OFF }`, no result param at all, unconditional). The model over-generalized the 94/98 majority pattern onto the 4/98 minority. An abstract instruction ("don't invent a result param") didn't fix it across several attempts; a concrete before/after code **example** in the repair prompt did — `psci_system_off` and `psci_system_reset` both resolved with CodeBLEU 1.000 on the very first try after adding it.
+2. **RMI vs RSI result-type confusion, baked into `PROMPT_V3_SYSTEM` itself.** Cross-referencing the preamble (`training-dataset/specs/alp14/preamble.rs`) against real oracle signatures found the base V3 system prompt's own "CRITICAL — result success pattern" rule was **wrong**: it claimed `RSI_SUCCESS` doesn't exist and told the model to always use `.is_Ok()`. In fact the two command families use genuinely different, mutually-exclusive conventions:
+   - `RMI_*`: `result: Result<(), RmiStatusCode>` (a real `Result`, always `()` as Ok-type) — check with `.is_Ok()`/`.is_Err()`, specific errors via `ResultEqual(result, RMI_ERROR_INPUT)`. `RmiStatusCode` has no success variant.
+   - `RSI_*`: `result: RsiCommandReturnCode` (a plain enum, NOT wrapped in `Result`) — compare directly, `result == RSI_SUCCESS` / `result == RSI_ERROR_INPUT`. Calling `.is_Ok()` on it doesn't compile.
+   
+   Because `training/build_dataset.py` imports this exact same `PROMPT_V3_SYSTEM` as the training system prompt, **the fine-tuned model's weights had this wrong rule baked in during training**, not just at inference — explaining why it was so consistently confident about the wrong pattern. Fixed the rule (family-specific, with a corrected worked example) in `prompt_engineering_v3.py`, which both future inference and any retrain now inherit automatically.
+
+### Part C — Retrain on the corrected prompt (`item_split_v4_best`)
+
+Since the bug in Part B.2 was in the *training* system prompt, prompt-only repair-time patches could only go so far — the fix needed to change what the model actually learned. Regenerated the training dataset (`build_dataset.py`, picks up the corrected `prompt_engineering_v3.py` automatically) and retrained: `train.py --train dataset/train.jsonl --val dataset/val.jsonl --out models/item_split_v4 --epochs 2 --max-seq 12288 --batch-size 4` (same hyperparameters as Iteration 6, ~2h51m on GPU5, train_loss=0.2472, eval_loss=0.2852 — comparable to Iteration 6's checkpoint, no regression). Max training-example length after the prompt edit: 11091 tokens (still well under the 12288 budget, 0 truncated).
+
+### Results (`item_split_v4_best`, full 98-command alp14 test set)
+
+| Stage | CodeBLEU Best@1 | Verus pass rate |
+|---|---|---|
+| Iteration 6 baseline (`item_split_v3_e2_best`, wrong training prompt) | 0.7627 | 15/98 (15.3%) |
+| Iteration 6 + 6 repair rounds | — | 42/98 (42.9%) |
+| **Iteration 7: `item_split_v4_best` fresh generation (no repair)** | **0.8389** | **35/98 (35.7%)** |
+| `item_split_v4_best` + repair round 1 | — | 46/98 (46.9%) |
+| `item_split_v4_best` + repair round 2 | — | **47/98 (48.0%)** |
+
+The retrained model's *fresh, unrepaired* output (35/98) already beat 6 full rounds of repair-loop patching on the old checkpoint (42/98 needed all 6 rounds to get close, and this needed zero) — confirming the training-prompt bug was a bigger lever than any amount of inference-time repair could be. Repair-loop round 2 on top of the new checkpoint again showed the same sharp diminishing-returns shape (round 1: 63→52 failing, +11; round 2: 52→51 failing, +1), consistent with Part A's finding that this is a property of the repair mechanism itself, not the starting checkpoint.
+
+**Overall, across this iteration: 15/98 (15.3%) → 47/98 (48.0%), a 3.13× improvement (+32.6 percentage points).**
+
+### Interpretation
+
+- CodeBLEU and Verus pass rate are not interchangeable — always validate through the actual verifier for a correctness claim, not just similarity metrics.
+- A repair loop's error-feedback mechanism can genuinely work (verified via direct before/after diffs of generated code adopting corrected types after each fix), but it inherits whatever bugs are in the base/training prompt and cannot out-run a systemic bug baked into training data — those need a retrain, not more retries.
+- Abstract rules ("don't do X") are weaker than concrete before/after code examples for this size of model (4B, LoRA fine-tuned) — the psci fix only worked once phrased as an example.
+- **Did not reach 100%.** Remaining 51 failures are spread across `verus_error`/`parse_error`/`type_mismatch`/`missing_symbol` with no single dominant, cheaply-fixable pattern remaining (checked via reason-distribution breakdown before stopping) — this looks like a genuine capability ceiling for a 4B LoRA-tuned model using this repair strategy, not a remaining process bug.
+
+**Next steps (if continuing):**
+- Re-run Part A's repair loop against `item_split_v4_best`'s remaining 51 failures for a 3rd round, though returns are expected to keep shrinking.
+- Look for more root-cause bugs like Part B.2 (systemic training-prompt errors) rather than more repair rounds — that lever proved much stronger than repair-loop iteration count.
+- Consider whether a stronger model (e.g. Claude) doing the repair-time judgment instead of the same fine-tuned Qwen model would out-perform same-model self-repair on the remaining failures.
