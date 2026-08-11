@@ -158,3 +158,56 @@ Of the 11 commands the dangling-output check flags in our alp14 generation:
 
 The footprint check needs more normalization work before its output can be
 trusted (see above).
+
+## A different check: logical-inconsistency sweep (Z3 `ensures false`) — Qwen v5
+
+This is a separate check method from the SCOPE rule-mode checks above — it
+doesn't use SCOPE's PDF-derived tables at all. Instead it reuses the
+"unsatisfiable precondition" technique from
+[`training/inconsistency_analysis.py`](training/inconsistency_analysis.py) /
+[`training/BUG_REPORT.md`](training/BUG_REPORT.md) (originally run against the
+gold RMM specs), adapted in
+[`inconsistency_analysis_model.py`](inconsistency_analysis_model.py) to work
+against our own model-generated specs in their per-command result-directory
+layout. For each generated spec function, it builds:
+
+```rust
+proof fn check_inconsistency_<name>(...)
+    requires <name>(...)
+    ensures false
+{}
+```
+
+and asks Verus/Z3 to verify it. If it succeeds (0 errors), the spec's own
+preconditions are self-contradictory — flagged **INCONSISTENT**.
+
+**Run:** `results/ab_test_qwen_v5/v3_qwen/alp14` (`item_split_v3_e2_best`,
+5 rounds of Verus-feedback self-repair, final state =
+`v5_genuine_round5_repaired.json`, 53/98 passing Verus). Only the 53 commands
+that already pass basic Verus verification can be checked this way — a spec
+that doesn't even compile has nothing for Z3 to reason about.
+
+| Checked (Verus-passing) | INCONSISTENT | consistent | trivial body (skipped) |
+|---|---|---|---|
+| 53 | **1** | 50 | 2 (`psci_cpu_off`, `psci_cpu_suspend`) |
+
+### `psci_affinity_info` — bare `&&` forces `result` to two different values at once
+
+```rust
+&& (result == PSCI_SUCCESS && RecFromMpidr(old_s, target_affinity).flags.runnable == RUNNABLE)
+&& (result == PSCI_OFF && RecFromMpidr(old_s, target_affinity).flags.runnable == NOT_RUNNABLE)
+```
+
+Both conjuncts are unconditional (no `==>` guard), so the spec requires
+`result == PSCI_SUCCESS` **and** `result == PSCI_OFF` to hold simultaneously —
+impossible, since the two are different constants. Z3 confirmed this by
+verifying `requires psci_affinity_info_spec(...) ensures false` with 0 errors.
+Same root-cause shape as Bug 1 in `training/BUG_REPORT.md` (conditions that
+should have been `==>`-guarded branches got written as top-level `&&`
+conjuncts instead) — this failure mode has now shown up in two independent
+generations of the model.
+
+The other 45 commands that fail basic Verus verification in this run weren't
+covered by this sweep (no compiled spec fn to build the proof obligation
+against); GPT's comparable run (`results/ab_test_gpt/v3_gpt/alp14`, 65/98
+Verus-passing) was checked the same way and came back 0/65 inconsistent.
