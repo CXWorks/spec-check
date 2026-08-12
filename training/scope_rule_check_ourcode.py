@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Apply SCOPE's rule-based checks (dangling-output, footprint) to OUR
-Qwen-generated alp14 Verus code, instead of SCOPE's own generated code.
+Qwen-generated alp14 Verus code.
 
 SCOPE's rule-mode checks (scope/scope: detect_dangling_output, footprint_checks)
 operate on structured tables (outputs, failure/success conditions, footprint)
@@ -13,6 +13,7 @@ Input:
   scope/alp14_raw.txt                                             (SCOPE's raw parse of alp14)
   results/ab_test_qwen_v3retrained/v3_qwen/alp14/<cmd>/generated.formatted.rs  (our generated code)
 """
+import argparse
 import ast
 import re
 from pathlib import Path
@@ -132,8 +133,21 @@ def footprint_check(cmd_name, clauses, outputs, footprints):
 
 
 def main():
-    cmds = parse_raw(RAW_FILE.read_text())
-    print(f"Parsed {len(cmds)} commands from {RAW_FILE}")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--raw-file", default=str(RAW_FILE))
+    ap.add_argument("--gen-dir", default=str(GEN_DIR))
+    ap.add_argument("--only", default="", help="Comma-separated lowercase command names to restrict the check to (e.g. only commands that compile)")
+    args = ap.parse_args()
+    raw_file = Path(args.raw_file)
+    gen_dir = Path(args.gen_dir)
+
+    cmds = parse_raw(raw_file.read_text())
+    print(f"Parsed {len(cmds)} commands from {raw_file}")
+
+    if args.only:
+        allow = {n.strip().lower() for n in args.only.split(",") if n.strip()}
+        cmds = {name: info for name, info in cmds.items() if name.lower() in allow}
+        print(f"Restricted to {len(cmds)} commands via --only")
 
     dangling_report = []
     footprint_report = []
@@ -141,7 +155,7 @@ def main():
 
     for name, info in sorted(cmds.items()):
         dirname = name.lower()
-        rs_path = GEN_DIR / dirname / "generated.formatted.rs"
+        rs_path = gen_dir / dirname / "generated.formatted.rs"
         if not rs_path.exists():
             missing.append(name)
             continue
