@@ -97,13 +97,32 @@ def main():
     print(f"[eval] {len(dataset)} commands", flush=True)
 
     tok = AutoTokenizer.from_pretrained(args.base)
-    model = AutoModelForCausalLM.from_pretrained(
-        args.base, dtype=torch.bfloat16, device_map="auto")
+
+    # A full fine-tune's checkpoint IS the model — no adapter_config.json — so
+    # loading it through PeftModel 404s. Probe for the adapter config and pick
+    # the right loader rather than assuming every run produced an adapter.
+    is_adapter = False
     if args.adapter:
-        from peft import PeftModel
+        from huggingface_hub import file_exists
+        cfg = f"{args.subfolder}/adapter_config.json" if args.subfolder else "adapter_config.json"
+        try:
+            is_adapter = file_exists(args.adapter, cfg, token=os.environ.get("HF_TOKEN"))
+        except Exception:
+            is_adapter = Path(args.adapter, cfg).exists()
+
+    if args.adapter and not is_adapter:
         kw = {"subfolder": args.subfolder} if args.subfolder else {}
-        model = PeftModel.from_pretrained(model, args.adapter, **kw)
-        print(f"[eval] adapter {args.adapter} {args.subfolder or ''}", flush=True)
+        model = AutoModelForCausalLM.from_pretrained(
+            args.adapter, dtype=torch.bfloat16, device_map="auto", **kw)
+        print(f"[eval] full model {args.adapter} {args.subfolder or ''}", flush=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            args.base, dtype=torch.bfloat16, device_map="auto")
+        if args.adapter:
+            from peft import PeftModel
+            kw = {"subfolder": args.subfolder} if args.subfolder else {}
+            model = PeftModel.from_pretrained(model, args.adapter, **kw)
+            print(f"[eval] adapter {args.adapter} {args.subfolder or ''}", flush=True)
     model.eval()
 
     preamble = read_preamble(Path(args.specs_dir) / "preamble.rs")
