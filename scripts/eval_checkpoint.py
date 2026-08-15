@@ -90,6 +90,10 @@ def main():
     dataset = load_dataset(split="test")          # defaults to the held-out 40
     if args.limit:
         dataset = dataset[: args.limit]
+    if not dataset:
+        # An empty eval set reports 0/0 = a clean-looking result. Refuse instead:
+        # the usual cause is missing section files, which are the model's input.
+        sys.exit("no commands loaded - check training-dataset/sections/<version>/")
     print(f"[eval] {len(dataset)} commands", flush=True)
 
     tok = AutoTokenizer.from_pretrained(args.base)

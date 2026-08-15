@@ -87,7 +87,13 @@ os.makedirs("training-dataset/specs/alp14", exist_ok=True)
 shutil.copy(os.path.join(p, "specs/alp14/preamble.rs"), "training-dataset/specs/alp14/")
 with tarfile.open(os.path.join(p, "specs/alp14_gold.tgz")) as t:
     t.extractall("training-dataset/specs/alp14")
-print("[eval] data ready")
+# The section text is the model's INPUT, not an extra: without it load_version
+# finds nothing and the eval silently scores 0 commands.
+with tarfile.open(os.path.join(p, "sections/alp14.tgz")) as t:
+    t.extractall("training-dataset")
+n = len([f for f in os.listdir("training-dataset/sections/alp14") if f.endswith("_command.txt")])
+assert n > 0, "no section files - eval would score nothing"
+print(f"[eval] data ready ({n} sections)")
 PY
 cp -r /work/code/* /work/repo/ 2>/dev/null || true
 ls scripts/eval_checkpoint.py prompt_engineering/dataset_loader.py >/dev/null
