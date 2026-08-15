@@ -122,8 +122,44 @@ Jobs use `backoffLimit: 100`, `completions: 1`. PriorityClasses available:
 `normal-priority` (10000000), `low-priority` (-100), `eight-gpu` (25000000),
 `high-priority` (30000000). Omitting `priorityClassName` is what the existing Jobs do.
 
-Do **not** reuse another user's secrets (`yjian-hf-token` etc.). Qwen3 checkpoints are
-public, so no HF token is needed to pull them; checkpoints stay on the PVC for now.
+Do **not** reuse another user's secrets (`yjian-hf-token`, `de2-datagen-hf-token`).
+Ours are created by `scripts/make_cluster_secrets.sh` from a gitignored `.env`:
+
+| Secret | Keys |
+|---|---|
+| `de2-rl-test-hf` | `token`, `ckpt_repo` |
+| `de2-rl-test-wandb` | `token`, `project`, `entity` |
+
+The script refuses to run if `HF_CKPT_REPO` or `WANDB_PROJECT` contains a
+project-identifying word, so the naming rule is enforced rather than remembered.
+`.env` is never copied into a pod — values arrive via `secretKeyRef`.
+
+## Keeping checkpoints
+
+`local-path` is node-local with `reclaimPolicy: Delete`, so an artifact can be lost
+three ways: the PVC is deleted, the node dies, or — the easy one to walk into — the
+Job finishes and `kubectl cp` stops working, because it execs into the container and
+a `Completed` pod has none.
+
+Three layers, in order of reliability:
+
+1. **Upload to a private HF repo at the end of training** (`HF_CKPT_REPO`). This is
+   the cluster's existing convention and the only layer that survives node loss.
+2. **Save every epoch** to `/work/out/ep{N}` and write `/work/out/.done` on success.
+   LoRA adapters are small (tens of MB at r=16), so per-epoch cost is negligible, and
+   a crash mid-run still leaves something.
+3. **Rescue pod** if the upload failed. The training Job exits immediately so its
+   GPUs are released; a 0-GPU pod pinned to the same node can then mount the same PVC:
+
+   ```bash
+   NODE=$(kubectl get pod -n default -l run=sft2-0 \
+            -o jsonpath='{.items[0].spec.nodeName}')
+   # launch a 0-GPU pod with nodeSelector kubernetes.io/hostname=$NODE
+   # mounting claimName de2-rl-test-sft2-0-work, then:
+   kubectl cp default/<rescue-pod>:/work/out ./ckpt/sft2-0
+   ```
+
+**Never delete a PVC before its artifact is confirmed off the node.**
 
 ### Cleanup
 
@@ -142,14 +178,20 @@ kubectl delete job,pvc -n default -l run=sft2-<k>
 The cluster-side names are opaque; this table is what makes them meaningful.
 **Update it in the same commit that launches a run.**
 
-| Run | Base model | Precision | Method | Dataset | Result |
+All runs: `dataset_clean` (1310 examples, 293 command), 2 epochs, single node
+8×H100, identical hyperparameters apart from the column that varies.
+
+| Run | Base model | Precision | Method | Isolates | Result |
 |---|---|---|---|---|---|
 | `env1` | — | — | interactive env validation | — | pending |
-| `sft2-0` | Qwen3-4B | **bf16** | LoRA r=16, 2 ep | `dataset_clean` | pending |
-| `sft2-1` | Qwen3-4B | fp16 | LoRA r=16, 2 ep | `dataset_clean` | pending — precision control |
-| `sft2-2` | ~9B | bf16 | LoRA r=16, 2 ep | `dataset_clean` | pending |
-| `sft2-3` | ~14B | bf16 | LoRA r=16, 2 ep | `dataset_clean` | pending |
-| `sft2-4` | Qwen3-4B | bf16 | full fine-tune, 2 ep | `dataset_clean` | pending |
+| `sft2-0` | `Qwen/Qwen3-4B` | **bf16** | LoRA r=16 | — (new baseline) | pending |
+| `sft2-1` | `Qwen/Qwen3-4B` | fp16 | LoRA r=16 | precision | pending |
+| `sft2-2` | `Qwen/Qwen3.5-9B` | bf16 | LoRA r=16 | base-model capacity | pending |
+| `sft2-3` *(spare)* | `Qwen/Qwen3-4B` | bf16 | full fine-tune | LoRA rank as bottleneck | pending |
+
+`sft2-0` is a **new baseline, not comparable to the historical v4 numbers** — the
+framework, precision, dataset, and eval set all changed at once. Precision stays a
+clean comparison because `sft2-0` vs `sft2-1` differ in nothing else.
 
 ---
 
@@ -190,8 +232,21 @@ Methods therefore split into two classes:
 
 Data is fixed at 1310 examples (293 command). Only the model and numerics move.
 
-- [ ] **`env1`** — interactive pod: torch, deps, `kubectl cp` the data, pull the base
-      model, run Verus once. Do not launch training Jobs until this passes.
+- [ ] **`env1`** — interactive pod: torch, deps, `kubectl cp` the data, pull both base
+      models, run Verus once. Do not launch training Jobs until this passes.
+- [ ] **Port `train.py` off Unsloth.** It was written for a 48 GB Turing card and
+      carries workarounds that are now liabilities:
+
+      | current | change to | why |
+      |---|---|---|
+      | Unsloth | plain `peft` + `trl` | 8×H100 has 640 GB; the memory workarounds cost quality and caused the `padding_free` / `use_gradient_checkpointing="unsloth"` bugs |
+      | `load_in_4bit=True` | unquantized bf16 LoRA | 4-bit was a memory compromise |
+      | `fp16=True` | `bf16=True` | tonight's variable |
+      | xformers | flash-attention-2 | available on H100 |
+      | single GPU | 8-GPU DDP/FSDP | |
+
+      Keep the one lesson that still applies: `SFTConfig` takes `max_length`, not
+      `max_seq_length` — passing the wrong name fails silently.
 - [ ] **bf16 vs fp16** (`sft2-0` vs `sft2-1`). All prior training was fp16 because
       the old GPU was Turing. Qwen3 is bf16-native, and fp16 fine-tuning of a
       bf16-native model is a known silent-degradation mode. Possibly a free win, and
