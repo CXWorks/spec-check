@@ -33,16 +33,46 @@ echo "[entry] run=$RUN_ID model=$BASE_MODEL precision=$PRECISION method=$METHOD"
 #   slower. Recorded in the run registry so the 4B/9B comparison carries the
 #   caveat.
 DEPS="${DEPS:-ngc}"
-echo "[entry] installing deps (profile=$DEPS)"
 if [ "$DEPS" = "new" ]; then
-  python -m pip install --no-cache-dir -q \
-    "torch==2.9.1" "transformers==5.15.0" "trl==1.10.0" "peft==0.20.0" \
-    datasets accelerate wandb huggingface_hub
+  PKGS='torch==2.9.1 transformers==5.15.0 trl==1.10.0 peft==0.20.0'
 else
-  python -m pip install --no-cache-dir -q \
-    "transformers==4.57.1" "trl==0.24.0" "peft==0.17.1" \
-    datasets accelerate wandb huggingface_hub
+  PKGS='transformers==4.57.1 trl==0.24.0 peft==0.17.1'
 fi
+
+# DNS on these nodes is intermittently unresolvable, and pip exhausting its
+# retries leaves a PARTIAL install rather than failing: transformers ends up
+# importable but its lazy submodules are not, which surfaces later as
+# "Could not import module 'TrainingArguments'" — an error that points nowhere
+# near the real cause. So verify by importing, and reinstall if that fails.
+install_deps() {
+  # shellcheck disable=SC2086
+  python -m pip install --no-cache-dir -q --retries 10 --timeout 60 \
+    $PKGS datasets accelerate wandb huggingface_hub
+}
+verify_deps() {
+  python - <<'PY'
+import sys
+try:
+    import torch, transformers, trl, peft, datasets, accelerate  # noqa: F401
+    from transformers import TrainingArguments, AutoModelForCausalLM  # noqa: F401
+    from trl import SFTTrainer, SFTConfig  # noqa: F401
+    from peft import LoraConfig  # noqa: F401
+    print(f"[entry] deps ok: torch={torch.__version__} "
+          f"transformers={transformers.__version__} trl={trl.__version__} peft={peft.__version__}")
+except Exception as e:
+    print(f"[entry] deps BROKEN: {type(e).__name__}: {e}", file=sys.stderr)
+    sys.exit(1)
+PY
+}
+
+echo "[entry] installing deps (profile=$DEPS)"
+for attempt in 1 2 3; do
+  install_deps || true
+  if verify_deps; then break; fi
+  echo "[entry] install attempt $attempt left the env broken; retrying"
+  [ "$attempt" = 3 ] && { echo "[entry] FATAL: deps unusable after 3 attempts"; exit 1; }
+  sleep 20
+done
 
 mkdir -p /work/data /work/out
 echo "[entry] fetching dataset from $DATA_REPO"
