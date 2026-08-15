@@ -6,6 +6,7 @@ Working notes and findings for the `spec-check` project.
 |---|---|
 | [`data-leakage.md`](data-leakage.md) | Eval/train overlap in the alp14 benchmark — evidence, root cause, measured impact, and how the fix was chosen |
 | [`dataset.md`](dataset.md) | The leak-free dataset that replaced it: why the split looks like this, what it contains, and how to evaluate against it |
+| [`gpu-and-runs.md`](gpu-and-runs.md) | Where we train, how runs are named, the run registry, and the training TODO |
 
 ## Current state
 
