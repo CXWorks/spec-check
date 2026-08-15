@@ -41,14 +41,22 @@ case "$HF_CKPT_REPO" in
     *) echo "HF_CKPT_REPO must be <owner>/<repo>, got: $HF_CKPT_REPO" >&2; exit 1 ;;
 esac
 
-# Guard the naming rule rather than trusting it to be remembered.
+# The naming rule applies to k8s OBJECT names, not to personal-account paths:
+# pod/job/PVC names show up in `kubectl get pods -A`, which everyone reads
+# constantly, whereas a secret's value takes a deliberate `-o yaml` to see.
+# The secret names below are hardcoded and opaque, so that invariant holds by
+# construction. HF repo paths and W&B project names live in a personal account
+# and may be descriptive — but they do land in a Secret, so say so out loud
+# rather than silently.
 # ${var,,} is bash 4+; macOS ships bash 3.2, so lowercase via tr.
-_names="$(printf '%s%s' "$HF_CKPT_REPO" "$WANDB_PROJECT" | tr '[:upper:]' '[:lower:]')"
-for forbidden in spec verus rmm cca jisenli; do
+_names="$(printf '%s %s' "$HF_CKPT_REPO" "$WANDB_PROJECT" | tr '[:upper:]' '[:lower:]')"
+for word in spec verus rmm cca; do
     case "$_names" in
-        *"$forbidden"*)
-            echo "HF_CKPT_REPO / WANDB_PROJECT contains '$forbidden' — see docs/gpu-and-runs.md" >&2
-            exit 1 ;;
+        *"$word"*)
+            echo "note: '$word' appears in HF_CKPT_REPO/WANDB_PROJECT, which are stored" >&2
+            echo "      in a k8s Secret. Readable by cluster-admins via 'kubectl get" >&2
+            echo "      secret -o yaml'. Object names stay opaque. (docs/gpu-and-runs.md)" >&2
+            break ;;
     esac
 done
 

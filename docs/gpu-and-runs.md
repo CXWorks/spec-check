@@ -71,12 +71,37 @@ Consequences:
 
 ## 2. Naming rules
 
-**Principle: names on the cluster reveal nothing about the project. The mapping from
-name to experiment lives only in this repo.**
+**The rule applies to k8s object names, not to personal accounts.** Object names show
+up in `kubectl get pods -A`, which everyone on a shared cluster reads constantly.
+Personal HF and W&B spaces are private, so names there can be readable.
 
-Names must not contain: `spec`, `verus`, `rmm`, `arm`, `cca`, or any personal
-username. They must be lowercase (RFC 1123 — `DE2-RL-test-x` is not a legal object
+| Where | Naming | Why |
+|---|---|---|
+| k8s objects (pod / job / PVC / secret / configmap) | **opaque** `de2-rl-test-*` | continuously visible to every cluster user |
+| personal HF repos | descriptive — `jisenli/spec-check-*` | private account; being unrecoverable to yourself is its own cost |
+| personal W&B project | descriptive — `jisenli_ai/spec-check` | private entity (`defaultAccess: USER_READ`) |
+
+k8s object names must not contain `spec`, `verus`, `rmm`, `arm`, `cca`, or a personal
+username, and must be lowercase (RFC 1123 — `DE2-RL-test-x` is not a legal object
 name).
+
+Residual exposure, accepted deliberately: `HF_CKPT_REPO` and `WANDB_PROJECT` are read
+by the training job, so they sit in a k8s Secret and a cluster-admin could read them
+with `kubectl get secret -o yaml`. That takes deliberate inspection, unlike a pod
+name. `make_cluster_secrets.sh` prints a note when it happens rather than blocking.
+The dataset repo name never enters k8s at all — data goes in by `kubectl cp`.
+
+### Artifact stores
+
+| | |
+|---|---|
+| checkpoints | `jisenli/spec-check-ckpt` (private, model) — one repo, one subfolder per run id |
+| datasets | `jisenli/spec-check-data` (private, dataset) |
+| W&B | `jisenli_ai/spec-check` |
+
+**The run id is the join key across all three systems**: k8s Job
+`de2-rl-test-sft2-0` ↔ W&B run `sft2-0` ↔ HF subfolder `sft2-0`. The prefix differs
+by system; the suffix does not.
 
 | Purpose | Job / Pod | PVC | Labels |
 |---|---|---|---|
