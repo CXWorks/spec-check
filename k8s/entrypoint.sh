@@ -32,13 +32,12 @@ echo "[entry] run=$RUN_ID model=$BASE_MODEL precision=$PRECISION method=$METHOD"
 #   flash-attn stops importing and attention falls back to sdpa — correct, just
 #   slower. Recorded in the run registry so the 4B/9B comparison carries the
 #   caveat.
-# The NGC image configures pypi.ngc.nvidia.com as an extra index in
-# /etc/pip.conf, and that hostname does not resolve on this cluster. Every
-# install then burns its retry budget on a dead index before falling back, which
-# is slow and sometimes leaves a partial install behind. pypi.org resolves fine;
-# just stop asking the other one.
-export PIP_EXTRA_INDEX_URL=""
-export PIP_INDEX_URL="https://pypi.org/simple"
+# The NGC image sets pypi.ngc.nvidia.com as an extra index in /etc/pip.conf and
+# that hostname does not resolve here, so every install burns its retry budget on
+# a dead index. An empty PIP_EXTRA_INDEX_URL does NOT override the config file —
+# pip reads empty as unset and falls back to it — so the index has to be given on
+# the command line, where CLI beats config.
+PIP_ARGS="--index-url https://pypi.org/simple --no-cache-dir -q --retries 5 --timeout 60"
 
 DEPS="${DEPS:-ngc}"
 if [ "$DEPS" = "new" ]; then
@@ -54,7 +53,7 @@ fi
 # near the real cause. So verify by importing, and reinstall if that fails.
 install_deps() {
   # shellcheck disable=SC2086
-  python -m pip install --no-cache-dir -q --retries 10 --timeout 60 \
+  python -m pip install $PIP_ARGS \
     $PKGS datasets accelerate wandb huggingface_hub
 }
 verify_deps() {
