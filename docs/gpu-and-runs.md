@@ -206,13 +206,35 @@ The cluster-side names are opaque; this table is what makes them meaningful.
 All runs: `dataset_clean` (1310 examples, 293 command), 2 epochs, single node
 8×H100, identical hyperparameters apart from the column that varies.
 
-| Run | Base model | Precision | Method | Isolates | Result |
-|---|---|---|---|---|---|
-| `env1` | — | — | interactive env validation | — | pending |
-| `sft2-0` | `Qwen/Qwen3-4B` | **bf16** | LoRA r=16 | — (new baseline) | pending |
-| `sft2-1` | `Qwen/Qwen3-4B` | fp16 | LoRA r=16 | precision | pending |
-| `sft2-2` | `Qwen/Qwen3.5-9B` | bf16 | LoRA r=16 | base-model capacity | pending |
-| `sft2-3` *(spare)* | `Qwen/Qwen3-4B` | bf16 | full fine-tune | LoRA rank as bottleneck | pending |
+| Run | Base model | Precision | Method | Deps | Isolates | Status |
+|---|---|---|---|---|---|---|
+| `env1` | — | — | interactive validation | new | — | ✅ G1+G2 passed |
+| `sft2-0` | `Qwen/Qwen3-4B` | **bf16** | LoRA r=16 | ngc | — (new baseline) | ✅ trained, uploaded |
+| `sft2-1` | `Qwen/Qwen3-4B` | fp16 | LoRA r=16 | ngc | precision | ✅ trained, uploaded |
+| `sft2-2` | `Qwen/Qwen3.5-9B` | bf16 | LoRA r=16 | new | base-model capacity | ⏳ running |
+| `sft2-3` | `Qwen/Qwen3-4B` | bf16 | full fine-tune | ngc | LoRA rank as bottleneck | ✅ trained, uploaded |
+| `sft2-4` | `Qwen/Qwen3.5-9B` | bf16 | full fine-tune | new | capacity × method | ⏳ running |
+
+All: `dataset_clean` (1310/91/40), 3 epochs, 8×H100 single node, every epoch
+checkpointed to `jisenli/spec-check-ckpt/<run>/checkpoint-*` plus `final`.
+`sft2-0` took 486s wall clock.
+
+**The 9B runs use a different dependency stack** (torch 2.9.1 + transformers
+5.15, attention on sdpa rather than flash-attn) because `qwen3_5` is unknown to
+transformers 4.x. The 4B/9B comparison carries that caveat.
+
+### Measured ceiling: gold itself is 33/40
+
+Before reading any pass rate: **the gold specs compile on only 33 of the 40
+held-out commands (82.5%)**, and 79/98 across all of alp14, under Verus
+0.2026.04.12.f1166c4. The seven that fail are `RMI_PSMMU_MSI_CONFIG`,
+`RMI_REALM_CREATE`, `RMI_VDEV_GET_STATE`, `RSI_MEASUREMENT_READ`,
+`RSI_MEM_SET_PERM_INDEX`, `RSI_REALM_CONFIG`, `RSI_VDEV_GET_INFO`.
+
+So 82.5% is the practical ceiling, not 100% — and the historical Claude figure
+of 96.94% is *above what gold achieves*. A model whose output compiles more
+reliably than the reference is a degeneracy signal, not a win, which is why
+`eval_checkpoint.py` reports non-degeneracy alongside pass rate.
 
 `sft2-0` is a **new baseline, not comparable to the historical v4 numbers** — the
 framework, precision, dataset, and eval set all changed at once. Precision stays a
