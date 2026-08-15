@@ -144,14 +144,24 @@ def build_config(args, trl):
     cfg[seq_key] = args.max_seq
     log(f"sequence cap via SFTConfig({seq_key}={args.max_seq})")
 
-    if not args.full_sequence_loss:
-        if "assistant_only_loss" in sig:
-            cfg["assistant_only_loss"] = True
-            log("loss: assistant turn only (assistant_only_loss)")
-        else:
-            log("loss: assistant turn only (manual mask — trl lacks the flag)")
+    # trl >=1.10 dropped warmup_ratio in favour of warmup_steps. Falling through
+    # would silently mean no warmup at all, so convert rather than drop.
+    if "warmup_ratio" in sig:
+        cfg["warmup_ratio"] = 0.03
     else:
+        eff_batch = args.batch_size * args.grad_accum * max(1, int(os.environ.get("WORLD_SIZE", "1")))
+        steps_per_epoch = max(1, args.n_train_examples // eff_batch)
+        total = args.max_steps if args.max_steps > 0 else steps_per_epoch * args.epochs
+        cfg["warmup_steps"] = max(1, round(total * 0.03))
+        log(f"warmup: {cfg['warmup_steps']} steps (~3% of {total}; this trl has no warmup_ratio)")
+
+    if args.full_sequence_loss:
         log("loss: FULL SEQUENCE (prompt included) — old behaviour")
+    elif args.use_trl_assistant_mask:
+        cfg["assistant_only_loss"] = True
+        log("loss: assistant turn only (trl assistant_only_loss)")
+    else:
+        log("loss: assistant turn only (manual mask)")
 
     for k in list(cfg):
         if k not in sig and k not in ("output_dir",):
@@ -181,7 +191,22 @@ def mask_prompt_tokens(ds, tokenizer, max_seq):
         return {"input_ids": f_ids, "labels": labels,
                 "attention_mask": [1] * len(f_ids)}
 
-    return ds.map(encode, remove_columns=ds.column_names)
+    out = ds.map(encode, remove_columns=ds.column_names)
+
+    # A masking bug produces all -100 and trains on nothing, with a loss curve
+    # that looks plausible. Check the supervised fraction against what the data
+    # says it should be (~9% of tokens are assistant turns) before trusting it.
+    kept = sum(sum(1 for x in r["labels"] if x != -100) for r in out)
+    total = sum(len(r["labels"]) for r in out)
+    n_empty = sum(1 for r in out if all(x == -100 for x in r["labels"]))
+    log(f"mask: {kept}/{total} tokens supervised ({100*kept/max(total,1):.1f}%), "
+        f"{n_empty} examples fully masked")
+    if kept == 0:
+        sys.exit("masking produced no supervised tokens — refusing to train")
+    if n_empty:
+        log(f"WARNING: {n_empty} examples contribute no loss (answer likely "
+            f"truncated past --max-seq)")
+    return out
 
 
 def push_to_hub(args):
@@ -228,11 +253,30 @@ def main():
     val_ds = Dataset.from_list(load_jsonl(args.val))
     log(f"data: {len(train_ds)} train / {len(val_ds)} val")
 
+    args.n_train_examples = len(train_ds)
+
+    # trl's assistant_only_loss needs {% generation %} markers in the chat
+    # template to know which tokens are the assistant's. Qwen3's template has
+    # none, and trl raises at the first batch rather than silently training on
+    # everything — so decide up front and mask by hand when it can't work.
+    import inspect
+    import re as _re
+    tmpl = tokenizer.chat_template or ""
+    # Match the Jinja tag, not the word: Qwen3's template mentions
+    # `add_generation_prompt` but has no {% generation %} block, and a substring
+    # check says yes to both.
+    has_gen_tag = bool(_re.search(r"{%-?\s*generation\s*-?%}", tmpl))
+    args.use_trl_assistant_mask = (
+        "assistant_only_loss" in inspect.signature(trl.SFTConfig.__init__).parameters
+        and has_gen_tag
+    )
+    if not args.use_trl_assistant_mask and not args.full_sequence_loss:
+        log("chat template has no {% generation %} marker — masking manually")
+
     cfg = build_config(args, trl)
     model = build_model(args)
 
-    manual_mask = (not args.full_sequence_loss
-                   and not getattr(cfg, "assistant_only_loss", False))
+    manual_mask = not args.full_sequence_loss and not args.use_trl_assistant_mask
     if manual_mask:
         train_ds = mask_prompt_tokens(train_ds, tokenizer, args.max_seq)
         val_ds = mask_prompt_tokens(val_ds, tokenizer, args.max_seq)
