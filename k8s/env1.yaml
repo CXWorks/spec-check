@@ -1,0 +1,85 @@
+# Interactive validation pod. Gate G1/G2 live here: nothing gets submitted as a
+# training Job until Verus compiles and a 20-step smoke test passes in this pod.
+#
+#   kubectl apply -f k8s/env1.yaml
+#   kubectl exec -it de2-rl-test-env1 -- bash
+#
+# Naming: cluster objects carry no project information (docs/gpu-and-runs.md).
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: de2-rl-test-env1-work
+  namespace: default
+  labels:
+    owner: de2
+    task: de2-rl-test-env
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 400Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: de2-rl-test-env1
+  namespace: default
+  labels:
+    owner: de2
+    task: de2-rl-test-env
+    run: env1
+spec:
+  restartPolicy: Never
+  runtimeClassName: nvidia
+  # hostIPC for NCCL shared memory. hostNetwork is deliberately omitted — this is
+  # a single-node pod, intra-node NCCL uses NVLink, and hostNetwork risks port
+  # collisions with whatever else lands on the node.
+  hostIPC: true
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: NotIn
+            values:
+            - boogiebonjour-003.cloud.together.ai
+            - boogiebonjour-006.cloud.together.ai
+            - boogiebonjour-013.cloud.together.ai
+            - boogiebonjour-043.cloud.together.ai
+            - boogiebonjour-056.cloud.together.ai
+            - boogiebonjour-057.cloud.together.ai
+            - boogiebonjour-090.cloud.together.ai
+            - boogiebonjour-097.cloud.together.ai
+            - boogiebonjour-101.cloud.together.ai
+            - boogiebonjour-102.cloud.together.ai
+            - boogiebonjour-104.cloud.together.ai
+            - boogiebonjour-105.cloud.together.ai
+            - boogiebonjour-108.cloud.together.ai
+  containers:
+  - name: main
+    image: nvcr.io/nvidia/pytorch:25.01-py3
+    command: ["bash", "-lc", "mkdir -p /work/home /work/hf-cache /work/out && sleep infinity"]
+    securityContext:
+      privileged: true
+    resources:
+      limits:   {cpu: "96", memory: 900Gi, nvidia.com/gpu: 8}
+      requests: {cpu: "56", memory: 512Gi, nvidia.com/gpu: 8}
+    env:
+    - {name: HOME,          value: /work/home}
+    - {name: HF_HOME,       value: /work/hf-cache}
+    - {name: HF_TOKEN,      valueFrom: {secretKeyRef: {name: de2-rl-test-hf,    key: token}}}
+    - {name: HF_CKPT_REPO,  valueFrom: {secretKeyRef: {name: de2-rl-test-hf,    key: ckpt_repo}}}
+    - {name: WANDB_API_KEY, valueFrom: {secretKeyRef: {name: de2-rl-test-wandb, key: token}}}
+    - {name: WANDB_PROJECT, valueFrom: {secretKeyRef: {name: de2-rl-test-wandb, key: project}}}
+    - {name: WANDB_ENTITY,  valueFrom: {secretKeyRef: {name: de2-rl-test-wandb, key: entity}}}
+    volumeMounts:
+    - {name: work,  mountPath: /work}
+    - {name: dshm,  mountPath: /dev/shm}
+    - {name: ibdev, mountPath: /dev/infiniband}
+  volumes:
+  - {name: work,  persistentVolumeClaim: {claimName: de2-rl-test-env1-work}}
+  - {name: dshm,  emptyDir: {medium: Memory, sizeLimit: 256Gi}}
+  - {name: ibdev, hostPath: {path: /dev/infiniband}}

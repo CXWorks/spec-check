@@ -137,9 +137,28 @@ def load_version(version: str) -> List[SpecOracle]:
     return samples
 
 
+def load_held_out_commands() -> set:
+    """Command names held out for evaluation, per dataset_clean/splits.json.
+
+    This is the authoritative eval set. The version-based TEST_VERSIONS split
+    above is NOT: 79 of alp14's 98 commands have their gold answer verbatim in
+    the training set, because build_dataset.py splits by item name while this
+    module splits by version. See docs/data-leakage.md.
+    """
+    import json
+    path = _find_data_root() / "dataset_clean" / "splits.json"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} not found — run `python3 training/build_dataset.py` first.\n"
+            "Evaluating without it silently scores on leaked commands."
+        )
+    return set(json.loads(path.read_text())["command_test"])
+
+
 def load_dataset(
     versions: Optional[List[str]] = None,
     split: Optional[str] = None,
+    all_commands: bool = False,
 ) -> List[SpecOracle]:
     """
     Load dataset from raw section files + gold specs.
@@ -149,6 +168,11 @@ def load_dataset(
                   Mutually exclusive with `split`.
         split:    One of "train", "val", "test", "all".
                   Ignored if `versions` is provided.
+        all_commands: For split="test" only. Default False restricts the result
+                  to the held-out commands in dataset_clean/splits.json. Pass
+                  True to get every alp14 command, which re-introduces the
+                  train/test overlap documented in docs/data-leakage.md — only
+                  valid for models that never saw the gold answers.
 
     Returns:
         List of SpecOracle samples.
@@ -169,6 +193,15 @@ def load_dataset(
         samples = load_version(v)
         dataset.extend(samples)
         print(f"  {v}: {len(samples)} commands loaded")
+
+    # Default to the clean eval set. Fail closed: a caller that forgets to filter
+    # gets correct behaviour, and a caller that wants the leaky set must say so.
+    if split == "test" and not all_commands:
+        held = load_held_out_commands()
+        before = len(dataset)
+        dataset = [s for s in dataset if s.command in held]
+        print(f"  held-out filter: {before} -> {len(dataset)} commands "
+              f"(dataset_clean/splits.json)")
 
     print(f"Total: {len(dataset)} samples from {versions}")
     return dataset
