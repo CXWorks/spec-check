@@ -213,7 +213,26 @@ All runs: `dataset_clean` (1310 examples, 293 command), 2 epochs, single node
 | `sft2-1` | `Qwen/Qwen3-4B` | fp16 | LoRA r=16 | ngc | precision | ✅ trained, uploaded |
 | `sft2-2` | `Qwen/Qwen3.5-9B` | bf16 | LoRA r=16 | new | base-model capacity | ⏳ running |
 | `sft2-3` | `Qwen/Qwen3-4B` | bf16 | full fine-tune | ngc | LoRA rank as bottleneck | ✅ trained, uploaded |
-| `sft2-4` | `Qwen/Qwen3.5-9B` | bf16 | full fine-tune | new | capacity × method | ⏳ running |
+| `sft2-4` | `Qwen/Qwen3.5-9B` | bf16 | full fine-tune | new | capacity × method | ❌ abandoned — OOM |
+
+`sft2-4` was dropped rather than fixed. Plain DDP keeps a full copy of weights,
+gradients and Adam state on every GPU; for 9B that is ~100 GB per device against
+80 GB available, so it needs FSDP/ZeRO sharding. The comparisons that matter —
+precision (0 vs 1), capacity (0 vs 2), LoRA vs full (0 vs 3) — are all covered
+without it.
+
+### Results (40 held-out commands)
+
+| Run | | Verus pass | non-degenerate |
+|---|---|---|---|
+| **gold** | reference | **33/40 (82.5%)** | — |
+| `sft2-0` | 4B bf16 LoRA | **14/40 (35.0%)** | 39/40 |
+
+Read against 82.5%, not 100%. Non-degeneracy is high, so the model is producing
+real specs and failing to compile them — it is not gaming the metric by
+emitting `{ true }`. Failure reasons so far are spread across `missing_symbol`,
+`parse_error`, `type_mismatch` and `verus_error` rather than concentrated,
+matching what Iteration 7 found.
 
 All: `dataset_clean` (1310/91/40), 3 epochs, 8×H100 single node, every epoch
 checkpointed to `jisenli/spec-check-ckpt/<run>/checkpoint-*` plus `final`.
