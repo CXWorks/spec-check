@@ -20,13 +20,29 @@ EXTRA_ARGS="${EXTRA_ARGS:-}"
 
 echo "[entry] run=$RUN_ID model=$BASE_MODEL precision=$PRECISION method=$METHOD"
 
-# Pinned deliberately. transformers 5.x passes `in_order` to DataLoader, which the
-# NGC image's torch 2.6.0a0 does not accept; upgrading torch instead would break
-# the NGC-built flash-attn. See docs/gpu-and-runs.md.
-echo "[entry] installing deps"
-python -m pip install --no-cache-dir -q \
-  "transformers==4.57.1" "trl==0.24.0" "peft==0.17.1" \
-  datasets accelerate wandb huggingface_hub
+# Two dependency profiles, because the two model families cannot share one.
+#
+# ngc: keeps the image's torch 2.6.0a0 and its prebuilt flash-attn. transformers
+#   must stay on 4.57.x — 5.x passes `in_order` to DataLoader behind an
+#   `is_torch_greater_or_equal_than_2_6` gate, and NGC's 2.6.0a0 is a
+#   pre-release of 2.6 that predates that kwarg, so the gate says yes and the
+#   DataLoader says no.
+# new: Qwen3.5 (`model_type: qwen3_5`) is only known to transformers 5.x, which
+#   forces a real torch release. That replaces the NGC build, so the NGC-built
+#   flash-attn stops importing and attention falls back to sdpa — correct, just
+#   slower. Recorded in the run registry so the 4B/9B comparison carries the
+#   caveat.
+DEPS="${DEPS:-ngc}"
+echo "[entry] installing deps (profile=$DEPS)"
+if [ "$DEPS" = "new" ]; then
+  python -m pip install --no-cache-dir -q \
+    "torch==2.9.1" "transformers==5.15.0" "trl==1.10.0" "peft==0.20.0" \
+    datasets accelerate wandb huggingface_hub
+else
+  python -m pip install --no-cache-dir -q \
+    "transformers==4.57.1" "trl==0.24.0" "peft==0.17.1" \
+    datasets accelerate wandb huggingface_hub
+fi
 
 mkdir -p /work/data /work/out
 echo "[entry] fetching dataset from $DATA_REPO"

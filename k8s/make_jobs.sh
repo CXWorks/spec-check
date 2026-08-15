@@ -15,13 +15,13 @@ KUBECTL="${KUBECTL:-kubectl}"
 NS=default
 CM=de2-rl-test-sft2-entry
 
-# run-id | base model | precision | method
+# run-id | base model | precision | method | deps profile (see entrypoint.sh)
 RUNS=(
-  "sft2-0|Qwen/Qwen3-4B|bf16|lora"
-  "sft2-1|Qwen/Qwen3-4B|fp16|lora"
-  "sft2-2|Qwen/Qwen3.5-9B|bf16|lora"
-  "sft2-3|Qwen/Qwen3-4B|bf16|full"
-  "sft2-4|Qwen/Qwen3.5-9B|bf16|full"
+  "sft2-0|Qwen/Qwen3-4B|bf16|lora|ngc"
+  "sft2-1|Qwen/Qwen3-4B|fp16|lora|ngc"
+  "sft2-2|Qwen/Qwen3.5-9B|bf16|lora|new"
+  "sft2-3|Qwen/Qwen3-4B|bf16|full|ngc"
+  "sft2-4|Qwen/Qwen3.5-9B|bf16|full|new"
 )
 
 # Nodes the cluster's own production Jobs avoid. Reused rather than rediscovered.
@@ -51,7 +51,7 @@ if [[ -z "$DRY" ]]; then
 fi
 
 for spec in "${RUNS[@]}"; do
-  IFS='|' read -r RUN MODEL PREC METHOD <<<"$spec"
+  IFS='|' read -r RUN MODEL PREC METHOD DEPS <<<"$spec"
   want "$RUN" || continue
   JOB="de2-rl-test-$RUN"
 
@@ -110,6 +110,7 @@ $(bad_values)
         - {name: BASE_MODEL, value: "${MODEL}"}
         - {name: PRECISION,  value: "${PREC}"}
         - {name: METHOD,     value: "${METHOD}"}
+        - {name: DEPS,       value: "${DEPS}"}
         - {name: EPOCHS,     value: "3"}
         - {name: BATCH,      value: "${BATCH}"}
         - {name: HOME,       value: /work/home}
