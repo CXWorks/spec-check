@@ -42,8 +42,37 @@ print("[entry] dataset ready")
 PY
 wc -l /work/data/dataset_clean/*.jsonl
 
+# Probe wandb before training rather than discovering it at on_train_begin: a
+# bad entity raises there and kills the run after the model is loaded and the
+# data masked. A logging backend must not be able to lose a training run.
 if [ -n "${WANDB_API_KEY:-}" ]; then
-  echo "[entry] wandb: ${WANDB_ENTITY:-<default>}/${WANDB_PROJECT:-<default>} run=$RUN_ID"
+  if python - <<'PY'
+import os, sys, urllib.request, json, base64
+ent = os.environ.get("WANDB_ENTITY") or ""
+if not ent:
+    sys.exit(0)  # let wandb pick its default
+req = urllib.request.Request(
+    "https://api.wandb.ai/graphql",
+    data=json.dumps({"query": '{entity(name:"%s"){id}}' % ent}).encode(),
+    headers={"Content-Type": "application/json",
+             "Authorization": "Basic " + base64.b64encode(
+                 ("api:" + os.environ["WANDB_API_KEY"]).encode()).decode()})
+try:
+    d = json.load(urllib.request.urlopen(req, timeout=20))
+    e = (d.get("data") or {}).get("entity")
+    # id decodes to "Entity:-1" when the name does not resolve; a non-null
+    # object alone is not proof the entity exists.
+    ok = bool(e) and base64.b64decode(e["id"]).decode() != "Entity:-1"
+    sys.exit(0 if ok else 1)
+except Exception:
+    sys.exit(1)
+PY
+  then
+    echo "[entry] wandb: ${WANDB_ENTITY:-<default>}/${WANDB_PROJECT:-<default>} run=$RUN_ID"
+  else
+    echo "[entry] WARNING: wandb entity '${WANDB_ENTITY}' unusable — training without it"
+    EXTRA_ARGS="$EXTRA_ARGS --no-wandb"
+  fi
 else
   EXTRA_ARGS="$EXTRA_ARGS --no-wandb"
 fi
