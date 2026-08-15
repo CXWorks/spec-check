@@ -32,6 +32,14 @@ echo "[entry] run=$RUN_ID model=$BASE_MODEL precision=$PRECISION method=$METHOD"
 #   flash-attn stops importing and attention falls back to sdpa — correct, just
 #   slower. Recorded in the run registry so the 4B/9B comparison carries the
 #   caveat.
+# The NGC image configures pypi.ngc.nvidia.com as an extra index in
+# /etc/pip.conf, and that hostname does not resolve on this cluster. Every
+# install then burns its retry budget on a dead index before falling back, which
+# is slow and sometimes leaves a partial install behind. pypi.org resolves fine;
+# just stop asking the other one.
+export PIP_EXTRA_INDEX_URL=""
+export PIP_INDEX_URL="https://pypi.org/simple"
+
 DEPS="${DEPS:-ngc}"
 if [ "$DEPS" = "new" ]; then
   PKGS='torch==2.9.1 transformers==5.15.0 trl==1.10.0 peft==0.20.0'

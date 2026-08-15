@@ -15,8 +15,16 @@ VERUS_VER="0.2026.04.12.f1166c4"  # the version the project's history used
 
 echo "[eval] runs=$RUN_IDS base=$BASE_MODEL ckpts=$CKPTS"
 
+# The NGC image configures pypi.ngc.nvidia.com as an extra index in
+# /etc/pip.conf, and that hostname does not resolve on this cluster. Every
+# install then burns its retry budget on a dead index before falling back, which
+# is slow and sometimes leaves a partial install behind. pypi.org resolves fine;
+# just stop asking the other one.
+export PIP_EXTRA_INDEX_URL=""
+export PIP_INDEX_URL="https://pypi.org/simple"
+
 if [ "$DEPS" = "new" ]; then
-  PKGS='torch==2.9.1 transformers==5.15.0 peft==0.20.1'
+  PKGS='torch==2.9.1 transformers==5.15.0 peft==0.20.0'
 else
   PKGS='transformers==4.57.1 peft==0.17.1'
 fi
