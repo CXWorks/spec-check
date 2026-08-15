@@ -13,7 +13,15 @@ it learns the symbol names, even though PROMPT_V3_TEMPLATE (used at inference by
 run_qwen_v3.py) no longer supplies preamble — the model is expected to already know
 it from training.
 
-Split strategy: item-based 80/10/10 split across all versions (see split_names()).
+Split strategy: leak-free, name-based.
+  - Commands: CMD_TEST_SIZE names drawn from EVAL_VERSION are held out for
+    evaluation and removed from training at EVERY version. All remaining names
+    contribute their instances from all six versions.
+  - Types/helpers: 90/10 name split into train/val. These are not evaluated, so
+    val exists only to give training an eval_loss signal without spending
+    scarce command names on it.
+Do NOT evaluate on all of EVAL_VERSION — only on splits.json["command_test"].
+See docs/data-leakage.md for why version is not a valid split dimension here.
 
 Each JSONL line is one example in the OpenAI / HuggingFace chat format:
 {
@@ -41,19 +49,51 @@ import sys
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-DATASET_DIR = os.path.join(BASE_DIR, "dataset")
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-for _candidate in (os.path.join(BASE_DIR, "prompt_engineering"),        # server layout: spec-gen/build_dataset.py + spec-gen/prompt_engineering/
-                   os.path.join(BASE_DIR, "..", "prompt_engineering")):  # repo layout: training/build_dataset.py + prompt_engineering/
+
+def _find_data_root() -> str:
+    """Locate the directory holding sections/ and specs/.
+
+    Server layout: spec-gen/build_dataset.py alongside spec-gen/sections/.
+    Repo layout:   training/build_dataset.py, data under training-dataset/.
+    """
+    for cand in (_SCRIPT_DIR, os.path.join(_SCRIPT_DIR, "..", "training-dataset")):
+        if os.path.isdir(os.path.join(cand, "sections")):
+            return os.path.abspath(cand)
+    raise SystemExit(
+        "Cannot find sections/ — expected under this script's directory or ../training-dataset/"
+    )
+
+
+BASE_DIR    = _find_data_root()
+DATASET_DIR = os.path.join(BASE_DIR, "dataset_clean")
+
+for _candidate in (os.path.join(_SCRIPT_DIR, "prompt_engineering"),        # server layout
+                   os.path.join(_SCRIPT_DIR, "..", "prompt_engineering")):  # repo layout
     if os.path.isdir(_candidate):
         sys.path.insert(0, _candidate)
         break
 from prompt_engineering_v3 import V3_PROMPT  # command-kind prompt: no preamble, deduped rules
 
 ALL_VERSIONS = ["eac5", "rel0", "alp11", "alp12", "alp13", "alp14"]
-EVAL_VERSION = "alp14"   # val and test items use only this version
+EVAL_VERSION = "alp14"   # test commands are drawn from (and scored on) this version
 SPLIT_SEED   = 42
+
+# --- Leak-free split configuration -----------------------------------------
+# The six spec versions are successive drafts of ONE document, not six
+# independent corpora: alp13 and alp14 gold specs are byte-identical for 67 of
+# 93 shared commands (mean similarity 0.957). Splitting by *version* therefore
+# does not produce held-out data. The only sound split dimension is the item
+# NAME: a name assigned to test is removed from training at every version.
+# See docs/data-leakage.md.
+CMD_TEST_SIZE = 40    # commands held out for evaluation, drawn from EVAL_VERSION
+TH_VAL_FRAC   = 0.10  # fraction of type/helper NAMES used for training-time monitoring
+
+# Commands are split train/test only. Validation is drawn from types+helpers,
+# which the benchmark does not evaluate — this buys an eval_loss signal without
+# spending scarce command names on it. Command names number only 121 across all
+# versions, so every name held out costs ~3.9 training examples.
 
 SYSTEM_PROMPT_HELPERS = (
     "You are a formal specification assistant for Arm CCA (Confidential Compute "
@@ -273,18 +313,38 @@ def make_example(version: str, cmd_name: str, preamble: str) -> dict | None:
 # Item-based split helpers
 # ---------------------------------------------------------------------------
 
-def split_names(names: list[str], fracs=(0.80, 0.10, 0.10), seed=SPLIT_SEED):
-    """Split a sorted list of item names into (train, val, test) sets."""
+def split_two(names: list[str], n_held: int, seed=SPLIT_SEED):
+    """Hold out `n_held` names; return (kept, held). Deterministic given the seed."""
     names = sorted(names)
     rng = random.Random(seed)
     rng.shuffle(names)
-    n = len(names)
-    n_train = int(n * fracs[0])
-    n_val   = int(n * fracs[1])
-    train_set = set(names[:n_train])
-    val_set   = set(names[n_train:n_train + n_val])
-    test_set  = set(names[n_train + n_val:])
-    return train_set, val_set, test_set
+    held = set(names[:n_held])
+    return set(names) - held, held
+
+
+def assert_no_leakage(splits: dict[str, list[dict]]) -> None:
+    """Fail loudly if any item name appears in more than one split.
+
+    This is the guard that the previous version of this script lacked: its train
+    branch had no version filter, so a train-split command name contributed all
+    six of its per-version instances to training, including the version the
+    evaluator scored on. See docs/data-leakage.md.
+    """
+    def name_of(ex):
+        m = ex["metadata"]
+        return (m.get("kind"), m.get("command") or m.get("type") or m.get("function"))
+
+    seen: dict[tuple, str] = {}
+    bad: list[str] = []
+    for split, exs in splits.items():
+        for key in {name_of(e) for e in exs}:
+            if key in seen and seen[key] != split:
+                bad.append(f"{key[0]} {key[1]!r}: in both {seen[key]!r} and {split!r}")
+            seen[key] = seen.get(key, split)
+    if bad:
+        raise SystemExit(
+            "LEAKAGE: item names appear in multiple splits:\n  " + "\n  ".join(bad[:20])
+        )
 
 
 def all_item_names(kind: str) -> list[str]:
@@ -315,14 +375,23 @@ def main():
 
     os.makedirs(DATASET_DIR, exist_ok=True)
 
-    # --- Split item names independently per kind (no overlap between train and test) ---
-    cmd_train,    cmd_val,    cmd_test    = split_names(all_item_names("command"))
-    type_train,   type_val,   type_test   = split_names(all_item_names("type"))
-    helper_train, helper_val, helper_test = split_names(all_item_names("helper"))
+    # --- Commands: hold out CMD_TEST_SIZE names drawn from EVAL_VERSION ---------
+    # Held-out names are removed from training at EVERY version, not just EVAL_VERSION.
+    eval_cmds = [c for c in list_commands(EVAL_VERSION) if load_spec(EVAL_VERSION, c)]
+    _, cmd_test = split_two(eval_cmds, CMD_TEST_SIZE)
+    cmd_train = set(all_item_names("command")) - cmd_test
 
-    print(f"Commands — train:{len(cmd_train)} val:{len(cmd_val)} test:{len(cmd_test)}")
-    print(f"Types    — train:{len(type_train)} val:{len(type_val)} test:{len(type_test)}")
-    print(f"Helpers  — train:{len(helper_train)} val:{len(helper_val)} test:{len(helper_test)}")
+    # --- Types / helpers: name-based 90/10 train/val, used only for monitoring ---
+    type_names   = all_item_names("type")
+    helper_names = all_item_names("helper")
+    type_train,   type_val   = split_two(type_names,   int(len(type_names)   * TH_VAL_FRAC))
+    helper_train, helper_val = split_two(helper_names, int(len(helper_names) * TH_VAL_FRAC))
+
+    print(f"Command names — train:{len(cmd_train)} test:{len(cmd_test)} "
+          f"(of {len(all_item_names('command'))} across all versions; "
+          f"{len(eval_cmds)} exist in {EVAL_VERSION})")
+    print(f"Type names    — train:{len(type_train)} val:{len(type_val)}")
+    print(f"Helper names  — train:{len(helper_train)} val:{len(helper_val)}")
 
     preamble_cache: dict[str, str] = {}
 
@@ -335,7 +404,8 @@ def main():
     val_exs:   list[dict] = []
     test_exs:  list[dict] = []
 
-    # Commands: train items use all versions; val/test use EVAL_VERSION only
+    # Commands: train names contribute every version; test names contribute
+    # EVAL_VERSION only and are absent from training entirely.
     for version in ALL_VERSIONS:
         preamble = get_preamble(version)
         for cmd in list_commands(version):
@@ -343,38 +413,37 @@ def main():
             if ex is None:
                 continue
             ex["metadata"]["kind"] = "command"
-            if cmd in cmd_train:
+            if cmd in cmd_test:
+                if version == EVAL_VERSION:
+                    test_exs.append(ex)
+                # other versions of a test command are dropped, never trained on
+            elif cmd in cmd_train:
                 train_exs.append(ex)
-            elif cmd in cmd_val and version == EVAL_VERSION:
-                val_exs.append(ex)
-            elif cmd in cmd_test and version == EVAL_VERSION:
-                test_exs.append(ex)
 
-    # Types: same rule
+    # Types: all versions on both sides — they are not evaluated, so val here is
+    # purely a training-time eval_loss signal.
     for version in ALL_VERSIONS:
         for t in list_types(version):
             ex = make_type_example(version, t)
             if ex is None:
                 continue
-            if t in type_train:
-                train_exs.append(ex)
-            elif t in type_val and version == EVAL_VERSION:
+            if t in type_val:
                 val_exs.append(ex)
-            elif t in type_test and version == EVAL_VERSION:
-                test_exs.append(ex)
+            elif t in type_train:
+                train_exs.append(ex)
 
-    # Helpers: same rule
+    # Helpers: same rule as types
     for version in ALL_VERSIONS:
         for fn in list_helpers(version):
             ex = make_helper_example(version, fn)
             if ex is None:
                 continue
-            if fn in helper_train:
-                train_exs.append(ex)
-            elif fn in helper_val and version == EVAL_VERSION:
+            if fn in helper_val:
                 val_exs.append(ex)
-            elif fn in helper_test and version == EVAL_VERSION:
-                test_exs.append(ex)
+            elif fn in helper_train:
+                train_exs.append(ex)
+
+    assert_no_leakage({"train": train_exs, "val": val_exs, "test": test_exs})
 
     # Write JSONL files
     for name, exs in [("train", train_exs), ("val", val_exs), ("test", test_exs)]:
@@ -384,17 +453,31 @@ def main():
                 fh.write(json.dumps(ex, ensure_ascii=False) + "\n")
         print(f"  {name}: {len(exs)} examples → {path}")
 
+    # The evaluator needs the held-out command list to score the right subset.
+    splits_path = os.path.join(DATASET_DIR, "splits.json")
+    with open(splits_path, "w") as fh:
+        json.dump({
+            "seed": SPLIT_SEED,
+            "eval_version": EVAL_VERSION,
+            "cmd_test_size": CMD_TEST_SIZE,
+            "th_val_frac": TH_VAL_FRAC,
+            "command_test":  sorted(cmd_test),
+            "command_train": sorted(cmd_train),
+            "type_val":      sorted(type_val),
+            "helper_val":    sorted(helper_val),
+        }, fh, indent=2)
+    print(f"  splits: → {splits_path}")
+
     total = len(train_exs) + len(val_exs) + len(test_exs)
     print(f"\nDataset summary: {len(train_exs)} train / {len(val_exs)} val / {len(test_exs)} test = {total} total")
 
-    # Write helpers-only train split for staged training
-    helpers_only = [ex for ex in train_exs if ex["metadata"].get("kind") == "helper_stub"]
-    if helpers_only:
-        helpers_path = os.path.join(DATASET_DIR, "train_helpers.jsonl")
-        with open(helpers_path, "w") as fh:
-            for ex in helpers_only:
-                fh.write(json.dumps(ex, ensure_ascii=False) + "\n")
-        print(f"  helpers: {len(helpers_only)} examples → {helpers_path}")
+    by_kind = {}
+    for ex in train_exs:
+        k = ex["metadata"].get("kind", "?")
+        by_kind[k] = by_kind.get(k, 0) + 1
+    print(f"  train by kind: {by_kind}")
+    print(f"\nEvaluate on the {len(cmd_test)} commands in splits.json['command_test'] "
+          f"({EVAL_VERSION}) — NOT on all of {EVAL_VERSION}. See docs/data-leakage.md.")
 
     print("\nDone.")
 

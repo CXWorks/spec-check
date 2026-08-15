@@ -37,3 +37,7 @@ wrapped_check_results.txt
 logs/
 results/ab_test/*_backup_*/
 results/ab_test/v3/alp14/
+
+# Leak-free dataset — regenerate with `python3 training/build_dataset.py`.
+# splits.json IS tracked: it is the authoritative record of the split.
+training-dataset/dataset_clean/*.jsonl

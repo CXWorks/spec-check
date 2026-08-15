@@ -148,38 +148,54 @@ teaches the oracle's *style* (naming, structure, type aliases), which is what a 
 rewards, and that requires no exposure to the specific answers. GPT landing in the middle of both
 rankings — with zero exposure to gold answers — independently supports this.
 
-## 6. Fix to apply before the next retrain
+## 6. Fix — applied
 
-The goal is a training set that contains no alp14 (test) or alp13 (val) material at all.
+**Resolved in `training/build_dataset.py`. The new dataset is specified in
+[`dataset.md`](dataset.md).** Summary of how the fix was arrived at, including two
+approaches that were considered and rejected:
 
-**Option A — exclude the held-out versions from training (recommended).** `build_dataset.py` currently
-defines only `EVAL_VERSION = "alp14"`, used to gate the val and test branches. Add a held-out set and
-gate the train branch with it:
+**Rejected — exclude alp13/alp14 from training by version.** This was the first proposal and it is
+wrong. Measuring each version's gold specs against alp14's shows the six versions are successive
+drafts of one document, not independent corpora:
 
-```python
-# training/build_dataset.py
-HOLDOUT_VERSIONS = {"alp13", "alp14"}   # alp13 = dataset_loader's val, alp14 = its test
+| version | shared commands | byte-identical to alp14 | mean similarity |
+|---|---|---|---|
+| eac5 | 41 | 7 | 0.727 |
+| rel0 | 41 | 8 | 0.753 |
+| alp11 | 79 | 38 | 0.912 |
+| alp12 | 79 | 48 | 0.932 |
+| alp13 | 93 | **67** | **0.957** |
 
-...
-if cmd in cmd_train and version not in HOLDOUT_VERSIONS:
-    train_exs.append(ex)
+Excluding alp13 and alp14 still leaves **36 of the 98** alp14 commands with a byte-identical copy in
+alp11/alp12, at a cost of 518 training examples. **Version is not a valid split dimension here.**
+
+(The stated motive for excluding alp13 — that it is `dataset_loader`'s val split — was also weak:
+nothing in the repo calls `load_dataset(split="val")`. alp13-as-val is dead code left from the
+older cascaded scheme.)
+
+**Rejected — evaluate on the existing `dataset/test.jsonl`.** Worth recording that
+`build_dataset.py`'s item-name split was *already* leak-free: train/val/test item names have zero
+overlap, and none of `test.jsonl`'s 11 commands appears in training at any version. **The bug was
+entirely on the evaluation side** — `dataset_loader.py` ignored `test.jsonl` and re-partitioned by
+version. So switching the evaluator to `test.jsonl` would have cost zero training data. It was
+rejected only because 11 commands is too small a benchmark to compare three models on.
+
+**Applied — same name-based principle, larger held-out set.** Commands are split train/test by name
+(40 held out, drawn from alp14, removed from training at every version); validation is drawn from
+types and helpers, which the benchmark does not score, so no command names are spent on it.
+
+```
+command training examples : 381 → 293  (−23%)
+held-out benchmark        : 40 commands, verified zero leakage
 ```
 
-Apply the same guard to the type and helper loops. Cost: `train.jsonl` drops from 1268 to about 750
-examples (261 alp14 + 257 alp13 removed). That is a real reduction in training data and may cost
-accuracy — measure it rather than assuming it doesn't.
+`assert_no_leakage()` now runs on every build and exits non-zero if any item name lands in more than
+one split — the guard this script previously lacked.
 
-**Option B — keep the item split and fix the evaluator instead.** Point the evaluation at
-`dataset/test.jsonl` (11 commands) rather than all of alp14. Cheaper, but 11 commands is too small a
-benchmark to compare models on, and it breaks comparability with every number reported so far.
-
-**Recommendation: Option A**, and re-measure the headline numbers on the full 98-command alp14 set
-afterwards. That keeps the benchmark comparable across the Claude / GPT / Qwen tracks while making the
-Qwen side honest.
-
-Whichever is chosen, add an assertion to `build_dataset.py` that fails loudly if any
-`(command, version)` pair appears in more than one split — this class of bug should not be able to
-recur silently.
+**Still open:** `prompt_engineering/dataset_loader.py` continues to split by version, and
+`load_dataset(split="test")` still returns all 98 alp14 commands. Every evaluation script must filter
+to `splits.json["command_test"]`; see [`dataset.md`](dataset.md#how-to-evaluate). Fixing the loader
+itself would be better than relying on each caller to remember.
 
 ## 7. Reproducing this analysis
 
