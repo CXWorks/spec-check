@@ -24,6 +24,12 @@ PIP_ARGS="--index-url https://pypi.org/simple --no-cache-dir -q --retries 5 --ti
 
 if [ "$DEPS" = "new" ]; then
   PKGS='torch==2.9.1 transformers==5.15.0 peft==0.20.0'
+  # Installing a real torch over the NGC build leaves the NGC torchvision behind,
+  # compiled against the old one. It then fails with "operator torchvision::nms
+  # does not exist" the moment transformers touches its import chain — surfacing
+  # as an unrelated-looking "Could not import module 'BloomPreTrainedModel'". We
+  # train text models; a broken torchvision is worse than none.
+  python -m pip uninstall -y -q torchvision 2>/dev/null || true
 else
   PKGS='transformers==4.57.1 peft==0.17.1'
 fi
