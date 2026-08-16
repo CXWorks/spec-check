@@ -88,11 +88,27 @@ It is easy to exceed by accident and hard to recognise:
   token scopes second. **Read the raw HTTP response before believing the
   exception type** — `requests.head(url, headers=…)` returns the real message in
   `x-error-message`.
-- Storage is billed on **LFS history, not the current tree**. Deleting files does
-  not reclaim it; `usedStorage` stayed at 103.97 GB with 19.32 GB on the branch,
-  and `super_squash_history()` did not move it either. Reclamation waits on HF's
-  own GC, which cannot be triggered. Budget for the quota rather than plan to
-  clean up after it.
+- Storage is billed on **LFS history, not the current tree**, and only deleting
+  the whole repository reclaims it:
+
+  | action | `usedStorage` |
+  |---|---|
+  | delete 120.82 GB of files | 103.97 GB — unchanged |
+  | `super_squash_history()` (history down to 2 commits) | 103.97 GB — unchanged |
+  | `delete_repo()` | **freed immediately; reads went 403 → 200** |
+
+  Deleting files and squashing leave the blobs for HF's own GC, which cannot be
+  triggered and did not run within the hour. Budget for the quota rather than
+  plan to clean up after it — and if it is already blown, the repo has to go, not
+  its contents.
+
+**Recovery, when it happens anyway.** Checkpoints also live on the training PVCs
+at `/work/out/<run>/`, and those survive the HF repo being deleted — so the
+inaccessible copy is the one being removed, which is what makes deletion safe
+rather than lossy. `scripts/ckpt_rescue.sh verify|upload` inventories them and
+pushes them back, one helper pod per node because `local-path` volumes are only
+visible from the node holding them. It also recovered the three runs whose
+uploads were cut off mid-quota and which therefore never existed on HF at all.
 
 `scripts/resume_when_quota_clears.sh` polls for reads to work and un-suspends the
 eval Jobs when they do. Suspending (`{"spec":{"suspend":true}}`) rather than
