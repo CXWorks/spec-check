@@ -691,6 +691,47 @@ specs are literally `{ true }` — one of them, `PSCI_CPU_OFF`, is in the held-o
 40, so every model scores a free pass there and "equivalent" means nothing on
 that command. Subtract it from every pass rate in this document.
 
+### The pass@k headroom is mostly not real — do not train on compile-success
+
+Running the same Z3 comparison over the specs that *sampling* recovered — the
+commands where greedy failed but some sample compiled — collapses the case for
+rejection-sampling:
+
+| | greedy compiles → correct | sampled extras → correct |
+|---|---|---|
+| `sft2-0` 4B bf16 | 6/14 (42.9%) | **0/3 (0%)** |
+| `sft2-1` 4B fp16 | 8/18 (44.4%) | 1/5 (20.0%) |
+| `sft2-2` 9B | 10/16 (62.5%) | **1/8 (12.5%)** |
+
+For the 9B, pass@k takes compiling specs from 16 to 24 and correct ones from
+**10 to 11**. Of the 16 extras across all three runs, 2 are right.
+
+So the earlier reading — "+20pp of reachable headroom on the 9B, put
+rejection-sampling work there" — **is withdrawn**. Sampling does not surface
+answers the model knows; it surfaces more ways to compile something wrong, and
+it does so at roughly a quarter of greedy's hit rate. **A reward of
+compile-success would specifically reinforce specs that compile and say the
+wrong thing**, which the model is already good at producing. The project's
+standing rule that compiling is not a golden trajectory now has a measurement
+behind it rather than an argument.
+
+This does not retire pass@k as an *instrument*. Its statistical power (above) is
+real, because it estimates a per-command quantity with less sampling noise. It
+just cannot be an optimisation target: what it measures well is the propensity
+to compile, not the propensity to be right.
+
+It also softens the pass@9 model ranking. That comparison separated the 9B from
+bf16 at p = 0.016, but on correctness the three runs are 10 / 8 / 6 — the same
+order, a much smaller gap, and nothing tested for significance.
+
+**Where this leaves the roadmap.** The faithfulness gate was the blocker on
+RFT/DPO/RL, and it now exists and is validated in both directions. Its first
+answer is not "you may proceed" but "the thing you were going to do would make
+matters worse". The open direction is getting the model right on the first
+attempt — which is what the `pre-*` (restore the training-time symbol table) and
+`rep-*` (feed the compiler error back) experiments test, and they have to be
+judged on semantic equivalence rather than on compile rate.
+
 ### Measured ceiling: gold itself is 33/40
 
 Before reading any pass rate: **the gold specs compile on only 33 of the 40
