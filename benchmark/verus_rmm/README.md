@@ -115,5 +115,6 @@ diffs contain only the `RMI_ERROR_RTT(...)` payload fix and `1int << x` →
 `(1u64 << x) as int`. Repaired output lives in `results/verus_repair/`, so raw
 generator numbers stay intact.
 
-GPT has no repaired row: codex hit its usage limit (resets 2026-08-20 23:22). Re-run
-`python3 repair.py --model codex --src ...` afterwards.
+GPT has no repaired row and will not get one: the codex track is discontinued. Its
+unrepaired numbers above stand as recorded measurements; further evaluation uses
+Claude only. `repair.py --model codex` still works if anyone wants to revisit it.

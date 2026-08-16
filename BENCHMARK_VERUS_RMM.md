@@ -30,8 +30,8 @@ with 3 unscorable is a different claim from 1/4 with 3 missed.
 benchmark's finding on independent evidence. But the bottleneck differs: there they
 produced compiling code and confabulated postconditions; here compilation is the
 barrier — and once it is removed, Claude reaches gold parity (see *Repair changes the
-picture entirely* below). GPT could not be repaired for comparison because codex hit
-its usage limit.
+picture entirely* below). GPT has no repaired counterpart — the codex track is
+discontinued; its unrepaired numbers stand as recorded measurements.
 
 ## Five Verus-detectable RMM bugs, and why the benchmark uses eac5
 
@@ -159,8 +159,10 @@ preserve their `==>` occurrence counts exactly (9/10/15/13/11/15).
   Verus-feedback repair took Claude from 1/4 to 4/4. Generator comparisons should
   report both the raw and the repaired configuration; raw alone measures Verus syntax
   fluency more than bug-finding ability.
-- **GPT is unmeasured in the repaired configuration** — codex quota resets
-  2026-08-20 23:22. Re-run `repair.py --model codex` after that for the missing row.
+- **GPT is unmeasured in the repaired configuration and will stay that way** — the
+  codex track is discontinued. Its unrepaired rows remain valid measurements; the
+  head-to-head claim rests on the unrepaired configuration, where the two models tie
+  on both splits.
 - **Growing the positive count is harder than it first appears.** Two filters were
   built and neither yet yields a defensible bug count.
 
@@ -218,6 +220,7 @@ Once the code compiles, Claude finds every bug the hand-written reference does. 
 output is kept separately (`results/verus_repair/`) so the raw generator numbers stay
 intact — "model + repair" is a different configuration, reported as its own row.
 
-**GPT could not be measured this way**: codex hit its usage limit during the repair pass
-(resets 2026-08-20 23:22). The quota detection stopped cleanly with a resume hint rather
-than burning the remaining calls, and the run is resumable with the same command line.
+**GPT was not measured this way**: codex hit its usage limit during the repair pass and
+the track has since been discontinued in favour of Claude only. The quota detection did
+stop cleanly with a resume hint rather than burning the remaining calls — the mechanism
+works, it simply is not needed for this track any more.
