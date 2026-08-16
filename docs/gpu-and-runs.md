@@ -767,6 +767,37 @@ Not yet a result. That is a compile-rate delta, and the preamble works by
 supplying symbol *names* — which is exactly how a model produces something that
 compiles without being right. Judgement waits on the equivalence check.
 
+### What the model actually drops: frame conditions
+
+Two commands are gotten wrong the same way by every run that compiles them —
+`RMI_DATA_DESTROY` is **weaker in 7 of 8**, `RMI_VSMMU_MAP` weaker in 5. A shared
+direction across independent seeds and model sizes is a shared misreading, not
+noise.
+
+Textual clause diffing cannot say what was dropped: each run "misses one of 18
+clauses" and no two miss the same one, which is what reworded parenthesisation
+looks like. `scripts/ablate_clause.py` settles it with Z3 — remove gold's clause
+*i* and re-test, and the clause whose removal stops the candidate being weaker is
+the one it failed to say. For `RMI_VSMMU_MAP`, removing clause 20 makes gold
+**exactly equivalent** to the model: that single clause is its only defect.
+
+Both dropped clauses are the same kind of thing, about the same field:
+
+```
+RMI_VSMMU_MAP  #20  RttWalk(new_s,…).rtte.ripas == RttWalk(old_s,…).rtte.ripas
+RMI_DATA_DESTROY #17  !(result.is_Ok() && …ripas == RAM) ==> (same equality)
+```
+
+**Frame conditions — "this state is unchanged" — and specifically over the RTT
+walk's RIPAS field.** Dropping one is invisible to compilation (the spec still
+builds, it just permits more) and is the dominant shape of the `weaker` verdict,
+which is the failure class compile-success structurally cannot see.
+
+The V3 prompt already ends with *"Keep unchanged-state constraints when implied
+by the command behavior"*, so the model is failing at the one thing its prompt
+explicitly asks for. That makes this a concrete target: a faithfulness effort has
+a named constraint class to check for rather than a 50% aggregate to improve.
+
 ### Measured ceiling: gold itself is 33/40
 
 Before reading any pass rate: **the gold specs compile on only 33 of the 40
