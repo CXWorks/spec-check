@@ -254,6 +254,72 @@ checkpointed to `jisenli/spec-check-ckpt/<run>/checkpoint-*` plus `final`.
 5.15, attention on sdpa rather than flash-attn) because `qwen3_5` is unknown to
 transformers 4.x. The 4B/9B comparison carries that caveat.
 
+### The training set is fully fitted — SFT scaling is spent
+
+**Verified**, from the run logs:
+
+| Run | train loss (final) | eval loss (epoch 3) | Verus pass |
+|---|---|---|---|
+| `sft2-0` 4B bf16 LoRA | 0.0022 | 0.0025 | 35.0% |
+| `sft2-1` 4B fp16 LoRA | 0.0028 | 0.0015 | 45.0% |
+| `sft2-2` 9B bf16 LoRA | 0.0066 | 0.0166 (ep 1) | see below |
+| `sft2-3` 4B bf16 full | 0.0039 | 0.0009 | 27.5% |
+
+A training loss of 0.002 after three epochs means the training set is
+reproduced essentially perfectly. That single fact explains the whole sweep:
+9B ≈ 4B, full fine-tune ≈ LoRA, and three epochs is already past saturation, so
+none of capacity, method, or optimisation is the binding constraint. **More
+parameters, more epochs, or more of the same objective will not move the pass
+rate**, which is exactly what the (statistically indistinguishable) results
+show.
+
+**The validation set cannot be used to steer any of this.** It holds only type
+definitions and helper stubs — near-mechanical transcription — and its loss is
+0.001–0.003. There is no signal in it about command quality, so every training
+decision (epoch count, learning rate, early stopping) is currently made blind.
+The epoch-curve eval (`eval2-ep`) exists because it is the only feedback that
+tracks the objective.
+
+### The failure taxonomy was wrong, and failures were not diagnosable
+
+`classify_failure()` tested a bare `"expected"` third in its cascade. That
+substring appears in most rustc diagnostics — `expected 2 arguments, found 3`,
+`expected struct \`Foo\`` — so arity and type errors were being reported as
+`parse_error`. That bucket was 9/5/11 of the failures per run, i.e. most of what
+the taxonomy claimed to show was mislabelled. Fixed: syntax patterns are tested
+first (parsing precedes name resolution), `wrong_arity` and `bad_field_access`
+are split out, and unrecognised output becomes `other_compile_error` instead of
+being folded into a named bucket.
+
+Compounding it, eval output stored only the reason string — not the compiler
+output — so no failure could be examined without re-running the whole eval. Eval
+JSONs now keep `output_head`, the raw decoder text when extraction fails, and a
+truncation count.
+
+### `sft2-2` (9B): the number does not measure the model
+
+The 9B eval returns `no_pub_open_spec_fn_found` on most commands — the output
+contains no `pub open spec fn ... -> bool {` at all. Its training was healthy
+(loss 0.0066, token accuracy 0.998), so this is a **decode-time failure, and the
+9B pass rate should not be read as a capability result** until it is explained.
+
+**Verified** while investigating: both Qwen templates render an empty
+`<think>` block into the training conversation, but `add_generation_prompt=True`
+cuts them in different places —
+
+```
+training render (both) ...assistant\n<think>\n\n</think>\n\n<spec><|im_end|>
+4B generation prompt   ...assistant\n
+9B generation prompt   ...assistant\n<think>\n
+```
+
+— so `train.py`'s length-based masking supervises the 4B on the think block
+(it learns to emit it) and the 9B only from `</think>` onward. Both are
+internally consistent, so **this is not yet shown to be the cause**. It does
+mean the two models' eval paths differed by accident, so eval now derives the
+prompt by cutting the training render at the answer, identically for every
+template. Greedy numbers produced this way are comparable only to each other.
+
 ### Statistical power: why none of the above is yet a result
 
 **Verified.** The 40-command eval set gives a binomial standard error of ~7.7pp
