@@ -815,9 +815,25 @@ So the entire `weaker` failure mode — the one compile-success structurally can
 see, and the one that matters, since a spec that permits too much is what makes a
 verifier miss bugs — reduces to **one omission the model makes consistently:
 it does not say what stays the same.** That is a far more tractable target than a
-50% aggregate, and it is testable directly: the constraint has a syntactic
-signature (an equality relating `new_s` to `old_s`), so a generated spec can be
-checked for its presence without gold.
+50% aggregate.
+
+**A syntactic proxy exists but is weaker than it looks.** Counting clauses that
+relate `new_s` back to `old_s`:
+
+| verdict | n | model | gold | diff | short of gold |
+|---|---|---|---|---|---|
+| equivalent | 80 | 1.5 | 1.5 | **0.00** | **0%** |
+| stronger | 12 | 5.5 | 4.3 | +1.17 | 0% |
+| weaker | 19 | 6.1 | 6.8 | −0.68 | **68%** |
+| incomparable | 16 | 3.8 | 4.1 | −0.38 | 25% |
+
+Equivalent specs match gold's frame count exactly and not one is short, and 68%
+of weaker ones are short — so the count carries real signal. But it **needs gold
+as its reference**: nothing about "6 frame clauses" says whether 6 is enough. It
+is therefore *not* a gold-free check, and it also misses the 32% of weaker specs
+that carry the right number of frame clauses with the wrong content. Turning this
+into a training-time signal would mean predicting the required frame conditions
+from the section text, which is a separate problem.
 
 ### Measured ceiling: gold itself is 33/40
 
