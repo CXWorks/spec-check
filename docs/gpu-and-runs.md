@@ -502,6 +502,25 @@ mean the two models' eval paths differed by accident, so eval now derives the
 prompt by cutting the training render at the answer, identically for every
 template. Greedy numbers produced this way are comparable only to each other.
 
+### Precision: bf16 and fp16 are identical, and the 10pp gap was seed noise
+
+Three seeds each (42 / 1337 / 2024), scored on the same 40 commands:
+
+| | seed 42 | seed 1337 | seed 2024 | range |
+|---|---|---|---|---|
+| bf16 | 35.0% | 37.5% | 40.0% | 35–40 |
+| fp16 | 45.0% | 42.5% | 40.0% | 40–45 |
+
+Majority vote across seeds: **bf16 15/40 (37.5%), fp16 15/40 (37.5%)** — equal,
+with 2 discordant commands out of 40 and McNemar p = 1.000. The ranges overlap
+at 40.0%, and the original 10pp gap came from comparing bf16's worst seed with
+fp16's best.
+
+**Seed noise is ~5pp, flipping 5–7 of the 40 commands.** Treat any
+between-configuration difference below that as unmeasured until it has been run
+on multiple seeds. Nothing about the eval set changed to establish this — the
+same configuration was simply trained twice more.
+
 ### pass@k is the measurement that has statistical power here
 
 The same three runs, the same 40 commands, the same paired test — only the
