@@ -161,23 +161,38 @@ preserve their `==>` occurrence counts exactly (9/10/15/13/11/15).
   fluency more than bug-finding ability.
 - **GPT is unmeasured in the repaired configuration** — codex quota resets
   2026-08-20 23:22. Re-run `repair.py --model codex` after that for the missing row.
-- **Growing the positive count is harder than it first appears.** The obvious filter —
-  parse each command's failure-condition-ordering section, close it transitively, and
-  keep only pairs no edge covers — was implemented and **does not discriminate**. It
-  classifies bug 4's pair correctly as uncovered and bug 6's as covered
-  (`[da_en] < [vdev_id]`), but across alp14 it leaves **1,248 of 1,457 differing-code
-  pairs uncovered**: ordering covers only 209, just 3 commands are fully covered, and
-  11 commands have no ordering section at all. "Textually unordered" is therefore the
-  norm, not a defect signal, and cannot be the criterion.
+- **Growing the positive count is harder than it first appears.** Two filters were
+  built and neither yet yields a defensible bug count.
 
-  What actually distinguishes bug 4 is not in the text. Below the two `<` relations,
-  §B4.3.20.2.1 carries a *diagram* laying the conditions in tiers
-  (`da_supp` → `{pdev_bound, pdev_align, pdev_gran_state}` → `{num_vdevs, pdev_state}`).
-  The diagram implies `pdev_align < pdev_state`; the textual relations never state it.
-  The bug is the gap between diagram and text — which the pdftotext extraction
-  flattens, so recovering it needs the diagram's tier structure, not the `<` lines.
-  Until that is solved, treat the witness sweep's 97 candidates as a *review queue*
-  requiring human judgment, not an automated bug list.
+  *Textual ordering.* Parse each command's failure-condition-ordering relations, close
+  them transitively, keep only pairs no edge covers. It classifies both reference cases
+  correctly (bug 4 uncovered, bug 6 covered by `[da_en] < [vdev_id]`), but leaves
+  **998 of 1,457 differing-code pairs uncovered**, with only 6 of 55 commands fully
+  covered. "Textually unordered" is the norm, so it cannot be the criterion.
+
+  *Correction to an earlier version of this document*, which reported 1,248 uncovered
+  and 3 fully-covered commands: those figures were inflated by a parser bug. Long
+  relations such as `[da_supp] < [rd_align, rd_bound, …]` wrap across up to four lines,
+  and the line-anchored regex silently dropped them, so relations the spec *does* state
+  were counted as absent. Fixed; coverage more than doubled (209 → 459 pairs). The
+  conclusion is unchanged — the filter still does not discriminate — but the numbers
+  above are the correct ones.
+
+  *Diagram ordering* (`evidence/diagram_ordering.py`). Below the textual relations each
+  section draws the conditions in tiers labelled by error code, and the tiers imply a
+  total order the text often states only in part — that gap is what bug 4 *is*.
+  `pdftotext -layout` flattens the tiers; `-bbox-layout` keeps word coordinates, so they
+  are recoverable by clustering on y within the band between section headings. On the
+  bug-4 control this reports **exactly** the four missing edges, including
+  `pdev_align < pdev_state`, which no text-only method finds.
+
+  At scale it flags 45 commands and 577 edges, and that is **not** a bug count: spot
+  checks (e.g. `RMI_VDEV_CREATE`, tiers 1/23/3 → 69 edges, the full product) show it is
+  not yet excluding every textually-stated edge on complex layouts. Treat it as a
+  validated *capability* with unvalidated *totals*; the next step is per-command layout
+  validation, then intersecting survivors with the witness sweep so every candidate is
+  both order-ambiguous and provably contradictory.
+
 - Bugs 1–3 exist only on eac5/rel0; a benchmark tracking the current spec would need
   new findings, which is what the sweep plus ordering filter is for.
 
