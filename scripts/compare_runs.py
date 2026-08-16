@@ -35,6 +35,47 @@ def load(path):
     return {r["command"]: bool(r["pass"]) for r in d["results"]}
 
 
+def summarise(path):
+    """One row per run: the numbers that have to be read together.
+
+    Kept in one table because each of these has, on its own, produced a wrong
+    conclusion in this project. A pass rate hid a decode budget that truncated a
+    third of one run's outputs; a non-degeneracy score of 39/40 hid a model
+    emitting the same conjunct 156 times; and pass@1 alone cannot distinguish a
+    model that does not know an answer from one that does not rank it first.
+    """
+    d = json.loads(Path(path).read_text())
+    rs, s = d["results"], d["summary"]
+    n = len(rs)
+    g = sum(r["pass"] for r in rs)
+    anyp = sum(r.get("any_pass", r["pass"]) for r in rs)
+    trunc = sum(r.get("n_truncated", 0) > 0 for r in rs)
+    rep = sum(bool(r["degeneracy"].get("repetitive")) for r in rs)
+    nd = sum(1 for r in rs if not r["degeneracy"]["trivial_body"]
+             and not r["degeneracy"]["no_implication"]
+             and not r["degeneracy"].get("repetitive"))
+    k = (s.get("sampling") or {}).get("samples")
+    dist = [r["n_distinct"] for r in rs if r.get("n_distinct")]
+    # A field that was never recorded must print as "-", not 0. Runs scored
+    # before these checks existed have no `repetitive` or `n_truncated` key, and
+    # showing 0 would assert that sft2-3 had no repetitive outputs when it in
+    # fact had seven — the same "absent read as measured-zero" mistake that let a
+    # 2048-token cap pass for a modelling result. Re-score old runs with
+    # scripts/analyze_failures.py instead of reading a default here.
+    has_rep = any("repetitive" in r["degeneracy"] for r in rs)
+    has_tr = any("n_truncated" in r for r in rs)
+    return {
+        "run": Path(path).stem, "n": n,
+        "pass@1": f"{g}/{n} ({100*g/n:.1f}%)",
+        "pass@k": f"{anyp}/{n} ({100*anyp/n:.1f}%)" if k else "-",
+        "recovered": sum(1 for r in rs if r.get("any_pass") and not r["pass"]) if k else "-",
+        "non_degen": f"{nd}/{n}" if has_rep else f"{nd}/{n}*",
+        "repetitive": rep if has_rep else "-",
+        "truncated": trunc if has_tr else "-",
+        "distinct": f"{sum(dist)/len(dist):.1f}/{k+1}" if dist and k else "-",
+    }
+
+
 def mcnemar_exact(b, c):
     """Two-sided exact p for the discordant pairs.
 
@@ -111,7 +152,20 @@ def main():
     ap.add_argument("files", nargs="*", help="two eval JSONs, when not using --group")
     ap.add_argument("--group", action="append", nargs="+", metavar=("NAME", "GLOB"),
                     help="--group <name> <glob>... ; repeat for the other side")
+    ap.add_argument("--table", action="store_true",
+                    help="Summary row per file, no pairing. Accepts any number "
+                         "of files, unlike the paired comparison.")
     args = ap.parse_args()
+
+    if args.table:
+        rows = [summarise(f) for f in sorted(args.files)]
+        cols = list(rows[0])
+        w = {c: max(len(c), max(len(str(r[c])) for r in rows)) for c in cols}
+        print("  ".join(c.ljust(w[c]) for c in cols))
+        print("  ".join("-" * w[c] for c in cols))
+        for r in rows:
+            print("  ".join(str(r[c]).ljust(w[c]) for c in cols))
+        return
 
     if args.group:
         if len(args.group) != 2:
