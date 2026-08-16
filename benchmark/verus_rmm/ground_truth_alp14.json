@@ -1,0 +1,286 @@
+{
+  "name": "alp14 Verus-verified spec-bug benchmark",
+  "version": "alp14",
+  "detection": {
+    "obligation": "bug present iff Verus REJECTS the assert",
+    "contradiction": "bug present iff Verus ACCEPTS `ensures false`"
+  },
+  "counts": {
+    "FP": 10,
+    "TP-BORDERLINE": 1,
+    "TP": 2
+  },
+  "items": [
+    {
+      "id": "alp14:RMI_RTT_CREATE:state",
+      "command": "RMI_RTT_CREATE",
+      "spec_fn": "rmi_rtt_create_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, rtt: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_create_spec(rd, rtt, ipa, level, result, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "spec says is_Ok() ==> state == TABLE (an RTT is created); the assert claims state is unchanged. SCOPE mis-lifted the summary row. eac5 labelled the same shape FP.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_RTT_DESTROY:ripas",
+      "command": "RMI_RTT_DESTROY",
+      "spec_fn": "rmi_rtt_destroy_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_destroy_spec(rd, ipa, level, result, rtt, top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.ripas == DESTROYED)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "success conditions set ripas == DESTROYED only when AddrIsProtected; for unprotected IPAs ripas is left unconstrained, so the assert is underspecified rather than contradicted.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_RTT_DESTROY:state",
+      "command": "RMI_RTT_DESTROY",
+      "spec_fn": "rmi_rtt_destroy_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_destroy_spec(rd, ipa, level, result, rtt, top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == UNASSIGNED)",
+      "bug_present_when": "proof_fails",
+      "label": "TP-BORDERLINE",
+      "rationale": "summary table (B4.3.39.1.3) states 'After execution: UNASSIGNED' unconditionally; success conditions (B4.3.39.3) give UNASSIGNED_NS when !AddrIsProtected. Contradiction machine-checked in borderline_rtt_destroy.rs (1 verified, 0 errors). Same shape as the confirmed SDEI table-vs-text bug.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_RTT_FOLD:ripas",
+      "command": "RMI_RTT_FOLD",
+      "spec_fn": "rmi_rtt_fold_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_fold_spec(rd, ipa, level, result, rtt, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.ripas == old_walk.rtte.ripas)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "spec says Protected ==> ripas == RttFold(...).ripas, not 'unchanged'. eac5: FP.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_RTT_FOLD:state",
+      "command": "RMI_RTT_FOLD",
+      "spec_fn": "rmi_rtt_fold_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_fold_spec(rd, ipa, level, result, rtt, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "spec says state == RttFold(...).state, not 'unchanged'. eac5: FP.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_RTT_INIT_RIPAS:ripas",
+      "command": "RMI_RTT_INIT_RIPAS",
+      "spec_fn": "rmi_rtt_init_ripas_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_init_ripas_spec(rd, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.ripas == RAM)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "spec constrains RIPAS via the range predicate RttEntriesInRangeRipas(..., RAM); Verus cannot unfold it to a single-entry fact. eac5: FP.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_RTT_INIT_RIPAS:state",
+      "command": "RMI_RTT_INIT_RIPAS",
+      "spec_fn": "rmi_rtt_init_ripas_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_init_ripas_spec(rd, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "no clause on rtte.state in either SCOPE's extraction or the gold annotation - a missing frame condition, pervasive in these specs. eac5: FP.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_RTT_SET_RIPAS:state",
+      "command": "RMI_RTT_SET_RIPAS",
+      "spec_fn": "rmi_rtt_set_ripas_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, rec_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_set_ripas_spec(rd, rec_ptr, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "same missing frame condition; spec only constrains RIPAS via RttEntriesInRangeRipas. eac5: FP.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_VDEV_VALIDATE_MAPPING:ripas",
+      "command": "RMI_VDEV_VALIDATE_MAPPING",
+      "spec_fn": "rmi_vdev_validate_mapping_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, rec_ptr: Address, pdev_ptr: Address, vdev_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_vdev_validate_mapping_spec(rd, rec_ptr, pdev_ptr, vdev_ptr, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.ripas == DEV)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "spec constrains RIPAS via RttEntriesInRangeRipas(..., DEV) over a range; not unfoldable to the single-entry assert.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_VDEV_VALIDATE_MAPPING:state",
+      "command": "RMI_VDEV_VALIDATE_MAPPING",
+      "spec_fn": "rmi_vdev_validate_mapping_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, rec_ptr: Address, pdev_ptr: Address, vdev_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_vdev_validate_mapping_spec(rd, rec_ptr, pdev_ptr, vdev_ptr, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);",
+        "let new_walk = RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "rationale": "no clause on rtte.state anywhere; missing frame condition, same shape eac5 labelled FP for other commands.",
+      "source": "scope --mode reason (alp14)",
+      "scored": false,
+      "not_scored_reason": "Obligation items measure whether the generated spec entails a property lifted from the spec's summary table. The gold-oracle control shows every one of these is rejected against the hand-written reference too, so 'detected' here means the generator faithfully reproduced the spec's guarded form -- correct behaviour, not a finding. These belong to a CHECKER benchmark, not a GENERATOR benchmark; kept as triage evidence only."
+    },
+    {
+      "id": "alp14:RMI_PDEV_STOP:dual_error",
+      "command": "RMI_PDEV_STOP",
+      "spec_fn": "rmi_pdev_stop_spec",
+      "kind": "contradiction",
+      "signature": "pdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S",
+      "requires": [
+        "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "PdevAt(old_s, pdev_ptr).state == PDEV_STOPPING"
+      ],
+      "lets": [],
+      "assertion": "false",
+      "bug_present_when": "proof_succeeds",
+      "label": "TP",
+      "section": "B4.3.20.2.1",
+      "rationale": "failure-condition ordering omits pdev_align vs pdev_state; witness forces RMI_ERROR_INPUT and RMI_ERROR_DEVICE simultaneously",
+      "source": "training/rmm_bugs.rs bug4",
+      "scored": true
+    },
+    {
+      "id": "alp14:RSI_ATTESTATION_TOKEN_CONTINUE:dual_error",
+      "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+      "spec_fn": "rsi_attestation_token_continue_spec",
+      "kind": "contradiction",
+      "signature": null,
+      "requires": [
+        "!AddrIsGranuleAligned(old_s, addr)",
+        "CurrentRec(old_s).attest_state != ATTEST_IN_PROGRESS"
+      ],
+      "lets": [],
+      "assertion": "false",
+      "bug_present_when": "proof_succeeds",
+      "label": "TP",
+      "section": "B5.3.1.2.1",
+      "rationale": "'no ordering' plus two conflicting error clauses; witness forces RSI_ERROR_INPUT and RSI_ERROR_STATE simultaneously",
+      "source": "training/rmm_bugs.rs bug5",
+      "scored": true
+    },
+    {
+      "id": "alp14:RSI_VDEV_VALIDATE_MAPPING:priority_guard",
+      "command": "RSI_VDEV_VALIDATE_MAPPING",
+      "spec_fn": "rsi_vdev_validate_mapping_spec",
+      "kind": "contradiction",
+      "signature": null,
+      "requires": [
+        "CurrentRealm(old_s).feat_da != FEATURE_TRUE",
+        "VdevIdIsFree(old_s, CurrentRealm(old_s), vdev_id)"
+      ],
+      "lets": [],
+      "assertion": "false",
+      "bug_present_when": "proof_succeeds",
+      "label": "FP",
+      "section": "B5.3.19.2.1",
+      "rationale": "spec is consistent -- it states [da_en] < [vdev_id]; the contradiction lives in the gold annotation, which drops the priority guard. A generator that keeps the guard should NOT show a contradiction here.",
+      "source": "training/rmm_bugs.rs bug6 (labelled false positive)",
+      "scored": true
+    }
+  ],
+  "scored_items": 3,
+  "control": {
+    "gold_oracle": "TP 2/2 detected; FP priority_guard inconclusive (gold annotation itself fails to type-check: VdevAttestInfoEqual receives u64 where the preamble declares int)"
+  }
+}

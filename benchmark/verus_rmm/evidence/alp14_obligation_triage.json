@@ -1,0 +1,112 @@
+[
+  {
+    "command": "RMI_RTT_CREATE",
+    "proof_fn": "rmi_rtt_create_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+    "line": 2235,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "FP",
+    "rationale": "spec says is_Ok() ==> state == TABLE (an RTT is created); the assert claims state is unchanged. SCOPE mis-lifted the summary row. eac5 labelled the same shape FP.",
+    "field": "state"
+  },
+  {
+    "command": "RMI_RTT_DESTROY",
+    "proof_fn": "rmi_rtt_destroy_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.ripas == DESTROYED)",
+    "line": 2245,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "no precedent (new in 1.1)",
+    "rationale": "success conditions set ripas == DESTROYED only when AddrIsProtected; for unprotected IPAs ripas is left unconstrained, so the assert is underspecified rather than contradicted.",
+    "field": "ripas"
+  },
+  {
+    "command": "RMI_RTT_DESTROY",
+    "proof_fn": "rmi_rtt_destroy_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.state == UNASSIGNED)",
+    "line": 2246,
+    "verus": "assert failed",
+    "label": "TP-BORDERLINE",
+    "eac5_precedent": "no precedent (new in 1.1)",
+    "rationale": "summary table (B4.3.39.1.3) states 'After execution: UNASSIGNED' unconditionally; success conditions (B4.3.39.3) give UNASSIGNED_NS when !AddrIsProtected. Contradiction machine-checked in borderline_rtt_destroy.rs (1 verified, 0 errors). Same shape as the confirmed SDEI table-vs-text bug.",
+    "field": "state"
+  },
+  {
+    "command": "RMI_RTT_FOLD",
+    "proof_fn": "rmi_rtt_fold_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.ripas == old_walk.rtte.ripas)",
+    "line": 2256,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "FP",
+    "rationale": "spec says Protected ==> ripas == RttFold(...).ripas, not 'unchanged'. eac5: FP.",
+    "field": "ripas"
+  },
+  {
+    "command": "RMI_RTT_FOLD",
+    "proof_fn": "rmi_rtt_fold_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+    "line": 2257,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "FP",
+    "rationale": "spec says state == RttFold(...).state, not 'unchanged'. eac5: FP.",
+    "field": "state"
+  },
+  {
+    "command": "RMI_RTT_INIT_RIPAS",
+    "proof_fn": "rmi_rtt_init_ripas_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.ripas == RAM)",
+    "line": 2267,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "FP",
+    "rationale": "spec constrains RIPAS via the range predicate RttEntriesInRangeRipas(..., RAM); Verus cannot unfold it to a single-entry fact. eac5: FP.",
+    "field": "ripas"
+  },
+  {
+    "command": "RMI_RTT_INIT_RIPAS",
+    "proof_fn": "rmi_rtt_init_ripas_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+    "line": 2268,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "FP",
+    "rationale": "no clause on rtte.state in either SCOPE's extraction or the gold annotation - a missing frame condition, pervasive in these specs. eac5: FP.",
+    "field": "state"
+  },
+  {
+    "command": "RMI_RTT_SET_RIPAS",
+    "proof_fn": "rmi_rtt_set_ripas_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+    "line": 2279,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "FP",
+    "rationale": "same missing frame condition; spec only constrains RIPAS via RttEntriesInRangeRipas. eac5: FP.",
+    "field": "state"
+  },
+  {
+    "command": "RMI_VDEV_VALIDATE_MAPPING",
+    "proof_fn": "rmi_vdev_validate_mapping_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.ripas == DEV)",
+    "line": 2312,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "no precedent (new in 1.1)",
+    "rationale": "spec constrains RIPAS via RttEntriesInRangeRipas(..., DEV) over a range; not unfoldable to the single-entry assert.",
+    "field": "ripas"
+  },
+  {
+    "command": "RMI_VDEV_VALIDATE_MAPPING",
+    "proof_fn": "rmi_vdev_validate_mapping_rule",
+    "property": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+    "line": 2313,
+    "verus": "assert failed",
+    "label": "FP",
+    "eac5_precedent": "no precedent (new in 1.1)",
+    "rationale": "no clause on rtte.state anywhere; missing frame condition, same shape eac5 labelled FP for other commands.",
+    "field": "state"
+  }
+]

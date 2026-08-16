@@ -1,0 +1,1114 @@
+{
+  "psci_affinity_info": {
+    "note": "8 pairs",
+    "raw_hits": 5,
+    "deduped": [
+      {
+        "pre_a": "lowest_affinity_level != 0",
+        "code_a": "PSCI_INVALID_PARAMETERS",
+        "pre_b": "result == PSCI_SUCCESS && RecFromMpidr(old_s, target_affinity).flags.runnable == RUNNABLE",
+        "code_b": "PSCI_SUCCESS"
+      },
+      {
+        "pre_a": "lowest_affinity_level != 0",
+        "code_a": "PSCI_INVALID_PARAMETERS",
+        "pre_b": "result == PSCI_SUCCESS && RecFromMpidr(old_s, target_affinity).flags.runnable == NOT_RUNNABLE",
+        "code_b": "PSCI_OFF"
+      },
+      {
+        "pre_a": "result == PSCI_SUCCESS && RecFromMpidr(old_s, target_affinity).flags.runnable == NOT_RUNNABLE",
+        "code_a": "PSCI_OFF",
+        "pre_b": "(!(lowest_affinity_level != 0) && MpidrIsUsed(old_s, target_affinity))",
+        "code_b": "PSCI_SUCCESS"
+      }
+    ]
+  },
+  "psci_cpu_off": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "psci_cpu_on": {
+    "note": "3 pairs",
+    "raw_hits": 3,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsProtected(old_s, entry_point_address, CurrentRealm(old_s))",
+        "code_a": "PSCI_INVALID_ADDRESS",
+        "pre_b": "!MpidrIsUsed(old_s, target_cpu)",
+        "code_b": "PSCI_INVALID_PARAMETERS"
+      },
+      {
+        "pre_a": "!AddrIsProtected(old_s, entry_point_address, CurrentRealm(old_s))",
+        "code_a": "PSCI_INVALID_ADDRESS",
+        "pre_b": "RecFromMpidr(old_s, target_cpu).flags.runnable == RUNNABLE",
+        "code_b": "PSCI_ALREADY_ON"
+      },
+      {
+        "pre_a": "!MpidrIsUsed(old_s, target_cpu)",
+        "code_a": "PSCI_INVALID_PARAMETERS",
+        "pre_b": "RecFromMpidr(old_s, target_cpu).flags.runnable == RUNNABLE",
+        "code_b": "PSCI_ALREADY_ON"
+      }
+    ]
+  },
+  "psci_cpu_suspend": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "psci_features": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "psci_system_off": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "psci_system_reset": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "psci_version": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_data_create": {
+    "note": "11 pairs",
+    "raw_hits": 11,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, src)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RealmAt(old_s, rd).state != REALM_NEW",
+        "code_b": "RMI_ERROR_REALM"
+      }
+    ]
+  },
+  "rmi_data_create_unknown": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_data_destroy": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_features": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_granule_delegate": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_granule_undelegate": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_mec_set_private": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_mec_set_shared": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_pdev_abort": {
+    "note": "7 pairs",
+    "raw_hits": 7,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "(PdevAt(old_s, pdev_ptr).state != PDEV_NEW && PdevAt(old_s, pdev_ptr).state != PDEV_HAS_KEY && PdevAt(old_s, p",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "(PdevAt(old_s, pdev_ptr).state != PDEV_NEW && PdevAt(old_s, pdev_ptr).state != PDEV_HAS_KEY && PdevAt(old_s, p",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_pdev_aux_count": {
+    "note": "1 pairs",
+    "raw_hits": 1,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!RmiPdevFlagsSupported(old_s, RmiPdevFlagsDecode(old_s, value))",
+        "code_b": "RMI_ERROR_INPUT"
+      }
+    ]
+  },
+  "rmi_pdev_communicate": {
+    "note": "21 pairs",
+    "raw_hits": 21,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "(PdevAt(old_s, pdev_ptr).comm_state == DEV_COMM_IDLE || PdevAt(old_s, pdev_ptr).comm_state == DEV_COMM_ERROR)",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "(PdevAt(old_s, pdev_ptr).comm_state == DEV_COMM_IDLE || PdevAt(old_s, pdev_ptr).comm_state == DEV_COMM_ERROR)",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_pdev_create": {
+    "note": "compile error",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_pdev_destroy": {
+    "note": "11 pairs",
+    "raw_hits": 11,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "PdevAt(old_s, pdev_ptr).state != PDEV_STOPPED",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "PdevAt(old_s, pdev_ptr).state != PDEV_STOPPED",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_pdev_get_state": {
+    "note": "compile error",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_pdev_ide_key_refresh": {
+    "note": "11 pairs",
+    "raw_hits": 11,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "((coh == RMI_NCOH && PdevAt(old_s, pdev_ptr).ncoh_ide != IDE_TRUE) || (coh == RMI_COH && PdevAt(old_s, pdev_pt",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "((coh == RMI_NCOH && PdevAt(old_s, pdev_ptr).ncoh_ide != IDE_TRUE) || (coh == RMI_COH && PdevAt(old_s, pdev_pt",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_pdev_ide_reset": {
+    "note": "11 pairs",
+    "raw_hits": 11,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "PdevAt(old_s, pdev_ptr).ncoh_ide != IDE_TRUE",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "PdevAt(old_s, pdev_ptr).ncoh_ide != IDE_TRUE",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_pdev_p2p_connect": {
+    "note": "38 pairs",
+    "raw_hits": 38,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, stream_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "PdevAt(old_s, pdev_1_ptr).p2p_enabled != FEATURE_TRUE",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, stream_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "PdevAt(old_s, pdev_1_ptr).p2p_enabled != FEATURE_TRUE",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_pdev_p2p_disconnect": {
+    "note": "10 pairs",
+    "raw_hits": 10,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, stream_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      }
+    ]
+  },
+  "rmi_pdev_set_pubkey": {
+    "note": "15 pairs",
+    "raw_hits": 15,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "PdevAt(old_s, pdev_ptr).state != PDEV_NEEDS_KEY",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "PdevAt(old_s, pdev_ptr).state != PDEV_NEEDS_KEY",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_pdev_stop": {
+    "note": "11 pairs",
+    "raw_hits": 11,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "(PdevAt(old_s, pdev_ptr).state == PDEV_COMMUNICATING || PdevAt(old_s, pdev_ptr).state == PDEV_STOPPING || Pdev",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "(PdevAt(old_s, pdev_ptr).state == PDEV_COMMUNICATING || PdevAt(old_s, pdev_ptr).state == PDEV_STOPPING || Pdev",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_psci_complete": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_psmmu_irq_notify": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_psmmu_msi_config": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_realm_activate": {
+    "note": "3 pairs",
+    "raw_hits": 3,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RealmAt(old_s, rd).state != REALM_NEW",
+        "code_b": "RMI_ERROR_REALM"
+      }
+    ]
+  },
+  "rmi_realm_create": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_realm_destroy": {
+    "note": "3 pairs",
+    "raw_hits": 3,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RealmIsLive(old_s, rd)",
+        "code_b": "RMI_ERROR_REALM"
+      }
+    ]
+  },
+  "rmi_rec_aux_count": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rec_create": {
+    "note": "26 pairs",
+    "raw_hits": 26,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, params_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RealmAt(old_s, rd).state != REALM_NEW",
+        "code_b": "RMI_ERROR_REALM"
+      }
+    ]
+  },
+  "rmi_rec_destroy": {
+    "note": "3 pairs",
+    "raw_hits": 3,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rec_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      }
+    ]
+  },
+  "rmi_rec_enter": {
+    "note": "45 pairs",
+    "raw_hits": 45,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, run_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RealmAt(old_s, RecAt(old_s, rec_ptr).owner).state == REALM_NEW",
+        "code_b": "RMI_ERROR_REALM"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, run_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      },
+      {
+        "pre_a": "RealmAt(old_s, RecAt(old_s, rec_ptr).owner).state == REALM_NEW",
+        "code_a": "RMI_ERROR_REALM",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      }
+    ]
+  },
+  "rmi_rtt_aux_create": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_aux_destroy": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_aux_fold": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_aux_map_protected": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_aux_map_unprotected": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_aux_unmap_protected": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_aux_unmap_unprotected": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_create": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_destroy": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_fold": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_init_ripas": {
+    "note": "5 pairs",
+    "raw_hits": 5,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RealmAt(old_s, rd).state != REALM_NEW",
+        "code_b": "RMI_ERROR_REALM"
+      }
+    ]
+  },
+  "rmi_rtt_map_unprotected": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_read_entry": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_rtt_set_ripas": {
+    "note": "18 pairs",
+    "raw_hits": 18,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      }
+    ]
+  },
+  "rmi_rtt_set_s2ap": {
+    "note": "20 pairs",
+    "raw_hits": 20,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      }
+    ]
+  },
+  "rmi_rtt_unmap_unprotected": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_vdev_abort": {
+    "note": "7 pairs",
+    "raw_hits": 7,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, vdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "VdevAt(old_s, vdev_ptr).comm_state == DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, vdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_ptr).comm_state == DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_aux_count": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_vdev_communicate": {
+    "note": "41 pairs",
+    "raw_hits": 41,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "VdevAt(old_s, vdev_ptr).pdev != pdev_ptr",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, pdev_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_ptr).pdev != pdev_ptr",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_complete": {
+    "note": "9 pairs",
+    "raw_hits": 9,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rec_ptr)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_create": {
+    "note": "75 pairs",
+    "raw_hits": 75,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "PdevAt(old_s, pdev_ptr).state != PDEV_READY",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "RealmAt(old_s, rd).feat_da != FEATURE_TRUE",
+        "code_b": "RMI_ERROR_REALM"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "PdevAt(old_s, pdev_ptr).state != PDEV_READY",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RealmAt(old_s, rd).feat_da != FEATURE_TRUE",
+        "code_b": "RMI_ERROR_REALM"
+      },
+      {
+        "pre_a": "PdevAt(old_s, pdev_ptr).state != PDEV_READY",
+        "code_a": "RMI_ERROR_DEVICE",
+        "pre_b": "RealmAt(old_s, rd).feat_da != FEATURE_TRUE",
+        "code_b": "RMI_ERROR_REALM"
+      }
+    ]
+  },
+  "rmi_vdev_destroy": {
+    "note": "49 pairs",
+    "raw_hits": 49,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "VdevAt(old_s, vdev_ptr).realm != rd",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_ptr).realm != rd",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_get_interface_report": {
+    "note": "23 pairs",
+    "raw_hits": 23,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "(VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED)",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "(VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED)",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_get_measurements": {
+    "note": "32 pairs",
+    "raw_hits": 32,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "(VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED)",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "(VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED)",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_get_state": {
+    "note": "compile error",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_vdev_lock": {
+    "note": "23 pairs",
+    "raw_hits": 23,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "VdevAt(old_s, vdev_ptr).vdev_state != VDEV_UNLOCKED",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_ptr).vdev_state != VDEV_UNLOCKED",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_map": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_vdev_p2p_bind": {
+    "note": "120 pairs",
+    "raw_hits": 120,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "VdevAt(old_s, vdev_1_ptr).comm_state != DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_1_ptr).comm_state != DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_a": "RMI_ERROR_REC",
+        "pre_b": "VdevAt(old_s, vdev_1_ptr).comm_state != DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_p2p_unbind": {
+    "note": "120 pairs",
+    "raw_hits": 120,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "VdevAt(old_s, vdev_1_ptr).comm_state != DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_1_ptr).comm_state != DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_a": "RMI_ERROR_REC",
+        "pre_b": "VdevAt(old_s, vdev_1_ptr).comm_state != DEV_COMM_IDLE",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_start": {
+    "note": "23 pairs",
+    "raw_hits": 23,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_unlock": {
+    "note": "31 pairs",
+    "raw_hits": 31,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "(VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED && Vd",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "(VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED && Vd",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vdev_unmap": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_vdev_validate_mapping": {
+    "note": "47 pairs",
+    "raw_hits": 47,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_b": "RMI_ERROR_REC"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VdevAt(old_s, vdev_ptr).pdev != pdev_ptr",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "RecAt(old_s, rec_ptr).state == REC_RUNNING",
+        "code_a": "RMI_ERROR_REC",
+        "pre_b": "VdevAt(old_s, vdev_ptr).pdev != pdev_ptr",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_version": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rmi_vsmmu_create": {
+    "note": "12 pairs",
+    "raw_hits": 12,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      }
+    ]
+  },
+  "rmi_vsmmu_destroy": {
+    "note": "13 pairs",
+    "raw_hits": 13,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      },
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "VsmmuIsLive(old_s, vsmmu_ptr)",
+        "code_b": "RMI_ERROR_DEVICE"
+      },
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_a": "RMI_ERROR_INPUT",
+        "pre_b": "VsmmuIsLive(old_s, vsmmu_ptr)",
+        "code_b": "RMI_ERROR_DEVICE"
+      }
+    ]
+  },
+  "rmi_vsmmu_map": {
+    "note": "10 pairs",
+    "raw_hits": 10,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      }
+    ]
+  },
+  "rmi_vsmmu_unmap": {
+    "note": "8 pairs",
+    "raw_hits": 8,
+    "deduped": [
+      {
+        "pre_a": "ImplFeatures(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RMI_ERROR_NOT_SUPPORTED",
+        "pre_b": "!AddrIsGranuleAligned(old_s, rd)",
+        "code_b": "RMI_ERROR_INPUT"
+      }
+    ]
+  },
+  "rsi_attestation_token_continue": {
+    "note": "6 pairs",
+    "raw_hits": 5,
+    "deduped": [
+      {
+        "pre_a": "!AddrIsGranuleAligned(old_s, addr)",
+        "code_a": "RSI_ERROR_INPUT",
+        "pre_b": "CurrentRec(old_s).attest_state != ATTEST_IN_PROGRESS",
+        "code_b": "RSI_ERROR_STATE"
+      }
+    ]
+  },
+  "rsi_attestation_token_init": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_features": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_host_call": {
+    "note": "3 pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_ipa_state_get": {
+    "note": "4 pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_ipa_state_set": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_measurement_extend": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_measurement_read": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_mem_get_perm_value": {
+    "note": "compile error",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_mem_set_perm_index": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_mem_set_perm_value": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_plane_enter": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_plane_sysreg_read": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_plane_sysreg_write": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_realm_config": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_vdev_dma_enable": {
+    "note": "compile error",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_vdev_get_info": {
+    "note": "compile error",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_vdev_p2p_bind": {
+    "note": "4 pairs",
+    "raw_hits": 4,
+    "deduped": [
+      {
+        "pre_a": "CurrentRealm(old_s).feat_da != FEATURE_TRUE",
+        "code_a": "RSI_ERROR_STATE",
+        "pre_b": "VdevIdIsFree(old_s, CurrentRealm(old_s), vdev_id_1)",
+        "code_b": "RSI_ERROR_INPUT"
+      }
+    ]
+  },
+  "rsi_vdev_validate_mapping": {
+    "note": "compile error",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_version": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_vsmmu_activate": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  },
+  "rsi_vsmmu_get_info": {
+    "note": "no pairs",
+    "raw_hits": 0,
+    "deduped": []
+  }
+}

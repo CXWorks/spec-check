@@ -1,0 +1,75 @@
+{
+  "label": "gpt56sol",
+  "rows": [
+    {
+      "id": "eac5:RMI_DATA_DESTROY:ripas",
+      "label": "TP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "eac5:RMI_RTT_CREATE:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RMI_ERROR_RTT_AUX` in this scope"
+    },
+    {
+      "id": "eac5:RMI_RTT_DESTROY:state",
+      "label": "TP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "eac5:RMI_RTT_FOLD:ripas",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RMI_ERROR_RTT_AUX` in this scope"
+    },
+    {
+      "id": "eac5:RMI_RTT_FOLD:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RMI_ERROR_RTT_AUX` in this scope"
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:ripas",
+      "label": "TP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:ripas",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "eac5:RMI_RTT_SET_RIPAS:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RMI_ERROR_RTT_AUX` in this scope"
+    },
+    {
+      "id": "eac5:RSI_ATTESTATION_TOKEN_CONTINUE:dual_error",
+      "label": "TP",
+      "kind": "contradiction",
+      "outcome": "detected",
+      "detail": "proof accepted"
+    }
+  ]
+}

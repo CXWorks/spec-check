@@ -1,0 +1,224 @@
+{
+  "name": "RMM Verus-verified spec-bug benchmark (eac5)",
+  "version": "eac5",
+  "detection": {
+    "obligation": "bug present iff Verus REJECTS the assert",
+    "contradiction": "bug present iff Verus ACCEPTS `ensures false`"
+  },
+  "note": "FP obligation items do not discriminate between generators: a faithful generator fails them exactly as the gold oracle does, because SCOPE's obligation drops a guard the spec actually states. They measure the pipeline's precision ceiling, not generator quality.",
+  "counts": {
+    "TP": 4,
+    "FP": 6
+  },
+  "discriminating": 4,
+  "items": [
+    {
+      "id": "eac5:RMI_DATA_DESTROY:ripas",
+      "version": "eac5",
+      "command": "RMI_DATA_DESTROY",
+      "spec_fn": "rmi_data_destroy_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, ipa: Address, result: Result<(), RmiStatusCode>, data: Address, top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_data_destroy_spec(rd, ipa, result, data, top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd, ipa,RMM_RTT_PAGE_LEVEL as int);",
+        "let new_walk = RttWalk_(new_s, rd, ipa,RMM_RTT_PAGE_LEVEL as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (old_walk.rtte.ripas == EMPTY || old_walk.rtte.ripas == RAM)",
+      "bug_present_when": "proof_fails",
+      "label": "TP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": true
+    },
+    {
+      "id": "eac5:RMI_RTT_CREATE:state",
+      "version": "eac5",
+      "command": "RMI_RTT_CREATE",
+      "spec_fn": "rmi_rtt_create_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, rtt: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_create_spec(rd, rtt, ipa, level, result, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd, ipa,level - 1 as int);",
+        "let new_walk = RttWalk_(new_s, rd, ipa,level - 1 as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": false
+    },
+    {
+      "id": "eac5:RMI_RTT_DESTROY:state",
+      "version": "eac5",
+      "command": "RMI_RTT_DESTROY",
+      "spec_fn": "rmi_rtt_destroy_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_destroy_spec(rd, ipa, level, result, rtt, top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd, ipa,level - 1 as int);",
+        "let new_walk = RttWalk_(new_s, rd, ipa,level - 1 as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "TP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": true
+    },
+    {
+      "id": "eac5:RMI_RTT_FOLD:ripas",
+      "version": "eac5",
+      "command": "RMI_RTT_FOLD",
+      "spec_fn": "rmi_rtt_fold_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_fold_spec(rd, ipa, level, result, rtt, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd, ipa,level - 1 as int);",
+        "let new_walk = RttWalk_(new_s, rd, ipa,level - 1 as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.ripas == old_walk.rtte.ripas)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": false
+    },
+    {
+      "id": "eac5:RMI_RTT_FOLD:state",
+      "version": "eac5",
+      "command": "RMI_RTT_FOLD",
+      "spec_fn": "rmi_rtt_fold_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_fold_spec(rd, ipa, level, result, rtt, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd, ipa,level - 1 as int);",
+        "let new_walk = RttWalk_(new_s, rd, ipa,level - 1 as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": false
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:ripas",
+      "version": "eac5",
+      "command": "RMI_RTT_INIT_RIPAS",
+      "spec_fn": "rmi_rtt_init_ripas_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_init_ripas_spec(rd, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd,base,RMM_RTT_PAGE_LEVEL as int);",
+        "let new_walk = RttWalk_(new_s, rd,base,RMM_RTT_PAGE_LEVEL as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (old_walk.rtte.ripas == EMPTY)",
+      "bug_present_when": "proof_fails",
+      "label": "TP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": true
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:ripas",
+      "version": "eac5",
+      "command": "RMI_RTT_INIT_RIPAS",
+      "spec_fn": "rmi_rtt_init_ripas_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_init_ripas_spec(rd, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd,base,RMM_RTT_PAGE_LEVEL as int);",
+        "let new_walk = RttWalk_(new_s, rd,base,RMM_RTT_PAGE_LEVEL as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.ripas == RAM)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": false
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:state",
+      "version": "eac5",
+      "command": "RMI_RTT_INIT_RIPAS",
+      "spec_fn": "rmi_rtt_init_ripas_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_init_ripas_spec(rd, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd,base,RMM_RTT_PAGE_LEVEL as int);",
+        "let new_walk = RttWalk_(new_s, rd,base,RMM_RTT_PAGE_LEVEL as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": false
+    },
+    {
+      "id": "eac5:RMI_RTT_SET_RIPAS:state",
+      "version": "eac5",
+      "command": "RMI_RTT_SET_RIPAS",
+      "spec_fn": "rmi_rtt_set_ripas_spec",
+      "kind": "obligation",
+      "signature": "rd: Address, rec: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S",
+      "requires": [
+        "rmi_rtt_set_ripas_spec(rd, rec, base, top, result, out_top, old_s, new_s)"
+      ],
+      "lets": [
+        "let old_walk = RttWalk_(old_s, rd, base,RMM_RTT_PAGE_LEVEL as int);",
+        "let new_walk = RttWalk_(new_s, rd, base,RMM_RTT_PAGE_LEVEL as int);"
+      ],
+      "assertion": "result.is_Ok() ==> (new_walk.rtte.state == old_walk.rtte.state)",
+      "bug_present_when": "proof_fails",
+      "label": "FP",
+      "scored": true,
+      "source": "scope --mode reason (eac5) + patch/eac5_rule labelling",
+      "discriminates": false
+    },
+    {
+      "id": "eac5:RSI_ATTESTATION_TOKEN_CONTINUE:dual_error",
+      "version": "eac5",
+      "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+      "spec_fn": "rsi_attestation_token_continue_spec",
+      "kind": "contradiction",
+      "signature": null,
+      "requires": [
+        "!AddrIsGranuleAligned(old_s, addr)",
+        "CurrentRec(old_s).attest_state != ATTEST_IN_PROGRESS"
+      ],
+      "lets": [],
+      "assertion": "false",
+      "bug_present_when": "proof_succeeds",
+      "label": "TP",
+      "scored": true,
+      "discriminates": true,
+      "source": "training/rmm_bugs.rs bug5 \u2014 confirmed present in eac5, rel0 and alp14"
+    }
+  ]
+}

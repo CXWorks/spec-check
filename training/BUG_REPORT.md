@@ -351,3 +351,24 @@ proof fn bug4_system_reset2_tautology(
 4. **Truncation recovery**: When model output is truncated mid-disjunction, the cleanup
    post-processor should default to `|| true` rather than `&& ...` to avoid silently
    narrowing the spec (Bug 3).
+
+---
+
+## Verus-verified benchmark and two follow-up findings
+
+The bugs above are now packaged as a machine-checked benchmark with a scorer — see
+[`../BENCHMARK_VERUS_RMM.md`](../BENCHMARK_VERUS_RMM.md) and
+[`../benchmark/verus_rmm/`](../benchmark/verus_rmm/). Two corrections/additions came
+out of building it, both machine-checked in `benchmark/verus_rmm/new_findings.rs`:
+
+- **Bug 5 (`RSI_ATTESTATION_TOKEN_CONTINUE`) is not alp14-specific** — the same
+  witness produces the contradiction on eac5 and rel0 as well, so it has survived
+  three releases unfixed.
+- **`RMI_RTT_DESTROY` (alp14, borderline)** — the output summary table states
+  "After execution: UNASSIGNED" unconditionally while the Success conditions give
+  `UNASSIGNED_NS` for unprotected IPAs; contradiction verified.
+
+Also recorded there: `inconsistency_analysis_rmm.py` asks whether a spec function is
+unsatisfiable for *all* inputs, but these bugs are unsatisfiable only under a
+*witness* — which is why its sweep of 89 alp14 gold specs reported 0 new
+inconsistencies while missing a published bug.
