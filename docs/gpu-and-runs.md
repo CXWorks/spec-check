@@ -945,6 +945,33 @@ other three move compilation and leave `weaker` where it was. Worth calibrating
 (demand frame conditions only where the document states the state is preserved)
 rather than abandoning — untested, and a decision for a human.
 
+**And it does not replicate on the 4B**, which responds to the same instruction
+in form rather than in substance:
+
+| `sft2-1` 4B | compiles | correct | `weaker` | `stronger` | repetitive |
+|---|---|---|---|---|---|
+| preamble only | 21 | **9 (22.5%)** | 2 | 3 | 3 |
+| + frame hint | 20 | 8 (20.0%) | **3** | 3 | **5** |
+
+`weaker` does not fall; repetition rises. Told to assert more invariants, the 4B
+emits more clauses rather than more *correct* clauses.
+
+### The 9B differs from the 4B in ways pass@1 cannot see
+
+Three independent interventions, one conclusion:
+
+| | 9B | 4B |
+|---|---|---|
+| restore preamble | +22.5pp compiling, p = 0.004 | +7.5pp, p = 0.549 |
+| pass@k headroom | +8 commands | +3 commands |
+| frame-condition instruction | `weaker` 4 → 1 | `weaker` 2 → 3, repetition ↑ |
+
+All three move the 9B semantically and none move the 4B, while their greedy
+compile rates sit at 40.0% and 45.0% — the 4B *ahead*. **The 9B adjusts what its
+specs mean; the 4B adjusts how they look.** For choosing a base model that is a
+far stronger argument than a compile rate, and it is invisible to the metric the
+project has been using.
+
 ### Measured ceiling: gold itself is 33/40
 
 Before reading any pass rate: **the gold specs compile on only 33 of the 40
