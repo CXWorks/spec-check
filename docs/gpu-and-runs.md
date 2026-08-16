@@ -317,10 +317,30 @@ without it.
 | `sft2-0` @ epoch 1 | 4B bf16 LoRA | 12/40 (30.0%) | 40/40 |
 | `sft2-3` | 4B bf16 full FT | 11/40 (27.5%) | 39/40 |
 
-The epoch curve is 30.0% (epoch 1) → 35.0% (epoch 3); epoch 2 was not measured
-because the storage quota stopped `eval2-ep` after its first checkpoint. A 5pp
-move across two epochs is well inside the ±22pp this eval set can resolve, so it
-is not yet evidence that the extra epochs help.
+### Epochs 2 and 3 buy termination, not correctness
+
+Re-run at the corrected decode budget, `sft2-0`'s three checkpoints are
+**identical on pass rate and differ only in how often the model fails to stop**:
+
+| checkpoint | epoch | pass@1 | truncated | eval loss |
+|---|---|---|---|---|
+| `checkpoint-41` | 1 | 14/40 (35.0%) | **13** | 0.0129 |
+| `checkpoint-82` | 2 | 14/40 (35.0%) | 4 | 0.0030 |
+| `final` | 3 | 14/40 (35.0%) | 3 | 0.0025 |
+
+The last two epochs cut eval loss five-fold and truncation from 13 to 3, without
+moving a single command from fail to pass. Whatever that loss bought, it was
+surface structure — output length and termination — not correctness.
+
+(The earlier reading of this curve, 30.0% at epoch 1 against 35.0% at final, was
+an artifact of the 2048-token cap: epoch 1 truncates far more, so the cap cost it
+more.)
+
+**Three independent lines now say SFT is exhausted as a lever**: training loss
+reaches 0.002, capacity and method do not separate on pass rate, and training
+longer changes nothing. Meanwhile the same checkpoint reaches 42.5% at pass@9 and
+the 9B reaches 60.0% against a gold ceiling of 82.5% — the correct answers are in
+the distribution, and next-token training is not what will surface them.
 
 Read against 82.5%, not 100%. Non-degeneracy is high, so the model is producing
 real specs and failing to compile them — it is not gaming the metric by
