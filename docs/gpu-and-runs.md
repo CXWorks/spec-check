@@ -66,6 +66,37 @@ Consequences:
   and everything planned here is single-node.
 - Getting data in: `kubectl cp` a tarball. Our dataset is ~10 MB and the repo is
   private, so this avoids putting any credential on the cluster.
+- A pod that dies is **re-created on the same node**, because its PVC is there.
+  So a node-local transient failure is not escaped by retrying — it burns
+  `backoffLimit` in place. Retry *inside* the entrypoint, not by letting the pod
+  die; both entrypoints now do.
+
+### The HF private-storage quota is a hard dependency
+
+Every job fetches its data and pushes its checkpoints through
+`jisenli/spec-check-ckpt`, and the account is on the **free tier: 100 GB
+private**. Exceeding it does not just block writes — HF answers **403 on every
+read of every private repo**, so all training and eval stops at once.
+
+It is easy to exceed by accident and hard to recognise:
+
+- A 4B **full fine-tune** checkpoint is 8 GB, and its `optimizer.pt` is 16 GB.
+  Three epochs plus final is ~100 GB from a single run.
+- `huggingface_hub` reports the 403 as `LocalEntryNotFoundError`, *"An error
+  happened while trying to locate the file on the Hub … Please check your
+  connection"*. That wording sent this project's diagnosis to DNS first and to
+  token scopes second. **Read the raw HTTP response before believing the
+  exception type** — `requests.head(url, headers=…)` returns the real message in
+  `x-error-message`.
+- Storage is billed on **LFS history, not the current tree**. Deleting files does
+  not reclaim it; `usedStorage` stayed at 103.97 GB with 19.32 GB on the branch,
+  and `super_squash_history()` did not move it either. Reclamation waits on HF's
+  own GC, which cannot be triggered. Budget for the quota rather than plan to
+  clean up after it.
+
+`scripts/resume_when_quota_clears.sh` polls for reads to work and un-suspends the
+eval Jobs when they do. Suspending (`{"spec":{"suspend":true}}`) rather than
+deleting is what makes that possible — the Job keeps its identity and its PVC.
 
 ---
 
@@ -238,7 +269,13 @@ without it.
 | **gold** | reference | **33/40 (82.5%)** | — |
 | `sft2-1` | 4B fp16 LoRA | 18/40 (45.0%) | 39/40 |
 | `sft2-0` | 4B bf16 LoRA | **14/40 (35.0%)** | 39/40 |
+| `sft2-0` @ epoch 1 | 4B bf16 LoRA | 12/40 (30.0%) | 40/40 |
 | `sft2-3` | 4B bf16 full FT | 11/40 (27.5%) | 39/40 |
+
+The epoch curve is 30.0% (epoch 1) → 35.0% (epoch 3); epoch 2 was not measured
+because the storage quota stopped `eval2-ep` after its first checkpoint. A 5pp
+move across two epochs is well inside the ±22pp this eval set can resolve, so it
+is not yet evidence that the extra epochs help.
 
 Read against 82.5%, not 100%. Non-degeneracy is high, so the model is producing
 real specs and failing to compile them — it is not gaming the metric by
