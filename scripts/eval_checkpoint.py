@@ -86,12 +86,18 @@ def render_generation_prompt(tok, msgs):
     the code stated. Cutting the training render at the answer removes the
     difference: generation starts at the spec for every model and template.
 
-    NOT verified: that any of this explains `sft2-2` returning
-    `no_pub_open_spec_fn_found` on most commands. That run reached loss 0.006 and
-    token accuracy 0.998, so it learned the format and the failure is at decode
-    time — but the cause is still open. `generated_raw` below keeps the untouched
-    decoder output precisely so the next run settles it by inspection instead of
-    by another round of inference from the logs.
+    Verified by inspecting sft2-2's outputs: this is what cost that run 16 of 40
+    commands. Handed an OPEN `<think>`, the 9B reasoned in prose — "Let me
+    analyze this RMI_DATA_CREATE_UNKNOWN command specification: 1. **Inputs**…" —
+    and hit the token cap before writing any spec. All 16 failures are truncated
+    at 4.8k–9.7k characters, i.e. exactly `--max-new-tokens`. Fine-tuning taught
+    it to close the block immediately, but on longer sections the base model's
+    reasoning prior wins. Its 25.0% pass rate is therefore not a capability
+    measurement: of the 24 commands that produced a parseable spec, 10 compiled
+    (41.7%), which is in line with the 4B.
+
+    Closing the block in the prompt removes the choice, so the model has nowhere
+    to put reasoning even when it would otherwise start.
     """
     train_render = tok.apply_chat_template(
         msgs + [{"role": "assistant", "content": SENTINEL}], tokenize=False)
@@ -149,7 +155,13 @@ def main():
     ap.add_argument("--subfolder", default=None, help="e.g. sft2-0/final")
     ap.add_argument("--out", required=True)
     ap.add_argument("--specs-dir", default=str(ROOT / "training-dataset/specs/alp14"))
-    ap.add_argument("--max-new-tokens", type=int, default=2048)
+    ap.add_argument("--max-new-tokens", type=int, default=6144,
+                    help="Was 2048, which silently truncated the long commands: "
+                         "the longest gold spec is 12837 chars (~4400 tokens), so "
+                         "2048 could not fit it even in principle. 7/40, 8/40 and "
+                         "14/40 generations were cut off mid-expression in "
+                         "sft2-0/1/3, and half the commands that never passed under "
+                         "any run were simply never allowed to finish.")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--verus-timeout", type=int, default=600)
     ap.add_argument("--samples", type=int, default=0,
@@ -251,8 +263,15 @@ def main():
         # `no_pub_open_spec_fn_found` on most commands and left nothing behind to
         # explain it, which cost a whole eval cycle.
         raw = [tok.decode(o, skip_special_tokens=False) for o in outs]
-        n_trunc = sum(1 for o in outs if len(o) >= args.max_new_tokens)
-        return [strip_output(tok.decode(o, skip_special_tokens=True)) for o in outs], raw, n_trunc
+        # Two signals, because either alone misses cases: hitting the cap is the
+        # direct one, and an unbalanced brace catches a stop that landed
+        # mid-expression for any other reason. A truncated spec fails with
+        # "mismatched closing delimiter", which reads as a syntax error the model
+        # made rather than an answer it was never allowed to finish.
+        texts = [strip_output(tok.decode(o, skip_special_tokens=True)) for o in outs]
+        n_trunc = sum(1 for o, t in zip(outs, texts)
+                      if len(o) >= args.max_new_tokens or t.count("{") > t.count("}"))
+        return texts, raw, n_trunc
 
     def check_all(command, texts):
         """Verus-check each distinct text once, in parallel.
