@@ -1,0 +1,75 @@
+{
+  "label": "Claude Opus 5 + repair",
+  "rows": [
+    {
+      "id": "eac5:RMI_DATA_DESTROY:ripas",
+      "label": "TP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RMI_RTT_CREATE:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RMI_RTT_DESTROY:state",
+      "label": "TP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RMI_RTT_FOLD:ripas",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RMI_RTT_FOLD:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:ripas",
+      "label": "TP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:ripas",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RMI_RTT_INIT_RIPAS:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RMI_RTT_SET_RIPAS:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "detected",
+      "detail": "proof rejected"
+    },
+    {
+      "id": "eac5:RSI_ATTESTATION_TOKEN_CONTINUE:dual_error",
+      "label": "TP",
+      "kind": "contradiction",
+      "outcome": "detected",
+      "detail": "proof accepted"
+    }
+  ]
+}

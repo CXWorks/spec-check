@@ -1,0 +1,7 @@
+{"model": "claude:claude-opus-5:high", "call": 1, "attempt": 1, "returncode": 0, "elapsed_s": 13.8, "output_chars": 2138, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 2, "attempt": 1, "returncode": 0, "elapsed_s": 21.5, "output_chars": 2787, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 3, "attempt": 1, "returncode": 0, "elapsed_s": 31.1, "output_chars": 3628, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 4, "attempt": 1, "returncode": 0, "elapsed_s": 19.1, "output_chars": 3791, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 1, "attempt": 1, "returncode": 0, "elapsed_s": 22.0, "output_chars": 2799, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 2, "attempt": 1, "returncode": 0, "elapsed_s": 21.0, "output_chars": 3180, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 3, "attempt": 1, "returncode": 0, "elapsed_s": 20.8, "output_chars": 4100, "stderr_tail": "", "stdout_tail": ""}

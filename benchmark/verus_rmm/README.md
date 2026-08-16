@@ -78,6 +78,7 @@ Requires Verus at `training/verus-x86-linux/` and rust toolchain `1.97.1`
 | Gold oracle (control) | **4/4** | 0 | 6/6 |
 | GPT `gpt-5.6-sol` (high) | 1/4 | 3 | 0/6 (all 6 inconclusive) |
 | Claude Opus 5 (high) | 1/4 | 3 | 0/6 (all 6 inconclusive) |
+| Claude Opus 5 (high) **+ Verus repair** | **4/4** | 0 | 6/6 |
 
 Both models detect only the contradiction item (bug 5), which needs just the two
 failure clauses — both got those right. All three obligation items are inconclusive
@@ -86,9 +87,16 @@ generated function against the preamble with no proof obligation attached. GPT f
 with `E0308 mismatched types` and `E0425 cannot find RMI_ERROR_RTT_AUX`; Claude with
 `E0308` and `E0599 no method spec_shl` (the `int << n` form Verus does not provide).
 
-This reproduces, on a second benchmark, the finding from the rule-mode evaluation:
-**the two models are indistinguishable.** It also isolates a different bottleneck —
-there the models generated compiling code and confabulated postconditions; here
-compilation itself is the barrier. A Verus-feedback repair loop
-(`repair_loop_verus.py`) targets exactly this and would raise the scorable fraction
-without changing the benchmark.
+Unrepaired, this reproduces the rule-mode evaluation's finding: **the two models are
+indistinguishable.** But the bottleneck differs — there they generated compiling code
+and confabulated postconditions; here compilation itself is the barrier.
+
+`repair.py` feeds the real Verus error back to the same model. One round fixed all six
+failing commands, taking Claude from **1/4 to 4/4 — gold parity**. The repairs are
+type-level only: the `==>` occurrence count is unchanged in every function, and the
+diffs contain only the `RMI_ERROR_RTT(...)` payload fix and `1int << x` →
+`(1u64 << x) as int`. Repaired output lives in `results/verus_repair/`, so raw
+generator numbers stay intact.
+
+GPT has no repaired row: codex hit its usage limit (resets 2026-08-20 23:22). Re-run
+`python3 repair.py --model codex --src ...` afterwards.

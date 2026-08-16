@@ -14,6 +14,7 @@ Benchmark and scorer: [`benchmark/verus_rmm/`](benchmark/verus_rmm/).
 | **Gold oracle** (control) | **4/4** | 0 | 6/6 |
 | GPT `gpt-5.6-sol` (high) | 1/4 | 3 | 0/6 — all 6 inconclusive |
 | Claude Opus 5 (high) | 1/4 | 3 | 0/6 — all 6 inconclusive |
+| Claude Opus 5 (high) **+ Verus repair** | **4/4** | 0 | 6/6 |
 
 Both models detect only the contradiction item; all three obligation items are
 unscorable because the generated spec functions **do not compile**. Verified by
@@ -25,11 +26,12 @@ spec_shl` (the `int << n` form Verus does not provide).
 `inconclusive` is reported separately and never folded into `missed` — 1/4 detected
 with 3 unscorable is a different claim from 1/4 with 3 missed.
 
-**The two models are indistinguishable**, reproducing the rule-mode benchmark's
-finding on independent evidence. The bottleneck differs, though: there they produced
-compiling code and confabulated postconditions; here compilation is the barrier.
-`repair_loop_verus.py` targets exactly this and would raise the scorable fraction
-without changing the benchmark.
+**Unrepaired, the two models are indistinguishable**, reproducing the rule-mode
+benchmark's finding on independent evidence. But the bottleneck differs: there they
+produced compiling code and confabulated postconditions; here compilation is the
+barrier — and once it is removed, Claude reaches gold parity (see *Repair changes the
+picture entirely* below). GPT could not be repaired for comparison because codex hit
+its usage limit.
 
 ## Five Verus-detectable RMM bugs, and why the benchmark uses eac5
 
@@ -91,9 +93,10 @@ codes, plus a vacuity probe so mutually-exclusive preconditions do not verify
 candidates across 40 of 98 commands**. That figure is an **upper bound, not a bug
 count**: the gold annotations transcribe failure conditions as unguarded implications
 and never encode the spec's failure-condition-ordering section, so nearly every
-command with two error codes contradicts itself by construction. Converting
-candidates into findings requires the ordering filter described under *Next steps*.
-Raw output: `work/alp14_bench_wip/witness_sweep.json` (local scratch).
+command with two error codes contradicts itself by construction. The obvious way to
+convert candidates into findings — filtering by the failure-condition-ordering
+section — was implemented and does not work; see *Limitations and next steps*.
+Candidates: `benchmark/verus_rmm/evidence/alp14_witness_sweep_candidates.json`.
 
 ## Benchmark construction
 
@@ -133,9 +136,14 @@ as a per-generator score. The 4 TP items are the discriminating set.
 
 ## Limitations and next steps
 
-- **4 positives is small.** With both models at 1/4 it cannot separate them.
-- **Compilation, not detection, is the current bottleneck** for generator scoring.
-  Running the Verus-feedback repair loop before scoring is the obvious next step.
+- **4 positives is small.** With Claude at gold parity after repair, the benchmark
+  cannot rank a strong generator any finer than "matches the reference".
+- **Compilation was the bottleneck, and it is now removable.** One round of
+  Verus-feedback repair took Claude from 1/4 to 4/4. Generator comparisons should
+  report both the raw and the repaired configuration; raw alone measures Verus syntax
+  fluency more than bug-finding ability.
+- **GPT is unmeasured in the repaired configuration** — codex quota resets
+  2026-08-20 23:22. Re-run `repair.py --model codex` after that for the missing row.
 - **Growing the positive count is harder than it first appears.** The obvious filter —
   parse each command's failure-condition-ordering section, close it transitively, and
   keep only pairs no edge covers — was implemented and **does not discriminate**. It
@@ -155,3 +163,29 @@ as a per-generator score. The 4 TP items are the discriminating set.
   requiring human judgment, not an automated bug list.
 - Bugs 1–3 exist only on eac5/rel0; a benchmark tracking the current spec would need
   new findings, which is what the sweep plus ordering filter is for.
+
+## Repair changes the picture entirely
+
+The three unscorable TP items were unscorable for one mechanical reason: `RMI_ERROR_RTT`
+is a payload-carrying variant (`RMI_ERROR_RTT(int)`) and both models wrote it bare. The
+gold annotation writes `RMI_ERROR_RTT(RttWalk(...).level as int)`.
+
+Feeding the real Verus error back to the same model
+([`benchmark/verus_rmm/repair.py`](benchmark/verus_rmm/repair.py), the project's existing
+repair-loop idea with a CLI backend) fixed all six failing commands **in one round each**,
+taking Claude Opus 5 from **1/4 to 4/4 — identical to the gold oracle**, with all 10 items
+scorable.
+
+The repairs are type-level only, verified two ways: the `==>` occurrence count is
+unchanged in all six functions (14/9/10/11/13/15 before and after), and the diffs contain
+only the payload fix and `1int << x` → `(1u64 << x) as int` (Verus has no shift on the
+mathematical `int`). No condition was added, removed or weakened.
+
+So the earlier "1/4" is a measurement of **Verus syntax fluency, not bug-finding ability**.
+Once the code compiles, Claude finds every bug the hand-written reference does. Repaired
+output is kept separately (`results/verus_repair/`) so the raw generator numbers stay
+intact — "model + repair" is a different configuration, reported as its own row.
+
+**GPT could not be measured this way**: codex hit its usage limit during the repair pass
+(resets 2026-08-20 23:22). The quota detection stopped cleanly with a resume hint rather
+than burning the remaining calls, and the run is resumable with the same command line.
