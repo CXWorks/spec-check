@@ -795,8 +795,29 @@ which is the failure class compile-success structurally cannot see.
 
 The V3 prompt already ends with *"Keep unchanged-state constraints when implied
 by the command behavior"*, so the model is failing at the one thing its prompt
-explicitly asks for. That makes this a concrete target: a faithfulness effort has
-a named constraint class to check for rather than a 50% aggregate to improve.
+explicitly asks for.
+
+**This is not two examples — it is the rule.** Running the ablation over every
+`weaker` verdict across all nine scored runs (`scripts/ablate_all_weaker.py`):
+
+| what the dropped clause was | count |
+|---|---|
+| **frame condition** (`new_s … == old_s …`) | **18** |
+| anything else | 1 |
+
+**18 of 19.** It spans every configuration — 4B bf16, 4B fp16, 9B, full
+fine-tune — and every seed, over six distinct commands (`RMI_DATA_DESTROY` 7×,
+`RMI_VSMMU_MAP` 5×, `RMI_RTT_CREATE`, `RMI_DATA_CREATE_UNKNOWN`, `RMI_RTT_FOLD`,
+`RMI_RTT_AUX_UNMAP_UNPROTECTED`). The single exception is a postcondition on an
+output value, not a frame condition.
+
+So the entire `weaker` failure mode — the one compile-success structurally cannot
+see, and the one that matters, since a spec that permits too much is what makes a
+verifier miss bugs — reduces to **one omission the model makes consistently:
+it does not say what stays the same.** That is a far more tractable target than a
+50% aggregate, and it is testable directly: the constraint has a syntactic
+signature (an equality relating `new_s` to `old_s`), so a generated spec can be
+checked for its presence without gold.
 
 ### Measured ceiling: gold itself is 33/40
 
