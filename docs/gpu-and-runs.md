@@ -650,6 +650,47 @@ only improves the detectable difference from 22pp to 15pp. Even surrendering all
    These add samples the model has never seen *and* answer the more valuable
    question — whether anything generalises beyond RMM.
 
+### Compiling is worth about half what it looks like
+
+`scripts/semantic_equiv.py` asks Z3 whether a generated spec *means* the same
+thing as gold, in both directions. Over the specs that compile:
+
+| | compiles | equivalent | minus vacuous gold | **actually correct** |
+|---|---|---|---|---|
+| `sft2-0` 4B bf16 | 14/40 (35.0%) | 7 | 6 | **6/40 (15.0%)** |
+| `sft2-1` 4B fp16 | 18/40 (45.0%) | 9 | 8 | **8/40 (20.0%)** |
+| `sft2-2` 9B | 16/40 (40.0%) | 11 | 10 | **10/40 (25.0%)** |
+
+**Roughly half of what compiles disagrees with gold**, so a compile rate is
+about double the rate of specs that say the right thing. This is the constraint
+"compiling is not a golden trajectory" turned into a number, and the number is
+worse than the phrasing suggests.
+
+The disagreements have shape, not noise:
+
+- **weaker** (4) — permits behaviour gold forbids, the failure compile-success
+  structurally cannot see. `RMI_DATA_DESTROY` for both 4B runs, `RMI_VSMMU_MAP`.
+- **stronger** (5) — forbids behaviour gold permits. `RMI_VSMMU_CREATE` for all
+  three models.
+- **incomparable** (9) — disagrees both ways; 5 of them in `sft2-1` alone.
+
+The same command failing the same way across independent models is a shared
+misreading of the text, not sampling noise, and is where a faithfulness effort
+should start.
+
+**It also reorders the models.** By compile rate: fp16 45% > 9B 40% > bf16 35%.
+By correctness: **9B 25% > fp16 20% > bf16 15%**. The 9B converts 11 of 16
+compiling specs into correct ones (69%) where both 4B runs manage half. That
+agrees with the pass@k result: the 9B's advantage shows up on two axes pass@1
+cannot see — how much correct mass the distribution holds, and how faithful the
+output is once it compiles.
+
+**Caveats, both material.** Gold is a human reading of the PDF, so agreement
+with gold is a weaker claim than faithfulness to the text. And 3 of the 98 gold
+specs are literally `{ true }` — one of them, `PSCI_CPU_OFF`, is in the held-out
+40, so every model scores a free pass there and "equivalent" means nothing on
+that command. Subtract it from every pass rate in this document.
+
 ### Measured ceiling: gold itself is 33/40
 
 Before reading any pass rate: **the gold specs compile on only 33 of the 40
