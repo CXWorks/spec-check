@@ -180,6 +180,15 @@ by system; the suffix does not.
 (`de2-rl-test-` + `110`–`114`, `b32-0..7`, `sft-0..7`, `smoke-0..1`, `eval1`,
 `stage-20260812`).
 
+> **The `de2-rl-test-` prefix is not ours alone.** Another user (`yjian`) runs
+> ~136 GPUs of work under the same prefix in this namespace. Counting our own
+> usage by name prefix returned 154 GPUs when the real figure was 18.
+>
+> **Never select by name prefix — always `-l owner=de2`.** A cleanup like
+> `kubectl delete job -n default $(kubectl get job -o name | grep de2-rl-test)`
+> would destroy a colleague's running training. The `owner` label is the only
+> thing separating the two sets.
+
 Also keep clean of project terms: ConfigMap names, entrypoint script contents
 (use `/work/data`, `/work/repo`), and W&B run names. **W&B is off for now** — a run
 name would leak more than it is worth.
