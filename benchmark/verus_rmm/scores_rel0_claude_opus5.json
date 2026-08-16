@@ -1,0 +1,68 @@
+{
+  "label": "claude_opus5",
+  "rows": [
+    {
+      "id": "rel0:RMI_DATA_DESTROY:ripas",
+      "label": "TP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "rel0:RMI_RTT_CREATE:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0599]: no method named `spec_shl` found for struct `vstd::prelude::int` in the current scope"
+    },
+    {
+      "id": "rel0:RMI_RTT_DESTROY:state",
+      "label": "TP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "rel0:RMI_RTT_FOLD:ripas",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0599]: no method named `spec_shl` found for struct `vstd::prelude::int` in the current scope"
+    },
+    {
+      "id": "rel0:RMI_RTT_FOLD:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0599]: no method named `spec_shl` found for struct `vstd::prelude::int` in the current scope"
+    },
+    {
+      "id": "rel0:RMI_RTT_INIT_RIPAS:ripas",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "rel0:RMI_RTT_INIT_RIPAS:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "rel0:RMI_RTT_SET_RIPAS:state",
+      "label": "FP",
+      "kind": "obligation",
+      "outcome": "inconclusive",
+      "detail": "error[E0308]: mismatched types"
+    },
+    {
+      "id": "rel0:RSI_ATTESTATION_TOKEN_CONTINUE:dual_error",
+      "label": "TP",
+      "kind": "contradiction",
+      "outcome": "detected",
+      "detail": "proof accepted"
+    }
+  ]
+}

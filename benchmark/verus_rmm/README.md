@@ -55,6 +55,23 @@ UNASSIGNED" unconditionally, while the Success conditions give `UNASSIGNED_NS` w
 oracle does (control: 6/6). They measure the pipeline's precision ceiling, not
 generator quality, and should not be read as a per-generator score.
 
+## Cross-version replication: rel0
+
+The same construction applied to rel0 (`ground_truth_rel0.json`, 9 items: 3 TP + 6 FP —
+`RMI_RTT_INIT_RIPAS` was fixed between eac5 and rel0, and `RMI_PDEV_STOP` does not exist
+before 1.1) reproduces every eac5 conclusion on independent data:
+
+| Generator | TP detected (of 3) | Inconclusive | FP fired |
+|---|---|---|---|
+| Gold oracle (control) | **3/3** | 0 | 6/6 |
+| GPT `gpt-5.6-sol` (high) | 1/3 | 2 | 0/6 |
+| Claude Opus 5 (high) | 1/3 | 2 | 0/6 |
+| Claude Opus 5 **+ repair** | **3/3** | 0 | 6/6 |
+
+Identical pattern: the two models tie unrepaired, both are limited by compilation rather
+than detection, and one repair round restores gold parity. All six repaired functions
+preserve their `==>` occurrence counts exactly (9/10/15/13/11/15).
+
 ## Usage
 
 ```bash
