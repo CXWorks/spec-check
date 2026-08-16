@@ -895,6 +895,56 @@ that carry the right number of frame clauses with the wrong content. Turning thi
 into a training-time signal would mean predicting the required frame conditions
 from the section text, which is a separate problem.
 
+### Four inference-time interventions, scored on correctness
+
+All on `sft2-2` (9B), all zero-retraining, all judged with `semantic_equiv.py`:
+
+| intervention | compiles | **correct** | Δcompile | Δcorrect | conversion |
+|---|---|---|---|---|---|
+| greedy baseline | 16 (40.0%) | **10 (25.0%)** | — | — | 62.5% base |
+| **restore preamble** | 25 (62.5%) | **13 (32.5%)** | +9 | **+3** | **33.3%** |
+| self-repair, 2 rounds | **31 (77.5%)** | 12 (30.0%) | **+15** | +2 | 13.3% |
+| best-of-9 sampling | 24 (60.0%) | 11 (27.5%) | +8 | +1 | 12.5% |
+| preamble + frame hint | 22 (55.0%) | 10 (25.0%) | −3 | −3 | — |
+
+**Compile-rate gain barely predicts correctness gain.** Self-repair nearly
+doubles compilation — 31/40 against gold's own 33/40 ceiling — and buys two
+correct specs. Every intervention converts new compilations at well under the
+model's own 62.5% base rate.
+
+Self-repair's ceiling is structural, not an implementation limit: its feedback is
+the compiler, and a compiler cannot report a missing frame condition, because a
+spec that omits one is perfectly legal. It fixes API misuse to near the ceiling
+and is blind to the semantic defect by construction.
+
+**Sampling is closed out.** pass@9 = 60.0%, pass@24 = 57.5%, pass@16 at
+temperature 1.1 = 62.5%. Tripling the budget buys nothing; the ceiling is ~60%
+compiling, of which the recovered portion is 87.5% wrong.
+
+### The frame-condition hint works, and overshoots
+
+Adding an explicit demand for frame conditions on top of the preamble:
+
+| | compiles | correct | `weaker` | `stronger` |
+|---|---|---|---|---|
+| preamble only | 25 | **13** | **4** | 2 |
+| + frame hint | 22 | 10 | **1** | **6** |
+
+Net effect negative, **but the mechanism works**: the target failure mode drops
+by 75%, and the specs land on the other side of correct — over-constrained rather
+than under-constrained. The model reads the instruction and acts on it; it
+applies it to state that is *supposed* to change.
+
+That refutes the simpler reading, that a model at loss 0.002 merely replays
+training patterns and cannot take instruction. It takes it. What it lacks is the
+judgement of *which* state is meant to be invariant — which is the same reading
+comprehension the task requires in the first place.
+
+It is also the only intervention tested that moves the semantic axis at all; the
+other three move compilation and leave `weaker` where it was. Worth calibrating
+(demand frame conditions only where the document states the state is preserved)
+rather than abandoning — untested, and a decision for a human.
+
 ### Measured ceiling: gold itself is 33/40
 
 Before reading any pass rate: **the gold specs compile on only 33 of the 40
