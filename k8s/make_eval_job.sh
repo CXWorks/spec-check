@@ -21,6 +21,8 @@ NAME="${1:?usage: make_eval_job.sh <name> <base-model> <run-ids> [ckpts]}"
 BASE="${2:?base model}"
 RUNS="${3:?run ids}"
 CKPTS="${4:-final}"
+MODE="${MODE:-score}"
+ROUNDS="${ROUNDS:-2}"
 SAMPLES="${SAMPLES:-0}"
 TEMPERATURE="${TEMPERATURE:-0.8}"
 OUT_TAG="${OUT_TAG:-}"
@@ -43,6 +45,7 @@ echo "==> configmap $CM"
 "$KUBECTL" create configmap "$CM" -n "$NS" \
   --from-file=de2_entrypoint.sh="$REPO_ROOT/k8s/entrypoint_eval.sh" \
   --from-file=eval_checkpoint.py="$REPO_ROOT/scripts/eval_checkpoint.py" \
+  --from-file=repair_eval.py="$REPO_ROOT/scripts/repair_eval.py" \
   --from-file=dataset_loader.py="$REPO_ROOT/prompt_engineering/dataset_loader.py" \
   --from-file=verify_generated_verus.py="$REPO_ROOT/prompt_engineering/verify_generated_verus.py" \
   --from-file=prompt_engineering_v3.py="$REPO_ROOT/prompt_engineering/prompt_engineering_v3.py" \
@@ -96,7 +99,7 @@ $(bad_values)
       containers:
       - name: main
         image: nvcr.io/nvidia/pytorch:25.01-py3
-        command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
+        command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /entry/repair_eval.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
         securityContext: {privileged: true}
         resources:
           limits:   {cpu: "${CPU_LIM}", memory: 400Gi, nvidia.com/gpu: 2}
@@ -106,6 +109,8 @@ $(bad_values)
         - {name: BASE_MODEL,  value: "${BASE}"}
         - {name: CKPTS,       value: "${CKPTS}"}
         - {name: DEPS,        value: "${DEPS}"}
+        - {name: MODE,        value: "${MODE}"}
+        - {name: ROUNDS,      value: "${ROUNDS}"}
         - {name: SAMPLES,     value: "${SAMPLES}"}
         - {name: TEMPERATURE, value: "${TEMPERATURE}"}
         - {name: OUT_TAG,     value: "${OUT_TAG}"}

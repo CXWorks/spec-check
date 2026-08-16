@@ -10,6 +10,8 @@ set -euo pipefail
 : "${BASE_MODEL:?BASE_MODEL is required}"
 DEPS="${DEPS:-new}"
 CKPTS="${CKPTS:-final}"          # space-separated: final checkpoint-41 ...
+MODE="${MODE:-score}"            # score | repair (compile-feedback self-repair)
+ROUNDS="${ROUNDS:-2}"            # repair mode only
 SAMPLES="${SAMPLES:-0}"          # >0 turns on best-of-k on top of the greedy sample
 TEMPERATURE="${TEMPERATURE:-0.8}"
 JOBS="${JOBS:-8}"
@@ -139,13 +141,18 @@ for RUN in $RUN_IDS; do
     # hit the same DNS blip, and `continue` alone would silently drop a run from
     # the comparison — the worst failure mode here, because the summary table
     # would still look complete.
+    if [ "$MODE" = "repair" ]; then
+      SCRIPT="scripts/repair_eval.py"; MODE_ARGS="--rounds $ROUNDS"
+    else
+      SCRIPT="scripts/eval_checkpoint.py"; MODE_ARGS="$SAMPLE_ARGS"
+    fi
     ok=""
     for a in 1 2 3; do
       # shellcheck disable=SC2086
-      python scripts/eval_checkpoint.py \
+      python "$SCRIPT" \
         --base "$BASE_MODEL" \
         --adapter "${HF_CKPT_REPO}" --subfolder "${RUN}/${CK}" \
-        --jobs "$JOBS" $SAMPLE_ARGS \
+        --jobs "$JOBS" $MODE_ARGS \
         --out "$OUT" && { ok=1; break; }
       echo "[eval] attempt $a failed for $RUN/$CK; retrying in 30s"
       sleep 30
