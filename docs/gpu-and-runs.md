@@ -763,9 +763,32 @@ the assumption the model had memorised it. Over the first 14–16 commands,
 restoring it moves the 9B from 7 to 12 and the 4B fp16 from 6 to 11, **with no
 command lost in either**, and the 9B's `missing_symbol` failures go 3 → 0.
 
-Not yet a result. That is a compile-rate delta, and the preamble works by
-supplying symbol *names* — which is exactly how a model produces something that
-compiles without being right. Judgement waits on the equivalence check.
+**Result, for the 9B (complete, 40 commands):**
+
+| | compiles | equivalent | minus vacuous | **correct** |
+|---|---|---|---|---|
+| no preamble | 16/40 (40.0%) | 11 | 10 | **25.0%** |
+| **with preamble** | **25/40 (62.5%)** | 14 | 13 | **32.5%** |
+
++9 compiles with **none lost**, McNemar p = 0.004. A single greedy generation
+beats best-of-9 sampling (24/40), and 25/40 is 76% of the 33/40 gold ceiling.
+
+**But the compile-rate delta is three times the correctness delta**: +22.5pp
+against +7.5pp. Of the 9 newly-compiling commands only 3 are right — a 33%
+conversion, better than sampling's 12.5% but below the model's own 62.5% base
+rate. Anything that raises the compile rate appears to dilute correctness; the
+question is only by how much.
+
+**The two defects are independent.** The preamble fixes API misuse — the 59% of
+failures that were `missing_symbol`, `type_mismatch` and `wrong_arity`, with
+`missing_symbol` going to zero. It does nothing about frame conditions: of the 5
+newly-compiling-but-wrong specs, 3 are `weaker`, the same dropped-frame-condition
+failure as before. Specs now clear the compile bar still carrying the semantic
+defect underneath it.
+
+So the roadmap has two separate targets, and only one of them has been addressed:
+supplying the symbol table is a free win worth taking, and the frame-condition
+omission is untouched by it.
 
 ### What the model actually drops: frame conditions
 
