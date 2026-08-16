@@ -376,10 +376,31 @@ longest complete one is 5205 — a cliff at the cap, not a distribution.
 | `sft2-3` 4B bf16 full | **14/40 (35.0%)** | 27.5% |
 | `sft2-2` 9B bf16 LoRA | **26/40 (65.0%)** | 25.0% |
 
-It hit the configurations **unequally**, so it is a confound rather than a
-uniform penalty. `sft2-3` was truncated twice as often as `sft2-0`, which is
-enough on its own to withdraw "full fine-tuning is worse" — that comparison has
-no support left.
+It hit the configurations **unequally**, so for the 4B LoRA runs and the 9B it
+is a confound rather than a uniform penalty.
+
+**`sft2-3` is the exception, and the reason matters: its truncation is a
+symptom, not a penalty.** The full fine-tune degenerates into repetition — its
+worst output repeats `!result.is_Ok()` 156 times, 160 of 185 conjuncts being
+duplicates — so it truncates because it loops until the cap:
+
+| | duplicate-conjunct fraction | repetitive outputs | truncated |
+|---|---|---|---|
+| `sft2-0` 4B LoRA | 4.9% | 2/40 | 7/40 |
+| `sft2-1` 4B LoRA | — | 3/40 | 8/40 |
+| `sft2-3` 4B full | **13.1%** | **7/40** | 14/40 |
+
+Raising the budget does not help it: at 6144 it still truncated on 5 of its
+first 20 commands, all of them already on the 2048 list. So "full fine-tuning is
+worse" **stands** — but the mechanism is degeneration, not weaker spec-writing,
+and that is a different problem with a different fix. Still one seed and still
+untested for significance; the replicates in `seed-4b` are what settle it.
+
+This was invisible because `non_degenerate` only looked for specs that are too
+SMALL (`{ true }`, no implication). It scored `sft2-3` at 39/40 while a sixth of
+its outputs were loops. A duplicate-conjunct check is now part of it — `a && a`
+is just `a`, so repeated conjuncts are semantically free and easy to count —
+which moves `sft2-3` to 32/40 and the LoRA runs to 36–37/40.
 
 Half the commands that never passed under any run (7 of the 14 where gold does
 compile) were simply never allowed to finish: `RMI_REALM_DESTROY`,

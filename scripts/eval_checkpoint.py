@@ -35,6 +35,7 @@ import json
 import os
 import re
 import sys
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -138,6 +139,19 @@ def degeneracy_flags(src, sample):
     Phase 2 — but enough to catch a spec that compiles by saying nothing."""
     body = src[src.find("{") + 1: src.rfind("}")] if "{" in src else ""
     stripped = body.strip()
+
+    # Repetition. The original two checks looked only for a spec that is too
+    # SMALL, and scored sft2-3 as 39/40 non-degenerate while it was emitting
+    # `!result.is_Ok()` 156 times in a single body — 160 of 185 clauses were
+    # duplicates. That is the same defect (a spec that says nothing) arrived at
+    # from the opposite direction, and it was invisible: it presents as
+    # truncation, which then reads as a decode-budget problem rather than as the
+    # model looping. Specs are `&&`-joined conjunctions, so duplicate conjuncts
+    # are both easy to count and semantically free — `a && a` is just `a`.
+    clauses = [c.strip() for c in body.split("&&") if c.strip()]
+    counts = Counter(clauses)
+    dup_frac = (sum(v - 1 for v in counts.values()) / len(clauses)) if clauses else 0.0
+
     return {
         # `{ true }` and friends: compiles, constrains nothing.
         "trivial_body": stripped in ("true", "true,", "") or len(stripped) < 20,
@@ -145,6 +159,11 @@ def degeneracy_flags(src, sample):
         "no_implication": "==>" not in body,
         # The signature should mention the command's declared outputs.
         "has_result_param": "result" in src.split("{")[0],
+        "dup_clause_frac": round(dup_frac, 3),
+        # 0.30 sits well above the healthy runs (sft2-0 averaged 0.049, and a
+        # spec legitimately repeats a conjunct now and then) and well below the
+        # looping ones (sft2-3's worst was 0.865).
+        "repetitive": dup_frac > 0.30,
     }
 
 
@@ -350,7 +369,8 @@ def main():
     cbs = [r["codebleu"] for r in results if r["codebleu"] is not None]
     ndeg = sum(1 for r in results
                if not r["degeneracy"]["trivial_body"]
-               and not r["degeneracy"]["no_implication"])
+               and not r["degeneracy"]["no_implication"]
+               and not r["degeneracy"]["repetitive"])
     summary = {
         "base": args.base, "adapter": args.adapter, "subfolder": args.subfolder,
         "n": n,
