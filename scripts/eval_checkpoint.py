@@ -133,8 +133,13 @@ def main():
 
     results = []
     for i, s in enumerate(dataset, 1):
-        ids = tok.apply_chat_template(build_prompt(s, V3_PROMPT), return_tensors="pt",
-                                      add_generation_prompt=True).to(model.device)
+        raw = tok.apply_chat_template(build_prompt(s, V3_PROMPT), return_tensors="pt",
+                                      add_generation_prompt=True)
+        # transformers 5.x returns a BatchEncoding here where 4.x returns a
+        # tensor, and generate() then fails on .shape. The project hit the same
+        # shape of bug via Unsloth (STATUS.md lesson 6); handle both.
+        ids = raw["input_ids"] if hasattr(raw, "keys") else raw
+        ids = ids.to(model.device)
         with torch.no_grad():
             out = model.generate(ids, max_new_tokens=args.max_new_tokens,
                                  do_sample=False, pad_token_id=tok.eos_token_id)
