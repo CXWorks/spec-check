@@ -60,7 +60,7 @@ def load_train_preamble(specs_dir):
     return "".join(lines[-PREAMBLE_TAIL_LINES:]).strip()
 
 
-def build_prompt(sample, v3, preamble=None):
+def build_prompt(sample, v3, preamble=None, frame_hint=False):
     """The V3 system prompt plus the section text, optionally with the preamble.
 
     `build_dataset.py` puts the preamble in **every training prompt** and
@@ -75,12 +75,25 @@ def build_prompt(sample, v3, preamble=None):
     hand-written symbol list, which would be a third distinct prompt shape.
     """
     body = f"{sample.section_text}\n\n" if not preamble else f"{preamble}\n\n{sample.section_text}\n\n"
+    # The stock closing line is the V3 prompt's, so it is what training saw.
+    # `frame_hint` replaces its last sentence with an explicit statement of the
+    # one thing the model demonstrably fails to do: 18 of 19 `weaker` verdicts
+    # are a dropped frame condition. It is deliberately off-distribution — the
+    # preamble result says matching training helps, so this tests whether naming
+    # the defect outweighs deviating from the training prompt.
+    tail = ("Keep unchanged-state constraints when implied by the command behavior."
+            if not frame_hint else
+            "For EVERY piece of state the command does not modify, add an explicit "
+            "clause asserting it is unchanged — of the form `F(new_s, ...) == "
+            "F(old_s, ...)`, guarded by the conditions under which it holds. "
+            "Omitting one makes the specification accept behaviour the document "
+            "forbids, which is worse than failing to compile.")
     user = (
         f"{body}"
         f"Signature: pub open spec fn {sample.command.lower()}_spec(...) -> bool\n"
         "Prefer Bits64/UInt64/UInt32 aliases when present in context/spec, but do "
         "not sacrifice semantic correctness for alias formatting.\n"
-        "Keep unchanged-state constraints when implied by the command behavior."
+        f"{tail}"
     )
     return [{"role": "system", "content": v3.system}, {"role": "user", "content": user}]
 
@@ -213,6 +226,10 @@ def main():
                          "greedy one. 0 keeps the run identical to earlier runs.")
     ap.add_argument("--temperature", type=float, default=0.8)
     ap.add_argument("--top-p", type=float, default=0.95)
+    ap.add_argument("--frame-hint", action="store_true",
+                    help="Replace the closing instruction with an explicit demand "
+                         "for frame conditions, the omission behind 18 of 19 "
+                         "`weaker` verdicts.")
     ap.add_argument("--with-preamble", action="store_true",
                     help="Prepend the preamble, restoring the training condition. "
                          "Training put it in every prompt; inference has been "
@@ -284,11 +301,11 @@ def main():
               f"(last {PREAMBLE_TAIL_LINES} lines, as training used)", flush=True)
 
     report_prompt_alignment(
-        tok, render_generation_prompt(tok, build_prompt(dataset[0], V3_PROMPT, train_preamble)))
+        tok, render_generation_prompt(tok, build_prompt(dataset[0], V3_PROMPT, train_preamble, args.frame_hint)))
 
     def generate(s):
         """Greedy first, then args.samples sampled continuations of the same prompt."""
-        text = render_generation_prompt(tok, build_prompt(s, V3_PROMPT, train_preamble))
+        text = render_generation_prompt(tok, build_prompt(s, V3_PROMPT, train_preamble, args.frame_hint))
         # add_special_tokens=False: the template already emitted every special
         # token as text, so letting the tokenizer add more would shift the prompt
         # away from the training prefix this function just went to the trouble of
@@ -418,6 +435,7 @@ def main():
         "no_fn_found": sum(1 for r in results
                            if r["reason"] == "no_pub_open_spec_fn_found"),
         "with_preamble": bool(args.with_preamble),
+        "frame_hint": bool(args.frame_hint),
         "gold_ceiling_note": "gold compiles on 33/40 (82.5%) with this Verus build",
     }
     if args.samples:

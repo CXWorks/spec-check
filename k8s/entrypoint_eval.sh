@@ -12,6 +12,7 @@ DEPS="${DEPS:-new}"
 CKPTS="${CKPTS:-final}"          # space-separated: final checkpoint-41 ...
 MODE="${MODE:-score}"            # score | repair (compile-feedback self-repair)
 WITH_PREAMBLE="${WITH_PREAMBLE:-0}"  # 1 restores the preamble that training used
+FRAME_HINT="${FRAME_HINT:-0}"        # 1 demands frame conditions explicitly
 ROUNDS="${ROUNDS:-2}"            # repair mode only
 SAMPLES="${SAMPLES:-0}"          # >0 turns on best-of-k on top of the greedy sample
 TEMPERATURE="${TEMPERATURE:-0.8}"
@@ -147,6 +148,7 @@ for RUN in $RUN_IDS; do
     else
       SCRIPT="scripts/eval_checkpoint.py"; MODE_ARGS="$SAMPLE_ARGS"
       [ "$WITH_PREAMBLE" = "1" ] && MODE_ARGS="$MODE_ARGS --with-preamble"
+      [ "$FRAME_HINT" = "1" ] && MODE_ARGS="$MODE_ARGS --frame-hint"
     fi
     ok=""
     for a in 1 2 3; do

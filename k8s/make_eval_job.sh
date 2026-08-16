@@ -23,6 +23,7 @@ RUNS="${3:?run ids}"
 CKPTS="${4:-final}"
 MODE="${MODE:-score}"
 WITH_PREAMBLE="${WITH_PREAMBLE:-0}"
+FRAME_HINT="${FRAME_HINT:-0}"
 ROUNDS="${ROUNDS:-2}"
 SAMPLES="${SAMPLES:-0}"
 TEMPERATURE="${TEMPERATURE:-0.8}"
@@ -112,6 +113,7 @@ $(bad_values)
         - {name: DEPS,        value: "${DEPS}"}
         - {name: MODE,        value: "${MODE}"}
         - {name: WITH_PREAMBLE, value: "${WITH_PREAMBLE}"}
+        - {name: FRAME_HINT,    value: "${FRAME_HINT}"}
         - {name: ROUNDS,      value: "${ROUNDS}"}
         - {name: SAMPLES,     value: "${SAMPLES}"}
         - {name: TEMPERATURE, value: "${TEMPERATURE}"}
