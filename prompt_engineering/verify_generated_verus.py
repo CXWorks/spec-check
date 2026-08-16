@@ -172,17 +172,52 @@ def extract_output_head(output: str, max_lines: int = 24) -> str:
 
 
 def classify_failure(output: str, returncode: int) -> str:
+    """Bucket a failed compile by its first real error.
+
+    Order matters, and the previous order was wrong: a bare `"expected"` test sat
+    third and claimed everything below it for `parse_error`. `expected` appears in
+    most rustc diagnostics — "expected 2 arguments, found 3", "expected struct
+    `Foo`" — so arity and type errors were being reported as syntax errors, which
+    is what the failure taxonomy was then read off. Specific patterns now come
+    first and the syntax test is narrowed to phrasing only a parser produces.
+
+    Anything unrecognised becomes `other_compile_error` rather than being folded
+    into a named bucket: an honest unknown is worth more than a wrong label, and
+    `output_head` is stored alongside so it can be read directly.
+    """
     low = output.lower()
-    if "unresolved" in low or "cannot find" in low:
-        return "missing_symbol"
-    if "mismatched types" in low or "type mismatch" in low:
-        return "type_mismatch"
-    if "parse error" in low or "unexpected token" in low or "expected" in low:
-        return "parse_error"
-    if "postcondition not satisfied" in low:
+
+    # Verus's own verification verdict, not a compile failure at all.
+    if "postcondition not satisfied" in low or "precondition not satisfied" in low:
         return "proof_obligation_failed"
+
+    # Genuine syntax errors, tested first because parsing precedes everything
+    # else: if the parser failed there are no name or type diagnostics to find.
+    # Narrowed to phrasing only a parser emits — note that "expected one of ...,
+    # found ..." would otherwise be caught by the type-mismatch pattern below.
+    if ("parse error" in low or "unexpected token" in low
+            or "expected one of" in low or "unexpected end of" in low):
+        return "parse_error"
+
+    # Names the model invented. Kept first among semantic errors: these are the
+    # ones a symbol list at inference time could plausibly remove.
+    if "unresolved" in low or "cannot find" in low or "not found in this scope" in low:
+        return "missing_symbol"
+
+    # Right name, wrong call. Distinct from a type mismatch and previously
+    # invisible — it was landing in parse_error via "expected N arguments".
+    if re.search(r"(takes|expected) \d+ arguments?|this (function|method) takes", low):
+        return "wrong_arity"
+
+    if ("mismatched types" in low or "type mismatch" in low
+            or re.search(r"expected .{0,40}?, found ", low)):
+        return "type_mismatch"
+
+    if "no field" in low or "no method named" in low or "unknown field" in low:
+        return "bad_field_access"
+
     if returncode != 0:
-        return "verus_error"
+        return "other_compile_error"
     return "unknown"
 
 

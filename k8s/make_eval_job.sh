@@ -6,6 +6,10 @@
 #
 # Optional 4th arg: checkpoints to score (default "final").
 #   ... "sft2-0" "final checkpoint-41 checkpoint-82 checkpoint-123"
+#
+# SAMPLES=8 turns on best-of-k. Set OUT_TAG too, or the result overwrites the
+# greedy one at the same path in the checkpoint repo:
+#   SAMPLES=8 OUT_TAG=-bok8 k8s/make_eval_job.sh bok-4b Qwen/Qwen3-4B "sft2-0"
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -17,8 +21,15 @@ NAME="${1:?usage: make_eval_job.sh <name> <base-model> <run-ids> [ckpts]}"
 BASE="${2:?base model}"
 RUNS="${3:?run ids}"
 CKPTS="${4:-final}"
+SAMPLES="${SAMPLES:-0}"
+TEMPERATURE="${TEMPERATURE:-0.8}"
+OUT_TAG="${OUT_TAG:-}"
 JOB="de2-rl-test-$NAME"
 CM="de2-rl-test-$NAME-entry"
+
+# Sampling k times multiplies the Verus work, and Verus is the slow half. More
+# GPUs would not help; more CPU for parallel checks does.
+if [ "$SAMPLES" -gt 0 ]; then CPU_REQ=32; CPU_LIM=64; JOBS=16; else CPU_REQ=16; CPU_LIM=32; JOBS=8; fi
 
 # Qwen3.5 needs transformers 5.x; Qwen3 works on either. Using "new" for both
 # would be simpler but changes the attention path for the 4B runs, so keep each
@@ -83,13 +94,17 @@ $(bad_values)
         command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
         securityContext: {privileged: true}
         resources:
-          limits:   {cpu: "32", memory: 400Gi, nvidia.com/gpu: 2}
-          requests: {cpu: "16", memory: 200Gi, nvidia.com/gpu: 2}
+          limits:   {cpu: "${CPU_LIM}", memory: 400Gi, nvidia.com/gpu: 2}
+          requests: {cpu: "${CPU_REQ}", memory: 200Gi, nvidia.com/gpu: 2}
         env:
-        - {name: RUN_IDS,    value: "${RUNS}"}
-        - {name: BASE_MODEL, value: "${BASE}"}
-        - {name: CKPTS,      value: "${CKPTS}"}
-        - {name: DEPS,       value: "${DEPS}"}
+        - {name: RUN_IDS,     value: "${RUNS}"}
+        - {name: BASE_MODEL,  value: "${BASE}"}
+        - {name: CKPTS,       value: "${CKPTS}"}
+        - {name: DEPS,        value: "${DEPS}"}
+        - {name: SAMPLES,     value: "${SAMPLES}"}
+        - {name: TEMPERATURE, value: "${TEMPERATURE}"}
+        - {name: OUT_TAG,     value: "${OUT_TAG}"}
+        - {name: JOBS,        value: "${JOBS}"}
         - {name: HOME,       value: /work/home}
         - {name: HF_HOME,    value: /work/hf-cache}
         - {name: HF_TOKEN,     valueFrom: {secretKeyRef: {name: de2-rl-test-hf, key: token}}}

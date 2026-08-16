@@ -10,6 +10,10 @@ set -euo pipefail
 : "${BASE_MODEL:?BASE_MODEL is required}"
 DEPS="${DEPS:-new}"
 CKPTS="${CKPTS:-final}"          # space-separated: final checkpoint-41 ...
+SAMPLES="${SAMPLES:-0}"          # >0 turns on best-of-k on top of the greedy sample
+TEMPERATURE="${TEMPERATURE:-0.8}"
+JOBS="${JOBS:-8}"
+OUT_TAG="${OUT_TAG:-}"           # suffix so a best-of-k run cannot overwrite a greedy one
 DATA_REPO="${DATA_REPO:-jisenli/spec-check-data}"
 VERUS_VER="0.2026.04.12.f1166c4"  # the version the project's history used
 
@@ -104,22 +108,28 @@ PY
 cp -r /work/code/* /work/repo/ 2>/dev/null || true
 ls scripts/eval_checkpoint.py prompt_engineering/dataset_loader.py >/dev/null
 
+SAMPLE_ARGS=""
+[ "$SAMPLES" -gt 0 ] && SAMPLE_ARGS="--samples $SAMPLES --temperature $TEMPERATURE"
+
 mkdir -p /work/eval
 for RUN in $RUN_IDS; do
   for CK in $CKPTS; do
-    OUT="/work/eval/${RUN}-${CK}.json"
-    echo "[eval] ===== $RUN / $CK ====="
+    NAME="${RUN}-${CK}${OUT_TAG}"
+    OUT="/work/eval/${NAME}.json"
+    echo "[eval] ===== $RUN / $CK ${SAMPLE_ARGS} ====="
+    # shellcheck disable=SC2086
     python scripts/eval_checkpoint.py \
       --base "$BASE_MODEL" \
       --adapter "${HF_CKPT_REPO}" --subfolder "${RUN}/${CK}" \
+      --jobs "$JOBS" $SAMPLE_ARGS \
       --out "$OUT" || { echo "[eval] FAILED $RUN/$CK"; continue; }
     python - <<PY
 import json, os
 from huggingface_hub import HfApi
 HfApi(token=os.environ["HF_TOKEN"]).upload_file(
-    path_or_fileobj="$OUT", path_in_repo="eval/${RUN}-${CK}.json",
+    path_or_fileobj="$OUT", path_in_repo="eval/${NAME}.json",
     repo_id=os.environ["HF_CKPT_REPO"], repo_type="model")
-print("[eval] uploaded eval/${RUN}-${CK}.json")
+print("[eval] uploaded eval/${NAME}.json")
 PY
   done
 done
