@@ -390,11 +390,29 @@ duplicates — so it truncates because it loops until the cap:
 | `sft2-1` 4B LoRA | — | 3/40 | 8/40 |
 | `sft2-3` 4B full | **13.1%** | **7/40** | 14/40 |
 
-Raising the budget does not help it: at 6144 it still truncated on 5 of its
-first 20 commands, all of them already on the 2048 list. So "full fine-tuning is
-worse" **stands** — but the mechanism is degeneration, not weaker spec-writing,
-and that is a different problem with a different fix. Still one seed and still
-untested for significance; the replicates in `seed-4b` are what settle it.
+Raising the budget does not help it, and re-running the whole eval at 6144
+turns that from an inference into an intervention:
+
+| `sft2-3` | 2048 | 6144 |
+|---|---|---|
+| Verus pass | 11/40 (27.5%) | 12/40 (30.0%) |
+| repetitive outputs | 7/40 | **10/40** |
+| mean duplicate-conjunct fraction | 13.0% | **19.3%** |
+| mean / longest output | 3369 / 6676 chars | **6275 / 19973 chars** |
+
+Tripling the budget recovered exactly one command (`RMI_RTT_FOLD`) while nearly
+doubling the mean output and tripling the longest one, and repetition got
+*worse* on every measure. **The extra room went almost entirely into looping.**
+The model is not running out of budget, it is failing to stop.
+
+So "full fine-tuning is worse" **stands** — the mechanism is degeneration, not
+weaker spec-writing, which is a different problem with a different fix. Still one
+seed and still untested for significance; the replicates in `seed-c` settle that.
+
+This is also the clearest illustration of why a pass rate alone misleads here.
+The same broken model reads as 27.5% under one decode cap and 30.0% under
+another, and `non_degenerate` called it 39/40 in both — the defect was being
+clipped at different points rather than measured.
 
 This was invisible because `non_degenerate` only looked for specs that are too
 SMALL (`{ true }`, no implication). It scored `sft2-3` at 39/40 while a sixth of
