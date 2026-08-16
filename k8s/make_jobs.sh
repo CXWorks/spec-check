@@ -15,13 +15,30 @@ KUBECTL="${KUBECTL:-kubectl}"
 NS=default
 CM=de2-rl-test-sft2-entry
 
-# run-id | base model | precision | method | deps profile (see entrypoint.sh)
+# run-id | base model | precision | method | deps profile (see entrypoint.sh) | seed
+#
+# The -s#### runs are seed replicates, not new configurations: same data, same
+# hyperparameters, only initialisation and batch order differ. They exist because
+# a single run gives no way to tell a real effect from run-to-run noise — the
+# 40-command eval set can only resolve a ~22pp difference from one run each, and
+# no affordable change to the split fixes that (docs/dataset.md). Replicates buy
+# the same resolution for GPU time instead of training data.
+#
+# The seed varies ONLY training. The held-out split is pinned by SPLIT_SEED in
+# build_dataset.py; if it moved with this, the replicates would be measured on
+# different test sets and would not be comparable.
 RUNS=(
-  "sft2-0|Qwen/Qwen3-4B|bf16|lora|ngc"
-  "sft2-1|Qwen/Qwen3-4B|fp16|lora|ngc"
-  "sft2-2|Qwen/Qwen3.5-9B|bf16|lora|new"
-  "sft2-3|Qwen/Qwen3-4B|bf16|full|ngc"
-  "sft2-4|Qwen/Qwen3.5-9B|bf16|full|new"
+  "sft2-0|Qwen/Qwen3-4B|bf16|lora|ngc|42"
+  "sft2-1|Qwen/Qwen3-4B|fp16|lora|ngc|42"
+  "sft2-2|Qwen/Qwen3.5-9B|bf16|lora|new|42"
+  "sft2-3|Qwen/Qwen3-4B|bf16|full|ngc|42"
+  "sft2-4|Qwen/Qwen3.5-9B|bf16|full|new|42"
+  "sft2-0-s1337|Qwen/Qwen3-4B|bf16|lora|ngc|1337"
+  "sft2-0-s2024|Qwen/Qwen3-4B|bf16|lora|ngc|2024"
+  "sft2-1-s1337|Qwen/Qwen3-4B|fp16|lora|ngc|1337"
+  "sft2-1-s2024|Qwen/Qwen3-4B|fp16|lora|ngc|2024"
+  "sft2-3-s1337|Qwen/Qwen3-4B|bf16|full|ngc|1337"
+  "sft2-3-s2024|Qwen/Qwen3-4B|bf16|full|ngc|2024"
 )
 
 # Nodes the cluster's own production Jobs avoid. Reused rather than rediscovered.
@@ -51,7 +68,8 @@ if [[ -z "$DRY" ]]; then
 fi
 
 for spec in "${RUNS[@]}"; do
-  IFS='|' read -r RUN MODEL PREC METHOD DEPS <<<"$spec"
+  IFS='|' read -r RUN MODEL PREC METHOD DEPS SEED <<<"$spec"
+  SEED="${SEED:-42}"
   want "$RUN" || continue
   JOB="de2-rl-test-$RUN"
 
@@ -111,6 +129,7 @@ $(bad_values)
         - {name: PRECISION,  value: "${PREC}"}
         - {name: METHOD,     value: "${METHOD}"}
         - {name: DEPS,       value: "${DEPS}"}
+        - {name: SEED,       value: "${SEED}"}
         - {name: EPOCHS,     value: "3"}
         - {name: BATCH,      value: "${BATCH}"}
         - {name: HOME,       value: /work/home}
@@ -134,7 +153,7 @@ YAML
   if [[ -n "$DRY" ]]; then
     echo "$MANIFEST"
   else
-    echo "==> submitting $JOB  ($MODEL $PREC $METHOD)"
+    echo "==> submitting $JOB  ($MODEL $PREC $METHOD seed=$SEED)"
     echo "$MANIFEST" | "$KUBECTL" apply -f - | sed 's/^/    /'
   fi
 done

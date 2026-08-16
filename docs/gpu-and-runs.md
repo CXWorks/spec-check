@@ -214,6 +214,16 @@ All runs: `dataset_clean` (1310 examples, 293 command), 2 epochs, single node
 | `sft2-2` | `Qwen/Qwen3.5-9B` | bf16 | LoRA r=16 | new | base-model capacity | ⏳ running |
 | `sft2-3` | `Qwen/Qwen3-4B` | bf16 | full fine-tune | ngc | LoRA rank as bottleneck | ✅ trained, uploaded |
 | `sft2-4` | `Qwen/Qwen3.5-9B` | bf16 | full fine-tune | new | capacity × method | ❌ abandoned — OOM |
+| `sft2-0-s1337`, `-s2024` | `Qwen/Qwen3-4B` | bf16 | LoRA r=16 | ngc | run-to-run noise | ⏳ running |
+| `sft2-1-s1337`, `-s2024` | `Qwen/Qwen3-4B` | fp16 | LoRA r=16 | ngc | run-to-run noise | ⏳ running |
+| `sft2-3-s1337`, `-s2024` | `Qwen/Qwen3-4B` | bf16 | full fine-tune | ngc | run-to-run noise | ⏳ running |
+
+The `-s####` runs are **seed replicates, not configurations**: identical data and
+hyperparameters, differing only in initialisation and batch order. They exist
+because one run per configuration cannot separate a real effect from noise — see
+*Statistical power* below. The seed varies training only; the held-out split
+stays pinned by `SPLIT_SEED` in `build_dataset.py`, or the replicates would be
+scored on different test sets and would not be comparable.
 
 `sft2-4` was dropped rather than fixed. Plain DDP keeps a full copy of weights,
 gradients and Adam state on every GPU; for 9B that is ~100 GB per device against
@@ -226,7 +236,9 @@ without it.
 | Run | | Verus pass | non-degenerate |
 |---|---|---|---|
 | **gold** | reference | **33/40 (82.5%)** | — |
+| `sft2-1` | 4B fp16 LoRA | 18/40 (45.0%) | 39/40 |
 | `sft2-0` | 4B bf16 LoRA | **14/40 (35.0%)** | 39/40 |
+| `sft2-3` | 4B bf16 full FT | 11/40 (27.5%) | 39/40 |
 
 Read against 82.5%, not 100%. Non-degeneracy is high, so the model is producing
 real specs and failing to compile them — it is not gaming the metric by
@@ -241,6 +253,48 @@ checkpointed to `jisenli/spec-check-ckpt/<run>/checkpoint-*` plus `final`.
 **The 9B runs use a different dependency stack** (torch 2.9.1 + transformers
 5.15, attention on sdpa rather than flash-attn) because `qwen3_5` is unknown to
 transformers 4.x. The 4B/9B comparison carries that caveat.
+
+### Statistical power: why none of the above is yet a result
+
+**Verified.** The 40-command eval set gives a binomial standard error of ~7.7pp
+around a 35% rate, so two runs must differ by roughly **22pp** before the
+difference is distinguishable from noise. `sft2-1` leads `sft2-0` by 10pp. That
+is inside the noise floor, so the ranking above is not yet evidence that fp16
+beats bf16.
+
+Paired analysis is stronger and free, because the same 40 commands are scored by
+every run — command difficulty, the dominant noise source, cancels. Comparing
+`sft2-0` against `sft2-1` command by command:
+
+| | count |
+|---|---|
+| both pass | 13 |
+| both fail | 21 |
+| only `sft2-1` (fp16) passes | 5 |
+| only `sft2-0` (bf16) passes | 1 |
+
+**34 of 40 commands behave identically under both runs**, so the entire signal
+lives in 6 disagreements. McNemar's exact test on 5 vs 1 gives **p = 0.219** —
+not significant. The 10pp gap is unsupported even under the more sensitive test.
+
+**Assumed, not verified:** that the residual difference is seed noise rather than
+a real but small precision effect. That is exactly what the `-s####` replicates
+are being run to check.
+
+Enlarging the eval set does not fix this and was **rejected**: the split is by
+command name, so every command moved into the test set leaves the training set.
+Going 40 → 80 costs 56% of the training data (293 → 129 command examples) and
+only improves the detectable difference from 22pp to 15pp. Even surrendering all
+98 alp14 commands to evaluation — an 85% cut to training data — only reaches
+14pp. 121 command names is a structural ceiling that no split can escape
+(`docs/dataset.md`). Power has to come from somewhere other than the split:
+
+1. **Paired (McNemar) comparison** as the default analysis, never marginal rates.
+2. **Seed replicates.** Averaging *k* seeds shrinks the standard error by √*k*;
+   3 seeds is worth roughly a 3× larger eval set, at zero cost in training data.
+3. **Other specifications** (PSCI / SDEI / DRTM) as additional held-out sets.
+   These add samples the model has never seen *and* answer the more valuable
+   question — whether anything generalises beyond RMM.
 
 ### Measured ceiling: gold itself is 33/40
 

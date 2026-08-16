@@ -15,10 +15,11 @@ MAX_SEQ="${MAX_SEQ:-12288}"
 BATCH="${BATCH:-1}"
 GRAD_ACCUM="${GRAD_ACCUM:-4}"
 LR="${LR:-2e-4}"
+SEED="${SEED:-42}"
 DATA_REPO="${DATA_REPO:-jisenli/spec-check-data}"
 EXTRA_ARGS="${EXTRA_ARGS:-}"
 
-echo "[entry] run=$RUN_ID model=$BASE_MODEL precision=$PRECISION method=$METHOD"
+echo "[entry] run=$RUN_ID model=$BASE_MODEL precision=$PRECISION method=$METHOD seed=$SEED"
 
 # Two dependency profiles, because the two model families cannot share one.
 #
@@ -152,6 +153,7 @@ torchrun --nproc_per_node="$NPROC" /entry/train.py \
   --batch-size "$BATCH" \
   --grad-accum "$GRAD_ACCUM" \
   --lr "$LR" \
+  --seed "$SEED" \
   --push $EXTRA_ARGS
 
 echo "[entry] done: $RUN_ID"

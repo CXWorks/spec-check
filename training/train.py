@@ -62,6 +62,10 @@ def parse_args():
     p.add_argument("--max-seq", type=int, default=12288)
     p.add_argument("--max-steps", type=int, default=-1,
                    help="Cap total steps. Used for smoke tests (gate G2); -1 = off.")
+    p.add_argument("--seed", type=int, default=42,
+                   help="Training seed. Held-out split is fixed by SPLIT_SEED in "
+                        "build_dataset.py and is NOT affected — varying this varies "
+                        "only init/order, which is what a seed replicate must isolate.")
     p.add_argument("--full-sequence-loss", action="store_true",
                    help="Train on prompt tokens too (the old behaviour). Off by "
                         "default; see the module docstring.")
@@ -137,7 +141,7 @@ def build_config(args, trl):
         run_name=args.run_id,
         bf16=(args.precision == "bf16"),
         fp16=(args.precision == "fp16"),
-        seed=42,
+        seed=args.seed,
     )
 
     seq_key = "max_length" if "max_length" in sig else "max_seq_length"
