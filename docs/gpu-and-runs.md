@@ -732,6 +732,41 @@ attempt — which is what the `pre-*` (restore the training-time symbol table) a
 `rep-*` (feed the compiler error back) experiments test, and they have to be
 judged on semantic equivalence rather than on compile rate.
 
+### Correctness reorders the configurations again, and flattens them
+
+Applying the Z3 comparison to every seed replicate:
+
+| config | compile rate | **correctness** | compiles that are correct |
+|---|---|---|---|
+| `sft2-2` 9B (1 seed) | 40.0% | **25.0%** | 62.5% |
+| `sft2-1` 4B fp16 | 42.5% ±5.0 | 20.8% ±2.5 | 49% |
+| `sft2-0` 4B bf16 | 37.5% ±5.0 | 19.2% ±7.5 | 51% |
+| `sft2-3` 4B full FT | 28.8% ±2.5 | **18.8%** ±2.5 | **65%** |
+
+**The full fine-tune is not the outlier it appeared to be.** It compiles 9–14
+points less often than LoRA but is correct within 2 points of it, because the
+specs it does produce are right 65% of the time against LoRA's ~50%. Its
+degeneration cost it compilations that were largely going to be wrong anyway.
+
+**On correctness, every 4B comparison is inside seed noise.** bf16 alone spreads
+7.5pp across seeds, which swallows every gap between the three 4B configurations.
+The 9B leads by ~5pp but has one seed, so it is not resolved either.
+
+The two metrics also have *different* noise: bf16 is ±5.0pp on compile rate and
+±7.5pp on correctness, fp16 is ±5.0 and ±2.5. They are not two readings of one
+quantity, and reporting only the compile rate ranks fp16 first when it is not.
+
+### Restoring the training-time preamble (in flight)
+
+Training put a 200-line symbol table in every prompt; inference removed it on
+the assumption the model had memorised it. Over the first 14–16 commands,
+restoring it moves the 9B from 7 to 12 and the 4B fp16 from 6 to 11, **with no
+command lost in either**, and the 9B's `missing_symbol` failures go 3 → 0.
+
+Not yet a result. That is a compile-rate delta, and the preamble works by
+supplying symbol *names* — which is exactly how a model produces something that
+compiles without being right. Judgement waits on the equivalence check.
+
 ### Measured ceiling: gold itself is 33/40
 
 Before reading any pass rate: **the gold specs compile on only 33 of the 40
