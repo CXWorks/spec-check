@@ -1,0 +1,387 @@
+[
+  {
+    "command": "PSCI_CPU_ON",
+    "conditions": 3,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 3,
+    "uncovered": 3
+  },
+  {
+    "command": "RMI_DATA_CREATE_UNKNOWN",
+    "conditions": 11,
+    "ordering_pairs": 6,
+    "differing_code_pairs": 18,
+    "uncovered": 12
+  },
+  {
+    "command": "RMI_DATA_CREATE",
+    "conditions": 14,
+    "ordering_pairs": 8,
+    "differing_code_pairs": 35,
+    "uncovered": 27
+  },
+  {
+    "command": "RMI_DATA_DESTROY",
+    "conditions": 8,
+    "ordering_pairs": 9,
+    "differing_code_pairs": 5,
+    "uncovered": 2
+  },
+  {
+    "command": "RMI_PDEV_ABORT",
+    "conditions": 5,
+    "ordering_pairs": 5,
+    "differing_code_pairs": 7,
+    "uncovered": 2
+  },
+  {
+    "command": "RMI_PDEV_AUX_COUNT",
+    "conditions": 2,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 1,
+    "uncovered": 1
+  },
+  {
+    "command": "RMI_PDEV_COMMUNICATE",
+    "conditions": 12,
+    "ordering_pairs": 1,
+    "differing_code_pairs": 21,
+    "uncovered": 20
+  },
+  {
+    "command": "RMI_PDEV_CREATE",
+    "conditions": 12,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 11,
+    "uncovered": 11
+  },
+  {
+    "command": "RMI_PDEV_DESTROY",
+    "conditions": 6,
+    "ordering_pairs": 1,
+    "differing_code_pairs": 11,
+    "uncovered": 10
+  },
+  {
+    "command": "RMI_PDEV_GET_STATE",
+    "conditions": 4,
+    "ordering_pairs": 3,
+    "differing_code_pairs": 3,
+    "uncovered": 0
+  },
+  {
+    "command": "RMI_PDEV_IDE_KEY_REFRESH",
+    "conditions": 6,
+    "ordering_pairs": 7,
+    "differing_code_pairs": 11,
+    "uncovered": 4
+  },
+  {
+    "command": "RMI_PDEV_IDE_RESET",
+    "conditions": 6,
+    "ordering_pairs": 7,
+    "differing_code_pairs": 11,
+    "uncovered": 4
+  },
+  {
+    "command": "RMI_PDEV_P2P_CONNECT",
+    "conditions": 13,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 10,
+    "uncovered": 10
+  },
+  {
+    "command": "RMI_PDEV_P2P_DISCONNECT",
+    "conditions": 9,
+    "ordering_pairs": 3,
+    "differing_code_pairs": 8,
+    "uncovered": 5
+  },
+  {
+    "command": "RMI_PDEV_SET_PUBKEY",
+    "conditions": 9,
+    "ordering_pairs": 1,
+    "differing_code_pairs": 15,
+    "uncovered": 14
+  },
+  {
+    "command": "RMI_PDEV_STOP",
+    "conditions": 6,
+    "ordering_pairs": 7,
+    "differing_code_pairs": 11,
+    "uncovered": 4
+  },
+  {
+    "command": "RMI_REALM_ACTIVATE",
+    "conditions": 4,
+    "ordering_pairs": 2,
+    "differing_code_pairs": 3,
+    "uncovered": 1
+  },
+  {
+    "command": "RMI_REALM_DESTROY",
+    "conditions": 4,
+    "ordering_pairs": 2,
+    "differing_code_pairs": 3,
+    "uncovered": 1
+  },
+  {
+    "command": "RMI_REC_CREATE",
+    "conditions": 15,
+    "ordering_pairs": 4,
+    "differing_code_pairs": 26,
+    "uncovered": 22
+  },
+  {
+    "command": "RMI_REC_DESTROY",
+    "conditions": 4,
+    "ordering_pairs": 2,
+    "differing_code_pairs": 3,
+    "uncovered": 1
+  },
+  {
+    "command": "RMI_REC_ENTER",
+    "conditions": 12,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 45,
+    "uncovered": 45
+  },
+  {
+    "command": "RMI_RTT_AUX_CREATE",
+    "conditions": 13,
+    "ordering_pairs": 8,
+    "differing_code_pairs": 22,
+    "uncovered": 14
+  },
+  {
+    "command": "RMI_RTT_AUX_FOLD",
+    "conditions": 10,
+    "ordering_pairs": 10,
+    "differing_code_pairs": 21,
+    "uncovered": 11
+  },
+  {
+    "command": "RMI_RTT_AUX_MAP_UNPROTECTED",
+    "conditions": 7,
+    "ordering_pairs": 4,
+    "differing_code_pairs": 6,
+    "uncovered": 2
+  },
+  {
+    "command": "RMI_RTT_CREATE",
+    "conditions": 12,
+    "ordering_pairs": 8,
+    "differing_code_pairs": 20,
+    "uncovered": 12
+  },
+  {
+    "command": "RMI_RTT_DESTROY",
+    "conditions": 10,
+    "ordering_pairs": 18,
+    "differing_code_pairs": 6,
+    "uncovered": 2
+  },
+  {
+    "command": "RMI_RTT_FOLD",
+    "conditions": 10,
+    "ordering_pairs": 12,
+    "differing_code_pairs": 24,
+    "uncovered": 12
+  },
+  {
+    "command": "RMI_RTT_INIT_RIPAS",
+    "conditions": 10,
+    "ordering_pairs": 9,
+    "differing_code_pairs": 27,
+    "uncovered": 18
+  },
+  {
+    "command": "RMI_RTT_MAP_UNPROTECTED",
+    "conditions": 11,
+    "ordering_pairs": 10,
+    "differing_code_pairs": 18,
+    "uncovered": 10
+  },
+  {
+    "command": "RMI_RTT_SET_RIPAS",
+    "conditions": 15,
+    "ordering_pairs": 10,
+    "differing_code_pairs": 56,
+    "uncovered": 46
+  },
+  {
+    "command": "RMI_RTT_SET_S2AP",
+    "conditions": 14,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 20,
+    "uncovered": 20
+  },
+  {
+    "command": "RMI_VDEV_ABORT",
+    "conditions": 5,
+    "ordering_pairs": 5,
+    "differing_code_pairs": 7,
+    "uncovered": 2
+  },
+  {
+    "command": "RMI_VDEV_COMMUNICATE",
+    "conditions": 16,
+    "ordering_pairs": 4,
+    "differing_code_pairs": 41,
+    "uncovered": 37
+  },
+  {
+    "command": "RMI_VDEV_COMPLETE",
+    "conditions": 10,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 9,
+    "uncovered": 9
+  },
+  {
+    "command": "RMI_VDEV_CREATE",
+    "conditions": 27,
+    "ordering_pairs": 9,
+    "differing_code_pairs": 75,
+    "uncovered": 68
+  },
+  {
+    "command": "RMI_VDEV_DESTROY",
+    "conditions": 14,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 49,
+    "uncovered": 49
+  },
+  {
+    "command": "RMI_VDEV_GET_INTERFACE_REPORT",
+    "conditions": 10,
+    "ordering_pairs": 6,
+    "differing_code_pairs": 23,
+    "uncovered": 21
+  },
+  {
+    "command": "RMI_VDEV_GET_MEASUREMENTS",
+    "conditions": 13,
+    "ordering_pairs": 6,
+    "differing_code_pairs": 32,
+    "uncovered": 30
+  },
+  {
+    "command": "RMI_VDEV_GET_STATE",
+    "conditions": 4,
+    "ordering_pairs": 3,
+    "differing_code_pairs": 3,
+    "uncovered": 0
+  },
+  {
+    "command": "RMI_VDEV_LOCK",
+    "conditions": 10,
+    "ordering_pairs": 6,
+    "differing_code_pairs": 23,
+    "uncovered": 21
+  },
+  {
+    "command": "RMI_VDEV_MAP",
+    "conditions": 15,
+    "ordering_pairs": 10,
+    "differing_code_pairs": 26,
+    "uncovered": 18
+  },
+  {
+    "command": "RMI_VDEV_P2P_BIND",
+    "conditions": 28,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 123,
+    "uncovered": 123
+  },
+  {
+    "command": "RMI_VDEV_P2P_UNBIND",
+    "conditions": 30,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 175,
+    "uncovered": 175
+  },
+  {
+    "command": "RMI_VDEV_START",
+    "conditions": 10,
+    "ordering_pairs": 6,
+    "differing_code_pairs": 23,
+    "uncovered": 21
+  },
+  {
+    "command": "RMI_VDEV_UNLOCK",
+    "conditions": 11,
+    "ordering_pairs": 7,
+    "differing_code_pairs": 31,
+    "uncovered": 28
+  },
+  {
+    "command": "RMI_VDEV_VALIDATE_MAPPING",
+    "conditions": 27,
+    "ordering_pairs": 10,
+    "differing_code_pairs": 202,
+    "uncovered": 192
+  },
+  {
+    "command": "RMI_VSMMU_CREATE",
+    "conditions": 13,
+    "ordering_pairs": 2,
+    "differing_code_pairs": 12,
+    "uncovered": 12
+  },
+  {
+    "command": "RMI_VSMMU_DESTROY",
+    "conditions": 8,
+    "ordering_pairs": 2,
+    "differing_code_pairs": 13,
+    "uncovered": 11
+  },
+  {
+    "command": "RMI_VSMMU_MAP",
+    "conditions": 15,
+    "ordering_pairs": 15,
+    "differing_code_pairs": 54,
+    "uncovered": 41
+  },
+  {
+    "command": "RMI_VSMMU_UNMAP",
+    "conditions": 13,
+    "ordering_pairs": 12,
+    "differing_code_pairs": 17,
+    "uncovered": 14
+  },
+  {
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "conditions": 8,
+    "ordering_pairs": 0,
+    "differing_code_pairs": 13,
+    "uncovered": 13
+  },
+  {
+    "command": "RSI_VDEV_DMA_ENABLE",
+    "conditions": 3,
+    "ordering_pairs": 1,
+    "differing_code_pairs": 3,
+    "uncovered": 2
+  },
+  {
+    "command": "RSI_VDEV_GET_INFO",
+    "conditions": 5,
+    "ordering_pairs": 3,
+    "differing_code_pairs": 4,
+    "uncovered": 1
+  },
+  {
+    "command": "RSI_VDEV_P2P_BIND",
+    "conditions": 4,
+    "ordering_pairs": 4,
+    "differing_code_pairs": 3,
+    "uncovered": 0
+  },
+  {
+    "command": "RSI_VDEV_VALIDATE_MAPPING",
+    "conditions": 9,
+    "ordering_pairs": 1,
+    "differing_code_pairs": 15,
+    "uncovered": 14
+  }
+]

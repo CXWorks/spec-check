@@ -136,11 +136,22 @@ as a per-generator score. The 4 TP items are the discriminating set.
 - **4 positives is small.** With both models at 1/4 it cannot separate them.
 - **Compilation, not detection, is the current bottleneck** for generator scoring.
   Running the Verus-feedback repair loop before scoring is the obvious next step.
-- **Growing the positive count** means running the ordering filter over the 97
-  witness-sweep candidates: parse each command's failure-condition-ordering section,
-  take its transitive closure, and keep only pairs no ordering edge covers. That is
-  precisely what separates bug 4 (ordering omits the `pdev_align` vs `pdev_state`
-  edge — real) from bug 6 (ordering states `[da_en] < [vdev_id]`; only the annotation
-  dropped it — annotation defect, labelled FP in `rmm_bugs.rs`).
+- **Growing the positive count is harder than it first appears.** The obvious filter —
+  parse each command's failure-condition-ordering section, close it transitively, and
+  keep only pairs no edge covers — was implemented and **does not discriminate**. It
+  classifies bug 4's pair correctly as uncovered and bug 6's as covered
+  (`[da_en] < [vdev_id]`), but across alp14 it leaves **1,248 of 1,457 differing-code
+  pairs uncovered**: ordering covers only 209, just 3 commands are fully covered, and
+  11 commands have no ordering section at all. "Textually unordered" is therefore the
+  norm, not a defect signal, and cannot be the criterion.
+
+  What actually distinguishes bug 4 is not in the text. Below the two `<` relations,
+  §B4.3.20.2.1 carries a *diagram* laying the conditions in tiers
+  (`da_supp` → `{pdev_bound, pdev_align, pdev_gran_state}` → `{num_vdevs, pdev_state}`).
+  The diagram implies `pdev_align < pdev_state`; the textual relations never state it.
+  The bug is the gap between diagram and text — which the pdftotext extraction
+  flattens, so recovering it needs the diagram's tier structure, not the `<` lines.
+  Until that is solved, treat the witness sweep's 97 candidates as a *review queue*
+  requiring human judgment, not an automated bug list.
 - Bugs 1–3 exist only on eac5/rel0; a benchmark tracking the current spec would need
   new findings, which is what the sweep plus ordering filter is for.
