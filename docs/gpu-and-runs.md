@@ -786,9 +786,23 @@ newly-compiling-but-wrong specs, 3 are `weaker`, the same dropped-frame-conditio
 failure as before. Specs now clear the compile bar still carrying the semantic
 defect underneath it.
 
-So the roadmap has two separate targets, and only one of them has been addressed:
-supplying the symbol table is a free win worth taking, and the frame-condition
-omission is untouched by it.
+**It does not replicate on the 4B.** Running the same intervention on
+`sft2-1`:
+
+| | compiles | correct | McNemar |
+|---|---|---|---|
+| **9B** | 40.0% → **62.5%** (+9, **−0**) | 25.0% → **32.5%** | **p = 0.004** |
+| 4B fp16 | 45.0% → 52.5% (+7, **−4**) | 20.0% → 22.5% | p = 0.549 |
+
+The 4B gains 7 commands and loses 4, which is noise, and its correctness moves
++2.5pp — exactly the seed spread measured for that configuration. So the claim
+is **"restoring the symbol table helps the 9B"**, not "helps". Whether that is
+about capacity, about a 9000-character table crowding the 4B's attention, or
+something else is unknown and untested.
+
+So the roadmap has two separate targets, and only one of them has been addressed
+on one model: supplying the symbol table is a free win on the 9B, and the
+frame-condition omission is untouched by it anywhere.
 
 ### What the model actually drops: frame conditions
 
