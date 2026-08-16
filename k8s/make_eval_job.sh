@@ -70,7 +70,12 @@ metadata:
   namespace: ${NS}
   labels: {owner: de2, task: de2-rl-test-eval2, run: ${NAME}}
 spec:
-  backoffLimit: 3
+  # 20, not 3. A Job that reaches BackoffLimitExceeded is terminally Failed and
+  # raising the limit afterwards does NOT revive it — bok-0, bok-1 and seed-4b
+  # each burned three attempts on an unrelated outage (an HF 403 the client
+  # reported as a connection error) and had to be recreated from scratch. The
+  # limit needs to be generous BEFORE anything goes wrong.
+  backoffLimit: 20
   completions: 1
   template:
     metadata:

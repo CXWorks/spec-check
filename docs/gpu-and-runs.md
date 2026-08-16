@@ -70,6 +70,26 @@ Consequences:
   So a node-local transient failure is not escaped by retrying — it burns
   `backoffLimit` in place. Retry *inside* the entrypoint, not by letting the pod
   die; both entrypoints now do.
+- The pinning outlives the reason for it. `bok-9b`'s volume was on node 093,
+  which filled to 8/8 GPUs while the job was suspended, so its pod became
+  permanently unschedulable (`didn't match PersistentVolume's node affinity`).
+  **Eval PVCs hold only re-downloadable data, so delete the PVC along with the
+  Job when recreating** — that is what lets the scheduler pick a node that still
+  has GPUs. Do not do this for training PVCs, which hold the checkpoints.
+
+### `backoffLimit` must be generous *before* anything goes wrong
+
+A Job that reaches `BackoffLimitExceeded` is terminally `Failed`, and **raising
+`backoffLimit` afterwards does not revive it**. During the storage outage,
+`bok-0`, `bok-1` and `seed-4b` each burned their three attempts on an HF 403
+that the client reported as a connection error; the limit was raised to 20 one
+minute after they had already failed, so every later action — suspending them,
+refreshing their ConfigMaps — was applied to dead Jobs. They had to be recreated
+from scratch. Eval Jobs now ship with `backoffLimit: 20`.
+
+The failure count also persists across suspend/resume, so `status.failed` is a
+lifetime tally rather than a statement about the current attempt. Alerting on it
+directly produces false alarms after any recovery.
 
 ### The HF private-storage quota is a hard dependency
 
