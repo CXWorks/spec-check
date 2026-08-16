@@ -502,6 +502,33 @@ mean the two models' eval paths differed by accident, so eval now derives the
 prompt by cutting the training render at the answer, identically for every
 template. Greedy numbers produced this way are comparable only to each other.
 
+### pass@k is the measurement that has statistical power here
+
+The same three runs, the same 40 commands, the same paired test — only the
+per-command measurement changes, from one greedy sample to nine:
+
+| comparison | greedy discordant | p | pass@9 discordant | p |
+|---|---|---|---|---|
+| bf16 vs fp16 | 1 : 5 | 0.219 | **0 : 6** | **0.031** |
+| bf16 vs 9B | 1 : 3 | 0.625 | **0 : 7** | **0.016** |
+| fp16 vs 9B | 4 : 2 | 0.688 | 1 : 2 | 1.000 |
+
+Greedy resolves nothing. pass@9 turns the discordant pairs one-sided, because it
+estimates the same underlying quantity with a ninth of the sampling noise.
+
+**This is the way out of the resolution problem**, and it is not the one this
+document previously reached for. Enlarging the held-out set was costed and
+rejected: 40 → 80 spends 56% of the training data to move the detectable
+difference from 22pp to 15pp, and even surrendering all 98 alp14 commands only
+reaches 14pp (see *Statistical power* below). Sampling more per command costs
+inference time instead of training data, and inference is cheap. **Compare runs
+on pass@k, not pass@1.**
+
+Read with care on two counts. Three pairwise tests need a multiple-comparison
+correction: at Bonferroni α = 0.0167, bf16-vs-9B survives and bf16-vs-fp16 does
+not. And these are single seeds — `seed-a`/`seed-b`/`seed-c` are what show
+whether bf16 trailing is stable across them.
+
 ### Capacity shows up in pass@k, not in pass@1
 
 Best-of-9 at temperature 0.8, on the same 40 commands:
