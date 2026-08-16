@@ -405,9 +405,25 @@ doubling the mean output and tripling the longest one, and repetition got
 *worse* on every measure. **The extra room went almost entirely into looping.**
 The model is not running out of budget, it is failing to stop.
 
-So "full fine-tuning is worse" **stands** — the mechanism is degeneration, not
-weaker spec-writing, which is a different problem with a different fix. Still one
-seed and still untested for significance; the replicates in `seed-c` settle that.
+With three seeds each, "full fine-tuning is worse" has to be stated more
+precisely, because the two halves of it have very different evidence behind them:
+
+| | LoRA (3 seeds) | full FT (3 seeds) | verdict |
+|---|---|---|---|
+| pass@1 | 35.0 / 37.5 / 40.0% | 30.0 / 27.5 / 22.5% | majority 37.5% vs 27.5%, McNemar **p = 0.289 — not significant** |
+| truncated /40 | 3, 4, 4 | 9, 17, 18 | **ranges do not overlap**; exact permutation p = 0.100, which is the *minimum attainable* with 3-vs-3 |
+
+So full fine-tuning is not demonstrably worse at *writing specs* — that
+comparison is still unresolved. It is demonstrably **more prone to looping**:
+all three LoRA runs rank below all three full runs on truncation with no
+overlap, and the degeneration is separately confirmed by intervention (tripling
+the budget made repetition worse, above). The low pass rate is a downstream
+consequence of that defect rather than an independent capability gap.
+
+Worth noting which measurement carried the result. On pass rate this comparison
+ends in "not significant, no conclusion". The signal is entirely in the
+degeneracy metric — which only exists because `non_degenerate` was found to be
+blind to repetition while investigating something else.
 
 This is also the clearest illustration of why a pass rate alone misleads here.
 The same broken model reads as 27.5% under one decode cap and 30.0% under
