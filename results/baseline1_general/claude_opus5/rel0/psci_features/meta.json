@@ -1,0 +1,13 @@
+{
+  "command": "PSCI_FEATURES",
+  "version": "rel0",
+  "model": "claude:claude-opus-5:high",
+  "rounds": [
+    1
+  ],
+  "candidate_scores": {
+    "1": 0.5757
+  },
+  "best_round": 1,
+  "best_codebleu": 0.5757
+}

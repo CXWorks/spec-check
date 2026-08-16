@@ -1,0 +1,221 @@
+{
+  "label": "Claude Opus 5 (high), round 1",
+  "versions": {
+    "eac5": {
+      "commands_checked": 41,
+      "ground_truth_tp_commands": 8,
+      "reproduced": [
+        {
+          "command": "RMI_VERSION",
+          "expected": [
+            "lower",
+            "higher"
+          ],
+          "flagged": [
+            "lower",
+            "higher"
+          ]
+        },
+        {
+          "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+          "expected": [
+            "len"
+          ],
+          "flagged": [
+            "len"
+          ]
+        },
+        {
+          "command": "RSI_ATTESTATION_TOKEN_INIT",
+          "expected": [
+            "size"
+          ],
+          "flagged": [
+            "size"
+          ]
+        },
+        {
+          "command": "RSI_IPA_STATE_GET",
+          "expected": [
+            "ripas"
+          ],
+          "flagged": [
+            "ripas"
+          ]
+        },
+        {
+          "command": "RSI_MEASUREMENT_READ",
+          "expected": [
+            "value_0",
+            "value_1",
+            "value_2",
+            "value_3",
+            "value_4",
+            "value_5",
+            "value_6",
+            "value_7"
+          ],
+          "flagged": [
+            "value_0",
+            "value_1",
+            "value_2",
+            "value_3",
+            "value_4",
+            "value_5",
+            "value_6",
+            "value_7"
+          ]
+        },
+        {
+          "command": "RSI_VERSION",
+          "expected": [
+            "lower",
+            "higher"
+          ],
+          "flagged": [
+            "lower",
+            "higher"
+          ]
+        },
+        {
+          "command": "PSCI_VERSION",
+          "expected": [
+            "result"
+          ],
+          "flagged": [
+            "result"
+          ]
+        }
+      ],
+      "missed": [
+        {
+          "command": "RMI_RTT_READ_ENTRY",
+          "expected": [
+            "walk_level"
+          ],
+          "flagged": []
+        }
+      ],
+      "extra_flags": [
+        {
+          "command": "RSI_FEATURES",
+          "output": "value",
+          "in_gt_command": false,
+          "section_found": true,
+          "conditions_table_mentions_output": true,
+          "verdict": null
+        }
+      ],
+      "recall": "7/8"
+    },
+    "rel0": {
+      "commands_checked": 41,
+      "ground_truth_tp_commands": 8,
+      "reproduced": [
+        {
+          "command": "RMI_VERSION",
+          "expected": [
+            "lower",
+            "higher"
+          ],
+          "flagged": [
+            "lower",
+            "higher"
+          ]
+        },
+        {
+          "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+          "expected": [
+            "len"
+          ],
+          "flagged": [
+            "len"
+          ]
+        },
+        {
+          "command": "RSI_ATTESTATION_TOKEN_INIT",
+          "expected": [
+            "size"
+          ],
+          "flagged": [
+            "size"
+          ]
+        },
+        {
+          "command": "RSI_IPA_STATE_GET",
+          "expected": [
+            "out_top",
+            "ripas"
+          ],
+          "flagged": [
+            "ripas"
+          ]
+        },
+        {
+          "command": "RSI_MEASUREMENT_READ",
+          "expected": [
+            "value_0",
+            "value_1",
+            "value_2",
+            "value_3",
+            "value_4",
+            "value_5",
+            "value_6",
+            "value_7"
+          ],
+          "flagged": [
+            "value_0",
+            "value_1",
+            "value_2",
+            "value_3",
+            "value_4",
+            "value_5",
+            "value_6",
+            "value_7"
+          ]
+        },
+        {
+          "command": "RSI_VERSION",
+          "expected": [
+            "lower",
+            "higher"
+          ],
+          "flagged": [
+            "lower",
+            "higher"
+          ]
+        },
+        {
+          "command": "PSCI_VERSION",
+          "expected": [
+            "result"
+          ],
+          "flagged": [
+            "result"
+          ]
+        }
+      ],
+      "missed": [
+        {
+          "command": "RMI_RTT_READ_ENTRY",
+          "expected": [
+            "walk_level"
+          ],
+          "flagged": []
+        }
+      ],
+      "extra_flags": [
+        {
+          "command": "RSI_FEATURES",
+          "output": "value",
+          "in_gt_command": false,
+          "section_found": true,
+          "conditions_table_mentions_output": true,
+          "verdict": null
+        }
+      ],
+      "recall": "7/8"
+    }
+  },
+  "total_recall": "14/16"
+}

@@ -1,0 +1,997 @@
+RMI_DATA_CREATE               None                                                        UNASSIGNED                    
+                              RAM                                                         ASSIGNED                      
+RMI_DATA_CREATE_UNKNOWN       None                                                        UNASSIGNED                    
+                              Unchanged                                                   ASSIGNED                      
+RMI_DATA_DESTROY              EMPTY                                                       ASSIGNED                      
+                              Unchanged                                                   UNASSIGNED                    
+RMI_DATA_DESTROY              RAM                                                         ASSIGNED                      
+                              DESTROYED                                                   UNASSIGNED                    
+RMI_RTT_CREATE                None                                                        None                          
+                              Unchanged                                                   Unchanged                     
+RMI_RTT_DESTROY               None                                                        Not supported                 
+                              DESTROYED                                                   Unchanged                     
+RMI_RTT_FOLD                  Not supported                                               Not supported                 
+                              Unchanged                                                   Unchanged                     
+RMI_RTT_INIT_RIPAS            EMPTY                                                       UNASSIGNED                    
+                              RAM                                                         Unchanged                     
+RMI_RTT_SET_RIPAS             Not supported                                               None                          
+                              Not supported                                               Unchanged                     
+RMI_DATA_CREATE command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('data', 'Address'), ('ipa', 'Address'), ('src', 'Address'), ('flags', 'RmiDataFlags')]
+realm: Realm(rd)
+walk: RttWalk(rd, ipa,RMM_RTT_PAGE_LEVEL)
+entry_idx: RttEntryIndex(ipa, walk.level)
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(src)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(src)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !GranuleAccessPermitted(src, PAS_NS)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(data)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(data)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(data).state != DELEGATED
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(ipa)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsProtected(ipa, realm)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: realm.state != REALM_NEW
+  post: ResultEqual(result, RMI_ERROR_REALM)
+  pre: walk.level < RMM_RTT_PAGE_LEVEL
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: walk.rtte.state != UNASSIGNED
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+--------------------------------------------
+  post: Granule(data).state == DATA
+  post: walk.rtte.state == ASSIGNED
+  post: walk.rtte.ripas == RAM
+  post: walk.rtte.addr == data
+  post: Realm(rd).measurements[0] == RimExtendData(realm, ipa, data, flags)
+--------------------------------------------
+data_state: Granule(data).state
+rim: Realm(rd).measurements[0]
+rtte: RttEntry(walk.rtt_addr,entry_idx)
+============================================
+RMI_DATA_CREATE_UNKNOWN command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('data', 'Address'), ('ipa', 'Address')]
+walk: RttWalk(rd, ipa,RMM_RTT_PAGE_LEVEL)
+entry_idx: RttEntryIndex(ipa, walk.level)
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(data)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(data)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(data).state != DELEGATED
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(ipa)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsProtected(ipa, Realm(rd))
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: walk.level < RMM_RTT_PAGE_LEVEL
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: walk.rtte.state != UNASSIGNED
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+--------------------------------------------
+  post: Granule(data).state == DATA
+  post: walk.rtte.state == ASSIGNED
+  post: walk.rtte.addr == data
+--------------------------------------------
+data_state: Granule(data).state
+rtte: RttEntry(walk.rtt_addr,entry_idx)
+============================================
+RMI_DATA_DESTROY command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('ipa', 'Address')]
+walk: RttWalk(rd, ipa,RMM_RTT_PAGE_LEVEL)
+entry_idx: RttEntryIndex(ipa, walk.level)
+walk_top: RttSkipNonLiveEntries(Rtt(walk.rtt_addr),walk.level,ipa)
+[('result', 'RmiCommandReturnCode'), ('data', 'Address'), ('top', 'Address')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(ipa)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsProtected(ipa, Realm(rd))
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: walk.level < RMM_RTT_PAGE_LEVEL
+  post: (ResultEqual(result, RMI_ERROR_RTT, walk.level) && (top == walk_top))
+  pre: walk.rtte.state != ASSIGNED
+  post: (ResultEqual(result, RMI_ERROR_RTT, walk.level) && (top == walk_top))
+--------------------------------------------
+  post: Granule(walk.rtte.addr).state == DELEGATED
+  post: walk.rtte.state == UNASSIGNED
+  pre: walk.rtte.ripas == RAM
+  post: walk.rtte.ripas == DESTROYED
+  post: data == walk.rtte.addr
+  post: top == walk_top
+--------------------------------------------
+data_state: Granule(walk.rtte.addr).state
+rtte: RttEntry(walk.rtt_addr,entry_idx)
+============================================
+RMI_FEATURES command
+--------------------------------------------
+[('fid', 'UInt64'), ('index', 'UInt64')]
+[('result', 'RmiCommandReturnCode'), ('value', 'Bits64')]
+--------------------------------------------
+--------------------------------------------
+  pre: index != 0
+  post: value == Zeros()
+--------------------------------------------
+============================================
+RMI_GRANULE_DELEGATE command
+--------------------------------------------
+[('fid', 'UInt64'), ('addr', 'Address')]
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(addr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(addr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(addr).state != UNDELEGATED
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(addr).gpt != GPT_NS
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+--------------------------------------------
+  post: Granule(addr).state == DELEGATED
+  post: Granule(addr).gpt == GPT_REALM
+--------------------------------------------
+gran_gpt: Granule(addr).gpt
+gran_state: Granule(addr).state
+============================================
+RMI_GRANULE_UNDELEGATE command
+--------------------------------------------
+[('fid', 'UInt64'), ('addr', 'Address')]
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(addr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(addr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(addr).state != DELEGATED
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+--------------------------------------------
+  post: Granule(addr).gpt == GPT_NS
+  post: Granule(addr).state == UNDELEGATED
+--------------------------------------------
+gran_gpt: Granule(addr).gpt
+gran_state: Granule(addr).state
+============================================
+RMI_PSCI_COMPLETE command
+--------------------------------------------
+[('fid', 'UInt64'), ('calling_rec', 'Address'), ('target_rec', 'Address'), ('status', 'PsciReturnCode')]
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: calling_rec == target_rec
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(calling_rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(calling_rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(calling_rec).state != REC
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(target_rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(target_rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(target_rec).state != REC
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Rec(calling_rec).psci_pending != PSCI_REQUEST_PENDING
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Rec(target_rec).owner != Rec(calling_rec).owner
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Rec(target_rec).mpidr != Rec(calling_rec).gprs[1]
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PsciReturnCodePermitted(Rec(calling_rec), Rec(target_rec), status)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+--------------------------------------------
+  post: Rec(calling_rec).psci_pending == NO_PSCI_REQUEST_PENDING
+  pre: (status == PSCI_SUCCESS && Rec(calling_rec).gprs[0] == FID_PSCI_CPU_ON && Rec(target_rec).flags.runnable == RUNNABLE)
+  post: (Rec(calling_rec).gprs[0] == PsciReturnCodeEncode(PSCI_ALREADY_ON))
+  pre: (status == PSCI_SUCCESS && Rec(calling_rec).gprs[0] == FID_PSCI_CPU_ON && Rec(target_rec).flags.runnable != RUNNABLE)
+  post: (Rec(target_rec).gprs[0] == Rec(calling_rec).gprs[3] && Rec(target_rec).gprs[1] == Zeros() && Rec(target_rec).gprs[2] == Zeros() && Rec(target_rec).gprs[3] == Zeros() && Rec(target_rec).gprs[4] == Zeros() && Rec(target_rec).gprs[5] == Zeros() && Rec(target_rec).gprs[6] == Zeros() && Rec(target_rec).gprs[7] == Zeros() && Rec(target_rec).gprs[8] == Zeros() && Rec(target_rec).gprs[9] == Zeros() && Rec(target_rec).gprs[10] == Zeros() && Rec(target_rec).gprs[11] == Zeros() && Rec(target_rec).gprs[12] == Zeros() && Rec(target_rec).gprs[13] == Zeros() && Rec(target_rec).gprs[14] == Zeros() && Rec(target_rec).gprs[15] == Zeros() && Rec(target_rec).gprs[16] == Zeros() && Rec(target_rec).gprs[17] == Zeros() && Rec(target_rec).gprs[18] == Zeros() && Rec(target_rec).gprs[19] == Zeros() && Rec(target_rec).gprs[20] == Zeros() && Rec(target_rec).gprs[21] == Zeros() && Rec(target_rec).gprs[22] == Zeros() && Rec(target_rec).gprs[23] == Zeros() && Rec(target_rec).gprs[24] == Zeros() && Rec(target_rec).gprs[25] == Zeros() && Rec(target_rec).gprs[26] == Zeros() && Rec(target_rec).gprs[27] == Zeros() && Rec(target_rec).gprs[28] == Zeros() && Rec(target_rec).gprs[29] == Zeros() && Rec(target_rec).gprs[30] == Zeros() && Rec(target_rec).gprs[31] == Zeros() && Rec(target_rec).pc == Rec(calling_rec).gprs[2] && Rec(target_rec).flags.runnable == RUNNABLE && Rec(calling_rec).gprs[0] == PsciReturnCodeEncode(PSCI_SUCCESS))
+  pre: (status == PSCI_SUCCESS && Rec(calling_rec).gprs[0] == FID_PSCI_AFFINITY_INFO && Rec(target_rec).flags.runnable == RUNNABLE)
+  post: (Rec(calling_rec).gprs[0] == PsciReturnCodeEncode(PSCI_SUCCESS))
+  pre: (status == PSCI_SUCCESS && Rec(calling_rec).gprs[0] == FID_PSCI_AFFINITY_INFO && Rec(target_rec).flags.runnable != RUNNABLE)
+  post: (Rec(calling_rec).gprs[0] == PsciReturnCodeEncode(PSCI_OFF))
+  pre: status != PSCI_SUCCESS
+  post: (Rec(calling_rec).gprs[0] == PsciReturnCodeEncode(status))
+  post: (Rec(calling_rec).gprs[1] == Zeros() && Rec(calling_rec).gprs[2] == Zeros() && Rec(calling_rec).gprs[3] == Zeros())
+--------------------------------------------
+target_flags: Rec(target_rec).flags
+target_gprs: Rec(target_rec).gprs
+target_pc: Rec(target_rec).pc
+calling_pend: Rec(calling_rec).psci_pending
+calling_gprs: Rec(calling_rec).gprs
+============================================
+RMI_REALM_ACTIVATE command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address')]
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Realm(rd).state != REALM_NEW
+  post: ResultEqual(result, RMI_ERROR_REALM)
+--------------------------------------------
+  post: Realm(rd).state == REALM_ACTIVE
+--------------------------------------------
+realm_state: Realm(rd).state
+============================================
+RMI_REALM_CREATE command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('params_ptr', 'Address')]
+params: RealmParams(params_ptr)
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(params_ptr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(params_ptr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !GranuleAccessPermitted(params_ptr, PAS_NS)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !RmiRealmParamsIsValid(params_ptr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !RealmParamsSupported(params)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: AddrInRange(rd, params.rtt_base,(params.rtt_num_start - 1) * RMM_GRANULE_SIZE)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != DELEGATED
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsAligned(params.rtt_base,params.rtt_num_start * RMM_GRANULE_SIZE)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !RttConfigIsValid(params.s2sz,params.rtt_level_start, params.rtt_num_start)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !RttsStateEqual(params.rtt_base, params.rtt_num_start, DELEGATED)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !VmidIsValid(params.vmid) || !VmidIsFree(params.vmid)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+--------------------------------------------
+  post: Granule(rd).state == RD
+  post: Realm(rd).state == REALM_NEW
+  post: Realm(rd).rec_index == 0
+  post: Realm(rd).rtt_base == params.rtt_base
+  post: RttsStateEqual( Realm(rd).rtt_base, Realm(rd).rtt_num_start, RTT)
+  post: RttsAllProtectedEntriesState( Realm(rd).rtt_base, Realm(rd).rtt_num_start, UNASSIGNED)
+  post: RttsAllUnprotectedEntriesState( Realm(rd).rtt_base, Realm(rd).rtt_num_start, UNASSIGNED_NS)
+  post: RttsAllProtectedEntriesRipas( Realm(rd).rtt_base, Realm(rd).rtt_num_start, EMPTY)
+  post: Realm(rd).ipa_width == params.s2sz
+  post: Equal(Realm(rd).hash_algo, params.hash_algo)
+  post: Realm(rd).measurements[0] == RimInit( Realm(rd).hash_algo, params)
+  post: (Realm(rd).measurements[1] == Zeros() && Realm(rd).measurements[2] == Zeros() && Realm(rd).measurements[3] == Zeros() && Realm(rd).measurements[4] == Zeros())
+  post: Realm(rd).rtt_level_start == params.rtt_level_start
+  post: Realm(rd).rtt_num_start == params.rtt_num_start
+  post: Realm(rd).vmid == params.vmid
+  post: Realm(rd).rpv == params.rpv
+--------------------------------------------
+rd_state: Granule(rd).state
+rtt_state: RttsGranuleState(Realm(rd).rtt_base,Realm(rd).rtt_num_start)
+============================================
+RMI_REALM_DESTROY command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address')]
+realm: Realm(rd)
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: RealmIsLive(rd)
+  post: ResultEqual(result, RMI_ERROR_REALM)
+--------------------------------------------
+  post: RttsStateEqual(realm.rtt_base, realm.rtt_num_start, DELEGATED)
+  post: Granule(rd).state == DELEGATED
+  post: VmidIsFree(realm.vmid)
+--------------------------------------------
+rd_state: Granule(rd).state
+rtt_state: RttsGranuleState(realm.rtt_base, realm.rtt_num_start)
+============================================
+RMI_REC_AUX_COUNT command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address')]
+[('result', 'RmiCommandReturnCode'), ('aux_count', 'UInt64')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+--------------------------------------------
+  post: aux_count == RecAuxCount(rd)
+--------------------------------------------
+============================================
+RMI_REC_CREATE command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('rec', 'Address'), ('params_ptr', 'Address')]
+realm: Realm(rd)
+params: RecParams(params_ptr)
+rec_index: Realm(rd).rec_index
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(params_ptr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(params_ptr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !GranuleAccessPermitted(params_ptr, PAS_NS)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rec).state != DELEGATED
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: realm.state != REALM_NEW
+  post: ResultEqual(result, RMI_ERROR_REALM)
+  pre: RecIndex(params.mpidr) != realm.rec_index
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: params.num_aux != RecAuxCount(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AuxAligned(params.aux, params.num_aux)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: AuxAlias(rec, params.aux, params.num_aux)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AuxStateEqual(params.aux, params.num_aux, DELEGATED)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+--------------------------------------------
+  post: Realm(rd).rec_index == rec_index + 1
+  post: Granule(rec).state == REC
+  post: Rec(rec).owner == rd
+  post: Rec(rec).attest_state == NO_ATTEST_IN_PROGRESS
+  post: MpidrEqual(Rec(rec).mpidr, params.mpidr)
+  post: Rec(rec).state == REC_READY
+  pre: params.flags.runnable == RMI_RUNNABLE
+  post: Rec(rec).flags.runnable == RUNNABLE
+  pre: params.flags.runnable == RMI_NOT_RUNNABLE
+  post: Rec(rec).flags.runnable == NOT_RUNNABLE
+  post: (Rec(rec).gprs[0] == params.gprs[0] && Rec(rec).gprs[1] == params.gprs[1] && Rec(rec).gprs[2] == params.gprs[2] && Rec(rec).gprs[3] == params.gprs[3] && Rec(rec).gprs[4] == params.gprs[4] && Rec(rec).gprs[5] == params.gprs[5] && Rec(rec).gprs[6] == params.gprs[6] && Rec(rec).gprs[7] == params.gprs[7] && Rec(rec).gprs[8] == Zeros() && Rec(rec).gprs[9] == Zeros() && Rec(rec).gprs[10] == Zeros() && Rec(rec).gprs[11] == Zeros() && Rec(rec).gprs[12] == Zeros() && Rec(rec).gprs[13] == Zeros() && Rec(rec).gprs[14] == Zeros() && Rec(rec).gprs[15] == Zeros() && Rec(rec).gprs[16] == Zeros() && Rec(rec).gprs[17] == Zeros() && Rec(rec).gprs[18] == Zeros() && Rec(rec).gprs[19] == Zeros() && Rec(rec).gprs[20] == Zeros() && Rec(rec).gprs[21] == Zeros() && Rec(rec).gprs[22] == Zeros() && Rec(rec).gprs[23] == Zeros() && Rec(rec).gprs[24] == Zeros() && Rec(rec).gprs[25] == Zeros() && Rec(rec).gprs[26] == Zeros() && Rec(rec).gprs[27] == Zeros() && Rec(rec).gprs[28] == Zeros() && Rec(rec).gprs[29] == Zeros() && Rec(rec).gprs[30] == Zeros() && Rec(rec).gprs[31] == Zeros())
+  post: Rec(rec).pc == params.pc
+  pre: params.flags.runnable == RMI_RUNNABLE
+  post: Realm(rd).measurements[0] == RimExtendRec(realm, params)
+  post: AuxEqual( Rec(rec).aux, params.aux, RecAuxCount(rd))
+  post: AuxStateEqual( Rec(rec).aux, RecAuxCount(rd), REC_AUX)
+  post: Rec(rec).ripas_addr == Zeros()
+  post: Rec(rec).ripas_top == Zeros()
+  post: Rec(rec).host_call_pending == NO_HOST_CALL_PENDING
+--------------------------------------------
+rec_index: Realm(rd).rec_index
+rec_state: Granule(rec).state
+rec_aux_state: AuxStates(Rec(rec).aux,RecAuxCount(rd))
+rim: Realm(rd).measurements[0]
+============================================
+RMI_REC_DESTROY command
+--------------------------------------------
+[('fid', 'UInt64'), ('rec', 'Address')]
+rd: Rec(rec).owner
+rec_obj: Rec(rec)
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rec).state != REC
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Rec(rec).state == REC_RUNNING
+  post: ResultEqual(result, RMI_ERROR_REC)
+--------------------------------------------
+  post: Granule(rec).state == DELEGATED
+  post: AuxStateEqual(rec_obj.aux, RecAuxCount(rd), DELEGATED)
+--------------------------------------------
+rec_state: Granule(rec).state
+rec_aux_state: AuxStates(rec_obj.aux,RecAuxCount(rd))
+============================================
+RMI_REC_ENTER command
+--------------------------------------------
+[('fid', 'UInt64'), ('rec', 'Address'), ('run_ptr', 'Address')]
+run: RecRun(run_ptr)
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(run_ptr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(run_ptr)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !GranuleAccessPermitted(run_ptr, PAS_NS)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rec).state != REC
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Realm(Rec(rec).owner).state == REALM_NEW
+  post: ResultEqual(result, RMI_ERROR_REALM, 0)
+  pre: Realm(Rec(rec).owner).state == REALM_SYSTEM_OFF
+  post: ResultEqual(result, RMI_ERROR_REALM, 1)
+  pre: Rec(rec).state == REC_RUNNING
+  post: ResultEqual(result, RMI_ERROR_REC)
+  pre: Rec(rec).flags.runnable == NOT_RUNNABLE
+  post: ResultEqual(result, RMI_ERROR_REC)
+  pre: (run.enter.flags.emul_mmio == RMI_EMULATED_MMIO && Rec(rec).emulatable_abort != EMULATABLE_ABORT)
+  post: ResultEqual(result, RMI_ERROR_REC)
+  pre: !Gicv3ConfigIsValid(run.enter.gicv3_hcr, run.enter.gicv3_lrs)
+  post: ResultEqual(result, RMI_ERROR_REC)
+  pre: Rec(rec).psci_pending == PSCI_REQUEST_PENDING
+  post: ResultEqual(result, RMI_ERROR_REC)
+--------------------------------------------
+--------------------------------------------
+emul_abt: Rec(rd).emulatable_abort
+============================================
+RMI_RTT_CREATE command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('rtt', 'Address'), ('ipa', 'Address'), ('level', 'Int64')]
+realm: Realm(rd)
+walk: RttWalk(rd, ipa,level - 1)
+entry_idx: RttEntryIndex(ipa, walk.level)
+unfold: RttWalk(rd, ipa,level - 1).rtte
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: (!RttLevelIsValid(rd, level) || RttLevelIsStarting(rd, level))
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsRttLevelAligned(ipa, level - 1)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: UInt(ipa) >= (2 ^ Realm(rd).ipa_width)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rtt)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rtt)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rtt).state != DELEGATED
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: walk.level < level - 1
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: walk.rtte.state == TABLE
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+--------------------------------------------
+  post: Granule(rtt).state == RTT
+  post: walk.rtte.state == TABLE
+  post: walk.rtte.addr == rtt
+  pre: AddrIsProtected(ipa, realm)
+  post: RttAllEntriesRipas(Rtt(rtt), unfold.ripas)
+  post: RttAllEntriesState(Rtt(rtt), unfold.state)
+  pre: (unfold.state != UNASSIGNED && unfold.state != UNASSIGNED_NS)
+  post: RttAllEntriesContiguous(Rtt(rtt), unfold.addr, level)
+--------------------------------------------
+rtt_state: Granule(rtt).state
+rtte: RttEntry(walk.rtt_addr,entry_idx)
+============================================
+RMI_RTT_DESTROY command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('ipa', 'Address'), ('level', 'Int64')]
+walk: RttWalk(rd, ipa,level - 1)
+entry_idx: RttEntryIndex(ipa, walk.level)
+walk_top: RttSkipNonLiveEntries(Rtt(walk.rtt_addr),walk.level,ipa)
+[('result', 'RmiCommandReturnCode'), ('rtt', 'Address'), ('top', 'Address')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: (!RttLevelIsValid(rd, level) || RttLevelIsStarting(rd, level))
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsRttLevelAligned(ipa, level - 1)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: UInt(ipa) >= (2 ^ Realm(rd).ipa_width)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: walk.level < level - 1
+  post: (ResultEqual(result, RMI_ERROR_RTT, walk.level) && (top == walk_top))
+  pre: walk.rtte.state != TABLE
+  post: (ResultEqual(result, RMI_ERROR_RTT, walk.level) && (top == walk_top))
+  pre: RttIsLive(Rtt(walk.rtte.addr))
+  post: (ResultEqual(result, RMI_ERROR_RTT, level) && (top == ipa))
+--------------------------------------------
+  post: walk.rtte.state == UNASSIGNED
+  post: walk.rtte.ripas == DESTROYED
+  post: Granule(walk.rtte.addr).state == DELEGATED
+  post: rtt == walk.rtte.addr
+  post: top == walk_top
+--------------------------------------------
+rtt_state: Granule(walk.rtte.addr).state
+rtte: RttEntry(walk.rtt_addr,entry_idx)
+============================================
+RMI_RTT_FOLD command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('ipa', 'Address'), ('level', 'Int64')]
+walk: RttWalk(rd, ipa,level - 1)
+entry_idx: RttEntryIndex(ipa, walk.level)
+fold: RttFold(Rtt(walk.rtte.addr))
+[('result', 'RmiCommandReturnCode'), ('rtt', 'Address')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: (!RttLevelIsValid(rd, level) || RttLevelIsStarting(rd, level))
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsRttLevelAligned(ipa, level - 1)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: UInt(ipa) >= (2 ^ Realm(rd).ipa_width)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: walk.level < level - 1
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: walk.rtte.state != TABLE
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: !RttIsHomogeneous(Rtt(walk.rtte.addr))
+  post: ResultEqual(result, RMI_ERROR_RTT, level)
+--------------------------------------------
+  post: walk.rtte.state == fold.state
+  pre: (fold.state != UNASSIGNED && fold.state != UNASSIGNED_NS)
+  post: walk.rtte.addr == fold.addr
+  pre: (fold.state == ASSIGNED || fold.state == ASSIGNED_NS)
+  post: (walk.rtte.MemAttr == fold.MemAttr && walk.rtte.S2AP == fold.S2AP && walk.rtte.SH == fold.SH)
+  pre: AddrIsProtected(ipa, Realm(rd))
+  post: walk.rtte.ripas == fold.ripas
+  post: Granule(walk.rtte.addr).state == DELEGATED
+  post: rtt == walk.rtte.addr
+--------------------------------------------
+rtt_state: Granule(walk.rtte.addr).state
+rtte: RttEntry(walk.rtt_addr,entry_idx)
+============================================
+RMI_RTT_INIT_RIPAS command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('base', 'Address'), ('top', 'Address')]
+realm: Realm(rd)
+walk: RttWalk(rd,base,RMM_RTT_PAGE_LEVEL)
+walk_top: RttSkipEntriesWithRipas(Rtt(walk.rtt_addr),walk.level,base, top, FALSE)
+[('result', 'RmiCommandReturnCode'), ('out_top', 'Address')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: UInt(top) <= UInt(base)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsProtected(ToAddress(UInt(top) - RMM_GRANULE_SIZE),realm)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: realm.state != REALM_NEW
+  post: ResultEqual(result, RMI_ERROR_REALM)
+  pre: !AddrIsRttLevelAligned(base, walk.level)
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: walk.rtte.state != UNASSIGNED
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: !AddrIsGranuleAligned(top)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: ((UInt(top) < UInt(RttUpperBound(base, walk.level, realm.ipa_width))) && RttEntryHasRipas(RttEntry(walk.rtt_addr,RttEntryIndex(top, walk.level))) && !AddrIsRttLevelAligned(top, walk.level))
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+--------------------------------------------
+  post: RttEntriesInRangeRipas( Rtt(walk.rtt_addr),walk.level,base, walk_top, RAM)
+  post: Realm(rd).measurements[0] == RimExtendRipas(realm, base, walk_top, walk.level)
+  post: out_top == walk_top
+--------------------------------------------
+rtte: Rtt(walk.rtt_addr)
+rim: Realm(rd).measurements[0]
+============================================
+RMI_RTT_MAP_UNPROTECTED command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('ipa', 'Address'), ('level', 'Int64'), ('desc', 'Bits64')]
+walk: RttWalk(rd, ipa, level)
+entry_idx: RttEntryIndex(ipa, walk.level)
+rtte: RttEntryFromDescriptor(desc)
+[('result', 'RmiCommandReturnCode')]
+--------------------------------------------
+  pre: !RttDescriptorIsValidForUnprotected(desc)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !RttLevelIsBlockOrPage(rd, level)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsRttLevelAligned(rtte.addr, level)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsRttLevelAligned(ipa, level)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: (UInt(ipa) >= (2 ^ Realm(rd).ipa_width) || AddrIsProtected(ipa, Realm(rd)))
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: walk.level < level
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: walk.rtte.state != UNASSIGNED_NS
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+--------------------------------------------
+  post: walk.rtte.state == ASSIGNED_NS
+  post: (walk.rtte.MemAttr == rtte.MemAttr && walk.rtte.S2AP == rtte.S2AP && walk.rtte.SH == rtte.SH && walk.rtte.addr == rtte.addr)
+--------------------------------------------
+rtte: RttEntry(walk.rtt_addr,entry_idx)
+============================================
+RMI_RTT_READ_ENTRY command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('ipa', 'Address'), ('level', 'Int64')]
+walk: RttWalk(rd, ipa, level)
+rtte: RttEntryFromDescriptor(desc)
+[('result', 'RmiCommandReturnCode'), ('walk_level', 'UInt64'), ('state', 'RmiRttEntryState'), ('desc', 'Bits64'), ('ripas', 'RmiRipas')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !RttLevelIsValid(rd, level)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsRttLevelAligned(ipa, level)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: UInt(ipa) >= (2 ^ Realm(rd).ipa_width)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+--------------------------------------------
+  post: state == RttEntryState(walk.rtte.state)
+  pre: (walk.rtte.state == UNASSIGNED || walk.rtte.state == UNASSIGNED_NS)
+  post: (rtte.MemAttr == Zeros() && rtte.S2AP == Zeros() && rtte.SH == Zeros() && rtte.addr == Zeros())
+  pre: (walk.rtte.state == ASSIGNED || walk.rtte.state == TABLE)
+  post: (rtte.MemAttr == Zeros() && rtte.S2AP == Zeros() && rtte.SH == Zeros() && rtte.addr == walk.rtte.addr)
+  pre: walk.rtte.state == ASSIGNED_NS
+  post: (rtte.MemAttr == walk.rtte.MemAttr && rtte.S2AP == walk.rtte.S2AP && rtte.SH == walk.rtte.SH && rtte.addr == walk.rtte.addr)
+  pre: (walk.rtte.state != UNASSIGNED && walk.rtte.state != ASSIGNED)
+  post: ripas == RMI_EMPTY
+--------------------------------------------
+============================================
+RMI_RTT_SET_RIPAS command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('rec', 'Address'), ('base', 'Address'), ('top', 'Address')]
+realm: Realm(rd)
+walk: RttWalk(rd, base,RMM_RTT_PAGE_LEVEL)
+walk_top: RttSkipEntriesWithRipas(Rtt(walk.rtt_addr),walk.level,base, top,Rec(rec).ripas_destroyed!=CHANGE_DESTROYED)
+[('result', 'RmiCommandReturnCode'), ('out_top', 'Address')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsGranuleAligned(rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rec)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rec).state != REC
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Rec(rec).state == REC_RUNNING
+  post: ResultEqual(result, RMI_ERROR_REC)
+  pre: Rec(rec).owner != rd
+  post: ResultEqual(result, RMI_ERROR_REC)
+  pre: UInt(top) <= UInt(base)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: base != Rec(rec).ripas_addr
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: UInt(top) > UInt(Rec(rec).ripas_top)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsRttLevelAligned(base, walk.level)
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+  pre: !AddrIsGranuleAligned(top)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: ((UInt(top) < UInt(RttUpperBound(base, walk.level, realm.ipa_width))) && RttEntryHasRipas(RttEntry(walk.rtt_addr,RttEntryIndex(top, walk.level))) && !AddrIsRttLevelAligned(top, walk.level))
+  post: ResultEqual(result, RMI_ERROR_RTT, walk.level)
+--------------------------------------------
+  post: RttEntriesInRangeRipas( Rtt(walk.rtt_addr),walk.level,base, walk_top, Rec(rec).ripas_value)
+  post: Rec(rec).ripas_addr == walk_top
+  post: out_top == walk_top
+--------------------------------------------
+rtte: Rtt(walk.rtt_addr)
+ripas_addr: Rec(rec).ripas_addr
+============================================
+RMI_RTT_UNMAP_UNPROTECTED command
+--------------------------------------------
+[('fid', 'UInt64'), ('rd', 'Address'), ('ipa', 'Address'), ('level', 'Int64')]
+walk: RttWalk(rd, ipa, level)
+entry_idx: RttEntryIndex(ipa, walk.level)
+walk_top: RttSkipNonLiveEntries(Rtt(walk.rtt_addr),walk.level,ipa)
+[('result', 'RmiCommandReturnCode'), ('top', 'Address')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !PaIsDelegable(rd)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: Granule(rd).state != RD
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !RttLevelIsBlockOrPage(rd, level)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: !AddrIsRttLevelAligned(ipa, level)
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: (UInt(ipa) >= (2 ^ Realm(rd).ipa_width) || AddrIsProtected(ipa, Realm(rd)))
+  post: ResultEqual(result, RMI_ERROR_INPUT)
+  pre: walk.level < level
+  post: (ResultEqual(result, RMI_ERROR_RTT, walk.level) && (top == walk_top))
+  pre: walk.rtte.state != ASSIGNED_NS
+  post: (ResultEqual(result, RMI_ERROR_RTT, walk.level) && (top == walk_top))
+--------------------------------------------
+  post: walk.rtte.state == UNASSIGNED_NS
+  post: top == walk_top
+--------------------------------------------
+rtte: RttEntry(walk.rtt_addr,entry_idx)
+============================================
+RMI_VERSION command
+--------------------------------------------
+[('fid', 'UInt64'), ('req', 'RmiInterfaceVersion')]
+[('result', 'RmiCommandReturnCode'), ('lower', 'RmiInterfaceVersion'), ('higher', 'RmiInterfaceVersion')]
+--------------------------------------------
+--------------------------------------------
+--------------------------------------------
+============================================
+RSI_ATTESTATION_TOKEN_CONTINUE command
+--------------------------------------------
+[('fid', 'UInt64'), ('addr', 'Address'), ('offset', 'UInt64'), ('size', 'UInt64')]
+realm: CurrentRealm()
+rec: CurrentRec()
+[('result', 'RsiCommandReturnCode'), ('len', 'UInt64')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(addr)
+  post: result == RSI_ERROR_INPUT
+  pre: !AddrIsProtected(addr, realm)
+  post: result == RSI_ERROR_INPUT
+  pre: offset >= RMM_GRANULE_SIZE
+  post: result == RSI_ERROR_INPUT
+  pre: offset + size < offset
+  post: result == RSI_ERROR_INPUT
+  pre: offset + size > RMM_GRANULE_SIZE
+  post: result == RSI_ERROR_INPUT
+  pre: rec.attest_state != ATTEST_IN_PROGRESS
+  post: result == RSI_ERROR_STATE
+--------------------------------------------
+--------------------------------------------
+state: rec.attest_state
+============================================
+RSI_ATTESTATION_TOKEN_INIT command
+--------------------------------------------
+[('fid', 'UInt64'), ('challenge_0', 'Bits64'), ('challenge_1', 'Bits64'), ('challenge_2', 'Bits64'), ('challenge_3', 'Bits64'), ('challenge_4', 'Bits64'), ('challenge_5', 'Bits64'), ('challenge_6', 'Bits64'), ('challenge_7', 'Bits64')]
+realm: CurrentRealm()
+rec: CurrentRec()
+[('result', 'RsiCommandReturnCode'), ('size', 'UInt64')]
+--------------------------------------------
+--------------------------------------------
+  post: rec.attest_state == ATTEST_IN_PROGRESS
+  post: rec.attest_challenge == [challenge_0,challenge_1,challenge_2,challenge_3,challenge_4,challenge_5,challenge_6,challenge_7 ]
+--------------------------------------------
+state: rec.attest_state
+challenge: rec.attest_challenge
+============================================
+RSI_FEATURES command
+--------------------------------------------
+[('fid', 'UInt64'), ('index', 'UInt64')]
+[('result', 'RsiCommandReturnCode'), ('value', 'Bits64')]
+--------------------------------------------
+--------------------------------------------
+  post: value == Zeros()
+--------------------------------------------
+============================================
+RSI_HOST_CALL command
+--------------------------------------------
+[('fid', 'UInt64'), ('addr', 'Address')]
+realm: CurrentRealm()
+rec: CurrentRec()
+data: RealmHostCall(addr)
+[('result', 'RsiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsAligned(addr, 256)
+  post: result == RSI_ERROR_INPUT
+  pre: !AddrIsProtected(addr, realm)
+  post: result == RSI_ERROR_INPUT
+--------------------------------------------
+--------------------------------------------
+host_call: rec.host_call_pending
+============================================
+RSI_IPA_STATE_GET command
+--------------------------------------------
+[('fid', 'UInt64'), ('addr', 'Address')]
+realm: CurrentRealm()
+[('result', 'RsiCommandReturnCode'), ('ripas', 'RsiRipas')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(addr)
+  post: result == RSI_ERROR_INPUT
+  pre: !AddrIsProtected(addr, realm)
+  post: result == RSI_ERROR_INPUT
+--------------------------------------------
+--------------------------------------------
+============================================
+RSI_IPA_STATE_SET command
+--------------------------------------------
+[('fid', 'UInt64'), ('base', 'Address'), ('top', 'Address'), ('ripas', 'RsiRipas'), ('flags', 'RsiRipasChangeFlags')]
+realm: CurrentRealm()
+rec: CurrentRec()
+[('result', 'RsiCommandReturnCode'), ('new_base', 'Address'), ('response', 'RsiResponse')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(base)
+  post: result == RSI_ERROR_INPUT
+  pre: !AddrIsGranuleAligned(top)
+  post: result == RSI_ERROR_INPUT
+  pre: UInt(top) <= UInt(base)
+  post: result == RSI_ERROR_INPUT
+  pre: !AddrRangeIsProtected(base, top, realm)
+  post: result == RSI_ERROR_INPUT
+  pre: (ripas != RSI_EMPTY) && (ripas != RSI_RAM)
+  post: result == RSI_ERROR_INPUT
+--------------------------------------------
+  post: new_base == rec.ripas_addr
+  post: response == RecRipasChangeResponse(rec)
+--------------------------------------------
+============================================
+RSI_MEASUREMENT_EXTEND command
+--------------------------------------------
+[('fid', 'UInt64'), ('index', 'UInt64'), ('size', 'UInt64'), ('value_0', 'Bits64'), ('value_1', 'Bits64'), ('value_2', 'Bits64'), ('value_3', 'Bits64'), ('value_4', 'Bits64'), ('value_5', 'Bits64'), ('value_6', 'Bits64'), ('value_7', 'Bits64')]
+realm: CurrentRealm()
+meas_old: CurrentRealm().measurements[index]
+[('result', 'RsiCommandReturnCode')]
+--------------------------------------------
+  pre: index < 1 || index > 4
+  post: result == RSI_ERROR_INPUT
+  pre: size > 64
+  post: result == RSI_ERROR_INPUT
+--------------------------------------------
+  post: realm.measurements[index] == RemExtend(realm.hash_algo, meas_old, [value_0, value_1, value_2, value_3,value_4, value_5, value_6, value_7][ (RMM_REALM_MEASUREMENT_WIDTH-1):0],size)
+--------------------------------------------
+realm_meas: realm.measurements[index]
+============================================
+RSI_MEASUREMENT_READ command
+--------------------------------------------
+[('fid', 'UInt64'), ('index', 'UInt64')]
+[('result', 'RsiCommandReturnCode'), ('value_0', 'Bits64'), ('value_1', 'Bits64'), ('value_2', 'Bits64'), ('value_3', 'Bits64'), ('value_4', 'Bits64'), ('value_5', 'Bits64'), ('value_6', 'Bits64'), ('value_7', 'Bits64')]
+--------------------------------------------
+  pre: index > 4
+  post: result == RSI_ERROR_INPUT
+--------------------------------------------
+--------------------------------------------
+============================================
+RSI_REALM_CONFIG command
+--------------------------------------------
+[('fid', 'UInt64'), ('addr', 'Address')]
+realm: CurrentRealm()
+cfg: RealmConfig(addr)
+[('result', 'RsiCommandReturnCode')]
+--------------------------------------------
+  pre: !AddrIsGranuleAligned(addr)
+  post: result == RSI_ERROR_INPUT
+  pre: !AddrIsProtected(addr, realm)
+  post: result == RSI_ERROR_INPUT
+--------------------------------------------
+  post: cfg.ipa_width == realm.ipa_width
+  post: Equal(cfg.hash_algo, realm.hash_algo)
+--------------------------------------------
+============================================
+RSI_VERSION command
+--------------------------------------------
+[('fid', 'UInt64'), ('req', 'RsiInterfaceVersion')]
+[('result', 'RsiCommandReturnCode'), ('lower', 'RsiInterfaceVersion'), ('higher', 'RsiInterfaceVersion')]
+--------------------------------------------
+--------------------------------------------
+--------------------------------------------
+============================================
+PSCI_AFFINITY_INFO command
+--------------------------------------------
+[('fid', 'UInt64'), ('target_affinity', 'Bits64'), ('lowest_affinity_level', 'UInt32')]
+target_rec: RecFromMpidr(target_affinity)
+[('result', 'PsciReturnCode')]
+--------------------------------------------
+  pre: lowest_affinity_level != 0
+  post: result == PSCI_INVALID_PARAMETERS
+  pre: !MpidrIsUsed(target_affinity)
+  post: result == PSCI_INVALID_PARAMETERS
+--------------------------------------------
+  pre: target_rec.flags.runnable == RUNNABLE
+  post: result == PSCI_SUCCESS
+  pre: target_rec.flags.runnable == NOT_RUNNABLE
+  post: result == PSCI_OFF
+--------------------------------------------
+============================================
+PSCI_CPU_OFF command
+--------------------------------------------
+[('fid', 'UInt64')]
+rec: CurrentRec()
+[]
+--------------------------------------------
+--------------------------------------------
+--------------------------------------------
+============================================
+PSCI_CPU_ON command
+--------------------------------------------
+[('fid', 'UInt64'), ('target_cpu', 'Bits64'), ('entry_point_address', 'Address'), ('context_id', 'UInt32')]
+realm: CurrentRealm()
+target_rec: RecFromMpidr(target_cpu)
+[('result', 'PsciReturnCode')]
+--------------------------------------------
+  pre: !AddrIsProtected(entry_point_address, realm)
+  post: result == PSCI_INVALID_ADDRESS
+  pre: !MpidrIsUsed(target_cpu)
+  post: result == PSCI_INVALID_PARAMETERS
+  pre: target_rec.flags.runnable == RUNNABLE
+  post: result == PSCI_ALREADY_ON
+--------------------------------------------
+  post: target_rec.pc == ToBits64(UInt(entry_point_address))
+  post: target_rec.flags.runnable == RUNNABLE
+--------------------------------------------
+runnable: target_rec.flags.runnable
+============================================
+PSCI_CPU_SUSPEND command
+--------------------------------------------
+[('fid', 'UInt64'), ('power_state', 'UInt32'), ('entry_point_address', 'Address'), ('context_id', 'UInt64')]
+[]
+--------------------------------------------
+--------------------------------------------
+--------------------------------------------
+============================================
+PSCI_FEATURES command
+--------------------------------------------
+[('fid', 'UInt64'), ('psci_func_id', 'UInt32')]
+[('result', 'PsciReturnCode')]
+--------------------------------------------
+--------------------------------------------
+--------------------------------------------
+============================================
+PSCI_SYSTEM_OFF command
+--------------------------------------------
+[('fid', 'UInt64')]
+realm: CurrentRealm()
+[]
+--------------------------------------------
+--------------------------------------------
+  post: realm.state == REALM_SYSTEM_OFF
+--------------------------------------------
+============================================
+PSCI_SYSTEM_RESET command
+--------------------------------------------
+[('fid', 'UInt64')]
+realm: CurrentRealm()
+[]
+--------------------------------------------
+--------------------------------------------
+  post: realm.state == REALM_SYSTEM_OFF
+--------------------------------------------
+============================================
+PSCI_VERSION command
+--------------------------------------------
+[('fid', 'UInt64')]
+[('result', 'PsciInterfaceVersion')]
+--------------------------------------------
+--------------------------------------------
+--------------------------------------------
+============================================

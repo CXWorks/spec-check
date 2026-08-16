@@ -1,0 +1,68 @@
+{
+  "label": "claude-opus-5 high, eac5, round1",
+  "raw_file": "work/scope_run/eac5_raw.txt",
+  "gen_dir": "results/baseline1_general/claude_opus5/eac5",
+  "gen_pattern": "{cmd}/generated.formatted.rs",
+  "commands_in_raw": 41,
+  "commands_checked": 41,
+  "commands_missing": [],
+  "dangling_output": [
+    {
+      "command": "PSCI_VERSION",
+      "outputs": [
+        "result"
+      ]
+    },
+    {
+      "command": "RMI_VERSION",
+      "outputs": [
+        "lower",
+        "higher"
+      ]
+    },
+    {
+      "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+      "outputs": [
+        "len"
+      ]
+    },
+    {
+      "command": "RSI_ATTESTATION_TOKEN_INIT",
+      "outputs": [
+        "size"
+      ]
+    },
+    {
+      "command": "RSI_FEATURES",
+      "outputs": [
+        "value"
+      ]
+    },
+    {
+      "command": "RSI_IPA_STATE_GET",
+      "outputs": [
+        "ripas"
+      ]
+    },
+    {
+      "command": "RSI_MEASUREMENT_READ",
+      "outputs": [
+        "value_0",
+        "value_1",
+        "value_2",
+        "value_3",
+        "value_4",
+        "value_5",
+        "value_6",
+        "value_7"
+      ]
+    },
+    {
+      "command": "RSI_VERSION",
+      "outputs": [
+        "lower",
+        "higher"
+      ]
+    }
+  ]
+}

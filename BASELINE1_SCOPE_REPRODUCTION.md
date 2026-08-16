@@ -127,3 +127,18 @@ our model dropped it — not a rediscovered spec bug at all.
 - `--mode reason --is-coverage --no-dependency` (Table 9 robustness numbers) —
   not run.
 - Baseline 2 (comparison against a general model/agent) — on hold.
+
+## Same experiment with general SOTA models
+
+This experiment has since been repeated with GPT `gpt-5.6-sol` (high) and Claude Opus 5
+(high) in place of the fine-tuned Qwen, on the identical eac5/rel0 benchmark — see
+[`BASELINE1_GENERAL_MODEL_COMPARISON.md`](BASELINE1_GENERAL_MODEL_COMPARISON.md). Both
+flag 7 of SCOPE's 8 rule-mode TPs on each version, all 7 source-verified as genuine spec
+gaps, and both miss the same one (`RMI_RTT_READ_ENTRY`/`walk_level`) for the same reason:
+they invent a definition for an output the spec never defines, masking the gap.
+
+That work also re-derived the 8-bug ground truth directly from SCOPE
+(`training/scope_ground_truth_eac5_rel0.json`; matches the table above exactly) and fixed
+a signature-parsing bug in `training/scope_rule_check_ourcode.py`. The fix does not change
+any number in this report — every Qwen alp14 signature was single-line, so the flagged set
+is byte-identical before and after.

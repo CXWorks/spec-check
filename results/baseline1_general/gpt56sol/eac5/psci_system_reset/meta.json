@@ -1,0 +1,13 @@
+{
+  "command": "PSCI_SYSTEM_RESET",
+  "version": "eac5",
+  "model": "codex:gpt-5.6-sol:high",
+  "rounds": [
+    1
+  ],
+  "candidate_scores": {
+    "1": 0.5311
+  },
+  "best_round": 1,
+  "best_codebleu": 0.5311
+}

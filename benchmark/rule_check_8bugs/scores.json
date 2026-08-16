@@ -1,0 +1,146 @@
+{
+  "_gold_oracle": {
+    "per_version": {
+      "eac5": {
+        "commands_checked": 41,
+        "commands_missing": [],
+        "positives": 8,
+        "detected": [
+          "PSCI_VERSION",
+          "RMI_RTT_READ_ENTRY",
+          "RMI_VERSION",
+          "RSI_ATTESTATION_TOKEN_CONTINUE",
+          "RSI_ATTESTATION_TOKEN_INIT",
+          "RSI_IPA_STATE_GET",
+          "RSI_MEASUREMENT_READ",
+          "RSI_VERSION"
+        ],
+        "missed": [],
+        "recall": "8/8",
+        "field_recall": "17/17",
+        "false_alarms": []
+      },
+      "rel0": {
+        "commands_checked": 41,
+        "commands_missing": [],
+        "positives": 8,
+        "detected": [
+          "PSCI_VERSION",
+          "RMI_RTT_READ_ENTRY",
+          "RMI_VERSION",
+          "RSI_ATTESTATION_TOKEN_CONTINUE",
+          "RSI_ATTESTATION_TOKEN_INIT",
+          "RSI_IPA_STATE_GET",
+          "RSI_MEASUREMENT_READ",
+          "RSI_VERSION"
+        ],
+        "missed": [],
+        "recall": "8/8",
+        "field_recall": "18/18",
+        "false_alarms": []
+      }
+    },
+    "total_recall": "16/16",
+    "total_false_alarms": 0
+  },
+  "claude_opus5": {
+    "per_version": {
+      "eac5": {
+        "commands_checked": 41,
+        "commands_missing": [],
+        "positives": 8,
+        "detected": [
+          "PSCI_VERSION",
+          "RMI_VERSION",
+          "RSI_ATTESTATION_TOKEN_CONTINUE",
+          "RSI_ATTESTATION_TOKEN_INIT",
+          "RSI_IPA_STATE_GET",
+          "RSI_MEASUREMENT_READ",
+          "RSI_VERSION"
+        ],
+        "missed": [
+          "RMI_RTT_READ_ENTRY"
+        ],
+        "recall": "7/8",
+        "field_recall": "16/17",
+        "false_alarms": [
+          "RSI_FEATURES.value"
+        ]
+      },
+      "rel0": {
+        "commands_checked": 41,
+        "commands_missing": [],
+        "positives": 8,
+        "detected": [
+          "PSCI_VERSION",
+          "RMI_VERSION",
+          "RSI_ATTESTATION_TOKEN_CONTINUE",
+          "RSI_ATTESTATION_TOKEN_INIT",
+          "RSI_IPA_STATE_GET",
+          "RSI_MEASUREMENT_READ",
+          "RSI_VERSION"
+        ],
+        "missed": [
+          "RMI_RTT_READ_ENTRY"
+        ],
+        "recall": "7/8",
+        "field_recall": "16/18",
+        "false_alarms": [
+          "RSI_FEATURES.value"
+        ]
+      }
+    },
+    "total_recall": "14/16",
+    "total_false_alarms": 2
+  },
+  "gpt56sol": {
+    "per_version": {
+      "eac5": {
+        "commands_checked": 41,
+        "commands_missing": [],
+        "positives": 8,
+        "detected": [
+          "PSCI_VERSION",
+          "RMI_VERSION",
+          "RSI_ATTESTATION_TOKEN_CONTINUE",
+          "RSI_ATTESTATION_TOKEN_INIT",
+          "RSI_IPA_STATE_GET",
+          "RSI_MEASUREMENT_READ",
+          "RSI_VERSION"
+        ],
+        "missed": [
+          "RMI_RTT_READ_ENTRY"
+        ],
+        "recall": "7/8",
+        "field_recall": "16/17",
+        "false_alarms": [
+          "RSI_FEATURES.value"
+        ]
+      },
+      "rel0": {
+        "commands_checked": 41,
+        "commands_missing": [],
+        "positives": 8,
+        "detected": [
+          "PSCI_VERSION",
+          "RMI_VERSION",
+          "RSI_ATTESTATION_TOKEN_CONTINUE",
+          "RSI_ATTESTATION_TOKEN_INIT",
+          "RSI_IPA_STATE_GET",
+          "RSI_MEASUREMENT_READ",
+          "RSI_VERSION"
+        ],
+        "missed": [
+          "RMI_RTT_READ_ENTRY"
+        ],
+        "recall": "7/8",
+        "field_recall": "16/18",
+        "false_alarms": [
+          "RSI_FEATURES.value"
+        ]
+      }
+    },
+    "total_recall": "14/16",
+    "total_false_alarms": 2
+  }
+}

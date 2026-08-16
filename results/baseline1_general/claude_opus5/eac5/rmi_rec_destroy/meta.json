@@ -1,0 +1,13 @@
+{
+  "command": "RMI_REC_DESTROY",
+  "version": "eac5",
+  "model": "claude:claude-opus-5:high",
+  "rounds": [
+    1
+  ],
+  "candidate_scores": {
+    "1": 0.7481
+  },
+  "best_round": 1,
+  "best_codebleu": 0.7481
+}

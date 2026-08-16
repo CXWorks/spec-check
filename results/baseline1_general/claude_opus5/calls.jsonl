@@ -1,0 +1,85 @@
+{"model": "claude:claude-opus-5:high", "call": 1, "attempt": 1, "returncode": 0, "elapsed_s": 8.8, "output_chars": 710, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 2, "attempt": 1, "returncode": 0, "elapsed_s": 3.6, "output_chars": 76, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 3, "attempt": 1, "returncode": 0, "elapsed_s": 12.0, "output_chars": 795, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 4, "attempt": 1, "returncode": 0, "elapsed_s": 3.8, "output_chars": 80, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 5, "attempt": 1, "returncode": 0, "elapsed_s": 5.9, "output_chars": 123, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 6, "attempt": 1, "returncode": 0, "elapsed_s": 5.6, "output_chars": 120, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 7, "attempt": 1, "returncode": 0, "elapsed_s": 7.4, "output_chars": 122, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 8, "attempt": 1, "returncode": 0, "elapsed_s": 3.9, "output_chars": 76, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 9, "attempt": 1, "returncode": 0, "elapsed_s": 16.1, "output_chars": 1857, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 10, "attempt": 1, "returncode": 0, "elapsed_s": 21.9, "output_chars": 2414, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 11, "attempt": 1, "returncode": 0, "elapsed_s": 23.4, "output_chars": 1897, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 12, "attempt": 1, "returncode": 0, "elapsed_s": 7.5, "output_chars": 243, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 13, "attempt": 1, "returncode": 0, "elapsed_s": 7.7, "output_chars": 782, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 14, "attempt": 1, "returncode": 0, "elapsed_s": 6.8, "output_chars": 647, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 15, "attempt": 1, "returncode": 0, "elapsed_s": 25.7, "output_chars": 3840, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 16, "attempt": 1, "returncode": 0, "elapsed_s": 7.5, "output_chars": 798, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 17, "attempt": 1, "returncode": 0, "elapsed_s": 32.9, "output_chars": 4713, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 18, "attempt": 1, "returncode": 0, "elapsed_s": 9.5, "output_chars": 829, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 19, "attempt": 1, "returncode": 0, "elapsed_s": 8.4, "output_chars": 620, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 20, "attempt": 1, "returncode": 0, "elapsed_s": 26.4, "output_chars": 5656, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 21, "attempt": 1, "returncode": 0, "elapsed_s": 7.0, "output_chars": 803, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 22, "attempt": 1, "returncode": 0, "elapsed_s": 21.0, "output_chars": 2507, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 23, "attempt": 1, "returncode": 0, "elapsed_s": 27.5, "output_chars": 2650, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 24, "attempt": 1, "returncode": 0, "elapsed_s": 25.3, "output_chars": 2748, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 25, "attempt": 1, "returncode": 0, "elapsed_s": 23.7, "output_chars": 2980, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 26, "attempt": 1, "returncode": 0, "elapsed_s": 25.5, "output_chars": 3160, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 27, "attempt": 1, "returncode": 0, "elapsed_s": 33.1, "output_chars": 2235, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 28, "attempt": 1, "returncode": 0, "elapsed_s": 25.2, "output_chars": 2788, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 29, "attempt": 1, "returncode": 0, "elapsed_s": 28.1, "output_chars": 4063, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 30, "attempt": 1, "returncode": 0, "elapsed_s": 26.5, "output_chars": 2333, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 31, "attempt": 1, "returncode": 0, "elapsed_s": 4.4, "output_chars": 154, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 32, "attempt": 1, "returncode": 0, "elapsed_s": 19.9, "output_chars": 1444, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 33, "attempt": 1, "returncode": 0, "elapsed_s": 11.3, "output_chars": 845, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 34, "attempt": 1, "returncode": 0, "elapsed_s": 5.0, "output_chars": 136, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 35, "attempt": 1, "returncode": 0, "elapsed_s": 6.6, "output_chars": 272, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 36, "attempt": 1, "returncode": 0, "elapsed_s": 5.1, "output_chars": 278, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 37, "attempt": 1, "returncode": 0, "elapsed_s": 7.8, "output_chars": 1031, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 38, "attempt": 1, "returncode": 0, "elapsed_s": 12.7, "output_chars": 520, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 39, "attempt": 1, "returncode": 0, "elapsed_s": 5.5, "output_chars": 166, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 40, "attempt": 1, "returncode": 0, "elapsed_s": 6.1, "output_chars": 582, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 41, "attempt": 1, "returncode": 0, "elapsed_s": 5.2, "output_chars": 188, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 42, "attempt": 1, "returncode": 0, "elapsed_s": 12.9, "output_chars": 702, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 43, "attempt": 1, "returncode": 0, "elapsed_s": 4.5, "output_chars": 76, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 44, "attempt": 1, "returncode": 0, "elapsed_s": 11.1, "output_chars": 789, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 45, "attempt": 1, "returncode": 0, "elapsed_s": 4.0, "output_chars": 80, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 46, "attempt": 1, "returncode": 0, "elapsed_s": 4.1, "output_chars": 101, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 47, "attempt": 1, "returncode": 0, "elapsed_s": 6.2, "output_chars": 120, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 48, "attempt": 1, "returncode": 0, "elapsed_s": 4.7, "output_chars": 122, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 49, "attempt": 1, "returncode": 0, "elapsed_s": 3.7, "output_chars": 105, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 50, "attempt": 1, "returncode": 0, "elapsed_s": 17.9, "output_chars": 2105, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 51, "attempt": 1, "returncode": 0, "elapsed_s": 15.7, "output_chars": 2646, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 52, "attempt": 1, "returncode": 1, "elapsed_s": 2.3, "output_chars": 62, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 52, "attempt": 2, "returncode": 1, "elapsed_s": 2.3, "output_chars": 62, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 52, "attempt": 3, "returncode": 1, "elapsed_s": 2.1, "output_chars": 62, "stderr_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 1, "attempt": 1, "returncode": 0, "elapsed_s": 22.0, "output_chars": 2166, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 2, "attempt": 1, "returncode": 0, "elapsed_s": 6.0, "output_chars": 247, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 3, "attempt": 1, "returncode": 0, "elapsed_s": 6.9, "output_chars": 779, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 4, "attempt": 1, "returncode": 0, "elapsed_s": 6.0, "output_chars": 647, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 5, "attempt": 1, "returncode": 0, "elapsed_s": 29.6, "output_chars": 5466, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 6, "attempt": 1, "returncode": 0, "elapsed_s": 7.0, "output_chars": 812, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 7, "attempt": 1, "returncode": 0, "elapsed_s": 31.4, "output_chars": 3966, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 8, "attempt": 1, "returncode": 0, "elapsed_s": 7.7, "output_chars": 837, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 9, "attempt": 1, "returncode": 0, "elapsed_s": 7.2, "output_chars": 614, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 10, "attempt": 1, "returncode": 0, "elapsed_s": 46.2, "output_chars": 6027, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 11, "attempt": 1, "returncode": 0, "elapsed_s": 8.5, "output_chars": 995, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 12, "attempt": 1, "returncode": 0, "elapsed_s": 20.4, "output_chars": 2409, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 13, "attempt": 1, "returncode": 0, "elapsed_s": 15.7, "output_chars": 2705, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 14, "attempt": 1, "returncode": 0, "elapsed_s": 28.5, "output_chars": 2924, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 15, "attempt": 1, "returncode": 0, "elapsed_s": 37.3, "output_chars": 2252, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 16, "attempt": 1, "returncode": 0, "elapsed_s": 20.2, "output_chars": 2623, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 17, "attempt": 1, "returncode": 0, "elapsed_s": 34.6, "output_chars": 2925, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 18, "attempt": 1, "returncode": 0, "elapsed_s": 26.0, "output_chars": 2760, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 19, "attempt": 1, "returncode": 0, "elapsed_s": 26.4, "output_chars": 3756, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 20, "attempt": 1, "returncode": 0, "elapsed_s": 24.6, "output_chars": 2075, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 21, "attempt": 1, "returncode": 0, "elapsed_s": 4.6, "output_chars": 154, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 22, "attempt": 1, "returncode": 0, "elapsed_s": 13.9, "output_chars": 1023, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 23, "attempt": 1, "returncode": 0, "elapsed_s": 8.7, "output_chars": 585, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 24, "attempt": 1, "returncode": 0, "elapsed_s": 6.7, "output_chars": 136, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 25, "attempt": 1, "returncode": 0, "elapsed_s": 6.9, "output_chars": 272, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 26, "attempt": 1, "returncode": 0, "elapsed_s": 6.5, "output_chars": 583, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 27, "attempt": 1, "returncode": 0, "elapsed_s": 8.1, "output_chars": 1031, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 28, "attempt": 1, "returncode": 0, "elapsed_s": 13.0, "output_chars": 460, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 29, "attempt": 1, "returncode": 0, "elapsed_s": 4.9, "output_chars": 166, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 30, "attempt": 1, "returncode": 0, "elapsed_s": 6.7, "output_chars": 580, "stderr_tail": "", "stdout_tail": ""}
+{"model": "claude:claude-opus-5:high", "call": 31, "attempt": 1, "returncode": 0, "elapsed_s": 4.4, "output_chars": 149, "stderr_tail": "", "stdout_tail": ""}

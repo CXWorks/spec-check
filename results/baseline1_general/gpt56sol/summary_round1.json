@@ -1,0 +1,18 @@
+{
+  "model": "codex:gpt-5.6-sol:high",
+  "round": 1,
+  "rag_top_k": 3,
+  "prompt": "V3-Structured+Preamble",
+  "verusfmt": "/mnt/sdc/xiang/spec-check/training/verusfmt/target/release/verusfmt",
+  "quota_exhausted": false,
+  "per_version": {
+    "eac5": {
+      "commands": 41,
+      "best@1": 0.6634
+    },
+    "rel0": {
+      "commands": 41,
+      "best@1": 0.6403
+    }
+  }
+}

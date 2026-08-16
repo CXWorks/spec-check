@@ -1,0 +1,186 @@
+{
+  "name": "SCOPE rule-mode dangling-output benchmark (eac5 + rel0)",
+  "task": "Generate a Verus spec fn per command; an item is DETECTED if the generated spec body never mentions the declared output name (SCOPE's dangling-output check).",
+  "positives": 16,
+  "items": [
+    {
+      "id": "eac5:RMI_RTT_READ_ENTRY",
+      "version": "eac5",
+      "command": "RMI_RTT_READ_ENTRY",
+      "fields": [
+        "walk_level"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/eac5_rule.patch"
+    },
+    {
+      "id": "eac5:RMI_VERSION",
+      "version": "eac5",
+      "command": "RMI_VERSION",
+      "fields": [
+        "lower",
+        "higher"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/eac5_rule.patch"
+    },
+    {
+      "id": "eac5:RSI_ATTESTATION_TOKEN_CONTINUE",
+      "version": "eac5",
+      "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+      "fields": [
+        "len"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/eac5_rule.patch"
+    },
+    {
+      "id": "eac5:RSI_ATTESTATION_TOKEN_INIT",
+      "version": "eac5",
+      "command": "RSI_ATTESTATION_TOKEN_INIT",
+      "fields": [
+        "size"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/eac5_rule.patch"
+    },
+    {
+      "id": "eac5:RSI_IPA_STATE_GET",
+      "version": "eac5",
+      "command": "RSI_IPA_STATE_GET",
+      "fields": [
+        "ripas"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/eac5_rule.patch"
+    },
+    {
+      "id": "eac5:RSI_MEASUREMENT_READ",
+      "version": "eac5",
+      "command": "RSI_MEASUREMENT_READ",
+      "fields": [
+        "value_0",
+        "value_1",
+        "value_2",
+        "value_3",
+        "value_4",
+        "value_5",
+        "value_6",
+        "value_7"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/eac5_rule.patch"
+    },
+    {
+      "id": "eac5:RSI_VERSION",
+      "version": "eac5",
+      "command": "RSI_VERSION",
+      "fields": [
+        "lower",
+        "higher"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/eac5_rule.patch"
+    },
+    {
+      "id": "eac5:PSCI_VERSION",
+      "version": "eac5",
+      "command": "PSCI_VERSION",
+      "fields": [
+        "result"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/eac5_rule.patch"
+    },
+    {
+      "id": "rel0:RMI_RTT_READ_ENTRY",
+      "version": "rel0",
+      "command": "RMI_RTT_READ_ENTRY",
+      "fields": [
+        "walk_level"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/rel0_rule.patch"
+    },
+    {
+      "id": "rel0:RMI_VERSION",
+      "version": "rel0",
+      "command": "RMI_VERSION",
+      "fields": [
+        "lower",
+        "higher"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/rel0_rule.patch"
+    },
+    {
+      "id": "rel0:RSI_ATTESTATION_TOKEN_CONTINUE",
+      "version": "rel0",
+      "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+      "fields": [
+        "len"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/rel0_rule.patch"
+    },
+    {
+      "id": "rel0:RSI_ATTESTATION_TOKEN_INIT",
+      "version": "rel0",
+      "command": "RSI_ATTESTATION_TOKEN_INIT",
+      "fields": [
+        "size"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/rel0_rule.patch"
+    },
+    {
+      "id": "rel0:RSI_IPA_STATE_GET",
+      "version": "rel0",
+      "command": "RSI_IPA_STATE_GET",
+      "fields": [
+        "out_top",
+        "ripas"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/rel0_rule.patch"
+    },
+    {
+      "id": "rel0:RSI_MEASUREMENT_READ",
+      "version": "rel0",
+      "command": "RSI_MEASUREMENT_READ",
+      "fields": [
+        "value_0",
+        "value_1",
+        "value_2",
+        "value_3",
+        "value_4",
+        "value_5",
+        "value_6",
+        "value_7"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/rel0_rule.patch"
+    },
+    {
+      "id": "rel0:RSI_VERSION",
+      "version": "rel0",
+      "command": "RSI_VERSION",
+      "fields": [
+        "lower",
+        "higher"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/rel0_rule.patch"
+    },
+    {
+      "id": "rel0:PSCI_VERSION",
+      "version": "rel0",
+      "command": "PSCI_VERSION",
+      "fields": [
+        "result"
+      ],
+      "label": "TP",
+      "source": "scope --mode rule + patch/rel0_rule.patch"
+    }
+  ]
+}

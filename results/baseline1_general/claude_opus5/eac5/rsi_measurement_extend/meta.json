@@ -1,0 +1,13 @@
+{
+  "command": "RSI_MEASUREMENT_EXTEND",
+  "version": "eac5",
+  "model": "claude:claude-opus-5:high",
+  "rounds": [
+    1
+  ],
+  "candidate_scores": {
+    "1": 0.4128
+  },
+  "best_round": 1,
+  "best_codebleu": 0.4128
+}

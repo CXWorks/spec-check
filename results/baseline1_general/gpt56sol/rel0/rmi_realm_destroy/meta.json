@@ -1,0 +1,13 @@
+{
+  "command": "RMI_REALM_DESTROY",
+  "version": "rel0",
+  "model": "codex:gpt-5.6-sol:high",
+  "rounds": [
+    1
+  ],
+  "candidate_scores": {
+    "1": 0.6531
+  },
+  "best_round": 1,
+  "best_codebleu": 0.6531
+}

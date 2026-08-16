@@ -37,3 +37,22 @@ wrapped_check_results.txt
 logs/
 results/ab_test/*_backup_*/
 results/ab_test/v3/alp14/
+
+# Rebuilt RAG vector index (regenerate: python3 rag/build_vector_index.py)
+rag/index.json
+rag/index.npz
+
+# Local scratch: staged SCOPE run dir (scope script + spec text + raw/rule dumps),
+# checker control output, work in progress
+work/
+
+# Local toolchains — large binaries, install locally instead of committing.
+# verusfmt:  cargo install verusfmt, or the release tarball
+# verus:     github.com/verus-lang/verus releases (x86-linux zip)
+training/verusfmt/
+training/verus-x86-linux/
+
+# Spec text and sections derived from the PDFs (regenerate with pdftotext -layout
+# + training/extract_sections_{spec}.py)
+training/ccaspec/
+training/sections/

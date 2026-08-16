@@ -1,0 +1,18 @@
+pub open spec fn rsi_measurement_read_spec(
+    result: RsiCommandReturnCode,
+    index: UInt64,
+    value_0: Bits64,
+    value_1: Bits64,
+    value_2: Bits64,
+    value_3: Bits64,
+    value_4: Bits64,
+    value_5: Bits64,
+    value_6: Bits64,
+    value_7: Bits64,
+    old_s: S,
+    new_s: S,
+) -> bool {
+    (index > 4 ==> result == RSI_ERROR_INPUT)
+    && (index <= 4 ==> result == RSI_SUCCESS)
+    && (new_s == old_s)
+}

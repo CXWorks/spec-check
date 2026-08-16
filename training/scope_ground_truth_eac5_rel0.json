@@ -1,0 +1,191 @@
+{
+  "eac5": {
+    "source": "work/scope_run/eac5_rule.txt",
+    "dangling_output_tp": [
+      {
+        "command": "RMI_RTT_READ_ENTRY",
+        "fields": [
+          "walk_level"
+        ]
+      },
+      {
+        "command": "RMI_VERSION",
+        "fields": [
+          "lower",
+          "higher"
+        ]
+      },
+      {
+        "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+        "fields": [
+          "len"
+        ]
+      },
+      {
+        "command": "RSI_ATTESTATION_TOKEN_INIT",
+        "fields": [
+          "size"
+        ]
+      },
+      {
+        "command": "RSI_IPA_STATE_GET",
+        "fields": [
+          "ripas"
+        ]
+      },
+      {
+        "command": "RSI_MEASUREMENT_READ",
+        "fields": [
+          "value_0",
+          "value_1",
+          "value_2",
+          "value_3",
+          "value_4",
+          "value_5",
+          "value_6",
+          "value_7"
+        ]
+      },
+      {
+        "command": "RSI_VERSION",
+        "fields": [
+          "lower",
+          "higher"
+        ]
+      },
+      {
+        "command": "PSCI_VERSION",
+        "fields": [
+          "result"
+        ]
+      }
+    ],
+    "tp_command_count": 8,
+    "footprint": [
+      {
+        "command": "RSI_REALM_CONFIG",
+        "label": "FP",
+        "fields": [
+          "cfg.ipa_width",
+          "cfg.hash_algo"
+        ]
+      },
+      {
+        "command": "PSCI_CPU_ON",
+        "label": "TP",
+        "fields": [
+          "target_rec.pc"
+        ]
+      },
+      {
+        "command": "PSCI_SYSTEM_OFF",
+        "label": "TP",
+        "fields": [
+          "realm.state"
+        ]
+      },
+      {
+        "command": "PSCI_SYSTEM_RESET",
+        "label": "TP",
+        "fields": [
+          "realm.state"
+        ]
+      }
+    ]
+  },
+  "rel0": {
+    "source": "work/scope_run/rel0_rule.txt",
+    "dangling_output_tp": [
+      {
+        "command": "RMI_RTT_READ_ENTRY",
+        "fields": [
+          "walk_level"
+        ]
+      },
+      {
+        "command": "RMI_VERSION",
+        "fields": [
+          "lower",
+          "higher"
+        ]
+      },
+      {
+        "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+        "fields": [
+          "len"
+        ]
+      },
+      {
+        "command": "RSI_ATTESTATION_TOKEN_INIT",
+        "fields": [
+          "size"
+        ]
+      },
+      {
+        "command": "RSI_IPA_STATE_GET",
+        "fields": [
+          "out_top",
+          "ripas"
+        ]
+      },
+      {
+        "command": "RSI_MEASUREMENT_READ",
+        "fields": [
+          "value_0",
+          "value_1",
+          "value_2",
+          "value_3",
+          "value_4",
+          "value_5",
+          "value_6",
+          "value_7"
+        ]
+      },
+      {
+        "command": "RSI_VERSION",
+        "fields": [
+          "lower",
+          "higher"
+        ]
+      },
+      {
+        "command": "PSCI_VERSION",
+        "fields": [
+          "result"
+        ]
+      }
+    ],
+    "tp_command_count": 8,
+    "footprint": [
+      {
+        "command": "RSI_REALM_CONFIG",
+        "label": "FP",
+        "fields": [
+          "cfg.ipa_width",
+          "cfg.hash_algo"
+        ]
+      },
+      {
+        "command": "PSCI_CPU_ON",
+        "label": "TP",
+        "fields": [
+          "target_rec.pc"
+        ]
+      },
+      {
+        "command": "PSCI_SYSTEM_OFF",
+        "label": "TP",
+        "fields": [
+          "realm.state"
+        ]
+      },
+      {
+        "command": "PSCI_SYSTEM_RESET",
+        "label": "TP",
+        "fields": [
+          "realm.state"
+        ]
+      }
+    ]
+  }
+}
