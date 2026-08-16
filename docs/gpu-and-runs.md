@@ -426,6 +426,13 @@ compile) were simply never allowed to finish: `RMI_REALM_DESTROY`,
 `RMI_RTT_READ_ENTRY`, `RMI_VDEV_DESTROY`, `RMI_VDEV_P2P_BIND`. Genuinely-hard
 commands number 7, not 14.
 
+**Re-running at 6144 showed this claim was too broad.** `sft2-0` passes exactly
+the same 14 commands before and after — `+0/-0`, despite a tripled budget and a
+corrected prompt. Four of its seven truncated commands stopped being truncated
+and still failed, for real reasons. So the 4B LoRA runs were **not** understated:
+the truncated commands would have failed anyway, and 35.0% was right all along.
+The confound was real but its size has to be measured per run, not assumed.
+
 For `sft2-2` the effect is severe enough that its number measures nothing:
 16 commands were lost to reasoning (below) and 10 more to spec truncation, and
 of the 14 that ran to completion **10 compiled**. That subset is biased — the
@@ -494,6 +501,30 @@ internally consistent, so **this is not yet shown to be the cause**. It does
 mean the two models' eval paths differed by accident, so eval now derives the
 prompt by cutting the training render at the answer, identically for every
 template. Greedy numbers produced this way are comparable only to each other.
+
+### Capacity shows up in pass@k, not in pass@1
+
+Best-of-9 at temperature 0.8, on the same 40 commands:
+
+| | pass@1 | pass@9 | headroom | no sample passes |
+|---|---|---|---|---|
+| `sft2-0` 4B bf16 LoRA | 14/40 (35.0%) | 17/40 (42.5%) | +3 | 23/40 |
+| `sft2-2` 9B bf16 LoRA | 16/40 (40.0%) | **24/40 (60.0%)** | **+8** | **16/40** |
+
+Greedily the 9B leads by 2 commands, which McNemar puts at p = 0.625 — nothing.
+Its pass@9 leads by 7, and it has seven fewer commands where all nine samples
+fail. **The larger model does know more; it just does not rank it first.**
+
+This reframes the sweep's original "9B ≈ 4B, so capacity is not the bottleneck".
+That conclusion was an artifact of measuring with pass@1. Capacity does not help
+*fitting* — training loss is 0.002 either way — but it does change how much
+correct mass the distribution contains.
+
+It also sets where rejection-sampling work should go, if the faithfulness gate
+ever opens: **+20pp of reachable headroom on the 9B against +7.5pp on the 4B.**
+And it retracts the earlier reading of `bok-0`'s first ten commands as evidence
+that sampling recovers nothing — that was true of those ten and of no run in
+full.
 
 ### Statistical power: why none of the above is yet a result
 
