@@ -89,6 +89,12 @@ for attempt in 1 2 3; do
 done
 
 mkdir -p /work/data /work/out
+# Retried for the same reason as the pip loop above: DNS here fails
+# intermittently and huggingface_hub raises LocalEntryNotFoundError rather than
+# waiting it out. Letting the pod die costs more than it looks — local-path PVCs
+# pin the replacement pod to the same node, so it meets the same blip and walks
+# through backoffLimit without ever moving.
+fetch_data() {
 echo "[entry] fetching dataset from $DATA_REPO"
 python - <<PY
 from huggingface_hub import snapshot_download
@@ -100,6 +106,13 @@ shutil.copytree(os.path.join(p, "dataset_clean"), "/work/data/dataset_clean",
                 dirs_exist_ok=True)
 print("[entry] dataset ready")
 PY
+}
+for a in 1 2 3 4 5 6; do
+  fetch_data && break
+  [ "$a" = 6 ] && { echo "[entry] FATAL: cannot fetch dataset after 6 attempts"; exit 1; }
+  echo "[entry] fetch attempt $a failed (likely transient DNS); retrying in 30s"
+  sleep 30
+done
 wc -l /work/data/dataset_clean/*.jsonl
 
 # Probe wandb before training rather than discovering it at on_train_begin: a

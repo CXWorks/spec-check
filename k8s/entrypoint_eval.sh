@@ -76,13 +76,22 @@ export VERUS_BIN=/work/tools/verus/verus-x86-linux/verus
 if [ ! -x "$VERUS_BIN" ]; then
   echo "[eval] installing verus $VERUS_VER"
   mkdir -p /work/tools && cd /work/tools
-  curl -sSL -o verus.zip \
+  curl -sSL --retry 5 --retry-all-errors --retry-delay 10 -o verus.zip \
     "https://github.com/verus-lang/verus/releases/download/release/${VERUS_VER}/verus-${VERUS_VER}-x86-linux.zip"
   command -v unzip >/dev/null || (apt-get update -qq && apt-get install -y -qq unzip) >/dev/null 2>&1
   rm -rf verus && unzip -q verus.zip -d verus
 fi
 "$VERUS_BIN" --version | head -1
 
+# Retry the fetch in-process rather than letting the pod die on it.
+#
+# DNS here fails intermittently, and huggingface_hub turns that into
+# LocalEntryNotFoundError rather than retrying long enough to ride it out. Losing
+# the pod to that is much worse than it sounds: these PVCs are local-path, so the
+# replacement pod is pinned to the SAME node by its volume and hits the same
+# blip, walking straight through backoffLimit. bok-0 and bok-1 burned three
+# attempts each this way while DNS on the node was fine seconds later.
+fetch_data() {
 echo "[eval] fetching data + code"
 mkdir -p /work/repo && cd /work/repo
 python - <<PY
@@ -105,6 +114,15 @@ n = len([f for f in os.listdir("training-dataset/sections/alp14") if f.endswith(
 assert n > 0, "no section files - eval would score nothing"
 print(f"[eval] data ready ({n} sections)")
 PY
+}
+
+for a in 1 2 3 4 5 6; do
+  fetch_data && break
+  [ "$a" = 6 ] && { echo "[eval] FATAL: cannot fetch data after 6 attempts"; exit 1; }
+  echo "[eval] fetch attempt $a failed (likely transient DNS); retrying in 30s"
+  sleep 30
+done
+
 cp -r /work/code/* /work/repo/ 2>/dev/null || true
 ls scripts/eval_checkpoint.py prompt_engineering/dataset_loader.py >/dev/null
 
@@ -117,12 +135,22 @@ for RUN in $RUN_IDS; do
     NAME="${RUN}-${CK}${OUT_TAG}"
     OUT="/work/eval/${NAME}.json"
     echo "[eval] ===== $RUN / $CK ${SAMPLE_ARGS} ====="
-    # shellcheck disable=SC2086
-    python scripts/eval_checkpoint.py \
-      --base "$BASE_MODEL" \
-      --adapter "${HF_CKPT_REPO}" --subfolder "${RUN}/${CK}" \
-      --jobs "$JOBS" $SAMPLE_ARGS \
-      --out "$OUT" || { echo "[eval] FAILED $RUN/$CK"; continue; }
+    # Retried for the same reason as the data fetch: the checkpoint download can
+    # hit the same DNS blip, and `continue` alone would silently drop a run from
+    # the comparison — the worst failure mode here, because the summary table
+    # would still look complete.
+    ok=""
+    for a in 1 2 3; do
+      # shellcheck disable=SC2086
+      python scripts/eval_checkpoint.py \
+        --base "$BASE_MODEL" \
+        --adapter "${HF_CKPT_REPO}" --subfolder "${RUN}/${CK}" \
+        --jobs "$JOBS" $SAMPLE_ARGS \
+        --out "$OUT" && { ok=1; break; }
+      echo "[eval] attempt $a failed for $RUN/$CK; retrying in 30s"
+      sleep 30
+    done
+    [ -n "$ok" ] || { echo "[eval] FAILED $RUN/$CK after 3 attempts"; continue; }
     python - <<PY
 import json, os
 from huggingface_hub import HfApi

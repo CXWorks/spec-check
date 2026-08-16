@@ -223,17 +223,45 @@ def push_to_hub(args):
     out = Path(args.out)
     ckpts = sorted(p for p in out.glob("checkpoint-*") if p.is_dir())
     targets = ckpts + [out] if ckpts else [out]
+
+    # Two patterns that have to be right, because getting them wrong is silent
+    # and only shows up as a storage bill:
+    #
+    #  checkpoint-*  — `out` CONTAINS the per-epoch checkpoint directories, so
+    #    uploading it wholesale nests a second copy of every one of them under
+    #    final/. sft2-3/final reached 80.51 GB this way, of which 72.4 GB was
+    #    duplicated checkpoints, and it filled the account's private quota — which
+    #    then broke every eval job with a 403 that huggingface_hub reports as
+    #    "check your internet connection".
+    #  **/optimizer.pt — ignore_patterns matches the path relative to the folder,
+    #    so a bare "optimizer.pt" filters out/optimizer.pt but NOT
+    #    out/checkpoint-41/optimizer.pt. Those are 16 GB each for a 4B full
+    #    fine-tune and were the bulk of the duplication above.
+    skip = ["checkpoint-*", "checkpoint-*/**", "**/optimizer.pt", "optimizer.pt",
+            "**/scheduler.pt", "**/rng_state*.pth", "*.safetensors.index.json.tmp"]
+
+    failed = []
     for src in targets:
-        dest = f"{args.run_id}/{src.name if src is not out else 'final'}"
+        is_final = src is out
+        dest = f"{args.run_id}/{'final' if is_final else src.name}"
         try:
-            api.upload_folder(folder_path=str(src), path_in_repo=dest,
-                              repo_id=repo, repo_type="model",
-                              ignore_patterns=["optimizer.pt", "*.safetensors.index.json.tmp"])
+            api.upload_folder(
+                folder_path=str(src), path_in_repo=dest,
+                repo_id=repo, repo_type="model",
+                # The nested-checkpoint filter applies only to the final upload;
+                # the per-epoch uploads ARE the checkpoints.
+                ignore_patterns=skip if is_final else skip[2:])
             log(f"uploaded {src.name} -> {repo}/{dest}")
         except Exception as e:
-            # An upload failure must not look like a training failure; the rescue
-            # pod can still get these off the PVC.
             log(f"UPLOAD FAILED for {src.name}: {e}")
+            failed.append(src.name)
+
+    # Exiting 0 after a failed upload makes the k8s Job report success while the
+    # artifact does not exist — which is how three seed replicates were recorded
+    # as complete with no checkpoint behind them. The PVC copy is not a fallback:
+    # local-path volumes die with the node.
+    if failed:
+        sys.exit(f"upload failed for {len(failed)} target(s): {', '.join(failed)}")
 
 
 def main():
