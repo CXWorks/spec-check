@@ -43,15 +43,40 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "prompt_engineering"))
 
 
-def build_prompt(sample, v3):
-    """Same shape the model was trained on: V3 system prompt, no preamble.
+PREAMBLE_TAIL_LINES = 200      # must match build_dataset.py
 
-    build_dataset.py embeds the preamble at training time only — the model is
-    expected to have learned the symbol names — so supplying it here would be a
-    train/inference mismatch, the exact bug Iteration 6 was about.
+
+def load_train_preamble(specs_dir):
+    """The preamble exactly as training saw it: last 200 lines, stripped.
+
+    Not `read_preamble()` — that one rewrites `struct` to `pub struct` for the
+    standalone compile probe and is a different string from what the model was
+    trained on.
     """
+    p = Path(specs_dir) / "preamble.rs"
+    if not p.exists():
+        return ""
+    lines = p.read_text(encoding="utf-8", errors="ignore").splitlines(keepends=True)
+    return "".join(lines[-PREAMBLE_TAIL_LINES:]).strip()
+
+
+def build_prompt(sample, v3, preamble=None):
+    """The V3 system prompt plus the section text, optionally with the preamble.
+
+    `build_dataset.py` puts the preamble in **every training prompt** and
+    inference deliberately leaves it out, on the reasoning that "the model is
+    expected to already know the symbols". That asymmetry is worth testing rather
+    than assuming: across 480 command-evals, `missing_symbol` is the single
+    largest failure category at 26% of all failures, which is what relying on an
+    absent symbol table would look like.
+
+    So `--with-preamble` restores the training condition exactly — same 200-line
+    tail, same ordering as `build_user_message()` — instead of adding some new
+    hand-written symbol list, which would be a third distinct prompt shape.
+    """
+    body = f"{sample.section_text}\n\n" if not preamble else f"{preamble}\n\n{sample.section_text}\n\n"
     user = (
-        f"{sample.section_text}\n\n"
+        f"{body}"
         f"Signature: pub open spec fn {sample.command.lower()}_spec(...) -> bool\n"
         "Prefer Bits64/UInt64/UInt32 aliases when present in context/spec, but do "
         "not sacrifice semantic correctness for alias formatting.\n"
@@ -188,6 +213,10 @@ def main():
                          "greedy one. 0 keeps the run identical to earlier runs.")
     ap.add_argument("--temperature", type=float, default=0.8)
     ap.add_argument("--top-p", type=float, default=0.95)
+    ap.add_argument("--with-preamble", action="store_true",
+                    help="Prepend the preamble, restoring the training condition. "
+                         "Training put it in every prompt; inference has been "
+                         "leaving it out.")
     ap.add_argument("--jobs", type=int, default=8,
                     help="Parallel Verus processes. Verus is a subprocess, so "
                          "threads are enough; this is what makes k>1 affordable.")
@@ -247,11 +276,19 @@ def main():
     except ImportError:
         calc_codebleu = None
 
-    report_prompt_alignment(tok, render_generation_prompt(tok, build_prompt(dataset[0], V3_PROMPT)))
+    train_preamble = load_train_preamble(args.specs_dir) if args.with_preamble else None
+    if args.with_preamble:
+        if not train_preamble:
+            sys.exit(f"--with-preamble but no preamble.rs under {args.specs_dir}")
+        print(f"[eval] preamble ON: {len(train_preamble)} chars "
+              f"(last {PREAMBLE_TAIL_LINES} lines, as training used)", flush=True)
+
+    report_prompt_alignment(
+        tok, render_generation_prompt(tok, build_prompt(dataset[0], V3_PROMPT, train_preamble)))
 
     def generate(s):
         """Greedy first, then args.samples sampled continuations of the same prompt."""
-        text = render_generation_prompt(tok, build_prompt(s, V3_PROMPT))
+        text = render_generation_prompt(tok, build_prompt(s, V3_PROMPT, train_preamble))
         # add_special_tokens=False: the template already emitted every special
         # token as text, so letting the tokenizer add more would shift the prompt
         # away from the training prefix this function just went to the trouble of
@@ -380,6 +417,7 @@ def main():
         "truncated": sum(r["n_truncated"] for r in results),
         "no_fn_found": sum(1 for r in results
                            if r["reason"] == "no_pub_open_spec_fn_found"),
+        "with_preamble": bool(args.with_preamble),
         "gold_ceiling_note": "gold compiles on 33/40 (82.5%) with this Verus build",
     }
     if args.samples:
