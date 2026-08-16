@@ -317,6 +317,41 @@ decision (epoch count, learning rate, early stopping) is currently made blind.
 The epoch-curve eval (`eval2-ep`) exists because it is the only feedback that
 tracks the objective.
 
+### Every pass rate below is understated: the decode budget was too small
+
+`--max-new-tokens` defaulted to 2048. The longest gold spec is 12837 characters,
+roughly 4400 tokens, so the cap could not fit the hardest commands even in
+principle. Truncated generations cluster at 5817–6338 characters while the
+longest complete one is 5205 — a cliff at the cap, not a distribution.
+
+| Run | truncated | reported pass |
+|---|---|---|
+| `sft2-0` 4B bf16 LoRA | 7/40 (17.5%) | 35.0% |
+| `sft2-1` 4B fp16 LoRA | 8/40 (20.0%) | 45.0% |
+| `sft2-3` 4B bf16 full | **14/40 (35.0%)** | 27.5% |
+| `sft2-2` 9B bf16 LoRA | **26/40 (65.0%)** | 25.0% |
+
+It hit the configurations **unequally**, so it is a confound rather than a
+uniform penalty. `sft2-3` was truncated twice as often as `sft2-0`, which is
+enough on its own to withdraw "full fine-tuning is worse" — that comparison has
+no support left.
+
+Half the commands that never passed under any run (7 of the 14 where gold does
+compile) were simply never allowed to finish: `RMI_REALM_DESTROY`,
+`RMI_RTT_AUX_MAP_PROTECTED`, `RMI_RTT_FOLD`, `RMI_RTT_MAP_UNPROTECTED`,
+`RMI_RTT_READ_ENTRY`, `RMI_VDEV_DESTROY`, `RMI_VDEV_P2P_BIND`. Genuinely-hard
+commands number 7, not 14.
+
+For `sft2-2` the effect is severe enough that its number measures nothing:
+16 commands were lost to reasoning (below) and 10 more to spec truncation, and
+of the 14 that ran to completion **10 compiled**. That subset is biased — the
+commands that fit are the short ones, which are also the easy ones — so 10/14 is
+an over-estimate, not the model's real rate. What it does establish is that
+25.0% is not a capability measurement.
+
+Fixed by raising the default to 6144 and counting truncation from both the token
+cap and an unbalanced brace.
+
 ### The failure taxonomy was wrong, and failures were not diagnosable
 
 `classify_failure()` tested a bare `"expected"` third in its cascade. That
@@ -333,12 +368,31 @@ output — so no failure could be examined without re-running the whole eval. Ev
 JSONs now keep `output_head`, the raw decoder text when extraction fails, and a
 truncation count.
 
+Re-checking all 160 stored generations under the corrected classifier
+(`scripts/analyze_failures.py`, which needs Verus but not the network):
+
+| | `sft2-0` | `sft2-1` | `sft2-3` | `sft2-2` |
+|---|---|---|---|---|
+| `parse_error` before | 9 | 5 | 11 | 2 |
+| `parse_error` after | **0** | **0** | **0** | **0** |
+
+**Not one generation was ever syntactically invalid.** The 27 reported syntax
+errors were type errors, arity errors, and — mostly — truncation, which Verus
+reports as `mismatched closing delimiter` and therefore reads as a mistake the
+model made rather than an answer it was cut off from finishing. Two layers of
+mislabelling stacked, which is why the decode budget went unnoticed for a whole
+sweep.
+
 ### `sft2-2` (9B): the number does not measure the model
 
-The 9B eval returns `no_pub_open_spec_fn_found` on most commands — the output
-contains no `pub open spec fn ... -> bool {` at all. Its training was healthy
-(loss 0.0066, token accuracy 0.998), so this is a **decode-time failure, and the
-9B pass rate should not be read as a capability result** until it is explained.
+The 9B eval returns `no_pub_open_spec_fn_found` on 16 of 40 commands. **Cause
+confirmed by inspecting the outputs:** handed an open `<think>`, the model
+reasons in prose — *"Let me analyze this RMI_DATA_CREATE_UNKNOWN command
+specification: 1. **Inputs**: rd (Address), data (Address)…"* — and hits the
+token cap before writing any spec. All 16 are cut off at 4.8k–9.7k characters,
+i.e. exactly `--max-new-tokens`. Training taught it to close the block
+immediately (loss 0.0066, token accuracy 0.998), but on longer sections the base
+model's reasoning prior wins.
 
 **Verified** while investigating: both Qwen templates render an empty
 `<think>` block into the training conversation, but `add_generation_prompt=True`
