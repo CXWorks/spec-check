@@ -307,6 +307,29 @@ gradients and Adam state on every GPU; for 9B that is ~100 GB per device against
 precision (0 vs 1), capacity (0 vs 2), LoRA vs full (0 vs 3) — are all covered
 without it.
 
+### Read this first — corrected conclusions and their evidence
+
+The sections below were written as things were discovered, so several state a
+conclusion that a later section withdraws. This table is what survived.
+
+| Claim | Status | Evidence |
+|---|---|---|
+| SFT is exhausted as a lever | **holds** | loss 0.002; epochs 1/2/3 all 14/40; capacity and method do not separate |
+| bf16 = fp16 | **holds** | 3 seeds each, majority vote 37.5% vs 37.5%, p = 1.000 |
+| Compiling ≈ 2× correctness | **holds** | Z3 vs gold: 15–25% correct against 35–45% compiling |
+| `weaker` = a dropped frame condition | **holds** | 18 of 19, every config, every seed, 6 commands |
+| Full FT degenerates (repetition) | **holds** | intervention: 3× the budget made repetition worse |
+| Full FT is *worse* | **narrowed** | true on compile rate, **not** on correctness (18.8% vs 19.2%) |
+| Restoring the preamble helps | **narrowed** | 9B only: +22.5pp compiling, +7.5pp correct, p = 0.004. 4B p = 0.549 |
+| Every pass rate was understated | **withdrawn** | only `sft2-2`; `sft2-0` passed the identical 14 commands before and after |
+| 9B has ~20pp of RFT headroom | **withdrawn** | of 16 sampling-recovered specs, 2 are correct |
+| Sampling recovers nothing | **withdrawn** | true of `bok-0`'s first ten commands only |
+
+**The single most useful number:** correctness, not compile rate. Every
+intervention measured tonight raised compiling faster than correct —
+sampling 12.5%, preamble 33%, against a 62.5% base rate — so a compile-rate
+delta is an upper bound on the real gain, usually a loose one.
+
 ### Results (40 held-out commands)
 
 | Run | | Verus pass | non-degenerate |
@@ -382,7 +405,7 @@ decision (epoch count, learning rate, early stopping) is currently made blind.
 The epoch-curve eval (`eval2-ep`) exists because it is the only feedback that
 tracks the objective.
 
-### Every pass rate below is understated: the decode budget was too small
+### The decode budget was too small (and it hit the runs unequally)
 
 `--max-new-tokens` defaulted to 2048. The longest gold spec is 12837 characters,
 roughly 4400 tokens, so the cap could not fit the hardest commands even in
@@ -608,7 +631,7 @@ And it retracts the earlier reading of `bok-0`'s first ten commands as evidence
 that sampling recovers nothing — that was true of those ten and of no run in
 full.
 
-### Statistical power: why none of the above is yet a result
+### Statistical power: what 40 commands can and cannot resolve
 
 **Verified.** The 40-command eval set gives a binomial standard error of ~7.7pp
 around a 35% rate, so two runs must differ by roughly **22pp** before the
@@ -756,7 +779,7 @@ The two metrics also have *different* noise: bf16 is ±5.0pp on compile rate and
 ±7.5pp on correctness, fp16 is ±5.0 and ±2.5. They are not two readings of one
 quantity, and reporting only the compile rate ranks fp16 first when it is not.
 
-### Restoring the training-time preamble (in flight)
+### Restoring the training-time preamble
 
 Training put a 200-line symbol table in every prompt; inference removed it on
 the assumption the model had memorised it. Over the first 14–16 commands,
@@ -965,10 +988,35 @@ Metrics, identical for every run:
 | reference | Claude / GPT on the same 40 |
 | monitor only | CodeBLEU — never an optimization target |
 
-### Phase 2 — make faithfulness measurable (critical path)
+### Phase 2 — make faithfulness measurable — **DONE, and it changed Phase 3**
 
-The project currently has **no metric for its actual goal**. It can measure "compiles";
-it cannot measure "faithful to the PDF". Until that exists, Phase 3 is unsafe.
+`scripts/semantic_equiv.py` compares a generated spec to gold with Z3 in both
+directions, returning equivalent / stronger / weaker / incomparable, with
+compile errors and timeouts kept separate from disagreements. Validated in both
+directions before use: gold against itself is equivalent; `{ true }` is weaker;
+gold plus a conjunct is stronger; a malformed control returns `compile_error`.
+
+Its results are in section 3. The three that matter here:
+
+1. **Compiling is worth about half what it looks like** — 15–25% correct against
+   35–45% compiling.
+2. **`weaker` — the direction that makes a verifier miss bugs — is one omission**,
+   a dropped frame condition, in 18 of 19 cases across every configuration.
+   `scripts/ablate_clause.py` localises it clause-by-clause.
+3. **Rejection sampling would make things worse.** Of 16 specs recovered by
+   sampling, 2 are correct. A compile-success reward reinforces the 87.5%.
+
+The caveat that limits all of it: gold is a human reading of the PDF, so this
+measures agreement with gold, not faithfulness to the text. Tier 1 below —
+structural conformance against SCOPE's own parse of the source tables — is still
+worth building, because it checks against the document rather than against
+another person's reading of it.
+
+**Consequence for Phase 3:** the gate is open and the answer is *no* to the plan
+it was gating. Do not train on compile-success. What Phase 3 should become is an
+open question for a human, but the measured facts pointing at it are: SFT is
+saturated, the remaining defect is a specific and nameable one, and no
+inference-time intervention has yet raised correctness by more than 7.5pp.
 
 - [ ] **Tier 1 — structural conformance to the PDF, no LLM judgment required.**
       SCOPE's parser already extracts the source tables (`scope --mode raw`), and
