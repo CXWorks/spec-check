@@ -191,6 +191,15 @@ def classify_failure(output: str, returncode: int) -> str:
     if "postcondition not satisfied" in low or "precondition not satisfied" in low:
         return "proof_obligation_failed"
 
+    # Unbalanced brackets, reported separately from other syntax errors because
+    # the cause is almost never the model's grammar: it is a generation that
+    # stopped mid-expression, usually at the token cap. Labelling it
+    # `parse_error` is what hid a decode-budget problem behind what looked like
+    # the model writing invalid code.
+    if ("mismatched closing delimiter" in low or "unclosed delimiter" in low
+            or "unexpected closing delimiter" in low):
+        return "unbalanced_delimiter"
+
     # Genuine syntax errors, tested first because parsing precedes everything
     # else: if the parser failed there are no name or type diagnostics to find.
     # Narrowed to phrasing only a parser emits — note that "expected one of ...,

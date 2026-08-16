@@ -269,8 +269,13 @@ def main():
         # "mismatched closing delimiter", which reads as a syntax error the model
         # made rather than an answer it was never allowed to finish.
         texts = [strip_output(tok.decode(o, skip_special_tokens=True)) for o in outs]
+        # Parens as well as braces: a spec can stop inside a nested expression
+        # with its braces incidentally balanced, and that case was being counted
+        # as a compile failure rather than as a cut-off answer.
         n_trunc = sum(1 for o, t in zip(outs, texts)
-                      if len(o) >= args.max_new_tokens or t.count("{") > t.count("}"))
+                      if len(o) >= args.max_new_tokens
+                      or t.count("{") != t.count("}")
+                      or t.count("(") != t.count(")"))
         return texts, raw, n_trunc
 
     def check_all(command, texts):
