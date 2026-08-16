@@ -912,6 +912,28 @@ doubles compilation — 31/40 against gold's own 33/40 ceiling — and buys two
 correct specs. Every intervention converts new compilations at well under the
 model's own 62.5% base rate.
 
+**And the conversion rate is a property of the intervention, not the model.**
+Repeating all four on `sft2-1` (4B):
+
+| intervention | 9B compile / correct | 4B compile / correct | **conversion 9B / 4B** |
+|---|---|---|---|
+| baseline | 40.0% / 25.0% | 45.0% / 20.0% | 62.5% / 44% (base) |
+| restore preamble | 62.5% / 32.5% | 52.5% / 22.5% | **33% / 33%** |
+| self-repair | 77.5% / 30.0% | 62.5% / 22.5% | **13% / 14%** |
+| + frame hint | 55.0% / 25.0% | 50.0% / 20.0% | **0% / 0%** |
+
+Two models differing in size, base rate and instruction-following convert new
+compilations at nearly identical rates within each method. That gives a usable
+rule for evaluating any future technique:
+
+> **new-correct ≈ new-compiling × the method's conversion rate**, and a method
+> converting below the model's own base rate produces output *worse* than what
+> the model emits unprompted.
+
+Three of the four do. The exception, restoring the preamble, is not really an
+improvement to the model — it removes a self-inflicted handicap, since evaluation
+had been withholding the symbol table that every training prompt contained.
+
 Self-repair's ceiling is structural, not an implementation limit: its feedback is
 the compiler, and a compiler cannot report a missing frame condition, because a
 spec that omits one is perfectly legal. It fixes API misuse to near the ceiling
