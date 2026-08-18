@@ -50,6 +50,7 @@ WITH_PREAMBLE="${WITH_PREAMBLE:-0}"
 FRAME_HINT="${FRAME_HINT:-0}"
 ROUNDS="${ROUNDS:-2}"
 GEN_VERSIONS="${GEN_VERSIONS:-eac5 rel0}"   # MODE=gen only
+REPAIR_ROUNDS="${REPAIR_ROUNDS:-0}"        # MODE=gen only
 SAMPLES="${SAMPLES:-0}"
 TEMPERATURE="${TEMPERATURE:-0.8}"
 OUT_TAG="${OUT_TAG:-}"
@@ -167,6 +168,7 @@ $(affinity_block)      containers:
         - {name: FRAME_HINT,    value: "${FRAME_HINT}"}
         - {name: ROUNDS,      value: "${ROUNDS}"}
         - {name: GEN_VERSIONS,  value: "${GEN_VERSIONS}"}
+        - {name: REPAIR_ROUNDS, value: "${REPAIR_ROUNDS}"}
         - {name: SAMPLES,     value: "${SAMPLES}"}
         - {name: TEMPERATURE, value: "${TEMPERATURE}"}
         - {name: OUT_TAG,     value: "${OUT_TAG}"}

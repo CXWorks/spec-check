@@ -16,6 +16,9 @@ MODE="${MODE:-score}"            # score | repair | gen
 # so this mode needs those versions' section text, not alp14's, and it needs no
 # Verus at all -- the dangling-output check is textual.
 GEN_VERSIONS="${GEN_VERSIONS:-eac5 rel0}"
+# >0 makes gen mode compile each spec and feed the error back. That needs verus
+# and rustup after all, so the skips below are conditional on it being 0.
+REPAIR_ROUNDS="${REPAIR_ROUNDS:-0}"
 WITH_PREAMBLE="${WITH_PREAMBLE:-0}"  # 1 restores the preamble that training used
 FRAME_HINT="${FRAME_HINT:-0}"        # 1 demands frame conditions explicitly
 ROUNDS="${ROUNDS:-2}"            # repair mode only
@@ -91,9 +94,10 @@ done
 # struct -> pub struct rewrite; both are prerequisites, not optional extras.
 export RUSTUP_HOME=/work/rust/rustup CARGO_HOME=/work/rust/cargo
 export PATH=$CARGO_HOME/bin:$PATH
-if [ "$MODE" = "gen" ]; then
-  # rustup exists only to satisfy verus, which gen mode never invokes.
-  echo "[eval] mode=gen: skipping rustup"
+if [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ]; then
+  # rustup exists only to satisfy verus, which gen mode invokes only when
+  # repairing.
+  echo "[eval] mode=gen without repair: skipping rustup"
 elif [ ! -x "$CARGO_HOME/bin/rustc" ]; then
   echo "[eval] installing rustup"
   mkdir -p "$RUSTUP_HOME" "$CARGO_HOME"
@@ -102,8 +106,8 @@ elif [ ! -x "$CARGO_HOME/bin/rustc" ]; then
 fi
 
 export VERUS_BIN=/work/tools/verus/verus-x86-linux/verus
-if [ "$MODE" = "gen" ]; then
-  echo "[eval] mode=gen: skipping verus (the dangling-output check is textual)"
+if [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ]; then
+  echo "[eval] mode=gen without repair: skipping verus (the check is textual)"
 elif [ ! -x "$VERUS_BIN" ]; then
   echo "[eval] installing verus $VERUS_VER"
   mkdir -p /work/tools && cd /work/tools
@@ -112,7 +116,7 @@ elif [ ! -x "$VERUS_BIN" ]; then
   command -v unzip >/dev/null || (apt-get update -qq && apt-get install -y -qq unzip) >/dev/null 2>&1
   rm -rf verus && unzip -q verus.zip -d verus
 fi
-[ "$MODE" = "gen" ] || "$VERUS_BIN" --version | head -1
+{ [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ]; } || "$VERUS_BIN" --version | head -1
 
 # Retry the fetch in-process rather than letting the pod die on it.
 #
@@ -203,7 +207,7 @@ for RUN in $RUN_IDS; do
       # Output is a directory of .rs files rather than a JSON, so this branch has
       # its own invocation and its own upload instead of sharing the score path.
       GDIR="/work/eval/${NAME}"
-      GEN_ARGS="--versions $GEN_VERSIONS --out-dir $GDIR"
+      GEN_ARGS="--versions $GEN_VERSIONS --out-dir $GDIR --repair-rounds $REPAIR_ROUNDS"
       [ "$WITH_PREAMBLE" = "1" ] && GEN_ARGS="$GEN_ARGS --with-preamble"
       ok=""
       for a in 1 2 3; do

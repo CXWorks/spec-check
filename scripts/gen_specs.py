@@ -29,12 +29,81 @@ by eval_checkpoint.py.
 
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "prompt_engineering"))
 sys.path.insert(0, str(ROOT / "scripts"))
+
+
+REPAIR_SYSTEM = (
+    "You fix Verus specification functions that fail to compile. You are given one "
+    "`pub open spec fn`, the Verus error it produces, and the relevant declarations "
+    "from the shared preamble.\n"
+    "- Return ONLY the corrected function, no prose and no code fence.\n"
+    "- Fix ONLY what the error reports. Do not add, remove or weaken any logical "
+    "condition: the repaired function must constrain exactly what the original "
+    "intended to constrain.\n"
+    "- In particular do not delete a clause to make an error go away. A spec that "
+    "compiles because it says less is worse than one that does not compile."
+)
+
+
+def first_error_block(out, n=14):
+    """Slice from the first real error. The preamble emits hundreds of `uninterp`
+    warnings before anything real, and burying the error in them is how a repair
+    turn learns nothing from it."""
+    lines = out.split("\n")
+    for i, l in enumerate(lines):
+        if l.startswith("error"):
+            return "\n".join(lines[i:i + n])
+    return out[-800:]
+
+
+def preamble_decls(err, preamble):
+    """Quote the preamble's declaration of every identifier the error names.
+
+    Most of these errors are `E0425 cannot find value X` and `E0308 mismatched
+    types`, where the fix is mechanical once the real declaration is visible.
+    Without this the model is asked to correct a name it still cannot see.
+    """
+    names = set(re.findall(r"`([A-Za-z_][A-Za-z0-9_]*)`", err))
+    decl_of = {}
+    for n in names:
+        for m in re.finditer(rf"(?m)^.*\b{re.escape(n)}\b.*$", preamble):
+            line = m.group(0).strip()
+            if any(k in line for k in ("spec fn", "enum", "struct", "const")) and len(line) < 200:
+                decl_of[n] = line
+                break
+    out = sorted(set(decl_of.values()))[:12]
+
+    # Names the error mentions that the preamble does not declare at all. This is
+    # the dominant failure -- missing_symbol was 26% of all eval failures -- and
+    # quoting only the OTHER names in the error leaves the model guessing at the
+    # one that is actually wrong. Say it is absent, and offer the real names it
+    # most resembles so the fix is a substitution rather than another invention.
+    import difflib
+    declared = set(re.findall(r"(?:spec fn|enum|struct|const)\s+([A-Za-z_][A-Za-z0-9_]*)",
+                              preamble))
+    absent = sorted(n for n in names - set(decl_of)
+                    if n[:1].isalpha() and len(n) > 2 and n not in ("int", "bool", "true", "false"))
+    hints = []
+    for n in absent:
+        near = difflib.get_close_matches(n, declared, n=3, cutoff=0.6)
+        hints.append(f"// `{n}` is NOT declared in the preamble."
+                     + (f" Closest real names: {', '.join(near)}" if near else
+                        " There is no similar name; the clause using it cannot be expressed."))
+    return "\n".join(out + hints[:6])
+
+
+def n_implications(src):
+    """`==>` count. The benchmark's own repair pass verifies a repair by holding
+    this constant, so use the same measure: a drop means the model bought
+    compilation by constraining less."""
+    body = src[src.find("{") + 1: src.rfind("}")] if "{" in src else ""
+    return body.count("==>")
 
 
 def main():
@@ -56,6 +125,15 @@ def main():
                          "(McNemar p=0.004) -- but the published Qwen baseline-1 row "
                          "was generated WITHOUT it, so pass nothing to reproduce that "
                          "and pass this to measure the model properly. Report which.")
+    ap.add_argument("--repair-rounds", type=int, default=0,
+                    help="Feed Verus errors back and let the model fix its own "
+                         "output, up to N times. Needed for the verus_rmm "
+                         "benchmark: unrepaired, every obligation there is "
+                         "inconclusive because the function does not compile, so "
+                         "the score measures Verus syntax fluency rather than "
+                         "bug-finding. One round took Claude 1/4 -> 4/4 (gold "
+                         "parity) in BENCHMARK_VERUS_RMM.md. 0 keeps the raw "
+                         "generation, which stays the comparable configuration.")
     ap.add_argument("--limit", type=int, default=None)
     args = ap.parse_args()
 
@@ -65,6 +143,14 @@ def main():
     from prompt_engineering_v3 import get_v3_prompt
     from eval_checkpoint import (build_prompt, load_train_preamble,
                                  render_generation_prompt, strip_output)
+    from verify_generated_verus import (check_text, find_verus_bin, read_preamble)
+
+    verus = None
+    if args.repair_rounds > 0:
+        verus = find_verus_bin(None)
+        if not verus:
+            sys.exit("--repair-rounds needs verus - set VERUS_BIN")
+        print(f"[gen] repair enabled: up to {args.repair_rounds} round(s)", flush=True)
 
     prompt = get_v3_prompt(args.prompt_variant)
     print(f"[gen] prompt variant: {prompt.name}", flush=True)
@@ -121,11 +207,51 @@ def main():
                 g = model.generate(ids, max_new_tokens=args.max_new_tokens,
                                    do_sample=False, pad_token_id=tok.eos_token_id)
             spec = strip_output(tok.decode(g[0][ids.shape[1]:], skip_special_tokens=True))
+
+            note = ""
+            if verus:
+                probe_pre = read_preamble(
+                    ROOT / "training-dataset" / "specs" / version / "preamble.rs")
+                before = n_implications(spec)
+                for rnd in range(args.repair_rounds):
+                    chk = check_text(verus, probe_pre, s.command, spec, 600)
+                    if chk.status == "pass":
+                        break
+                    err = first_error_block(chk.output_head or chk.reason)
+                    decls = preamble_decls(err, probe_pre)
+                    rmsgs = [
+                        {"role": "system", "content": REPAIR_SYSTEM},
+                        {"role": "user", "content":
+                            f"## Function\n```rust\n{spec}\n```\n\n"
+                            f"## Verus error\n```\n{err}\n```\n\n"
+                            + (f"## Relevant preamble declarations\n```rust\n{decls}\n```\n"
+                               if decls else "")},
+                    ]
+                    rtext = render_generation_prompt(tok, rmsgs)
+                    rraw = tok(rtext, return_tensors="pt", add_special_tokens=False)
+                    rids = (rraw["input_ids"] if hasattr(rraw, "keys") else rraw).to(model.device)
+                    with torch.no_grad():
+                        rg = model.generate(rids, max_new_tokens=args.max_new_tokens,
+                                            do_sample=False, pad_token_id=tok.eos_token_id)
+                    cand = strip_output(tok.decode(rg[0][rids.shape[1]:],
+                                                   skip_special_tokens=True))
+                    if "pub open spec fn" not in cand:
+                        break                      # no usable function came back
+                    spec = cand
+                after = n_implications(spec)
+                final = check_text(verus, probe_pre, s.command, spec, 600)
+                # A repair that dropped implications bought compilation by saying
+                # less, which is the one outcome this pass must not be allowed to
+                # report as a success. Recorded per command, not just in aggregate.
+                note = (f"  [repair {'ok' if final.status == 'pass' else final.reason}"
+                        f" ==> {before}->{after}"
+                        f"{'  SHRANK' if after < before else ''}]")
+
             # Written even when empty. A missing file is scored as "not checked",
             # which would quietly shrink the denominator; an empty one is a
             # generation failure and should be visible as a miss.
             (vdir / f"{s.command.lower()}.rs").write_text(spec)
-            print(f"[gen] {i}/{len(samples)} {s.command}: {len(spec)} chars", flush=True)
+            print(f"[gen] {i}/{len(samples)} {s.command}: {len(spec)} chars{note}", flush=True)
 
     print(f"\n[gen] done. Score with:\n"
           f"  python3 benchmark/rule_check_8bugs/score.py --predictions <parent-of> "

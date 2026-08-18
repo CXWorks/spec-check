@@ -92,6 +92,16 @@ RUNS=(
   # those benchmarks check.
   "sft3-0|Qwen/Qwen3-4B|bf16|lora|ngc|42"
   "sft3-2|Qwen/Qwen3.5-9B|bf16|lora|new|42"
+
+  # Seed replicates on dataset_bench. Every sft3 comparison so far came back
+  # "not significant" -- 4B vs 9B p=0.454, new vs old p=0.344/0.625 -- because a
+  # 49-command set cannot resolve a 5-10pp difference from one run each. The
+  # split is pinned by SPLIT_SEED, so replicates share a test set and only
+  # initialisation and batch order differ.
+  "sft3-0-s1337|Qwen/Qwen3-4B|bf16|lora|ngc|1337"
+  "sft3-0-s2024|Qwen/Qwen3-4B|bf16|lora|ngc|2024"
+  "sft3-2-s1337|Qwen/Qwen3.5-9B|bf16|lora|new|1337"
+  "sft3-2-s2024|Qwen/Qwen3.5-9B|bf16|lora|new|2024"
 )
 
 # Nodes boogiebonjour's own production Jobs avoid. Reused rather than
