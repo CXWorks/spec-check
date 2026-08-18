@@ -59,7 +59,9 @@ Correctness (`semantic_equiv` vs gold):
 | `sft3-2` 9B | 22 | 11 (22.4%) | **0** |
 
 The 9B's zero `weaker` is its only defensible advantage: that is the failure a
-compile check structurally cannot see.
+compile check structurally cannot see. **It does not survive `--with-preamble`**
+— that condition takes the 9B to 1 `weaker` and the 4B to 2, while raising both
+models' compile rate. See the preamble section below.
 
 ### Seed spread differs by configuration, and two seeds cannot see it
 
@@ -284,6 +286,34 @@ commands, paired on the same test set:
 |---|---|---|---|---|
 | 4B | 18/49 (36.7%) | 21/49 (42.9%) | +3 | p = 0.375 |
 | 9B | 22/49 (44.9%) | **27/49 (55.1%)** | +5 | p = 0.227 |
+
+And on the axis that matters, the two models go opposite ways. Correctness is
+`semantic_equiv` agreement with gold, excluding `PSCI_CPU_OFF` where gold is
+itself vacuous and matching it is free:
+
+| | compile | correct | `weaker` |
+|---|---|---|---|
+| 4B baseline | 18/49 (36.7%) | 10/49 (20.4%) | 1 |
+| 4B + preamble | 21/49 (42.9%) | **9/49 (18.4%)** | **2** |
+| 9B baseline | 22/49 (44.9%) | 11/49 (22.4%) | **0** |
+| 9B + preamble | 27/49 (55.1%) | **15/49 (30.6%)** | 1 |
+
+**The preamble lifts compilation on both models and converts it into correctness
+only on the 9B.** On the 4B it is +3 compiling and −1 correct: three more specs
+that Verus accepts, none of which agrees with gold, and one previously-correct
+command (`RMI_VDEV_GET_INTERFACE_REPORT`) lost. `weaker` — the failure compile
+checks structurally cannot see — goes 1 → 2 on the 4B and 0 → 1 on the 9B.
+
+McNemar on correctness: 4B p = 1.000 (0 gained, 1 lost), 9B p = 0.219 (5 gained,
+1 lost). Neither is significant, and the 9B's five gains are the only positive
+evidence anywhere in this section.
+
+So **"restore the preamble" is not a general recommendation.** It is a 9B result,
+it costs that model the zero-`weaker` property this document called its only
+defensible advantage, and on the 4B it buys compilation by producing more code
+that compiles and means the wrong thing. That is precisely the trade this repo
+refuses elsewhere — nothing may be trained on compile-success — and it shows up
+here as an inference-time condition instead.
 
 **Neither is significant**, and the effect is roughly half its previously
 recorded size. The preamble is also not monotone — it breaks 1 command on the 4B
