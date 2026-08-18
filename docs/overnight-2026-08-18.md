@@ -61,19 +61,36 @@ Correctness (`semantic_equiv` vs gold):
 The 9B's zero `weaker` is its only defensible advantage: that is the failure a
 compile check structurally cannot see.
 
-### Seed spread is 1.2pp, and it reframes everything above
+### Seed spread differs by configuration, and two seeds cannot see it
 
-Three 4B seeds on `dataset_bench`, differing only in initialisation and batch
-order: 36.7% / 34.7% / 34.7%. Range 2.0pp, **sd 1.2pp**.
+Three seeds each, same split and hyperparameters, differing only in
+initialisation and batch order:
 
-Every "inside seed noise" verdict in this repo was measured against ±5pp, taken
-from the sft2-* replicates on the old contaminated split. Against 1.2pp:
+| | seeds | mean | sd |
+|---|---|---|---|
+| 4B | 36.7 / 34.7 / 34.7 | 35.4% | **1.2pp** |
+| 9B | 44.9 / 44.9 / 38.8 | 42.9% | **3.5pp** |
 
-| | gap | vs 1.2pp sd |
-|---|---|---|
-| 9B vs 4B, 49 commands | +8.2pp | ~7 sd |
-| 9B new vs old, shared 40 | +10pp | — |
-| 4B new vs old, shared 40 | +5pp | ~4 sd |
+The first two 9B seeds scored identically and read as *more* stable than the 4B.
+The third tripled the spread. **Two seeds is not enough**, and noise cannot be
+borrowed across configurations — this repo ran on one global ±5pp, which I first
+replaced with the 4B's ±1.2pp, which was wrong in the same way.
+
+Against each configuration's own spread:
+
+| | gap | pooled sd | |
+|---|---|---|---|
+| 9B vs 4B, 49 commands | +7.5pp | 2.6pp | **2.8 sd** |
+| 4B new vs old, shared 40 | +5pp | 1.2pp | ~4 sd |
+
+Real differences, but the 9B-vs-4B one is about 40% as strong as an earlier draft
+of this document claimed (it measured a 9B comparison against 4B noise).
+
+**Aggregate stability is not per-command stability.** Two 9B seeds both scoring
+22/49 disagree on 18 of 49 commands — nine each way, cancelling exactly. So a
+claim like "the 9B handles command X" needs a second seed; only aggregate rates
+are reproducible. Semantic verdicts hold up better: `RMI_VSMMU_CREATE` returns
+`stronger` across five runs spanning two model sizes and both datasets.
 
 **This does not overturn the McNemar results and the two are not substitutes.**
 McNemar was non-significant because the disagreeing commands are few (16 for
