@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Tuple, Optional
 from dataset_loader import load_dataset
 from prompt_engineering import (
     ROOT_DIR,
-    ClaudeHaikuModel,
+    ClaudeModel,
     PromptVariant,
     aggregate_metrics,
     evaluate_prompt_variant,
@@ -57,12 +57,17 @@ Core constraints:
 - CRITICAL — explicit `as int` cast required at helper-function boundaries: preamble helper functions (e.g. AddrIsRttLevelAligned, RttWalk, RMI_ERROR_RTT_AUX) declare their numeric parameters as Verus's mathematical `int` type. Verus does NOT auto-coerce `u64`/`i64`/`UInt64`-typed values (including struct fields and expressions like `level - 1`) into `int` — you must write `as int` explicitly at the call site, every time.
     WRONG:   AddrIsRttLevelAligned(old_s, ipa, RealmAt(old_s, rd).rtt_level_start)
     CORRECT: AddrIsRttLevelAligned(old_s, ipa, RealmAt(old_s, rd).rtt_level_start as int)
+- CRITICAL — never drop a helper's leading `s: S` state parameter: most preamble helpers (e.g. `AddrIsGranuleAligned`, `PaIsDelegable`, `AddrIsProtected`, `PlaneSysregValid`, `VdevAttestInfoEqual`, `ImplFeatures`) are declared with a leading `s: S` parameter before their "real" arguments, and it is easy to silently omit it because the remaining arguments alone look like a complete, plausible call. Before writing ANY call to a preamble helper, re-read its exact declared signature in the Context block above; if the first declared parameter is `s: S`, the first argument you pass MUST be `old_s` or `new_s` (matching whichever state the check is about) — never omit it, and never call it as a dot-method (`old_s.ImplFeatures()`) when the preamble declares it as a free function.
+    WRONG:   AddrIsGranuleAligned(pdev_ptr)
+    CORRECT: AddrIsGranuleAligned(old_s, pdev_ptr)
+    WRONG:   old_s.ImplFeatures().max_mecid
+    CORRECT: ImplFeatures(old_s).max_mecid
 - CRITICAL — pick the exact matching helper overload for this command's family, never the closest-looking name: several preamble helpers exist in multiple near-identical versions for different families (`VersionEqual` for PSCI vs `VersionEqualRmi` for RMI vs `VersionEqualRsi` for RSI; `DeviceCommunicate`/`DeviceCommunicate1`/`DeviceCommunicate2` with different argument counts; `VdevAttestInfoEqual` (4 args) vs `VdevAttestInfoEqual1` (2 args); helpers like `RecAuxCount` that take a leading `s: S` argument that is easy to drop). Check the preamble for the exact overload defined for THIS command's prefix (RMI_*/RSI_*/PSCI_*) and its exact parameter list before calling it.
     WRONG (RMI command):     VersionEqual(lower, RmiVersionHighestBelow(old_s, req))
     CORRECT (RMI command):   VersionEqualRmi(lower, RmiVersionHighestBelow(old_s, req))
 - Keep predicate/function arity consistent with provided context signatures.
 - Prefer precise implication style over free-form narrative or comments.
-- **Fully unconstrained specs rule**: If you find NO meaningful constraints in the spec text for the command (e.g., pure query, feature detector, version/status check with no state change), return `true` directly. Do NOT attempt to fabricate constraint logic. Examples: PSCI_FEATURES (fully unconstrained, oracle returns `true`), RSI_FEATURES, version queries → all should return `true`. For these commands, preserve the oracle's signature order exactly when known; do not reorder arguments for stylistic reasons.
+- **Fully unconstrained specs rule**: If you find NO meaningful constraints in the spec text for THIS command in the spec section given to you, return `true` directly. Do NOT attempt to fabricate constraint logic. But do NOT assume a command is unconstrained just because a same-named or same-family command was in another spec version — whether a command is unconstrained is version-specific, not a fixed property of the command name. For example, `RSI_FEATURES` returns `true` in some spec versions but constrains `value` via `RsiFeatureRegisterEncode(...)` in others; `RMI_VERSION`/`RSI_VERSION`/`PSCI_VERSION` are `true` in some versions but heavily constrained (lower/higher bounds, error branches) in others. Judge each command from the spec text actually given to you, never from its name alone. For commands you do return `true` for, preserve the oracle's signature order exactly when known; do not reorder arguments for stylistic reasons.
 - **Array/collection initialization rule**: When initializing array/list/container elements (e.g., realm.measurements[i], entries[j]):
     * If a specific initializer predicate exists in context (e.g., RimInit), use it
     * If NO initializer exists in context, do NOT fabricate one (e.g., ZeroRealmMeasurement, Zeros, etc.)
@@ -95,9 +100,13 @@ pub open spec fn rec_exit_spec(result: Result<(), RmiStatusCode>, old_s: S, new_
 
 Output ONLY one complete function item, with no extra text before or after."""
 
-PROMPT_V3_TEMPLATE = """{spec}
+PROMPT_V3_TEMPLATE = """Context (shared Verus types, structs, and helper function signatures for this spec family — copy identifiers verbatim from here; do not invent plausible-sounding variants):
+{context}
 
-{retrieved_rules}Signature: pub open spec fn {cmd_name_lower}_spec(...) -> bool
+Command specification:
+{spec}
+
+Signature: pub open spec fn {cmd_name_lower}_spec(...) -> bool
 Prefer Bits64/UInt64/UInt32 aliases when present in spec, but do not sacrifice semantic correctness for alias formatting.
 Keep unchanged-state constraints when implied by the command behavior."""
 
@@ -127,6 +136,17 @@ def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
         default=0,
         help="How many retrieved rules to inject (default: 0 = disabled)",
     )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Claude model ID (default: claude-haiku-4-5-20251001). E.g. claude-opus-4-8",
+    )
+    parser.add_argument(
+        "--effort",
+        default=None,
+        choices=["low", "medium", "high", "xhigh", "max"],
+        help="output_config.effort, only used on models with adaptive thinking (i.e. not Haiku)",
+    )
     args = parser.parse_args(argv)
     return {
         "split": args.split,
@@ -137,6 +157,8 @@ def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
         "resume": args.resume,
         "rag_index": args.rag_index,
         "rag_top_k": args.rag_top_k,
+        "model": args.model,
+        "effort": args.effort,
     }
 
 
@@ -149,16 +171,18 @@ def run_v3_only(
     resume: bool = False,
     retriever: Optional[Any] = None,
     rag_top_k: int = 0,
+    model_name: str = None,
+    effort: str = None,
 ) -> Dict[str, Any] | None:
     """Evaluate only the V3 prompt variant and report Best@k metrics."""
     print(f"\n{'=' * 70}")
     print(f"V3-only evaluation")
-    print(f"Model: Claude 4.5 Haiku | Problems: {limit} | Samples/problem: {n_samples}")
+    print(f"Model: {model_name or 'claude-haiku-4-5-20251001'} (effort={effort or 'default'}) | Problems: {limit} | Samples/problem: {n_samples}")
     print(f"Prompt: {V3_PROMPT.name}")
     print(f"{'=' * 70}")
 
     try:
-        model = ClaudeHaikuModel(api_key=api_key)
+        model = ClaudeModel(api_key=api_key, model=model_name, effort=effort)
         print("Connected to Claude API\n")
     except Exception as e:
         print(f"Failed to connect to Claude API: {e}\n")
@@ -252,6 +276,8 @@ def main() -> None:
         resume=cli["resume"],
         retriever=retriever,
         rag_top_k=rag_top_k,
+        model_name=cli["model"],
+        effort=cli["effort"],
     )
 
     if result is None:

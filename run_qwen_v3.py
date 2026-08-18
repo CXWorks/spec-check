@@ -43,7 +43,7 @@ from prompt_engineering_v3 import V3_PROMPT
 
 class QwenLocalModel:
     """
-    Drop-in replacement for ClaudeHaikuModel that runs inference
+    Drop-in replacement for ClaudeModel that runs inference
     on the locally trained Qwen LoRA adapter.
     """
 
