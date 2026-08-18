@@ -1,0 +1,26 @@
+[
+  {
+    "arm": "base",
+    "version": "eac5",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2777
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2709
+  },
+  {
+    "arm": "base",
+    "version": "rel0",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2792
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2099
+  }
+]

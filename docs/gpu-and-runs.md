@@ -1013,6 +1013,8 @@ clean comparison because `sft2-0` vs `sft2-1` differ in nothing else.
 
 ---
 
+---
+
 ## 4. Training TODO
 
 ### The constraint that shapes everything
@@ -1144,3 +1146,125 @@ reward = compile_pass ∧ non-degenerate ∧ structural_conformance ≥ threshol
 RFT, DPO, and GRPO all become safe at that point, and bf16 + flash-attn + vLLM on
 H100 make GRPO practical. **The risk was never the hardware; it is the objective
 function, and the objective function can be fixed first.**
+
+---
+
+## 5. The decontaminated runs (`sft3-*`) and the bug-finding benchmarks
+
+Every `sft2-*` run was trained on the commands both bug-finding benchmarks score,
+so neither benchmark could measure it: the check asks whether the model leaves an
+output unconstrained, gold leaves it unconstrained because that IS the gap, and
+the model was trained on gold. `dataset_bench` holds all 17 scored commands out at
+every version — 249 command examples instead of 293, and a held-out set of 49
+containing the old 40 as a strict subset. `sft3-0` and `sft3-2` are `sft2-0` and
+`sft2-2` retrained on it, with the V3.1 prompt.
+
+### The 15% data cut costs nothing
+
+| | shared 40 | 49 held out | McNemar |
+|---|---|---|---|
+| `sft2-0` 4B | 14/40 (35.0%) | — | — |
+| `sft3-0` 4B | 16/40 (40.0%) | 18/49 (36.7%) | p = 0.625 |
+| `sft2-2` 9B | 16/40 (40.0%) | — | — |
+| `sft3-2` 9B | 20/40 (50.0%) | 22/49 (44.9%) | p = 0.344 |
+
+Neither is significant and neither needs to be — the claim is that removing the
+benchmark commands did not hurt, and it did not. It also re-exposes how weak this
+benchmark is: 36 of 40 commands land identically for `sft2-0`/`sft3-0`, so 4
+carry all the information.
+
+The worry that dropping `RMI_RTT_DESTROY` and `RMI_RTT_INIT_RIPAS` would gut the
+RTT family was checked and is unfounded: `sft2-0`, which trained on all of them,
+already scored **0/9 on RTT with 7 truncated**. RTT was broken before.
+
+### Correctness moved more than compilation (4B)
+
+| | compiles | correct | of compiles |
+|---|---|---|---|
+| `sft2-0` (40) | 14 (35.0%) | 6 (15.0%) | 43% |
+| `sft3-0` (49) | 18 (36.7%) | 10 (20.4%) | **61%** |
+
+The disagreements also changed shape, in the direction that matters:
+
+| | weaker | incomparable | stronger |
+|---|---|---|---|
+| `sft2-0` | 2 | 3 | 1 |
+| `sft3-0` | 1 | 1 | 4 |
+
+`weaker` is the failure compile-success structurally cannot see. Trading it for
+`stronger` trades missed bugs for false alarms. With the caveat that a `stronger`
+clause which is plausible-but-unstated hides a gap exactly as confabulation does,
+so which kind these four are still has to be read per command.
+
+### rule_check_8bugs: the 9B matches gold
+
+| generator | recall (16) | false alarms | missed |
+|---|---|---|---|
+| gold (control) | 16/16 | 0 | — |
+| **`sft3-2` 9B** | **16/16** | 2 (`RMI_RTT_READ_ENTRY.desc`) | none |
+| Claude Opus 5 | 14/16 | 2 (`RSI_FEATURES`) | `RMI_RTT_READ_ENTRY` ×2 |
+| GPT `gpt-5.6-sol` | 14/16 | 2 (`RSI_FEATURES`) | `RMI_RTT_READ_ENTRY` ×2 |
+| `sft3-0` 4B | 11/16 | 0 | VERSION ×4, `RSI_IPA_STATE_GET` |
+
+The 9B's two false alarms are `desc`, which **SCOPE's own labelling patch marks
+`FP`** — a checker limitation, not a model error. The SOTA models' `RSI_FEATURES`
+alarm is a real miss: the spec defines `value` and they emitted `true`. `sft3-*`
+does not, which is the V3.1 prompt correction landing.
+
+**The 4B's two VERSION "misses" are a scoring artifact.** It emitted, for
+`RMI_VERSION` on eac5:
+
+```rust
+(result.is_Ok() ==> lower == req)
+&& (result.is_Ok() ==> higher == RmiInterfaceVersionHighestSupported(new_s))
+```
+
+while gold is `{ true }`. The Success-conditions **table** is empty — which is
+what SCOPE's ground truth derives from — but the prose above it states the a/b/c
+rule in full. The model read the prose and encoded it, so nothing dangles, so the
+check does not fire, so it scores as a miss. The 9B and both SOTA models leave it
+blank and are credited. **The benchmark rewards reading only the table.**
+
+### Withdrawn: "capable models confabulate, weak ones leave the gap visible"
+
+`BASELINE1_GENERAL_MODEL_COMPARISON.md` reads the `walk_level` result as a
+property of capable models. Two experiments say it is not.
+
+**The 9B falsifies the capability version.** It is stronger than the 4B on every
+axis measured here, and it leaves `walk_level` unconstrained exactly as the 4B
+does. Both fine-tuned models leave it; both general models fill it in. The line
+is not capability, it is whether the model was fine-tuned on this task.
+
+**A prompt line falsifies it outright.** `scripts/confab_probe.py` runs two arms
+that differ only by one added paragraph, which names no command and no field:
+
+| arm | eac5 | rel0 |
+|---|---|---|
+| base (`PROMPT_V3_SYSTEM` verbatim) | invents `walk_level as int == RttWalk(old_s, rd, ipa).level` | invents |
+| + "do not define outputs the specification leaves undefined" | **leaves it unconstrained** | **leaves it unconstrained** |
+
+The base arm reproduces the published failure on both versions, so the control
+holds and the treatment is the only difference. **One paragraph recovers the
+missed bug.**
+
+So the correct statement is not that capable models are worse detectors. It is
+that this task has a convention — *when the document says nothing, say nothing* —
+which the fine-tuned models absorbed from ~250 examples and the general models
+were never told. That is a better result: it is actionable, and it means the
+published SOTA rows understate what a general model does when asked properly.
+
+### verus_rmm is not measuring bug-finding yet
+
+| | eac5 | rel0 |
+|---|---|---|
+| gold (control) | 4/4 TP, 6/6 FP | 3/3 TP, 6/6 FP |
+| `sft3-0` 4B | 0/4, 4 inconclusive | 1/3, 2 inconclusive |
+| `sft3-2` 9B | 0/4, 4 inconclusive | — |
+
+`inconclusive` means the generated function does not compile, so the obligation
+never runs: `E0061` wrong arity, `E0308` mismatched types, `E0425` unknown
+`RMI_SUCCESS`/`walk_top`. Unrepaired Claude sat at 1/4 for the same reason, and
+`BENCHMARK_VERUS_RMM.md` showed one Verus-feedback repair round took it to 4/4,
+gold parity. **Until `sft3-*` gets that repair pass this column measures Verus
+syntax fluency.** `scripts/repair_eval.py` already exists; wiring it to the
+benchmark's input format is the next step.
