@@ -52,3 +52,6 @@ eval/
 # OMC scratch state
 .omc/
 **/.omc/
+
+# Verus writes these into the working directory it is invoked from.
+libtmp*.rlib

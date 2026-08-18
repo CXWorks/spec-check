@@ -149,6 +149,11 @@ def main():
                 dest = d / f"{cmd.lower()}.rs"
                 if dest.exists() and dest.stat().st_size > 0:
                     print(f"[confab] {arm}/{version} {i}/{len(wanted)} {cmd}: cached", flush=True)
+                    # Logged even though nothing was generated. The log is read as
+                    # "what is in this directory", not "what this invocation did",
+                    # and skipping cached entries silently made it the second thing.
+                    log.append({"arm": arm, "version": version, "command": cmd,
+                                "chars": dest.stat().st_size, "cached": True})
                     continue
                 sig = signature_for(version, cmd) if "sig" in arm else "(...)"
                 user = TEMPLATE.format(context=ctx, spec=samples[cmd].section_text,
@@ -168,7 +173,18 @@ def main():
                             "chars": len(spec)})
 
     out_root.mkdir(parents=True, exist_ok=True)
-    (out_root / "log.json").write_text(json.dumps(log, indent=2))
+    # Merge rather than overwrite. A run with --arms/--versions narrower than the
+    # last one would otherwise replace the whole record with its own slice: a
+    # single-arm rerun once cut the committed log from 80 entries to 41 and
+    # deleted the only record that the other arm had ever been generated.
+    merged = {}
+    logfile = out_root / "log.json"
+    if logfile.exists():
+        for e in json.loads(logfile.read_text()):
+            merged[(e["arm"], e["version"], e["command"])] = e
+    for e in log:
+        merged[(e["arm"], e["version"], e["command"])] = e
+    logfile.write_text(json.dumps([merged[k] for k in sorted(merged)], indent=2))
     print(f"\n[confab] wrote {out_root}/", flush=True)
 
 

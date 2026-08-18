@@ -1,5 +1,19 @@
 [
   {
+    "arm": "base",
+    "version": "eac5",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2777,
+    "cached": true
+  },
+  {
+    "arm": "base",
+    "version": "rel0",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2792,
+    "cached": true
+  },
+  {
     "arm": "noinvent",
     "version": "eac5",
     "command": "PSCI_AFFINITY_INFO",
@@ -160,6 +174,13 @@
     "version": "eac5",
     "command": "RMI_RTT_MAP_UNPROTECTED",
     "chars": 2314
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2709,
+    "cached": true
   },
   {
     "arm": "noinvent",
@@ -404,6 +425,13 @@
   {
     "arm": "noinvent",
     "version": "rel0",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2099,
+    "cached": true
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
     "command": "RMI_RTT_SET_RIPAS",
     "chars": 3712
   },
@@ -478,5 +506,292 @@
     "version": "rel0",
     "command": "RSI_VERSION",
     "chars": 187
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "PSCI_AFFINITY_INFO",
+    "chars": 719,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "PSCI_CPU_OFF",
+    "chars": 75,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "PSCI_CPU_ON",
+    "chars": 794,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "PSCI_CPU_SUSPEND",
+    "chars": 150,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "PSCI_FEATURES",
+    "chars": 122,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "PSCI_SYSTEM_OFF",
+    "chars": 119,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "PSCI_SYSTEM_RESET",
+    "chars": 121,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "PSCI_VERSION",
+    "chars": 105,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_DATA_CREATE",
+    "chars": 2413,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_DATA_CREATE_UNKNOWN",
+    "chars": 1868,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_DATA_DESTROY",
+    "chars": 1913,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_FEATURES",
+    "chars": 181,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_GRANULE_DELEGATE",
+    "chars": 780,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_GRANULE_UNDELEGATE",
+    "chars": 644,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_PSCI_COMPLETE",
+    "chars": 5597,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_REALM_ACTIVATE",
+    "chars": 682,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_REALM_CREATE",
+    "chars": 4682,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_REALM_DESTROY",
+    "chars": 822,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_REC_AUX_COUNT",
+    "chars": 571,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_REC_CREATE",
+    "chars": 5685,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_REC_DESTROY",
+    "chars": 804,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_REC_ENTER",
+    "chars": 2424,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_RTT_CREATE",
+    "chars": 2535,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_RTT_DESTROY",
+    "chars": 2148,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_RTT_FOLD",
+    "chars": 3045,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_RTT_INIT_RIPAS",
+    "chars": 3212,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_RTT_MAP_UNPROTECTED",
+    "chars": 2285,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 2729,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_RTT_SET_RIPAS",
+    "chars": 3034,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_RTT_UNMAP_UNPROTECTED",
+    "chars": 2051,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RMI_VERSION",
+    "chars": 192,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "chars": 770,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_ATTESTATION_TOKEN_INIT",
+    "chars": 598,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_FEATURES",
+    "chars": 135,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_HOST_CALL",
+    "chars": 271,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_IPA_STATE_GET",
+    "chars": 294,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_IPA_STATE_SET",
+    "chars": 1038,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_MEASUREMENT_EXTEND",
+    "chars": 752,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_MEASUREMENT_READ",
+    "chars": 301,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_REALM_CONFIG",
+    "chars": 579,
+    "cached": true
+  },
+  {
+    "arm": "noinvent+sig",
+    "version": "eac5",
+    "command": "RSI_VERSION",
+    "chars": 187,
+    "cached": true
   }
 ]
