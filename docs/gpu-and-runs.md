@@ -1247,6 +1247,24 @@ The base arm reproduces the published failure on both versions, so the control
 holds and the treatment is the only difference. **One paragraph recovers the
 missed bug.**
 
+All twelve cells, `walk_level` in the function body:
+
+| generator | eac5 | rel0 |
+|---|---|---|
+| gold | blank | blank |
+| `sft3-0` (4B, fine-tuned) | blank | blank |
+| `sft3-2` (9B, fine-tuned) | blank | blank |
+| Claude Opus 5, base prompt | **invents** | **invents** |
+| Claude Opus 5, + no-invent | blank | blank |
+| GPT `gpt-5.6-sol`, base prompt | **invents** | **invents** |
+
+Two variables move independently and only one of them matters. Capability does
+not: the 9B is stronger than the 4B on every axis measured here and behaves
+identically to it. The prompt does: the same Claude flips from inventing to
+blank, on both versions, from one added paragraph that names no command and no
+field. Four independent base-arm generations invent it, each with different
+syntax, which rules out sampling noise.
+
 So the correct statement is not that capable models are worse detectors. It is
 that this task has a convention — *when the document says nothing, say nothing* —
 which the fine-tuned models absorbed from ~250 examples and the general models
