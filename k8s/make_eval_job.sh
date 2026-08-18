@@ -100,6 +100,20 @@ echo "==> configmap $CM"
   --from-file=prompt_engineering.py="$REPO_ROOT/prompt_engineering/prompt_engineering.py" \
   --dry-run=client -o yaml | "$KUBECTL" apply -f - >/dev/null
 
+# A PVC still Terminating from a previous run makes `apply` a silent no-op: it
+# sees the object present and reports "unchanged", the delete then completes, and
+# the Job is left referencing a volume that does not exist. The pod sits Pending
+# with "persistentvolumeclaim not found" and nothing says why. Wait it out first.
+if "$KUBECTL" get pvc "${JOB}-work" -n "$NS" >/dev/null 2>&1; then
+  if [ -n "$("$KUBECTL" get pvc "${JOB}-work" -n "$NS" -o jsonpath='{.metadata.deletionTimestamp}' 2>/dev/null)" ]; then
+    echo "==> waiting for the previous ${JOB}-work to finish deleting"
+    for _ in $(seq 1 60); do
+      "$KUBECTL" get pvc "${JOB}-work" -n "$NS" >/dev/null 2>&1 || break
+      sleep 2
+    done
+  fi
+fi
+
 echo "==> job $JOB  ($BASE, runs: $RUNS, ckpts: $CKPTS, deps: $DEPS)"
 cat <<YAML | "$KUBECTL" apply -f -
 ---
