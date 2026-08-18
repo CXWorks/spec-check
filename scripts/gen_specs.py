@@ -70,8 +70,8 @@ def preamble_decls(err, preamble):
     Without this the model is asked to correct a name it still cannot see.
     """
     # Backticks alone are not enough. E0061 -- `this function takes 3 arguments
-    # but 4 were supplied`, nine of sixteen repair failures in the first run --
-    # never backticks the callee; it quotes the offending source line instead. So
+    # but 4 were supplied`, nine of the seventeen repair failures in the first run
+    # -- never backticks the callee; it quotes the offending source line instead. So
     # the model saw its own bad call, saw that the arity was wrong, and was never
     # shown the declaration that says what the right arity is. Pull identifiers
     # out of the quoted source as well as the backticks.
@@ -222,12 +222,29 @@ def main():
                 probe_pre = read_preamble(
                     ROOT / "training-dataset" / "specs" / version / "preamble.rs")
                 before = n_implications(spec)
+                # `before -> after` cannot tell whether a repair happened. The
+                # dominant failure is wrong_arity, and adding or removing a call
+                # argument leaves the `==>` count untouched -- so a successful
+                # repair and a repair that never ran look identical. All 17
+                # failures in the first run reported N->N, which therefore said
+                # nothing. Track the three things that do discriminate: the class
+                # of the first failure, how many rounds actually replaced the
+                # text, and whether the text differs from what was generated.
+                orig_spec = spec
+                first_reason, applied, gave_up, decl_lines = None, 0, False, 0
                 for rnd in range(args.repair_rounds):
                     chk = check_text(verus, probe_pre, s.command, spec, 600)
                     if chk.status == "pass":
                         break
+                    if first_reason is None:
+                        first_reason = chk.reason
                     err = first_error_block(chk.output_head or chk.reason)
                     decls = preamble_decls(err, probe_pre)
+                    # The point of 572e70f is that wrong_arity errors now yield a
+                    # declaration. If this stays 0 on a wrong_arity failure the fix
+                    # did not reach the prompt, and the run says nothing about
+                    # whether showing the declaration helps.
+                    decl_lines = max(decl_lines, len(decls.splitlines()) if decls else 0)
                     rmsgs = [
                         {"role": "system", "content": REPAIR_SYSTEM},
                         {"role": "user", "content":
@@ -246,16 +263,27 @@ def main():
                     cand = strip_output(tok.decode(rg[0][rids.shape[1]:],
                                                    skip_special_tokens=True))
                     if "pub open spec fn" not in cand:
-                        break                      # no usable function came back
+                        gave_up = True             # no usable function came back
+                        break
                     spec = cand
+                    applied += 1
                 after = n_implications(spec)
                 final = check_text(verus, probe_pre, s.command, spec, 600)
                 # A repair that dropped implications bought compilation by saying
                 # less, which is the one outcome this pass must not be allowed to
                 # report as a success. Recorded per command, not just in aggregate.
-                note = (f"  [repair {'ok' if final.status == 'pass' else final.reason}"
-                        f" ==> {before}->{after}"
-                        f"{'  SHRANK' if after < before else ''}]")
+                bits = [f"repair {'ok' if final.status == 'pass' else final.reason}",
+                        f"==> {before}->{after}"]
+                if first_reason:                   # i.e. a repair was attempted
+                    bits.append(f"from={first_reason}")
+                    bits.append(f"applied={applied}")
+                    bits.append("text=" + ("changed" if spec != orig_spec else "SAME"))
+                    bits.append(f"decls={decl_lines}")
+                    if gave_up:
+                        bits.append("no-fn-returned")
+                if after < before:
+                    bits.append("SHRANK")
+                note = "  [" + " ".join(bits) + "]"
 
             # Written even when empty. A missing file is scored as "not checked",
             # which would quietly shrink the denominator; an empty one is a
