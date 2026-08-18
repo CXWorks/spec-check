@@ -91,7 +91,10 @@ done
 # struct -> pub struct rewrite; both are prerequisites, not optional extras.
 export RUSTUP_HOME=/work/rust/rustup CARGO_HOME=/work/rust/cargo
 export PATH=$CARGO_HOME/bin:$PATH
-if [ ! -x "$CARGO_HOME/bin/rustc" ]; then
+if [ "$MODE" = "gen" ]; then
+  # rustup exists only to satisfy verus, which gen mode never invokes.
+  echo "[eval] mode=gen: skipping rustup"
+elif [ ! -x "$CARGO_HOME/bin/rustc" ]; then
   echo "[eval] installing rustup"
   mkdir -p "$RUSTUP_HOME" "$CARGO_HOME"
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
