@@ -76,15 +76,38 @@ The third tripled the spread. **Two seeds is not enough**, and noise cannot be
 borrowed across configurations — this repo ran on one global ±5pp, which I first
 replaced with the 4B's ±1.2pp, which was wrong in the same way.
 
-Against each configuration's own spread:
+### Cross-validation settles it: the gap is not significant, and McNemar always said so
 
-| | gap | pooled sd | |
-|---|---|---|---|
-| 9B vs 4B, 49 commands | +7.5pp | 2.6pp | **2.8 sd** |
-| 4B new vs old, shared 40 | +5pp | 1.2pp | ~4 sd |
+Five folds, 4B, every non-benchmark alp14 command scored once by a model that
+trained on none of it:
 
-Real differences, but the 9B-vs-4B one is about 40% as strong as an earlier draft
-of this document claimed (it measured a 9B comparison against 4B noise).
+| fold | core | rate |
+|---|---|---|
+| f1 | 8/15 | 53.3% |
+| f2 | 9/16 | 56.2% |
+| f3 | 8/17 | 47.1% |
+| f4 | 5/19 | **26.3%** |
+| f5 | 9/14 | **64.3%** |
+
+pooled **39/81 = 48.1%, SE 5.6pp**; fold sd 14.3pp.
+
+Attribution matters more than the spread. Expected fold sd from binomial sampling
+alone, at ~16 commands per fold, is 12.5pp; observed exceeds it by 1.9pp, well
+inside its own uncertainty. **These data do not show that command subsets differ
+in difficulty** — the spread is a small test set, not which commands are in it.
+
+What it does establish is the right error bar. Command sampling contributes
+5.6pp; seeds contribute 1.2pp. Recomputing the 9B-over-4B gap of +7.5pp:
+
+| against | |
+|---|---|
+| seed sd 2.6pp | 2.8 sd |
+| **command SE 5.6pp** | **~1.3 sd — not significant** |
+
+Which is exactly what McNemar reported at the outset (p = 0.454). **McNemar was
+right; substituting seed noise for it produced two successively overstated claims,
+both withdrawn.** Seed replicates cannot tell you whether a test set is
+representative, and on 49 commands that is the dominant uncertainty.
 
 **Aggregate stability is not per-command stability.** Two 9B seeds both scoring
 22/49 disagree on 18 of 49 commands — nine each way, cancelling exactly. So a
