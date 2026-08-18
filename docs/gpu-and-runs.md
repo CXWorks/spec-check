@@ -320,7 +320,7 @@ conclusion that a later section withdraws. This table is what survived.
 | `weaker` = a dropped frame condition | **holds** | 18 of 19, every config, every seed, 6 commands |
 | Full FT degenerates (repetition) | **holds** | intervention: 3× the budget made repetition worse |
 | Full FT is *worse* | **narrowed** | true on compile rate, **not** on correctness (18.8% vs 19.2%) |
-| Restoring the preamble helps | **narrowed** | 9B only: +22.5pp compiling, +7.5pp correct, p = 0.004. 4B p = 0.549 |
+| Restoring the preamble helps | **narrowed, then shrank** | `sft2`/`dataset_clean`: 9B +22.5pp compiling, p = 0.004. `sft3`/`dataset_bench`: 9B +5 of 49, p = 0.227; 4B +3, p = 0.375 |
 | Every pass rate was understated | **withdrawn** | only `sft2-2`; `sft2-0` passed the identical 14 commands before and after |
 | 9B has ~20pp of RFT headroom | **withdrawn** | of 16 sampling-recovered specs, 2 are correct |
 | Sampling recovers nothing | **withdrawn** | true of `bok-0`'s first ten commands only |

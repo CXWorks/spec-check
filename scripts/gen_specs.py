@@ -130,8 +130,12 @@ def main():
     ap.add_argument("--with-preamble", action="store_true",
                     help="Restore the 200-line preamble tail that training embedded "
                          "in every prompt. Matching training is the correct inference "
-                         "condition and worth +22.5pp compile rate on the 9B "
-                         "(McNemar p=0.004) -- but the published Qwen baseline-1 row "
+                         "condition. Worth +22.5pp compile rate on the 9B in the "
+                         "sft2/dataset_clean setting (McNemar p=0.004); after "
+                         "decontamination it is +5 of 49 commands, p=0.227, and it "
+                         "breaks 3 -- keep it for the consistent direction across "
+                         "four measurements, not as an established effect. The "
+                         "published Qwen baseline-1 row "
                          "was generated WITHOUT it, so pass nothing to reproduce that "
                          "and pass this to measure the model properly. Report which.")
     ap.add_argument("--repair-rounds", type=int, default=0,
