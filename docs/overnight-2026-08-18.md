@@ -91,6 +91,13 @@ trained on none of it:
 
 pooled **39/81 = 48.1%, SE 5.6pp**; fold sd 14.3pp.
 
+**This rate is a compile rate.** `pass` in the eval files is `check_text` status:
+Verus accepted the function with zero errors. Agreement with gold is a separate
+axis (`semantic_equiv`) and runs about half as high — 20.4% / 22.4% where this
+reports 36.7% / 44.9%. The distinction was never written next to the number
+anywhere in this repo, which makes a syntax result very easy to read as a
+correctness result. It is now printed above the table in `cv_summary.py`.
+
 Attribution matters more than the spread. Expected fold sd from binomial sampling
 alone, at ~16 commands per fold, is 12.5pp; observed exceeds it by 1.9pp, well
 inside its own uncertainty. **These data do not show that command subsets differ
@@ -125,6 +132,41 @@ second; more seeds cannot.
 Plausible reason the old split was noisier: 79 of its 98 evaluated commands were
 in training, so performance there leans on memorisation, which is more sensitive
 to initialisation than generalisation is.
+
+### What the 42 failures actually are
+
+Free, from data already collected: the folds score every core command exactly
+once with a model that trained on none of it, so this is the cleanest failure
+description available.
+
+| | |
+|---|---|
+| type_mismatch | 18 |
+| missing_symbol | 10 |
+| wrong_arity | 7 |
+| unbalanced_delimiter | 3 |
+| other / parse / bad_field_access | 4 |
+
+**All 42 are compilation failures. Not one is a spec that compiled and then
+disagreed with gold.** On this axis the model's problem is entirely Verus
+fluency, which is the same conclusion verus_rmm reached by a different route.
+
+| family | compile rate | |
+|---|---|---|
+| `RMI_*` | 27/48 | 56.2% (SE 7.2pp) |
+| `RSI_*` | 4/16 | 25.0% (SE 10.8pp) |
+| `RMI_RTT_*` | 3/10 | 30.0% (SE 14.5pp) |
+| `PSCI_*` | 5/7 | 71.4% (SE 17.1pp) |
+
+Read the counts, not the ranking. At n = 7–16 the gaps are one to two SE, and
+the fold analysis above already says these data cannot establish a command-subset
+effect. What is worth noting is the direction: `RSI_*` and `RMI_RTT_*` are the
+two families the benchmarks care about most.
+
+One caution against generalising the repair fix. `wrong_arity` was 9 of 17
+failures in the eac5 repair run and is 7 of 42 here. Same checkpoint, different
+version, opposite dominant error — `type_mismatch` leads by a wide margin on
+alp14. Fixing the feedback for arity is worth doing and will not move this.
 
 ---
 
