@@ -396,6 +396,16 @@ def main():
     parser.add_argument("--hold-out-file", metavar="PATH", default=None,
                         help="File of command names to force into the held-out set "
                              "(JSON list, {'commands': [...]}, or one per line).")
+    parser.add_argument("--fold", metavar="K/N",
+                        help="Cross-validation fold, e.g. 2/5. Partitions the "
+                             "EVAL_VERSION command names into N blocks and holds "
+                             "out block K, instead of the random CMD_TEST_SIZE "
+                             "draw. Every command is held out by exactly one fold, "
+                             "so N runs evaluate all of them -- which is what a "
+                             "49-command test set cannot do on its own: every "
+                             "comparison here is currently unproven against a "
+                             "different sample of commands, and more seeds do not "
+                             "help. --hold-out-* still applies on top.")
     parser.add_argument("--prompt-variant", default=None, choices=["v3", "v3.1"],
                         help="Command-kind system prompt. Default v3 — the frozen "
                              "prompt every existing checkpoint was trained on. v3.1 "
@@ -436,7 +446,22 @@ def main():
     # --- Commands: hold out CMD_TEST_SIZE names drawn from EVAL_VERSION ---------
     # Held-out names are removed from training at EVERY version, not just EVAL_VERSION.
     eval_cmds = [c for c in list_commands(EVAL_VERSION) if load_spec(EVAL_VERSION, c)]
-    _, cmd_test = split_two(eval_cmds, CMD_TEST_SIZE)
+    if args.fold:
+        try:
+            k, n = (int(x) for x in args.fold.split("/"))
+        except ValueError:
+            raise SystemExit(f"--fold wants K/N, got {args.fold!r}")
+        if not 1 <= k <= n:
+            raise SystemExit(f"--fold {args.fold}: need 1 <= K <= N")
+        # Shuffled with SPLIT_SEED, then sliced into contiguous blocks: the same
+        # permutation for every K, so the N folds partition the names exactly and
+        # a command lands in test for exactly one of them.
+        names = sorted(eval_cmds)
+        random.Random(SPLIT_SEED).shuffle(names)
+        cmd_test = set(names[k - 1::n])
+        print(f"Fold {k}/{n}: {len(cmd_test)} of {len(names)} {EVAL_VERSION} commands held out")
+    else:
+        _, cmd_test = split_two(eval_cmds, CMD_TEST_SIZE)
 
     # Forced hold-outs are ADDED to the random draw, never substituted into it, so
     # the original CMD_TEST_SIZE names stay exactly as they were and every eval
@@ -546,6 +571,7 @@ def main():
             "seed": SPLIT_SEED,
             "eval_version": EVAL_VERSION,
             "cmd_test_size": CMD_TEST_SIZE,
+            "fold": args.fold,
             "th_val_frac": TH_VAL_FRAC,
             # Recorded so an artifact says which prompt and which forced hold-outs
             # produced it. A dataset that does not carry this is unidentifiable

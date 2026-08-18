@@ -116,6 +116,18 @@ RUNS=(
   "sft3-0-s2024|Qwen/Qwen3-4B|bf16|lora|ngc|2024"
   "sft3-2-s1337|Qwen/Qwen3.5-9B|bf16|lora|new|1337"
   "sft3-2-s2024|Qwen/Qwen3.5-9B|bf16|lora|new|2024"
+
+  # 5-fold cross-validation, 4B only. Every comparison in this repo rests on one
+  # 49-command test set, so none of them is established against a different sample
+  # of commands -- and seed replicates cannot fix that, only a different sample
+  # can. Five folds evaluate all 81 non-benchmark alp14 commands with a model that
+  # trained on none of them. 4B first because it is 12 minutes a run and the point
+  # is to size the command-set sensitivity before paying for it at 9B scale.
+  "cv3-f1|Qwen/Qwen3-4B|bf16|lora|ngc|42"
+  "cv3-f2|Qwen/Qwen3-4B|bf16|lora|ngc|42"
+  "cv3-f3|Qwen/Qwen3-4B|bf16|lora|ngc|42"
+  "cv3-f4|Qwen/Qwen3-4B|bf16|lora|ngc|42"
+  "cv3-f5|Qwen/Qwen3-4B|bf16|lora|ngc|42"
 )
 
 # Nodes boogiebonjour's own production Jobs avoid. Reused rather than
