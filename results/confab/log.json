@@ -1,26 +1,482 @@
 [
   {
-    "arm": "base",
+    "arm": "noinvent",
     "version": "eac5",
-    "command": "RMI_RTT_READ_ENTRY",
-    "chars": 2777
+    "command": "PSCI_AFFINITY_INFO",
+    "chars": 693
   },
   {
     "arm": "noinvent",
     "version": "eac5",
-    "command": "RMI_RTT_READ_ENTRY",
-    "chars": 2709
+    "command": "PSCI_CPU_OFF",
+    "chars": 75
   },
   {
-    "arm": "base",
-    "version": "rel0",
-    "command": "RMI_RTT_READ_ENTRY",
-    "chars": 2792
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "PSCI_CPU_ON",
+    "chars": 791
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "PSCI_CPU_SUSPEND",
+    "chars": 150
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "PSCI_FEATURES",
+    "chars": 122
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "PSCI_SYSTEM_OFF",
+    "chars": 119
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "PSCI_SYSTEM_RESET",
+    "chars": 121
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "PSCI_VERSION",
+    "chars": 75
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_DATA_CREATE",
+    "chars": 2413
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_DATA_CREATE_UNKNOWN",
+    "chars": 1698
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_DATA_DESTROY",
+    "chars": 1941
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_FEATURES",
+    "chars": 157
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_GRANULE_DELEGATE",
+    "chars": 780
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_GRANULE_UNDELEGATE",
+    "chars": 650
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_PSCI_COMPLETE",
+    "chars": 5597
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_REALM_ACTIVATE",
+    "chars": 682
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_REALM_CREATE",
+    "chars": 3672
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_REALM_DESTROY",
+    "chars": 830
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_REC_AUX_COUNT",
+    "chars": 613
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_REC_CREATE",
+    "chars": 5671
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_REC_DESTROY",
+    "chars": 809
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_REC_ENTER",
+    "chars": 2424
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_CREATE",
+    "chars": 2487
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_DESTROY",
+    "chars": 2420
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_FOLD",
+    "chars": 2997
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_INIT_RIPAS",
+    "chars": 2413
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_MAP_UNPROTECTED",
+    "chars": 2314
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_SET_RIPAS",
+    "chars": 3685
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_RTT_UNMAP_UNPROTECTED",
+    "chars": 2265
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RMI_VERSION",
+    "chars": 144
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "chars": 848
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_ATTESTATION_TOKEN_INIT",
+    "chars": 561
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_FEATURES",
+    "chars": 135
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_HOST_CALL",
+    "chars": 271
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_IPA_STATE_GET",
+    "chars": 277
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_IPA_STATE_SET",
+    "chars": 993
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_MEASUREMENT_EXTEND",
+    "chars": 457
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_MEASUREMENT_READ",
+    "chars": 165
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_REALM_CONFIG",
+    "chars": 592
+  },
+  {
+    "arm": "noinvent",
+    "version": "eac5",
+    "command": "RSI_VERSION",
+    "chars": 139
   },
   {
     "arm": "noinvent",
     "version": "rel0",
-    "command": "RMI_RTT_READ_ENTRY",
-    "chars": 2099
+    "command": "PSCI_AFFINITY_INFO",
+    "chars": 507
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "PSCI_CPU_OFF",
+    "chars": 75
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "PSCI_CPU_ON",
+    "chars": 788
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "PSCI_CPU_SUSPEND",
+    "chars": 150
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "PSCI_FEATURES",
+    "chars": 122
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "PSCI_SYSTEM_OFF",
+    "chars": 119
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "PSCI_SYSTEM_RESET",
+    "chars": 121
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "PSCI_VERSION",
+    "chars": 91
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_DATA_CREATE",
+    "chars": 2653
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_DATA_CREATE_UNKNOWN",
+    "chars": 2096
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_DATA_DESTROY",
+    "chars": 2109
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_FEATURES",
+    "chars": 205
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_GRANULE_DELEGATE",
+    "chars": 780
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_GRANULE_UNDELEGATE",
+    "chars": 646
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_PSCI_COMPLETE",
+    "chars": 5597
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_REALM_ACTIVATE",
+    "chars": 682
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_REALM_CREATE",
+    "chars": 4777
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_REALM_DESTROY",
+    "chars": 830
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_REC_AUX_COUNT",
+    "chars": 613
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_REC_CREATE",
+    "chars": 5980
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_REC_DESTROY",
+    "chars": 968
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_REC_ENTER",
+    "chars": 2424
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_RTT_CREATE",
+    "chars": 2748
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_RTT_DESTROY",
+    "chars": 2422
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_RTT_FOLD",
+    "chars": 2235
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_RTT_INIT_RIPAS",
+    "chars": 2766
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_RTT_MAP_UNPROTECTED",
+    "chars": 2941
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_RTT_SET_RIPAS",
+    "chars": 3712
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_RTT_UNMAP_UNPROTECTED",
+    "chars": 2036
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RMI_VERSION",
+    "chars": 144
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "chars": 1302
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_ATTESTATION_TOKEN_INIT",
+    "chars": 655
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_FEATURES",
+    "chars": 135
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_HOST_CALL",
+    "chars": 271
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_IPA_STATE_GET",
+    "chars": 584
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_IPA_STATE_SET",
+    "chars": 1005
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_MEASUREMENT_EXTEND",
+    "chars": 457
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_MEASUREMENT_READ",
+    "chars": 165
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_REALM_CONFIG",
+    "chars": 581
+  },
+  {
+    "arm": "noinvent",
+    "version": "rel0",
+    "command": "RSI_VERSION",
+    "chars": 187
   }
 ]
