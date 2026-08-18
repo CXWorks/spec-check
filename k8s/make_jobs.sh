@@ -14,7 +14,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # KUBECONFIG still wins, via KUBECONFIG_FILE.
 KUBECONFIG_FILE="${KUBECONFIG_FILE:-${KUBECONFIG:-}}"
 KUBECTL="${KUBECTL:-kubectl}"
-NS=default
+NS=default   # overridden by the cluster profile below
 CM=de2-rl-test-sft2-entry
 
 # Which built dataset in the HF data repo to train on. dataset_clean is the
@@ -38,6 +38,20 @@ echo "==> dataset: $DATASET_DIR"
 #     limits would never schedule. This is a hard failure, not a slow one.
 CLUSTER="${CLUSTER:-boogiebonjour}"
 case "$CLUSTER" in
+  research-common)
+    # Fallback when turbox is saturated by the arc-runners CI fleet, which
+    # regularly holds 28 of its 32 GPUs. Namespace is assigned by the cluster
+    # (jisenli2), not chosen -- the naming rule constrains OBJECT names, which
+    # stay de2-rl-test-*. weka-data is a CSI-provisioned shared filesystem, so
+    # the local-path node-pinning problem does not apply here either.
+    : "${KUBECONFIG_FILE:=$HOME/.kube/research-common-h100}"
+    NS="${NS_OVERRIDE:-jisenli2}"
+    STORAGE_CLASS="${STORAGE_CLASS:-weka-data}"
+    ACCESS_MODE="${ACCESS_MODE:-ReadWriteMany}"
+    CPU_LIM="${CPU_LIM:-60}";  CPU_REQ="${CPU_REQ:-32}"
+    MEM_LIM="${MEM_LIM:-700Gi}"; MEM_REQ="${MEM_REQ:-400Gi}"
+    SHM="${SHM:-128Gi}"
+    BAD=() ;;
   turbox)
     : "${KUBECONFIG_FILE:=$HOME/.kube/configs/turbox-h100.yaml}"
     STORAGE_CLASS="${STORAGE_CLASS:-shared-wekafs}"
@@ -55,7 +69,7 @@ case "$CLUSTER" in
     MEM_LIM="${MEM_LIM:-900Gi}"; MEM_REQ="${MEM_REQ:-512Gi}"
     SHM="${SHM:-256Gi}"
     ;;
-  *) echo "unknown CLUSTER=$CLUSTER (expected boogiebonjour|turbox)" >&2; exit 1 ;;
+  *) echo "unknown CLUSTER=$CLUSTER (expected boogiebonjour|turbox|research-common)" >&2; exit 1 ;;
 esac
 export KUBECONFIG="$KUBECONFIG_FILE"
 echo "==> cluster: $CLUSTER  storage: $STORAGE_CLASS ($ACCESS_MODE)"

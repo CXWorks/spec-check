@@ -15,7 +15,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KUBECONFIG_FILE="${KUBECONFIG_FILE:-${KUBECONFIG:-}}"
 KUBECTL="${KUBECTL:-kubectl}"
-NS=default
+NS=default   # overridden by the cluster profile below
 
 # Cluster profile — see the same block in make_jobs.sh. Defaults to
 # boogiebonjour so existing invocations are unchanged. turbox's GPU nodes have
@@ -25,6 +25,18 @@ NS=default
 # its PVC was created on.
 CLUSTER="${CLUSTER:-boogiebonjour}"
 case "$CLUSTER" in
+  research-common)
+    # Fallback when turbox is saturated by the arc-runners CI fleet, which
+    # regularly holds 28 of its 32 GPUs. Namespace is assigned by the cluster
+    # (jisenli2), not chosen -- the naming rule constrains OBJECT names, which
+    # stay de2-rl-test-*. weka-data is a CSI-provisioned shared filesystem, so
+    # the local-path node-pinning problem does not apply here either.
+    : "${KUBECONFIG_FILE:=$HOME/.kube/research-common-h100}"
+    NS="${NS_OVERRIDE:-jisenli2}"
+    STORAGE_CLASS="${STORAGE_CLASS:-weka-data}"
+    ACCESS_MODE="${ACCESS_MODE:-ReadWriteMany}"
+    MEM_LIM="${MEM_LIM:-200Gi}"; MEM_REQ="${MEM_REQ:-64Gi}"
+    BAD=() ;;
   turbox)
     : "${KUBECONFIG_FILE:=$HOME/.kube/configs/turbox-h100.yaml}"
     STORAGE_CLASS="${STORAGE_CLASS:-shared-wekafs}"
@@ -42,7 +54,7 @@ case "$CLUSTER" in
     ACCESS_MODE="${ACCESS_MODE:-ReadWriteOnce}"
     MEM_LIM="${MEM_LIM:-400Gi}"; MEM_REQ="${MEM_REQ:-200Gi}"
     BAD=(003 006 013 043 056 057 090 097 101 102 104 105 108) ;;
-  *) echo "unknown CLUSTER=$CLUSTER (expected boogiebonjour|turbox)" >&2; exit 1 ;;
+  *) echo "unknown CLUSTER=$CLUSTER (expected boogiebonjour|turbox|research-common)" >&2; exit 1 ;;
 esac
 export KUBECONFIG="$KUBECONFIG_FILE"
 
