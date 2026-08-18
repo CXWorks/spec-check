@@ -1192,9 +1192,46 @@ The disagreements also changed shape, in the direction that matters:
 | `sft3-0` | 1 | 1 | 4 |
 
 `weaker` is the failure compile-success structurally cannot see. Trading it for
-`stronger` trades missed bugs for false alarms. With the caveat that a `stronger`
-clause which is plausible-but-unstated hides a gap exactly as confabulation does,
-so which kind these four are still has to be read per command.
+`stronger` trades missed bugs for false alarms -- but reading the four per command
+turns up a third kind that neither label covers.
+
+**Some `stronger` verdicts are the model being more faithful than gold.**
+`RMI_VSMMU_CREATE` comes back `stronger` in five independent runs: all three
+sft2-* models and both sft3-*. The cause is the same every time. Gold carries a
+frame condition for `aidr`:
+
+```rust
+... ==> VsmmuAt(new_s, vsmmu_ptr).aidr == VsmmuAt(old_s, vsmmu_ptr).aidr
+```
+
+and none for `idr[0..3]`. The models write both. The command's Footprint section
+lists exactly what it modifies:
+
+```
+ID              Value
+state           GranuleAt(vsmmu_ptr).state
+num_vsmmus      realm.num_vsmmus
+```
+
+`idr` is not in it, so it does not change, so the models' clause is what the
+document says and gold's omission is an incompleteness. semantic_equiv scores
+against gold, so the model is marked wrong for being right.
+
+That makes three causes behind one label, with opposite consequences:
+
+| `stronger` because the model added | consequence |
+|---|---|
+| a self-contradictory constraint | false positive (PSCI bugs 1-3) |
+| a plausible constraint the text never states | hides a gap, like confabulation |
+| **a constraint the text supports and gold omits** | **model is right, scored wrong** |
+
+It is also the mirror of the dominant `weaker` failure, where 18 of 19 verdicts
+were a dropped frame condition. Frame conditions are where the models and gold
+disagree, in both directions.
+
+The practical consequence: correctness as measured here is a floor, not an
+estimate. The caveat that gold is a human reading of the PDF rather than the PDF
+now has a concrete, reproducible instance behind it.
 
 ### rule_check_8bugs: the 9B matches gold
 
