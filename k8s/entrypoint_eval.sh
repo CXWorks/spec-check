@@ -50,9 +50,15 @@ echo "[eval] dataset=$DATASET_DIR prompt=$PROMPT_VARIANT"
 # which is why overriding only --index-url never silenced it: --index-url replaces
 # `index-url`, and leaves `extra-index-url` untouched.
 #
-# Fixed by pointing the extra index at the same working host on the command line,
-# where CLI beats every config file. Setting PIP_EXTRA_INDEX_URL empty does not
-# work: pip reads empty as unset and falls back to the config.
+# Overriding on the command line does NOT remove it, which is what the previous
+# version of this comment claimed. `extra-index-url` is an append option: a CLI
+# --extra-index-url is ADDED to the config's list, so the dead host stayed in it
+# and every nvidia-* package still burned 5 retries x 60s resolving a name that
+# does not exist. Setting PIP_EXTRA_INDEX_URL empty does not work either: pip
+# reads empty as unset and falls back to the config.
+#
+# Ignoring the config file outright is the override that actually removes it.
+export PIP_CONFIG_FILE=/dev/null
 PIP_ARGS="--index-url https://pypi.org/simple --extra-index-url https://pypi.org/simple --no-cache-dir -q --retries 5 --timeout 60"
 
 if [ "$DEPS" = "new" ]; then
