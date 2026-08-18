@@ -213,13 +213,17 @@ for RUN in $RUN_IDS; do
       # Output is a directory of .rs files rather than a JSON, so this branch has
       # its own invocation and its own upload instead of sharing the score path.
       GDIR="/work/eval/${NAME}"
-      # The PVC is shared and outlives the Job, so this directory may already
-      # hold .rs files from an earlier run under the same NAME -- possibly a
-      # different prompt variant, a different GEN_VERSIONS, or older code. The
-      # tar below takes the whole directory, so those stale files ship inside
-      # the artifact and get scored as if this run had produced them.
-      # gen/sft3-2-final.tgz reached HF with 82 files that way: 41 eac5 from the
-      # run that uploaded it, plus 41 rel0 left behind by an earlier one.
+      # The PVC is per-Job but outlives the POD, and backoffLimit is 20: every
+      # retry of a failed pod remounts this same directory, as does resubmitting
+      # the Job under the same name without deleting the PVC. The tar below takes
+      # the whole directory, so a partial run's .rs files ship inside the next
+      # attempt's artifact and are scored as if that attempt had produced them.
+      #
+      # No artifact is known to have been affected. This guard was added after a
+      # false alarm -- gen/sft3-2-final.tgz has 82 files and looked contaminated,
+      # but its Job generated all 82; the GEN_VERSIONS="eac5 rel0" that produced
+      # them had been split on the space by the command used to inspect it. The
+      # guard is kept because the retry path above is real, not because that was.
       rm -rf "$GDIR"
       GEN_ARGS="--versions $GEN_VERSIONS --out-dir $GDIR --repair-rounds $REPAIR_ROUNDS"
       [ "$WITH_PREAMBLE" = "1" ] && GEN_ARGS="$GEN_ARGS --with-preamble"
