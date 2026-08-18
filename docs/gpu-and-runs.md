@@ -1271,6 +1271,38 @@ which the fine-tuned models absorbed from ~250 examples and the general models
 were never told. That is a better result: it is actionable, and it means the
 published SOTA rows understate what a general model does when asked properly.
 
+### research-common-h100 is configured but not usable by us
+
+A profile exists (`CLUSTER=research-common`) and everything it needs checks out:
+create permission on pods/jobs/PVCs/secrets in the assigned namespace, an `nvidia`
+runtimeClass, and `weka-data` as a CSI-provisioned RWX filesystem whose PVCs bind
+normally. Nodes are 224 CPU / 1.5Ti / 8 GPU against our 16 CPU / 64Gi / 2 GPU.
+
+Nothing schedules. Volcano reports only
+
+    pod group is not ready, 1 Pending, 1 minAvailable; Pending: 1 Unschedulable
+
+with no node-level reason, and the queue objects that would explain it are not
+readable:
+
+    queues.scheduling.volcano.sh is forbidden: User "system:serviceaccount:jisenli2:jisenli2"
+
+A minimal 2-GPU pod with no PVC and no special fields is unschedulable too, so it
+is not the job spec. Most likely a zero quota on the namespace's Volcano queue,
+which needs a cluster admin. Objects created there were removed; the secrets were
+left, so the profile works the moment the quota does.
+
+**Free-GPU counts on that cluster need a taint filter.** Counting allocatable
+minus requests gives 45 free; excluding tainted and cordoned nodes gives **22**.
+The difference sits on nodes carrying `nvidia.com/gpu-error=non-fatal:NoSchedule`
+and `nvidia.com/cuda-error=driver-broken:NoSchedule` -- idle because they are
+broken. The survey snippet in the operations handbook does not filter these and
+so overstates capacity by roughly half.
+
+**And turbox is not ours alone.** Its 32 GPUs are shared with an arc-runners CI
+fleet that has held 28 of them for hours at a stretch. The "100% idle" reading
+that motivated moving there was a moment, not a property; plan for about half.
+
 ### verus_rmm is not measuring bug-finding yet
 
 | | eac5 | rel0 |
