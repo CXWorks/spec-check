@@ -19,8 +19,10 @@ the convention explicitly should then behave the same way.
 
 Two arms, identical in every respect except one added paragraph:
 
-  base      PROMPT_V3_SYSTEM verbatim, the prompt the published rows used
-  noinvent  the same, plus NO_INVENT below
+  base          PROMPT_V3_SYSTEM verbatim, the prompt the published rows used
+  noinvent      the same, plus NO_INVENT below
+  sig           base, but the template carries gold's real parameter list
+  noinvent+sig  both
 
 Both arms are run here rather than quoting the published `base` numbers, because
 those were produced on another date and a drifted model version would confound
@@ -50,13 +52,22 @@ TEMPLATE = """Context -- Verus type, constant and helper signatures available to
 Command specification text:
 {spec}
 
-Signature: pub open spec fn {cmd_lower}_spec(...) -> bool
+Signature: pub open spec fn {cmd_lower}_spec{signature} -> bool
 Prefer Bits64/UInt64/UInt32 aliases when present in spec, but do not sacrifice semantic correctness for alias formatting.
 Keep unchanged-state constraints when implied by the command behavior."""
 
 NO_INVENT = """
 
 CRITICAL -- do not define outputs the specification leaves undefined: If the specification text does not state what the value of a declared output is, leave that output unconstrained in your specification. Do not infer it, do not derive it from context, and do not carry it over from how similar commands behave. An output that the document never defines must remain unconstrained. Writing a plausible definition for it is worse than omitting it, because it turns a gap in the document into a constraint the document never made."""
+
+# The `sig` arms replace `(...)` in the template above with gold's real parameter
+# list. 85% of Claude's eac5 output has a signature gold cannot be compared
+# against -- mostly ordering, e.g. result first instead of third. That convention
+# carries no semantic content and is not derivable from the PDF, which says
+# nothing about Verus signatures, so no instruction can recover it; the only way
+# to supply it is to supply it. Legitimate for the question "can a general model
+# replace the fine-tune in this pipeline", since gold signatures exist for every
+# command the pipeline runs on.
 
 PREAMBLE_TAIL_LINES = 200
 
@@ -97,7 +108,7 @@ def main():
     ap.add_argument("--all", action="store_true", help="every command in the version")
     ap.add_argument("--versions", nargs="+", default=["eac5", "rel0"])
     ap.add_argument("--arms", nargs="+", default=["base", "noinvent"],
-                    choices=["base", "noinvent"])
+                    choices=["base", "noinvent", "sig", "noinvent+sig"])
     ap.add_argument("--model", default="claude-opus-5")
     ap.add_argument("--effort", default="high")
     ap.add_argument("--out-root", default="results/confab")
@@ -107,7 +118,18 @@ def main():
     from prompt_engineering_v3 import PROMPT_V3_SYSTEM
 
     systems = {"base": PROMPT_V3_SYSTEM,
-               "noinvent": PROMPT_V3_SYSTEM + NO_INVENT}
+               "noinvent": PROMPT_V3_SYSTEM + NO_INVENT,
+               "sig": PROMPT_V3_SYSTEM,
+               "noinvent+sig": PROMPT_V3_SYSTEM + NO_INVENT}
+    # Arms whose name carries "sig" get gold's real parameter list instead of `(...)`.
+    from verify_generated_verus import extract_fn_block
+
+    def signature_for(version, cmd):
+        p = ROOT / "training-dataset" / "specs" / version / f"{cmd.lower()}_spec.rs"
+        if not p.exists():
+            return "(...)"
+        _, params, _ = extract_fn_block(p.read_text(encoding="utf-8", errors="replace"))
+        return params or "(...)"
     out_root = Path(args.out_root)
     log = []
 
@@ -128,8 +150,9 @@ def main():
                 if dest.exists() and dest.stat().st_size > 0:
                     print(f"[confab] {arm}/{version} {i}/{len(wanted)} {cmd}: cached", flush=True)
                     continue
+                sig = signature_for(version, cmd) if "sig" in arm else "(...)"
                 user = TEMPLATE.format(context=ctx, spec=samples[cmd].section_text,
-                                       cmd_lower=cmd.lower())
+                                       cmd_lower=cmd.lower(), signature=sig)
                 t0 = time.time()
                 try:
                     spec = strip_output(call_claude(systems[arm], user, args.model, args.effort))
