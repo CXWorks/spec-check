@@ -1229,6 +1229,29 @@ It is also the mirror of the dominant `weaker` failure, where 18 of 19 verdicts
 were a dropped frame condition. Frame conditions are where the models and gold
 disagree, in both directions.
 
+**How common is it? One clean instance out of seven.** Screening all seven
+`stronger` verdicts -- extract the clauses the model adds, keep the frame
+conditions, check whether the field appears in that command's Footprint -- flags
+two. Reading them holds only one.
+
+| verdict | added | Footprint | holds? |
+|---|---|---|---|
+| `RMI_VSMMU_CREATE` (4B) | `idr[0..3]` unchanged | lists only `state`, `num_vsmmus` | **yes** |
+| `RMI_REC_DESTROY` (4B) | `.aux` array unchanged | lists `rec_aux_state` | **no** |
+| other five | 0-1 clauses, no frame conditions outside Footprint | — | no |
+
+`RMI_REC_DESTROY` looked like a second instance and is not. Its Footprint does
+list `rec_aux_state`, meaning the states of the granules `aux` points at do
+change -- which gold constrains -- while the model's clause is about the pointer
+array itself. Different objects, and the document does not settle the second;
+the rec is being destroyed, so whether `RecAt(new_s, rec_ptr).aux` still denotes
+anything is a modelling question rather than a reading of the text.
+
+So this is a real effect with one confirmed case, not a systematic bias. Worth
+stating precisely: the automated screen over-claimed by 2x and only reading the
+Footprint text settled it, which is the same failure mode as every other
+too-broad conclusion in this document.
+
 The practical consequence: correctness as measured here is a floor, not an
 estimate. The caveat that gold is a human reading of the PDF rather than the PDF
 now has a concrete, reproducible instance behind it.
