@@ -1252,6 +1252,35 @@ stating precisely: the automated screen over-claimed by 2x and only reading the
 Footprint text settled it, which is the same failure mode as every other
 too-broad conclusion in this document.
 
+**A second screen in the other direction produced 29 false positives.** Asking
+which commands carry a gold frame condition for a field the Footprint says *does*
+change flagged 29 of 98. All 29 are artefacts: gold's frame conditions are
+guarded, and the guard is the whole point.
+
+```rust
+(result != PSCI_SUCCESS ==> RecFromMpidr(new_s, cpu).pc == RecFromMpidr(old_s, cpu).pc)
+```
+
+Gold says `pc` is unchanged **on failure**; the Footprint says it changes **on
+success**. Complementary, not contradictory. The screen compared field names and
+ignored the guard entirely.
+
+The number should have been the tell: if a third of gold contradicted itself, the
+`ensures false` sweeps would have found it long ago.
+
+Doing this properly is a semantic question, not a textual one — for each frame
+condition, does a state exist that satisfies its guard while the Footprint
+requires the field to change? That is Z3 work of the same shape as
+`semantic_equiv.py`, and it is not worth building hastily: a hurried checker
+produces exactly the 29 false positives above, and the next reader may not verify
+them.
+
+**The pattern is now four for four.** Every automated screen in this document has
+over-claimed on first run: "every pass rate was understated" (only one run),
+"20pp of RFT headroom" (2 of 16 correct), "two gold omissions" (one), "29 gold
+contradictions" (zero). Each was caught by reading a single case. The rule that
+follows: no screen result gets reported before at least one case is read by hand.
+
 The practical consequence: correctness as measured here is a floor, not an
 estimate. The caveat that gold is a human reading of the PDF rather than the PDF
 now has a concrete, reproducible instance behind it.
