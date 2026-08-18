@@ -80,7 +80,18 @@ CM="de2-rl-test-$NAME-entry"
 
 # Sampling k times multiplies the Verus work, and Verus is the slow half. More
 # GPUs would not help; more CPU for parallel checks does.
-if [ "$SAMPLES" -gt 0 ]; then CPU_REQ=32; CPU_LIM=64; JOBS=16; else CPU_REQ=16; CPU_LIM=32; JOBS=8; fi
+# Sampling k times multiplies the Verus work and Verus is the slow half, so the
+# CPU shape follows the mode. gen+repair is the exception: it compiles one spec at
+# a time inside the generation loop, so its Verus work is serial and 16 CPU is
+# dead weight -- which matters when a shared node has 6 CPU left and the request
+# is the only thing keeping the pod Pending. Overridable either way.
+if [ "$SAMPLES" -gt 0 ]; then
+  : "${CPU_REQ:=32}"; : "${CPU_LIM:=64}"; : "${JOBS:=16}"
+elif [ "$MODE" = "gen" ]; then
+  : "${CPU_REQ:=4}";  : "${CPU_LIM:=16}"; : "${JOBS:=1}"
+else
+  : "${CPU_REQ:=16}"; : "${CPU_LIM:=32}"; : "${JOBS:=8}"
+fi
 
 # Qwen3.5 needs transformers 5.x; Qwen3 works on either. Using "new" for both
 # would be simpler but changes the attention path for the 4B runs, so keep each
