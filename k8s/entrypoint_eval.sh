@@ -207,6 +207,14 @@ for RUN in $RUN_IDS; do
       # Output is a directory of .rs files rather than a JSON, so this branch has
       # its own invocation and its own upload instead of sharing the score path.
       GDIR="/work/eval/${NAME}"
+      # The PVC is shared and outlives the Job, so this directory may already
+      # hold .rs files from an earlier run under the same NAME -- possibly a
+      # different prompt variant, a different GEN_VERSIONS, or older code. The
+      # tar below takes the whole directory, so those stale files ship inside
+      # the artifact and get scored as if this run had produced them.
+      # gen/sft3-2-final.tgz reached HF with 82 files that way: 41 eac5 from the
+      # run that uploaded it, plus 41 rel0 left behind by an earlier one.
+      rm -rf "$GDIR"
       GEN_ARGS="--versions $GEN_VERSIONS --out-dir $GDIR --repair-rounds $REPAIR_ROUNDS"
       [ "$WITH_PREAMBLE" = "1" ] && GEN_ARGS="$GEN_ARGS --with-preamble"
       ok=""
@@ -222,6 +230,11 @@ for RUN in $RUN_IDS; do
       [ -n "$ok" ] || { echo "[eval] FAILED $RUN/$CK after 3 attempts"
                         FAILED_RUNS="$FAILED_RUNS $RUN/$CK"; continue; }
       echo "[eval] generated $(find "$GDIR" -name '*.rs' | wc -l) spec files"
+      # Per-version, so the log shows which versions are actually in the artifact
+      # rather than only which ones were requested. Those two disagreed once.
+      for gv in $GEN_VERSIONS; do
+        echo "[eval]   $gv: $(find "$GDIR/$gv" -name '*.rs' 2>/dev/null | wc -l) files"
+      done
       tar czf "/work/eval/${NAME}.tgz" -C /work/eval "${NAME}"
       python - <<UPLOAD_EOF
 import os
