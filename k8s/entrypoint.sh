@@ -41,12 +41,20 @@ echo "[entry] dataset=$DATASET_DIR"
 #   flash-attn stops importing and attention falls back to sdpa — correct, just
 #   slower. Recorded in the run registry so the 4B/9B comparison carries the
 #   caveat.
-# The NGC image sets pypi.ngc.nvidia.com as an extra index in /etc/pip.conf and
-# that hostname does not resolve here, so every install burns its retry budget on
-# a dead index. An empty PIP_EXTRA_INDEX_URL does NOT override the config file —
-# pip reads empty as unset and falls back to it — so the index has to be given on
-# the command line, where CLI beats config.
-PIP_ARGS="--index-url https://pypi.org/simple --no-cache-dir -q --retries 5 --timeout 60"
+# The NGC image leaves pypi.ngc.nvidia.com as an extra index, and that hostname
+# does not resolve from either cluster, so every package burns five retries on a
+# dead index before falling through to pypi.org.
+#
+# The file is /root/.config/pip/pip.conf (and /root/.pip/pip.conf) — USER-level
+# config — NOT /etc/pip.conf as this comment previously claimed. Both /etc/pip.conf
+# and /usr/pip.conf were checked on a live pod and have `extra-index-url =` empty,
+# which is why overriding only --index-url never silenced it: --index-url replaces
+# `index-url`, and leaves `extra-index-url` untouched.
+#
+# Fixed by pointing the extra index at the same working host on the command line,
+# where CLI beats every config file. Setting PIP_EXTRA_INDEX_URL empty does not
+# work: pip reads empty as unset and falls back to the config.
+PIP_ARGS="--index-url https://pypi.org/simple --extra-index-url https://pypi.org/simple --no-cache-dir -q --retries 5 --timeout 60"
 
 DEPS="${DEPS:-ngc}"
 if [ "$DEPS" = "new" ]; then

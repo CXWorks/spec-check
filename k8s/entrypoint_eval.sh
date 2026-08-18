@@ -32,12 +32,20 @@ VERUS_VER="0.2026.04.12.f1166c4"  # the version the project's history used
 echo "[eval] runs=$RUN_IDS base=$BASE_MODEL ckpts=$CKPTS"
 echo "[eval] dataset=$DATASET_DIR prompt=$PROMPT_VARIANT"
 
-# The NGC image sets pypi.ngc.nvidia.com as an extra index in /etc/pip.conf and
-# that hostname does not resolve here, so every install burns its retry budget on
-# a dead index. An empty PIP_EXTRA_INDEX_URL does NOT override the config file —
-# pip reads empty as unset and falls back to it — so the index has to be given on
-# the command line, where CLI beats config.
-PIP_ARGS="--index-url https://pypi.org/simple --no-cache-dir -q --retries 5 --timeout 60"
+# The NGC image leaves pypi.ngc.nvidia.com as an extra index, and that hostname
+# does not resolve from either cluster, so every package burns five retries on a
+# dead index before falling through to pypi.org.
+#
+# The file is /root/.config/pip/pip.conf (and /root/.pip/pip.conf) — USER-level
+# config — NOT /etc/pip.conf as this comment previously claimed. Both /etc/pip.conf
+# and /usr/pip.conf were checked on a live pod and have `extra-index-url =` empty,
+# which is why overriding only --index-url never silenced it: --index-url replaces
+# `index-url`, and leaves `extra-index-url` untouched.
+#
+# Fixed by pointing the extra index at the same working host on the command line,
+# where CLI beats every config file. Setting PIP_EXTRA_INDEX_URL empty does not
+# work: pip reads empty as unset and falls back to the config.
+PIP_ARGS="--index-url https://pypi.org/simple --extra-index-url https://pypi.org/simple --no-cache-dir -q --retries 5 --timeout 60"
 
 if [ "$DEPS" = "new" ]; then
   PKGS='torch==2.9.1 transformers==5.15.0 peft==0.20.0'
