@@ -1,0 +1,146 @@
+[
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "sft3-0-final",
+    "command": "PSCI_CPU_OFF"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_DATA_DESTROY"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_GRANULE_DELEGATE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_MEC_SET_SHARED"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_PDEV_IDE_RESET"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_PDEV_STOP"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_REC_DESTROY"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_RTT_DESTROY"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_RTT_FOLD"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_VDEV_AUX_COUNT"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_VDEV_GET_INTERFACE_REPORT"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_VDEV_LOCK"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_VDEV_START"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_VDEV_UNLOCK"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_VSMMU_CREATE"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "proved",
+    "verdict": "weaker",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RMI_VSMMU_MAP"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "sft3-0-final",
+    "command": "RSI_MEASUREMENT_READ"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft3-0-final",
+    "command": "RSI_VSMMU_GET_INFO"
+  }
+]
