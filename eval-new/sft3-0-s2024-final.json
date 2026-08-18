@@ -1,0 +1,1001 @@
+{
+  "summary": {
+    "base": "Qwen/Qwen3-4B",
+    "adapter": "jisenli/spec-check-ckpt",
+    "subfolder": "sft3-0-s2024/final",
+    "n": 49,
+    "pass": 17,
+    "pass_rate": 34.69,
+    "codebleu": null,
+    "non_degenerate": 44,
+    "non_degenerate_rate": 89.8,
+    "truncated": 3,
+    "no_fn_found": 0,
+    "with_preamble": false,
+    "frame_hint": false,
+    "prompt_variant": "V3.1-Structured",
+    "gold_ceiling_note": "gold compiles on 33/40 (82.5%) with this Verus build"
+  },
+  "results": [
+    {
+      "command": "PSCI_CPU_OFF",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": true,
+        "no_implication": true,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn psci_cpu_off_spec(result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  true\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "PSCI_VERSION",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn psci_version_spec(result: PsciInterfaceVersionInterface, old_s: S, new_s: S) -> bool {\n  (result == PsciInterfaceVersionInterface::PSCI_VERSION_1_0 ==> VersionEqual(result, PsciVersion()))\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_DATA_CREATE_UNKNOWN",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_data_create_unknown_spec(rd: Address, data: Address, ipa: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, data) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegableDram(old_s, data) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, data).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE) && ((data) >= pow2(48))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level < RMM_RTT_PAGE_LEVEL ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.state != UNASSIGNED ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && (result.is_Ok() ==> GranuleAt(new_s, data).state == DATA)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.addr == data)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.attr_prot == MEMATTR_CACHEABLE)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.sh == SHAREABILITY_INNER)\n  && ((AddrIsGranuleAligned(old_s, data) &&\n       PaIsDelegableDram(old_s, data) &&\n       !(GranuleAt(old_s, data).state != DELEGATED) &&\n       !(((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE) && ((data) >= pow2(48)))) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, ipa) &&\n       AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level < RMM_RTT_PAGE_LEVEL) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.state != UNASSIGNED))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, data).state == GranuleAt(old_s, data).state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.addr)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.attr_prot == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.attr_prot)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.sh == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtte.sh)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_DATA_CREATE",
+      "pass": false,
+      "reason": "wrong_arity",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_data_create_spec(rd: Address, data: Address, ipa: Address, src: Address, flags: RmiDataFlags, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, src) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!GranuleAccessPermitted(old_s, src, PAS_NS) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, data) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegableDram(old_s, data) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, data).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE) && ((data) >= pow2(48))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RealmAt(old_s, rd).state != REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level < RMM_RTT_PAGE_LEVEL ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (result.is_Ok() ==> GranuleAt(new_s, data).state == DATA)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == ASSIGNED)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RAM)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == data)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot == MEMATTR_CACHEABLE)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh == SHAREABILITY_INNER)\n  && (result.is_Ok() ==> RealmAt(new_s, rd).measurements[0] == RimExtendData(RealmAt(new_s, rd), ipa, data, flags))\n  && ((AddrIsGranuleAligned(old_s, src) &&\n       GranuleAccessPermitted(old_s, src, PAS_NS) &&\n       AddrIsGranuleAligned(old_s, data) &&\n       PaIsDelegableDram(old_s, data) &&\n       !(GranuleAt(old_s, data).state != DELEGATED) &&\n       !(((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE) && ((data) >= pow2(48)))) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, ipa) &&\n       AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) &&\n       !(RealmAt(old_s, rd).state != REALM_NEW) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level < RMM_RTT_PAGE_LEVEL) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, data).state == GranuleAt(old_s, data).state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh)\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).measurements[0] == RealmAt(old_s, rd).measurements[0])\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_DATA_DESTROY",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.037,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_data_destroy_spec(rd: Address, ipa: Address, result: Result<(), RmiStatusCode>, data: Address, top: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level < RMM_RTT_PAGE_LEVEL ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)) && (top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level,ipa))))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)) && (top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level,ipa))))\n  && (AddrIsAuxLive(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_RTT_AUX(0 as int)))\n  && (result.is_Ok() ==> GranuleAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == DELEGATED)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED)\n  && (result.is_Ok() && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RAM ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == DESTROYED)\n  && (result.is_Ok() ==> data == RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)\n  && (result.is_Ok() ==> top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level,ipa))\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, ipa) &&\n       AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level < RMM_RTT_PAGE_LEVEL) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED) &&\n       !(AddrIsAuxLive(old_s, ipa, RealmAt(old_s, rd))))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == GranuleAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_GRANULE_DELEGATE",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_granule_delegate_spec(addr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, addr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, addr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, addr).state != UNDELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (result.is_Ok() ==> GranuleAt(new_s, addr).state == DELEGATED)\n  && (result.is_Ok() ==> GranuleAt(new_s, addr).gpt == GPT_REALM)\n  && ((AddrIsGranuleAligned(old_s, addr) &&\n       PaIsDelegable(old_s, addr) &&\n       !(GranuleAt(old_s, addr).state != UNDELEGATED))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, addr).state == GranuleAt(old_s, addr).state)\n  && (result.is_Err()\n    ==> GranuleAt(new_s, addr).gpt == GranuleAt(old_s, addr).gpt)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_MEC_SET_SHARED",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_mec_set_shared_spec(mecid: Bits64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  ((mecid) > (ImplFeatures(old_s).max_mecid) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (MecState(old_s, mecid) != MEC_STATE_PRIVATE_UNASSIGNED ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (result.is_Ok() ==> MecState(new_s, mecid) == MEC_STATE_SHARED)\n  && ((!(mecid) > (ImplFeatures(old_s).max_mecid) &&\n       !(MecState(old_s, mecid) != MEC_STATE_PRIVATE_UNASSIGNED))\n    ==> result.is_Ok())\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_PDEV_IDE_RESET",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_pdev_ide_reset_spec(pdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, pdev_ptr).state != PDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (PdevAt(old_s, pdev_ptr).ncoh_ide != IDE_TRUE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (PdevAt(old_s, pdev_ptr).state != PDEV_READY ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (result.is_Ok() ==> PdevAt(new_s, pdev_ptr).state == PDEV_IDE_RESETTING)\n  && (result.is_Ok() ==> PdevAt(new_s, pdev_ptr).comm_state == DEV_COMM_PENDING)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, pdev_ptr) &&\n       PaIsDelegable(old_s, pdev_ptr) &&\n       !(GranuleAt(old_s, pdev_ptr).state != PDEV) &&\n       !(PdevAt(old_s, pdev_ptr).ncoh_ide != IDE_TRUE) &&\n       !(PdevAt(old_s, pdev_ptr).state != PDEV_READY))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> PdevAt(new_s, pdev_ptr).state == PdevAt(old_s, pdev_ptr).state)\n  && (result.is_Err()\n    ==> PdevAt(new_s, pdev_ptr).comm_state == PdevAt(old_s, pdev_ptr).comm_state)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_PDEV_SET_PUBKEY",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_pdev_set_pubkey_spec(pdev_ptr: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, pdev_ptr).state != PDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!GranuleAccessPermitted(old_s, params_ptr, PAS_NS) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RmiPublicKeyParamsAt(old_s, params_ptr).key_len > 1024 ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RmiPublicKeyParamsAt(old_s, params_ptr).metadata_len > 1024 ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (KeyIsInvalid(old_s, pdev_ptr, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (MetadataIsInvalid(old_s, pdev_ptr, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (PdevAt(old_s, pdev_ptr).state != PDEV_NEEDS_KEY ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, pdev_ptr) &&\n       PaIsDelegable(old_s, pdev_ptr) &&\n       !(GranuleAt(old_s, pdev_ptr).state != PDEV) &&\n       AddrIsGranuleAligned(old_s, params_ptr) &&\n       GranuleAccessPermitted(old_s, params_ptr, PAS_NS) &&\n       !(RmiPublicKeyParamsAt(old_s, params_ptr).key_len > 1024) &&\n       !(RmiPublicKeyParamsAt(old_s, params_ptr).metadata_len > 1024) &&\n       !(KeyIsInvalid(old_s, pdev_ptr, params_ptr)) &&\n       !(MetadataIsInvalid(old_s, pdev_ptr, params_ptr)) &&\n       !(PdevAt(old_s, pdev_ptr).state != PDEV_NEEDS_KEY))\n    ==> result.is_Ok())\n  && (result.is_Ok() ==> PdevAt(new_s, pdev_ptr).state == PDEV_HAS_KEY)\n  && (result.is_Ok() ==> PdevAt(new_s, pdev_ptr).comm_state == DEV_COMM_PENDING)\n  && (result.is_Err()\n    ==> PdevAt(new_s, pdev_ptr).state == PdevAt(old_s, pdev_ptr).state)\n  && (result.is_Err()\n    ==> PdevAt(new_s, pdev_ptr).comm_state == PdevAt(old_s, pdev_ptr).comm_state)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_PDEV_STOP",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_pdev_stop_spec(pdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, pdev_ptr).state != PDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((PdevAt(old_s, pdev_ptr).state == PDEV_COMMUNICATING || PdevAt(old_s, pdev_ptr).state == PDEV_STOPPING || PdevAt(old_s, pdev_ptr).state == PDEV_STOPPED) ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (PdevAt(old_s, pdev_ptr).num_vdevs != 0 ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (result.is_Ok() ==> PdevAt(new_s, pdev_ptr).state == PDEV_STOPPING)\n  && (result.is_Ok() ==> PdevAt(new_s, pdev_ptr).comm_state == DEV_COMM_PENDING)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, pdev_ptr) &&\n       PaIsDelegable(old_s, pdev_ptr) &&\n       !(GranuleAt(old_s, pdev_ptr).state != PDEV) &&\n       !((PdevAt(old_s, pdev_ptr).state == PDEV_COMMUNICATING || PdevAt(old_s, pdev_ptr).state == PDEV_STOPPING || PdevAt(old_s, pdev_ptr).state == PDEV_STOPPED)) &&\n       !(PdevAt(old_s, pdev_ptr).num_vdevs != 0))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> PdevAt(new_s, pdev_ptr).state == PdevAt(old_s, pdev_ptr).state)\n  && (result.is_Err()\n    ==> PdevAt(new_s, pdev_ptr).comm_state == PdevAt(old_s, pdev_ptr).comm_state)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_PSMMU_MSI_CONFIG",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_psmmu_msi_config_spec(psmmu: Address, gerr_addr: Address, gerr_data: Bits64, eventq_addr: Address, eventq_data: Bits64, priq_addr: Address, priq_data: Bits64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!PsmmuAddrIsValid(old_s, psmmu) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PsmmuSupportsMsi(old_s, psmmu) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!MsiAddrIsValid(old_s, gerr_addr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!MsiAddrIsValid(old_s, eventq_addr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!MsiAddrIsValid(old_s, priq_addr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (result.is_Ok() ==> gerr_addr == SMMU_R_GERROR_IRQ_CFG0(new_s, RealmAt(new_s, 0).psmmu).addr)\n  && (result.is_Ok() ==> gerr_data == SMMU_R_GERROR_IRQ_CFG1(new_s, RealmAt(new_s, 0).psmmu).data)\n  && (result.is_Ok() ==> eventq_addr == SMMU_R_EVENTQ_IRQ_CFG0(new_s, RealmAt(new_s, 0).psmmu).addr)\n  && (result.is_Ok() ==> eventq_data == SMMU_R_EVENTQ_IRQ_CFG1(new_s, RealmAt(new_s, 0).psmmu).data)\n  && (result.is_Ok() ==> priq_addr == SMMU_R_PRIQ_IRQ_CFG0(new_s, RealmAt(new_s, 0).psmmu).addr)\n  && (result.is_Ok() ==> priq_data == SMMU_R_PRIQ_IRQ_CFG1(new_s, RealmAt(new_s, 0).psmmu).data)\n  && ((PsmmuAddrIsValid(old_s, psmmu) &&\n       PsmmuSupportsMsi(old_s, psmmu) &&\n       MsAddrIsValid(old_s, gerr_addr) &&\n       MsAddrIsValid(old_s, eventq_addr) &&\n       MsAddrIsValid(old_s, priq_addr))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> gerr_addr == SMMU_R_GERROR_IRQ_CFG0(new_s, RealmAt(new_s, 0).psmmu).addr)\n  && (result.is_Err()\n    ==> gerr_data == SMMU_R_GERROR_IRQ_CFG1(new_s, RealmAt(new_s, 0).psmmu).data)\n  && (result.is_Err()\n    ==> eventq_addr == SMMU_R_EVENTQ_IRQ_CFG0(new_s, RealmAt(new_s, 0).psmmu).addr)\n  && (result.is_Err()\n    ==> eventq_data == SMMU_R_EVENTQ_IRQ_CFG1(new_s, RealmAt(new_s, 0).psmmu).data)\n  && (result.is_Err()\n    ==> priq_addr == SMMU_R_PRIQ_IRQ_CFG0(new_s, RealmAt(new_s, 0).psmmu).addr)\n  && (result.is_Err()\n    ==> priq_data == SMMU_R_PRIQ_IRQ_CFG1(new_s, RealmAt(new_s, 0).psmmu).data)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_REALM_CREATE",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_realm_create_spec(rd: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!GranuleAccessPermitted(old_s, params_ptr, PAS_NS) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!RmiRealmParamsIsValid(old_s, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!RealmParamsSupported(old_s, RmiRealmParamsAt(old_s, params_ptr)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (AddrInRange(old_s, rd, RmiRealmParamsAt(old_s, params_ptr).rtt_base, (RmiRealmParamsAt(old_s, params_ptr).rtt_num_start - 1) * RMM_GRANULE_SIZE) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegableDram(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsAligned(old_s, RmiRealmParamsAt(old_s, params_ptr).rtt_base, RmiRealmParamsAt(old_s, params_ptr).rtt_num_start * RMM_GRANULE_SIZE) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!RttConfigIsValid(old_s, RmiRealmParamsAt(old_s, params_ptr).s2sz, RmiRealmParamsAt(old_s, params_ptr).rtt_level_start, RmiRealmParamsAt(old_s, params_ptr).rtt_num_start) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!RttsStateEqual(old_s, RmiRealmParamsAt(old_s, params_ptr).rtt_base, RmiRealmParamsAt(old_s, params_ptr).rtt_num_start, DELEGATED) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!VmidsAreValid(old_s, RmiRealmParamsAt(old_s, params_ptr).vmid, RmiRealmParamsAt(old_s, params_ptr).aux_vmid) || !VmidsAreFree(old_s, RmiRealmParamsAt(old_s, params_ptr).vmid, RmiRealmParamsAt(old_s, params_ptr).aux_vmid)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((RmiRealmParamsAt(old_s, params_ptr).meclid) > (ImplFeatures(old_s).max_mecid) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (MecState(old_s, RmiRealmParamsAt(old_s, params_ptr).meclid) == MEC_STATE_PRIVATE_ASSIGNED ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (result.is_Ok() ==> GranuleAt(new_s, rd).state == RD)\n  && (result.is_Ok() ==> RealmAt(new_s, rd).state == REALM_NEW)\n  && (result.is_Ok() ==> RealmAt(new_s, rd).rec_index == 0)\n  && (result.is_Ok() ==> RealmRttBaseEqual(RealmAt(new_s, rd), RmiRealmParamsAt(new_s, params_ptr).rtt_base, RmiRealmParamsAt(new_s, params_ptr).aux_rtt_base))\n  && (result.is_Ok() ==> RttsStateEqual(RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start, RTT))\n  && (result.is_Ok() ==> RttsAllProtectedEntriesState(RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start, UNASSIGNED))\n  && (result.is_Ok() ==> RttsAllUnprotectedEntriesState(RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start, UNASSIGNED_NS))\n  && (result.is_Ok() ==> RttsAllProtectedEntriesRipas(RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start, EMPTY))\n  && (result.is_Ok() ==> Equal(RealmAt(new_s, rd).feat_lpa2, RmiRealmParamsAt(new_s, params_ptr).flags0.lpa2))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).ipa_width == RmiRealmParamsAt(new_s, params_ptr).s2sz)\n  && (result.is_Ok() ==> Equal(RealmAt(new_s, rd).hash_algo, RmiRealmParamsAt(new_s, params_ptr).hash_algo))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).measurements[0] == RimInit(RealmAt(new_s, rd).hash_algo, RmiRealmParamsAt(new_s, params_ptr)))\n  && (result.is_Ok() ==> (RealmAt(new_s, rd).measurements[1] == Zeros(RMM_REALM_MEASUREMENT_WIDTH) && RealmAt(new_s, rd).measurements[2] == Zeros(RMM_REALM_MEASUREMENT_WIDTH) && RealmAt(new_s, rd).measurements[3] == Zeros(RMM_REALM_MEASUREMENT_WIDTH) && RealmAt(new_s, rd).measurements[4] == Zeros(RMM_REALM_MEASUREMENT_WIDTH)))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).rtt_level_start == RmiRealmParamsAt(new_s, params_ptr).rtt_level_start)\n  && (result.is_Ok() ==> RealmAt(new_s, rd).rtt_num_start == RmiRealmParamsAt(new_s, params_ptr).rtt_num_start)\n  && (result.is_Ok() ==> RealmVmidEqual(RealmAt(new_s, rd), RmiRealmParamsAt(new_s, params_ptr).vmid, RmiRealmParamsAt(new_s, params_ptr).aux_vmid))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).rpv == RmiRealmParamsAt(new_s, params_ptr).rpv)\n  && (result.is_Ok() ==> Equal(RealmAt(new_s, rd).feat_da, RmiRealmParamsAt(new_s, params_ptr).flags0.da))\n  && (result.is_Ok() ==> Equal(RealmAt(new_s, rd).feat_ats, RmiRealmParamsAt(new_s, params_ptr).flags1.ats))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).ats_plane == RmiRealmParamsAt(new_s, params_ptr).ats_plane)\n  && (result.is_Ok() ==> Equal(RealmAt(new_s, rd).rtt_tree_per_plane, RmiRealmParamsAt(new_s, params_ptr).flags1.rtt_tree_per_plane))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).num_aux_planes == RmiRealmParamsAt(new_s, params_ptr).num_aux_planes)\n  && (result.is_Ok() ==> Equal(RealmAt(new_s, rd).rtt_s2ap_encoding, RmiRealmParamsAt(new_s, params_ptr).flags1.rtt_s2ap_encoding))\n  && (result.is_Ok() ==> Equal(RealmAt(new_s, rd).lfa_policy, RmiRealmParamsAt(new_s, params_ptr).flags0.lfa_policy))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).meclid == RmiRealmParamsAt(new_s, params_ptr).meclid)\n  && (result.is_Ok() ==> RealmAt(new_s, rd).mech_policy == MecPolicy(RealmAt(new_s, rd).meclid))\n  && (result.is_Ok() ==> MecState(new_s, RmiRealmParamsAt(new_s, params_ptr).meclid) == MEC_STATE_PRIVATE_ASSIGNED)\n  && (result.is_Ok() ==> MecMembers(new_s, RmiRealmParamsAt(new_s, params_ptr).meclid) == MecMembers(old_s, RmiRealmParamsAt(old_s, params_ptr).meclid) + 1)\n  && (result.is_Ok() ==> RealmAt(new_s, rd).num_recs == 0)\n  && (result.is_Ok() ==> RealmAt(new_s, rd).num_vdevs == 0)\n  && (result.is_Ok() ==> RealmAt(new_s, rd).num_vsmmus == 0)\n  && ((AddrIsGranuleAligned(old_s, params_ptr) &&\n       GranuleAccessPermitted(old_s, params_ptr, PAS_NS) &&\n       RmiRealmParamsIsValid(old_s, params_ptr) &&\n       RealmParamsSupported(old_s, RmiRealmParamsAt(old_s, params_ptr)) &&\n       !(AddrInRange(old_s, rd, RmiRealmParamsAt(old_s, params_ptr).rtt_base, (RmiRealmParamsAt(old_s, params_ptr).rtt_num_start - 1) * RMM_GRANULE_SIZE)) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegableDram(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != DELEGATED) &&\n       AddrIsAligned(old_s, RmiRealmParamsAt(old_s, params_ptr).rtt_base, RmiRealmParamsAt(old_s, params_ptr).rtt_num_start * RMM_GRANULE_SIZE) &&\n       RttConfigIsValid(old_s, RmiRealmParamsAt(old_s, params_ptr).s2sz, RmiRealmParamsAt(old_s, params_ptr).rtt_level_start, RmiRealmParamsAt(old_s, params_ptr).rtt_num_start) &&\n       RttsStateEqual(old_s, RmiRealmParamsAt(old_s, params_ptr).rtt_base, RmiRealmParamsAt(old_s, params_ptr).rtt_num_start, DELEGATED) &&\n       !((VmidsAreValid(old_s, RmiRealmParamsAt(old_s, params_ptr).vmid, RmiRealmParamsAt(old_s, params_ptr).aux_vmid) || !VmidsAreFree(old_s, RmiRealmParamsAt(old_s, params_ptr).vmid, RmiRealmParamsAt(old_s, params_ptr).aux_vmid))) &&\n       !((RmiRealmParamsAt(old_s, params_ptr).meclid) > (ImplFeatures(old_s).max_mecid)) &&\n       !(MecState(old_s, RmiRealmParamsAt(old_s, params_ptr).meclid) == MEC_STATE_PRIVATE_ASSIGNED))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, rd).state == GranuleAt(old_s, rd).state)\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).state == RealmAt(old_s, rd).state)\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).rec_index == RealmAt(old_s, rd).rec_index)\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).rtt_level_start == RealmAt(old_s, rd).rtt_level_start)\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).rtt_num_start == RealmAt(old_s, rd).rtt_num_start)\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).meclid == RealmAt(old_s, rd).meclid)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_REALM_DESTROY",
+      "pass": false,
+      "reason": "wrong_arity",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.059,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_realm_destroy_spec(rd: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RealmIsLive(old_s, rd) ==> ResultEqual(result, RMI_ERROR_REALM))\n  && (result.is_Ok() ==> RttsStateEqual(new_s, RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start as int, DELEGATED))\n  && (result.is_Ok() ==> GranuleAt(new_s, rd).state == DELEGATED)\n  && (result.is_Ok() ==> VmidsAreFree(new_s, RealmAt(new_s, rd).vmid))\n  && (result.is_Ok() && RealmAt(old_s, rd).mec_policy == MEC_POLICY_PRIVATE ==> MecState(new_s, RealmAt(new_s, rd).mecid) == MEC_STATE_PRIVATE_UNASSIGNED)\n  && (result.is_Ok() && RealmAt(old_s, rd).mec_policy == MEC_POLICY_SHARED ==> MecMembers(new_s, RealmAt(new_s, rd).mecid) == MecMembers(old_s, RealmAt(old_s, rd).mecid) - 1)\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       !(RealmIsLive(old_s, rd)))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, rd).state == GranuleAt(old_s, rd).state)\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).rtt_base[0] == RealmAt(old_s, rd).rtt_base[0])\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_REC_DESTROY",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rec_destroy_spec(rec_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rec_ptr).state != REC ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, RMI_ERROR_REC))\n  && (result.is_Ok() ==> GranuleAt(new_s, rec_ptr).state == DELEGATED)\n  && (result.is_Ok() ==> AuxStateEqual32(new_s, RecAt(new_s, rec_ptr).aux, RecAuxCount(new_s, RecAt(new_s, rec_ptr).owner), DELEGATED))\n  && (result.is_Ok() ==> RealmAt(new_s, RecAt(new_s, rec_ptr).owner).num_recs == RealmAt(new_s, RecAt(new_s, rec_ptr).owner).num_recs - 1)\n  && ((AddrIsGranuleAligned(old_s, rec_ptr) &&\n       PaIsDelegable(old_s, rec_ptr) &&\n       !(GranuleAt(old_s, rec_ptr).state != REC) &&\n       !(RecAt(old_s, rec_ptr).state == REC_RUNNING))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, rec_ptr).state == GranuleAt(old_s, rec_ptr).state)\n  && (result.is_Err()\n    ==> RecAt(new_s, rec_ptr).aux == RecAt(old_s, rec_ptr).aux)\n  && (result.is_Err()\n    ==> RealmAt(new_s, RecAt(new_s, rec_ptr).owner).num_recs == RealmAt(old_s, RecAt(old_s, rec_ptr).owner).num_recs)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_REC_ENTER",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rec_enter_spec(rec_ptr: Address, run_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, run_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!GranuleAccessPermitted(old_s, run_ptr, PAS_NS) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RecAt(old_s, rec_ptr).state != REC ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RealmAt(old_s, RecAt(old_s, rec_ptr).owner).state == REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM(0)))\n  && (RealmAt(old_s, RecAt(old_s, rec_ptr).owner).state == REALM_SYSTEM_OFF ==> ResultEqual(result, RMI_ERROR_REALM(1)))\n  && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, RMI_ERROR_REC))\n  && (RecAt(old_s, rec_ptr).flags.runnable == NOT_RUNNABLE ==> ResultEqual(result, RMI_ERROR_REC))\n  && ((RmiRecRunAt(old_s, run_ptr).enter.flags.emul_mmio == RMI_EMULATED_MMIO && RecAt(old_s, rec_ptr).emulatable_abort != EMULATABLE_ABORT) ==> ResultEqual(result, RMI_ERROR_REC))\n  && (!Gicv3ConfigIsValid(old_s, RmiRecRunAt(old_s, run_ptr).enter.gicv3_hcr, RmiRecRunAt(old_s, run_ptr).enter.gicv3_lrs) ==> ResultEqual(result, RMI_ERROR_REC))\n  && (RecAt(old_s, rec_ptr).pending != REC_PENDING_NONE ==> ResultEqual(result, RMI_ERROR_REC))\n  && (result.is_Ok() ==> RmiRecRunAt(new_s, run_ptr).exit == RecAt(new_s, rec_ptr).exit)\n  && (result.is_Ok() ==> RecAt(new_s, rec_ptr).emulatable_abort = RecAt(new_s, rec_ptr).emulatable_abort)\n  && ((AddrIsGranuleAligned(old_s, run_ptr) &&\n       GranuleAccessPermitted(old_s, run_ptr, PAS_NS) &&\n       AddrIsGranuleAligned(old_s, rec_ptr) &&\n       PaIsDelegable(old_s, rec_ptr) &&\n       !(RecAt(old_s, rec_ptr).state != REC) &&\n       !(RealmAt(old_s, RecAt(old_s, rec_ptr).owner).state == REALM_NEW) &&\n       !(RealmAt(old_s, RecAt(old_s, rec_ptr).owner).state == REALM_SYSTEM_OFF) &&\n       !(RecAt(old_s, rec_ptr).state == REC_RUNNING) &&\n       !(RecAt(old_s, rec_ptr).flags.runnable == NOT_RUNNABLE) &&\n       !((RmiRecRunAt(old_s, run_ptr).enter.flags.emul_mmio == RMI_EMULATED_MMIO && RecAt(old_s, rec_ptr).emulatable_abort != EMULATABLE_ABORT)) &&\n       Gicv3ConfigIsValid(old_s, RmiRecRunAt(old_s, run_ptr).enter.gicv3_hcr, RmiRecRunAt(old_s, run_ptr).enter.gicv3_lrs) &&\n       !(RecAt(old_s, rec_ptr).pending != REC_PENDING_NONE))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RmiRecRunAt(new_s, run_ptr).exit == RmiRecRunAt(old_s, run_ptr).exit)\n  && (result.is_Err()\n    ==> RecAt(new_s, rec_ptr).emulatable_abort == RecAt(old_s, rec_ptr).emulatable_abort)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_AUX_MAP_PROTECTED",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.146,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_aux_map_protected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((RealmAt(old_s, rd).rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > RealmAt(old_s, rd).num_aux_planes) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED_DEV && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED_VSMMU) ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)) && (state == RttEntryStateToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)) && (ripas == RipasToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas))))\n  && ((RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == ASSIGNED && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != RAM) ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)) && (state == RttEntryStateToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)) && (ripas == RipasToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas))))\n  && ((RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == ASSIGNED_DEV && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != DEV) ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)) && (state == RttEntryStateToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)) && (ripas == RipasToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas))))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,index as int).rtte.state == AUX_DESTROYED ==> (ResultEqual(result, RMI_ERROR_RTT_AUX(RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).level as int)) && (state == RttEntryStateToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.state)) && (ripas == RipasToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.ripas))))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,index as int).level < RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level ==> (ResultEqual(result, RMI_ERROR_RTT_AUX(RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).level as int)) && (state == RttEntryStateToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.state)) && (ripas == RipasToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.ripas))))\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.state == ASSIGNED)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.attr_prot == RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.attr_prot)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.sh == RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.sh)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.addr == RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr + ((RttEntryIndex(new_s, ipa, RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).level) as int) * RttLevelSize(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).level as int)))\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, ipa) &&\n       AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) &&\n       !((RealmAt(old_s, rd).rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > RealmAt(old_s, rd).num_aux_planes)) &&\n       !((RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED_DEV && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED_VSMMU)) &&\n       !((RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == ASSIGNED && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != RAM)) &&\n       !((RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == ASSIGNED_DEV && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != DEV)) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,index as int).rtte.state == AUX_DESTROYED) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,index as int).level < RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,index as int).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.attr_prot == RttWalk(old_s, RealmAt(old_s, rd), ipa,index as int).rtte.attr_prot)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.sh == RttWalk(old_s, RealmAt(old_s, rd), ipa,index as int).rtte.sh)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,index as int).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa,index as int).rtte.addr)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_AUX_MAP_UNPROTECTED",
+      "pass": false,
+      "reason": "unbalanced_delimiter",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_aux_map_unprotected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, ipa, RealmAt(old_s, rd).rtt_level_start) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat) || AddrIsProtected(old_s, ipa, RealmAt(old_s, rd))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((RealmAt(old_s, rd).rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > RealmAt(old_s, rd).num_aux_planes) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa, RealmAt(old_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED_NS ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtte.state == RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n  && (result.is_Ok() ==> (RttMemAttrEqual(RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtte, RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte,RTT_UNPROTECTED) && RttS2APEqual(RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtte, RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte,RealmAt(new_s, rd).rtt_s2ap_encoding))\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtte.addr == RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte.addr)\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsRttLevelAligned(old_s, ipa, RealmAt(old_s, rd).rtt_level_start) &&\n       !(((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat) || AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)))) &&\n       !((RealmAt(old_s, rd).rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > RealmAt(old_s, rd).num_aux_planes)) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa, RealmAt(old_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED_NS))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtte.state == RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 1,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_aux_unmap_unprotected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, top: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, ipa, RealmAt(old_s, rd).rtt_level_start as int) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat) || AddrIsProtected(old_s, ipa, RealmAt(old_s, rd))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((RealmAt(old_s, rd).rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > RealmAt(old_s, rd).num_aux_planes) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtte.state == UNASSIGNED_NS)\n  && (result.is_Ok() ==> top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).level,ipa))\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsRttLevelAligned(old_s, ipa, RealmAt(old_s, rd).rtt_level_start as int) &&\n       !(((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat) || AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)))) &&\n       !((RealmAt(old_s, rd).rtt_tree_per_plane == FEATURE_FALSE || index == RMM_RTT_TREE_PRIMARY || index > RealmAt(old_s, rd).num_aux_planes)))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa, RealmAt(old_s, rd).rtt_level_start,index).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_level_start,index).rtte.leaf == RttWalk(old_s, RealmAt(old_s, rd), ipa, RealmAt(old_s, rd).rtt_level_start,index).rtte.leaf)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_CREATE",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.027,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_create_spec(rd: Address, rtt: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || RttLevelIsStarting(old_s, RealmAt(old_s, rd), level as int)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, ipa, level - 1 as int) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rtt) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegableDram(old_s, rtt) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rtt).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE) && ((rtt) >= 2^48)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level < level - 1 ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == TABLE ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (result.is_Ok() ==> GranuleAt(new_s, rtt).state == RTT)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == TABLE)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == rtt)\n  && (result.is_Ok() && AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> RttAllEntriesRipas(new_s, RttAt(new_s, rtt), RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas))\n  && (result.is_Ok() ==> RttAllEntriesState(new_s, RttAt(new_s, rtt), RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state))\n  && (result.is_Ok() && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED && RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED_NS) ==> RttAllEntriesContiguous(new_s, RttAt(new_s, rtt), RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr, level as int))\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       !((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || RttLevelIsStarting(old_s, RealmAt(old_s, rd), level as int))) &&\n       AddrIsRttLevelAligned(old_s, ipa, level - 1 as int) &&\n       !((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat)) &&\n       AddrIsGranuleAligned(old_s, rtt) &&\n       PaIsDelegableDram(old_s, rtt) &&\n       !(GranuleAt(old_s, rtt).state != DELEGATED) &&\n       !(((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE) && ((rtt) >= 2^48))) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level < level - 1) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == TABLE))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, rtt).state == GranuleAt(old_s, rtt).state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_DESTROY",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.111,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_destroy_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, top: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || RttLevelIsStarting(old_s, RealmAt(old_s, rd), level as int)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, ipa, level - 1) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level < level - 1 ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level as int)) && (top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level,ipa))))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.state != TABLE ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level as int)) && (top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level,ipa))))\n  && (RttIsLive(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.addr)) ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level as int)) && (top == ipa)))\n  && (AddrIsAuxRef(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (result.is_Ok() && AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED)\n  && (result.is_Ok() && AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == DESTROYED)\n  && (result.is_Ok() && !AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED_NS)\n  && (result.is_Ok() ==> GranuleAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == DELEGATED)\n  && (result.is_Ok() ==> rtt == RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.addr)\n  && (result.is_Ok() ==> top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level,ipa))\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       !((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || RttLevelIsStarting(old_s, RealmAt(old_s, rd), level as int))) &&\n       AddrIsRttLevelAligned(old_s, ipa, level - 1) &&\n       !((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat)) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).level < level - 1) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.state != TABLE) &&\n       !(RttIsLive(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.addr)))) ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.ripas)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n  && (result.is_Err()\n    ==> GranuleAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == GranuleAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1,RMM_RTT_TREE_PRIMARY as int).rtte.addr)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_FOLD",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.079,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_fold_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || RttLevelIsStarting(old_s, RealmAt(old_s, rd), level as int)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, ipa, level - 1 as int) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level < level - 1 ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != TABLE ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (!RttIsHomogeneous(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)) ==> ResultEqual(result, RMI_ERROR_RTT(level)))\n  && (AddrIsAuxRef(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttFold(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)).state)\n  && (result.is_Ok() && (RttFold(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)).state != UNASSIGNED && RttFold(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)).state != UNASSIGNED_NS) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == RttFold(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)).addr)\n  && (result.is_Ok() && RttFold(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)).state == ASSIGNED ==> (RttMemAttrEqual(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte, RttFold(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)),RTT_PROTECTED) && RttS2APEqual(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte, RttFold(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)),S2AP_INDIRECT)))\n  && (result.is_Ok() && RttFold(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)).state == ASSIGNED_NS ==> (RttMemAttrEqual(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte, RttFold(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)),RTT_UNPROTECTED) && RttS2APEqual(RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte, RttFold(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)),RealmAt(new_s, rd).rtt_s2ap_encoding)))\n  && (result.is_Ok() && AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttFold(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)).ripas)\n  && (result.is_Ok() ==> GranuleAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == DELEGATED)\n  && (result.is_Ok() ==> rtt == RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       !((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || RttLevelIsStarting(old_s, RealmAt(old_s, rd), level as int))) &&\n       AddrIsRttLevelAligned(old_s, ipa, level - 1 as int) &&\n       !((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat)) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level < level - 1) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != TABLE) &&\n       RttIsHomogeneous(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)) &&\n       !(AddrIsAuxRef(old_s, ipa, RealmAt(old_s, rd))))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas)\n  && (result.is_Err()\n    ==> GranuleAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == GranuleAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_INIT_RIPAS",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_init_ripas_spec(rd: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((top) <= (base) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsProtected(old_s, ToAddress((top) - RMM_GRANULE_SIZE), RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RealmAt(old_s, rd).state != REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM))\n  && (!AddrIsRttLevelAligned(old_s, base, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level as int) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (!AddrIsGranuleAligned(old_s, top) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((base) == (RttSkipEntriesIfNotState(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),UNASSIGNED,RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, UNASSIGNED)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (result.is_Ok() ==> RttEntriesInRangeRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, RttSkipEntriesIfNotState(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),UNASSIGNED,RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, UNASSIGNED),RAM))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).measurements[0] == RimExtendRipas(new_s, RealmAt(new_s, rd), base, RttSkipEntriesIfNotState(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),UNASSIGNED,RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, UNASSIGNED),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level))\n  && (result.is_Ok() ==> out_top == RttSkipEntriesIfNotState(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),UNASSIGNED,RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, UNASSIGNED))\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       !((top) <= (base)) &&\n       AddrIsProtected(old_s, ToAddress((top) - RMM_GRANULE_SIZE), RealmAt(old_s, rd)) &&\n       !(RealmAt(old_s, rd).state != REALM_NEW) &&\n       AddrIsRttLevelAligned(old_s, base, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level as int) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED) &&\n       AddrIsGranuleAligned(old_s, top) &&\n       !((base) == (RttSkipEntriesIfNotState(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),UNASSIGNED,RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, UNASSIGNED))))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).measurements[0] == RealmAt(old_s, rd).measurements[0])\n  && (result.is_Err()\n    ==> RttSkipEntriesIfNotState(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),UNASSIGNED,RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, UNASSigned))\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_MAP_UNPROTECTED",
+      "pass": false,
+      "reason": "unbalanced_delimiter",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.08,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_map_unprotected_spec(rd: Address, ipa: Address, level: Int64, desc: Bits64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (!RttDescriptorIsValidForUnprotected(old_s, desc) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || level < 1) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).addr, level) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE) && ((RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).addr) >= pow2(48))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, ipa, level) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as int) || AddrIsProtected(old_s, ipa, RealmAt(old_s, rd))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((RealmAt(old_s, rd).rtt_s2ap_encoding == S2AP_INDIRECT && RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index != S2AP_NO_ACCESS && RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index != S2AP_RO && RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index != S2AP_WO && RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index != S2AP_RW) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).level < level ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).level as int)))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state != UNASSIGNED_NS ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).level as int)))\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_NS)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot == RttDescriptorDecode(new_s, desc, RealmAt(new_s, rd).rtt_s2ap_encoding).attr_unprot)\n  && (result.is_Ok() && RealmAt(old_s, rd).rtt_s2ap_encoding == S2AP_DIRECT ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read == RttDescriptorDecode(new_s, desc, RealmAt(new_s, rd).rtt_s2ap_encoding).s2ap_direct.read && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write == RttDescriptorDecode(new_s, desc, RealmAt(new_s, rd).rtt_s2ap_encoding).s2ap_direct.write))\n  && (result.is_Ok() && RealmAt(old_s, rd).rtt_s2ap_encoding == S2AP_INDIRECT ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index == RttDescriptorDecode(new_s, desc, RealmAt(new_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index == 15))\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr == RttDescriptorDecode(new_s, desc, RealmAt(new_s, rd).rtt_s2ap_encoding).addr)\n  && ((RttDescriptorIsValidForUnprotected(old_s, desc) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       !((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || level < 1)) &&\n       AddrIsRttLevelAligned(old_s, RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).addr, level) &&\n       !(((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE) && ((RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).addr) >= pow2(48)))) &&\n       AddrIsRttLevelAligned(old_s, ipa, level) &&\n       !((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as int) || AddrIsProtected(old_s, ipa, RealmAt(old_s, rd))) &&\n       !((RealmAt(old_s, rd).rtt_s2ap_encoding == S2AP_INDIRECT && RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index != S2AP_NO_ACCESS && RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index != S2AP_RO && RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index != S2AP_WO && RttDescriptorDecode(old_s, desc, RealmAt(old_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index != S2AP_RW)) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).level < level) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state != UNASSIGNED_NS))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index)\n  && (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 1,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_READ_ENTRY",
+      "pass": false,
+      "reason": "wrong_arity",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.386,
+        "repetitive": true
+      },
+      "generated": "pub open spec fn rmi_rtt_read_entry_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, walk_level: UInt64, state: RmiRttEntryState, desc: Bits64, ripas: RmiRipas, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!RttLevelIsValid(old_s, RealmAt(old_s, rd), level) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, ipa, level) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (result.is_Ok() ==> walk_level == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).level)\n  && (result.is_Ok() ==> state == RttEntryStateToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state))\n  && (result.is_Ok() && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == UNASSIGNED || RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == UNASSIGNED_NS) ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr == 0))\n  && (result.is_Ok() && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED || RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_DEV || RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_VSMMU || RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == TABLE) ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr))\n  && (result.is_Ok() && RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_NS ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr))\n  && (result.is_Ok() && RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_DEV ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr))\n  && (result.is_Ok() && RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_VSMMU ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.read == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_direct.write == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr))\n  && (result.is_Ok() && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == UNASSIGNED || RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED) ==> ripas == RipasToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.ripas))\n  && (result.is_Ok() && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == UNASSIGNED_NS || RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_NS) ==> ripas == RMI_EMPTY)\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       RttLevelIsValid(old_s, RealmAt(old_s, rd), level) &&\n       AddrIsRttLevelAligned(old_s, ipa, level) &&\n       !((ipa) >= pow2(RealmAt(old_s, rd).ipa_width as nat)))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> walk_level == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).level)\n  && (result.is_Err()\n    ==> state == RttEntryStateToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state))\n  && (result.is_Err()\n    ==> desc == RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.desc)\n  && (result.is_Err()\n    ==> ripas == RipasToRmi(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.ripas))\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_SET_RIPAS",
+      "pass": false,
+      "reason": "other_compile_error",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.065,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_set_ripas_spec(rd: Address, rec_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rec_ptr).state != REC ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, RMI_ERROR_REC))\n  && (RecAt(old_s, rec_ptr).owner != rd ==> ResultEqual(result, RMI_ERROR_REC))\n  && ((top) <= (base) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (base != RecAt(old_s, rec_ptr).ripas_addr ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((top) > (RecAt(old_s, rec_ptr).ripas_top) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!AddrIsRttLevelAligned(old_s, base, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level) && RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != RecAt(old_s, rec_ptr).ripas_value) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (!AddrIsGranuleAligned(old_s, top) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((base) == (RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, (RecAt(old_s, rec_ptr).ripas_value == RAM) && (RecAt(old_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)).top) && RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != RecAt(old_s, rec_ptr).ripas_value ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (AddrRangeIsAuxLive(old_s, base, top, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (result.is_Ok() ==> RttEntriesInRangeRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, (RecAt(new_s, rec_ptr).ripas_value == RAM) && (RecAt(new_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)).top,RecAt(new_s, rec_ptr).ripas_value))\n  && (result.is_Ok() ==> RecAt(new_s, rec_ptr).ripas_addr == MinAddress(new_s, top, RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, (RecAt(new_s, rec_ptr).ripas_value == RAM) && (RecAt(new_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)).top))\n  && (result.is_Ok() ==> out_top == MinAddress(new_s, top, RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, (RecAt(new_s, rec_ptr).ripas_value == RAM) && (RecAt(new_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)).top))\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, rec_ptr) &&\n       PaIsDelegable(old_s, rec_ptr) &&\n       !(GranuleAt(old_s, rec_ptr).state != REC) &&\n       !(RecAt(old_s, rec_ptr).state == REC_RUNNING) &&\n       !(RecAt(old_s, rec_ptr).owner != rd) &&\n       !((top) <= (base)) &&\n       !(base != RecAt(old_s, rec_ptr).ripas_addr) &&\n       !((top) > (RecAt(old_s, rec_ptr).ripas_top)) &&\n       AddrIsRttLevelAligned(old_s, base, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != RecAt(old_s, rec_ptr).ripas_value) &&\n       AddrIsGranuleAligned(old_s, top) &&\n       !((base) == (RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, (RecAt(old_s, rec_ptr).ripas_value == RAM) && (RecAt(old_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)).top) && RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != RecAt(old_s, rec_ptr).ripas_value) &&\n       !(AddrRangeIsAuxLive(old_s, base, top, RealmAt(old_s, rd))))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RecAt(new_s, rec_ptr).ripas_addr == RecAt(old_s, rec_ptr).ripas_addr)\n  && (result.is_Err()\n    ==> RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, (RecAt(new_s, rec_ptr).ripas_value == RAM) && (RecAt(new_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)).top == RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY as int).level,base, top, (RecAt(old_s, rec_ptr).ripas_value == RAM) && (RecAt(old_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)).top)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_RTT_SET_S2AP",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.167,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_rtt_set_s2ap_spec(rd: Address, rec_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, rtt_tree: UInt64, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rec_ptr).state != REC ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, RMI_ERROR_REC))\n  && (RecAt(old_s, rec_ptr).owner != rd ==> ResultEqual(result, RMI_ERROR_REC))\n  && ((top) <= (base) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (base != RecAt(old_s, rec_ptr).s2ap_addr ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((top) > (RecAt(old_s, rec_ptr).s2ap_top) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, top) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).valid == RMM_TRUE && !AddrRangeIsWithin(old_s, base, top, AlignDownToRttLevel(old_s, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).addr, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int), AlignUpToRttLevel(old_s, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).addr, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int)) && RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).index == RMM_RTT_TREE_PRIMARY && RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.rtte.s2ap_indirect.overlay_index != RecAt(old_s, rec_ptr).s2ap_overlay_index) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int)))\n  && ((RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).valid == RMM_TRUE && !AddrRangeIsWithin(old_s, base, top, AlignDownToRttLevel(old_s, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).addr, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int), AlignUpToRttLevel(old_s, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).addr, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int)) && RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).index != RMM_RTT_TREE_PRIMARY && RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.rtte.s2ap_indirect.overlay_index != RecAt(old_s, rec_ptr).s2ap_overlay_index) ==> ResultEqual(result, RMI_ERROR_RTT_AUX(RttWalk(new_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int)))\n  && (result.is_Ok() ==> RecAt(new_s, rec_ptr).s2ap_addr == out_top)\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, rec_ptr) &&\n       PaIsDelegable(old_s, rec_ptr) &&\n       !(GranuleAt(old_s, rec_ptr).state != REC) &&\n       !(RecAt(old_s, rec_ptr).state == REC_RUNNING) &&\n       !(RecAt(old_s, rec_ptr).owner != rd) &&\n       !((top) <= (base)) &&\n       !(base != RecAt(old_s, rec_ptr).s2ap_addr) &&\n       !((top) > (RecAt(old_s, rec_ptr).s2ap_top)) &&\n       AddrIsGranuleAligned(old_s, top) &&\n       !((RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).valid == RMM_TRUE && !AddrRangeIsWithin(old_s, base, top, AlignDownToRttLevel(old_s, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).addr, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int), AlignUpToRttLevel(old_s, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).addr, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int)) && RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).index == RMM_RTT_TREE_PRIMARY && RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.rtte.s2ap_indirect.overlay_index != RecAt(old_s, rec_ptr).s2ap_overlay_index)) &&\n       !((RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).valid == RMM_TRUE && !AddrRangeIsWithin(old_s, base, top, AlignDownToRttLevel(old_s, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).addr, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int), AlignUpToRttLevel(old_s, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).addr, RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.level as int)) && RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).index != RMM_RTT_TREE_PRIMARY && RttWalk(old_s, rd, base, top, RMM_RTT_PAGE_LEVEL as int).walk.rtte.s2ap_indirect.overlay_index != RecAt(old_s, rec_ptr).s2ap_overlay_index)))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RecAt(new_s, rec_ptr).s2ap_addr == RecAt(old_s, rec_ptr).s2ap_addr)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_AUX_COUNT",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_aux_count_spec(pdev_flags: Bits64, vdev_flags: Bits64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (result.is_Ok() ==> aux_count == VdevAuxCount(new_s, RmiPdevFlagsDecode(new_s, pdev_flags), RmiVdevFlagsDecode(new_s, vdev_flags)))\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_DESTROY",
+      "pass": false,
+      "reason": "wrong_arity",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.022,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_destroy_spec(rd: Address, pdev_ptr: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, pdev_ptr).state != PDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_ptr).realm != rd ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_ptr).pdev != pdev_ptr ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && ((VdevAt(old_s, vdev_ptr).vdev_state != VDEV_NEW && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_UNLOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_ERROR) ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_ptr).num_map != 0 ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (result.is_Ok() ==> GranuleAt(new_s, vdev_ptr).state == DELEGATED)\n  && (result.is_Ok() ==> AuxStateEqual32(new_s, VdevAt(new_s, vdev_ptr).aux, VdevAt(new_s, vdev_ptr).num_aux as int, DELEGATED))\n  && (result.is_Ok() ==> VdevIdIsFree(new_s, RealmAt(new_s, rd).vdev_id))\n  && (result.is_Ok() ==> TdiIdIsFree(new_s, VdevAt(new_s, vdev_ptr).tdi_id, PdevAt(new_s, pdev_ptr).segment_id))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).num_vdevs == RealmAt(new_s, rd).num_vdevs - 1)\n  && (result.is_Ok() ==> PdevAt(new_s, pdev_ptr).num_vdevs == PdevAt(new_s, pdev_ptr).num_vdevs - 1)\n  && (result.is_Ok() && VdevAt(old_s, vdev_ptr).vsmmu == FEATURE_TRUE ==> VsidIsFree(new_s, VsmmuAt(new_s, VdevAt(new_s, vdev_ptr).vsmmu_addr), VdevAt(new_s, vdev_ptr).vsid))\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, pdev_ptr) &&\n       PaIsDelegable(old_s, pdev_ptr) &&\n       !(GranuleAt(old_s, pdev_ptr).state != PDEV) &&\n       AddrIsGranuleAligned(old_s, vdev_ptr) &&\n       PaIsDelegable(old_s, vdev_ptr) &&\n       !(GranuleAt(old_s, vdev_ptr).state != VDEV) &&\n       !(VdevAt(old_s, vdev_ptr).realm != rd) &&\n       !(VdevAt(old_s, vdev_ptr).pdev != pdev_ptr) &&\n       !((VdevAt(old_s, vdev_ptr).vdev_state != VDEV_NEW && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_UNLOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_ERROR)) &&\n       !(VdevAt(old_s, vdev_ptr).num_map != 0))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, vdev_ptr).state == GranuleAt(old_s, vdev_ptr).state)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).aux == VdevAt(old_s, vdev_ptr).aux)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).num_aux == VdevAt(old_s, vdev_ptr).num_aux)\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).num_vdevs == RealmAt(old_s, rd).num_vdevs)\n  && (result.is_Err()\n    ==> PdevAt(new_s, pdev_ptr).num_vdevs == PdevAt(old_s, pdev_ptr).num_vdevs)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).vsmmu == VdevAt(old_s, vdev_ptr).vsmmu)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_GET_INTERFACE_REPORT",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_get_interface_report_spec(rd: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_ptr).realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED) ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_GET_REPORT)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_PENDING)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, vdev_ptr) &&\n       PaIsDelegable(old_s, vdev_ptr) &&\n       !(GranuleAt(old_s, vdev_ptr).state != VDEV) &&\n       !(VdevAt(old_s, vdev_ptr).realm != rd) &&\n       !((VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED)) &&\n       !(VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).op == VdevAt(old_s, vdev_ptr).op)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).comm_state == VdevAt(old_s, vdev_ptr).comm_state)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_GET_STATE",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_get_state_spec(vdev_ptr: Address, result: Result<(), RmiStatusCode>, state: RmiVdevState, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (result.is_Ok() ==> Equal(state, VdevAt(new_s, vdev_ptr).vdev_state))\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, vdev_ptr) &&\n       PaIsDelegable(old_s, vdev_ptr) &&\n       !(GranuleAt(old_s, vdev_ptr).state != VDEV))\n    ==> result.is_Ok())\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_LOCK",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_lock_spec(rd: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_ptr).realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_ptr).vdev_state != VDEV_UNLOCKED ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_LOCK)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_PENDING)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, vdev_ptr) &&\n       PaIsDelegable(old_s, vdev_ptr) &&\n       !(GranuleAt(old_s, vdev_ptr).state != VDEV) &&\n       !(VdevAt(old_s, vdev_ptr).realm != rd) &&\n       !(VdevAt(old_s, vdev_ptr).vdev_state != VDEV_UNLOCKED) &&\n       !(VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).op == VdevAt(old_s, vdev_ptr).op)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).comm_state == VdevAt(old_s, vdev_ptr).comm_state)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_P2P_BIND",
+      "pass": false,
+      "reason": "wrong_arity",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_p2p_bind_spec(stream_ptr: Address, rd: Address, rec_ptr: Address, pdev_1_ptr: Address, pdev_2_ptr: Address, vdev_1_ptr: Address, vdev_2_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rec_ptr).state != REC ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, RMI_ERROR_REC))\n  && (RecAt(old_s, rec_ptr).owner != rd ==> ResultEqual(result, RMI_ERROR_REC))\n  && (!AddrIsGranuleAligned(old_s, stream_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, stream_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, stream_ptr).state != P2P_STREAM ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, pdev_1_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, pdev_1_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, pdev_1_ptr).state != PDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((PdevAt(old_s, pdev_1_ptr).p2p_stream_valid != RMM_TRUE || PdevAt(old_s, pdev_1_ptr).p2p_stream != stream_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, pdev_2_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, pdev_2_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, pdev_2_ptr).state != PDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((PdevAt(old_s, pdev_2_ptr).p2p_stream_valid != RMM_TRUE || PdevAt(old_s, pdev_2_ptr).p2p_stream != stream_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vdev_1_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_1_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_1_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_1_ptr).realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_1_ptr).pdev != pdev_1_ptr ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_1_ptr).comm_state != DEV_COMM_IDLE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (!VdevAttestInfoEqual(old_s, VdevAt(old_s, vdev_1_ptr).attest_info, RecAt(old_s, rec_ptr).vdev_attest_info_1) ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_1_ptr).p2p_bound != FEATURE_FALSE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (!AddrIsGranuleAligned(old_s, vdev_2_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_2_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_2_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_2_ptr).realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_2_ptr).pdev != pdev_2_ptr ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_2_ptr).comm_state != DEV_COMM_IDLE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (!VdevAttestInfoEqual(old_s, VdevAt(old_s, vdev_2_ptr).attest_info, RecAt(old_s, rec_ptr).vdev_attest_info_2) ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_2_ptr).p2p_bound != FEATURE_FALSE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_1_ptr).op == VDEV_OP_P2P_BIND)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_1_ptr).comm_state == DEV_COMM_PENDING)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_1_ptr).p2p_bound == FEATURE_TRUE)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_1_ptr).p2p_stream == stream_ptr)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_1_ptr).p2p_peer == VdevAt(new_s, vdev_2_ptr).vdev_id)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_2_ptr).op == VDEV_OP_P2P_BIND)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_2_ptr).comm_state == DEV_COMM_PENDING)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_2_ptr).p2p_bound == FEATURE_TRUE)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_2_ptr).p2p_stream == stream_ptr)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_2_ptr).p2p_peer == VdevAt(new_s, vdev_1_ptr).vdev_id)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, rec_ptr) &&\n       PaIsDelegable(old_s, rec_ptr) &&\n       !(GranuleAt(old_s, rec_ptr).state != REC) &&\n       !(RecAt(old_s, rec_ptr).state == REC_RUNNING) &&\n       !(RecAt(old_s, rec_ptr).owner != rd) &&\n       AddrIsGranuleAligned(old_s, stream_ptr) &&\n       PaIsDelegable(old_s, stream_ptr) &&\n       !(GranuleAt(old_s, stream_ptr).state != P2P_STREAM) &&\n       AddrIsGranuleAligned(old_s, pdev_1_ptr) &&\n       PaIsDelegable(old_s, pdev_1_ptr) &&\n       !(GranuleAt(old_s, pdev_1_ptr).state != PDEV) &&\n       !((PdevAt(old_s, pdev_1_ptr).p2p_stream_valid != RMM_TRUE || PdevAt(old_s, pdev_1_ptr).p2p_stream != stream_ptr)) &&\n       AddrIsGranuleAligned(old_s, pdev_2_ptr) &&\n       PaIsDelegable(old_s, pdev_2_ptr) &&\n       !(GranuleAt(old_s, pdev_2_ptr).state != PDEV) &&\n       !((PdevAt(old_s, pdev_2_ptr).p2p_stream_valid != RMM_TRUE || PdevAt(old_s, pdev_2_ptr).p2p_stream != stream_ptr)) &&\n       AddrIsGranuleAligned(old_s, vdev_1_ptr) &&\n       PaIsDelegable(old_s, vdev_1_ptr) &&\n       !(GranuleAt(old_s, vdev_1_ptr).state != VDEV) &&\n       !(VdevAt(old_s, vdev_1_ptr).realm != rd) &&\n       !(VdevAt(old_s, vdev_1_ptr).pdev != pdev_1_ptr) &&\n       !(VdevAt(old_s, vdev_1_ptr).comm_state != DEV_COMM_IDLE) &&\n       VdevAttestInfoEqual(old_s, VdevAt(old_s, vdev_1_ptr).attest_info, RecAt(old_s, rec_ptr).vdev_attest_info_1) &&\n       !(VdevAt(old_s, vdev_1_ptr).p2p_bound != FEATURE_FALSE) &&\n       AddrIsGranuleAligned(old_s, vdev_2_ptr) &&\n       PaIsDelegable(old_s, vdev_2_ptr) &&\n       !(GranuleAt(old_s, vdev_2_ptr).state != VDEV) &&\n       !(VdevAt(old_s, vdev_2_ptr).realm != rd) &&\n       !(VdevAt(old_s, vdev_2_ptr).pdev != pdev_2_ptr) &&\n       !(VdevAt(old_s, vdev_2_ptr).comm_state != DEV_COMM_IDLE) &&\n       VdevAttestInfoEqual(old_s, VdevAt(old_s, vdev_2_ptr).attest_info, RecAt(old_s, rec_ptr).vdev_attest_info_2) &&\n       !(VdevAt(old_s, vdev_2_ptr).p2p_bound != FEATURE_FALSE))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_1_ptr).op == VdevAt(old_s, vdev_1_ptr).op)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_1_ptr).comm_state == VdevAt(old_s, vdev_1_ptr).comm_state)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_1_ptr).p2p_bound == VdevAt(old_s, vdev_1_ptr).p2p_bound)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_1_ptr).p2p_stream == VdevAt(old_s, vdev_1_ptr).p2p_stream)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_1_ptr).p2p_peer == VdevAt(old_s, vdev_1_ptr).p2p_peer)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_2_ptr).op == VdevAt(old_s, vdev_2_ptr).op)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_2_ptr).comm_state == VdevAt(old_s, vdev_2_ptr).comm_state)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_2_ptr).p2p_bound == VdevAt(old_s, vdev_2_ptr).p2p_bound)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_2_ptr).p2p_stream == VdevAt(old_s, vdev_2_ptr).p2p_stream)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_2_ptr).p2p_peer == VdevAt(old_s, vdev_2_ptr).p2p_peer)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_START",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_start_spec(rd: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_ptr).realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_START)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_PENDING)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, vdev_ptr) &&\n       PaIsDelegable(old_s, vdev_ptr) &&\n       !(GranuleAt(old_s, vdev_ptr).state != VDEV) &&\n       !(VdevAt(old_s, vdev_ptr).realm != rd) &&\n       !(VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED) &&\n       !(VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).op == VdevAt(old_s, vdev_ptr).op)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).comm_state == VdevAt(old_s, vdev_ptr).comm_state)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_UNLOCK",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.031,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_unlock_spec(rd: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_ptr).realm != rd ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_ERROR) ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (VdevAt(old_s, vdev_ptr).num_map != 0 ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).dma_state == VDEV_DMA_DISABLED)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_UNLOCK)\n  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_PENDING)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, vdev_ptr) &&\n       PaIsDelegable(old_s, vdev_ptr) &&\n       !(GranuleAt(old_s, vdev_ptr).state != VDEV) &&\n       !(VdevAt(old_s, vdev_ptr).realm != rd) &&\n       !((VdevAt(old_s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_STARTED && VdevAt(old_s, vdev_ptr).vdev_state != VDEV_ERROR)) &&\n       !(VdevAt(old_s, vdev_ptr).comm_state != DEV_COMM_IDLE) &&\n       !(VdevAt(old_s, vdev_ptr).num_map != 0))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).dma_state == VdevAt(old_s, vdev_ptr).dma_state)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).op == VdevAt(old_s, vdev_ptr).op)\n  && (result.is_Err()\n    ==> VdevAt(new_s, vdev_ptr).comm_state == VdevAt(old_s, vdev_ptr).comm_state)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VDEV_VALIDATE_MAPPING",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.072,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vdev_validate_mapping_spec(rd: Address, rec_ptr: Address, pdev_ptr: Address, vdev_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rec_ptr).state != REC ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, RMI_ERROR_REC))\n  && (RecAt(old_s, rec_ptr).owner != rd ==> ResultEqual(result, RMI_ERROR_REC))\n  && (!AddrIsGranuleAligned(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, pdev_ptr).state != PDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vdev_ptr).state != VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (VdevAt(old_s, vdev_ptr).pdev != pdev_ptr ==> ResultEqual(result, RMI_ERROR_DEVICE))\n  && ((top) <= (base) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (base != RecAt(old_s, rec_ptr).dev_mem_addr ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((top) > (RecAt(old_s, rec_ptr).dev_mem_top) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, base, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && (!AddrIsGranuleAligned(old_s, top) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((base) == (RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && ((RecAt(old_s, rec_ptr).dev_mem_flags.coh == DEV_MEM_NON_COHERENT && !RttEntriesInRangeMemAttr(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE),MEMATTR_NON_CACHEABLE)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && ((RecAt(old_s, rec_ptr).dev_mem_flags.coh == DEV_MEM_NON_COHERENT && !RttEntriesInRangeNonCohDevMem(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE))) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && ((RecAt(old_s, rec_ptr).dev_mem_flags.coh == DEV_MEM_COHERENT && !RttEntriesInRangeMemAttr(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE),MEMATTR_PASSTHROUGH)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && ((RecAt(old_s, rec_ptr).dev_mem_flags.coh == DEV_MEM_COHERENT && !RttEntriesInRangeCohDevMem(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE))) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && (!RttEntriesInRangeOutputContiguous(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE),RecAt(old_s, rec_ptr).dev_mem_pa) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && (AddrRangeIsAuxLive(old_s, base, top, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int)))\n  && (result.is_Ok() ==> RttEntriesInRangeRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE),DEV))\n  && (result.is_Ok() ==> RecAt(new_s, rec_ptr).dev_mem_addr == MinAddress(new_s, top, RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE)))\n  && (result.is_Ok() ==> RecAt(new_s, rec_ptr).dev_mem_pa == ToAddress(new_s, (RecAt(old_s, rec_ptr).dev_mem_pa) + (RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE) - (base))))\n  && (result.is_Ok() ==> out_top == MinAddress(new_s, top, RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE)))\n  && ((AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       AddrIsGranuleAligned(old_s, rec_ptr) &&\n       PaIsDelegable(old_s, rec_ptr) &&\n       !(GranuleAt(old_s, rec_ptr).state != REC) &&\n       !(RecAt(old_s, rec_ptr).state == REC_RUNNING) &&\n       !(RecAt(old_s, rec_ptr).owner != rd) &&\n       AddrIsGranuleAligned(old_s, pdev_ptr) &&\n       PaIsDelegable(old_s, pdev_ptr) &&\n       !(GranuleAt(old_s, pdev_ptr).state != PDEV) &&\n       AddrIsGranuleAligned(old_s, vdev_ptr) &&\n       PaIsDelegable(old_s, vdev_ptr) &&\n       !(GranuleAt(old_s, vdev_ptr).state != VDEV) &&\n       !(VdevAt(old_s, vdev_ptr).pdev != pdev_ptr) &&\n       !((top) <= (base)) &&\n       !(base != RecAt(old_s, rec_ptr).dev_mem_addr) &&\n       !((top) > (RecAt(old_s, rec_ptr).dev_mem_top)) &&\n       AddrIsRttLevelAligned(old_s, base, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level as int) &&\n       AddrIsGranuleAligned(old_s, top) &&\n       !((base) == (RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE))) &&\n       !((RecAt(old_s, rec_ptr).dev_mem_flags.coh == DEV_MEM_NON_COHERENT && !RttEntriesInRangeMemAttr(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE),MEMATTR_NON_CACHEABLE))) &&\n       !((RecAt(old_s, rec_ptr).dev_mem_flags.coh == DEV_MEM_NON_COHERENT && !RttEntriesInRangeNonCohDevMem(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE)))) &&\n       !((RecAt(old_s, rec_ptr).dev_mem_flags.coh == DEV_MEM_COHERENT && !RttEntriesInRangeMemAttr(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE),MEMATTR_PASSTHROUGH))) &&\n       !((RecAt(old_s, rec_ptr).dev_mem_flags.coh == DEV_MEM_COHERENT && !RttEntriesInRangeCohDevMem(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE)))) &&\n       RttEntriesInRangeOutputContiguous(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, RttSkipEntriesWithRipas(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr),RttWalk(old_s, RealmAt(old_s, rd), base,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level,base, top, FALSE),RecAt(old_s, rec_ptr).dev_mem_pa) &&\n       !(AddrRangeIsAuxLive(old_s, base, top, RealmAt(old_s, rd))))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RecAt(new_s, rec_ptr).dev_mem_addr == RecAt(old_s, rec_ptr).dev_mem_addr)\n  && (result.is_Err()\n    ==> RecAt(new_s, rec_ptr).dev_mem_pa == RecAt(old_s, rec_ptr).dev_mem_pa)\n  && (result.is_Err()\n    ==> RecAt(new_s, rec_ptr).dev_mem_pa == RecAt(old_s, rec_ptr).dev_mem_pa)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VERSION",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.483,
+        "repetitive": true
+      },
+      "generated": "pub open spec fn rmi_version_spec(req: RmiInterfaceVersion, result: Result<(), RmiStatusCode>, lower: RmiInterfaceVersion, higher: RmiInterfaceVersion, old_s: S, new_s: S) -> bool {\n  (!RmiVersionIsSupported(old_s, req) && RmiVersionLowerIsSupported(old_s, req) ==> ResultEqual(result, RMI_ERROR_INPUT) && VersionEqual(lower, RmiVersionHighestBelow(old_s, req) as int) && VersionEqual(higher, RmiVersionHighest(old_s) as int))\n  && (!RmiVersionIsSupported(old_s, req) && !RmiVersionLowerIsSupported(old_s, req) && RmiVersionHigherIsSupported(old_s, req) ==> ResultEqual(result, RMI_ERROR_INPUT) && VersionEqual(lower, higher) && VersionEqual(higher, RmiVersionHighest(old_s) as int))\n  && (result.is_Ok() ==> VersionEqual(lower, req))\n  && (result.is_Ok() ==> VersionEqual(higher, RmiVersionHighest(new_s) as int))\n  && ((RmiVersionIsSupported(old_s, req) && !RmiVersionLowerIsSupported(old_s, req) && !RmiVersionHigherIsSupported(old_s, req) || RmiVersionIsSupported(old_s, req) && RmiVersionLowerIsSupported(old_s, req) && !RmiVersionHigherIsSupported(old_s, req) || RmiVersionIsSupported(old_s, req) && !RmiVersionLowerIsSupported(old_s, req) && RmiVersionHigherIsSupported(old_s, req) || RmiVersionIsSupported(old_s, req) && RmiVersionLowerIsSupported(old_s, req) && RmiVersionHigherIsSupported(old_s, req) || RmiVersionIsSupported(old_s, req) && RmiVersionLowerIsSupported(old_s, req) && RmiVersionHigherIsSupported(old_s, req) || RmiVersionIsSupported(old_s, req) && RmiVersionLowerIsSupported(old_s, req) && RmiVersionHigherIsSupported(old_s, req) || RmiVersionIsSupported(old_s, req) && RmiVersionLowerIsSupported(old_s, req) && RmiVersionHigherIsSupported(old_s, req) || RmiVersionIsSupported(old_s, req) && RmiVersionLowerIsSupported(old_s, req) && RmiVersionHigherIsSupported(old_s, req)) ==> result.is_Ok())\n  && (result.is_Err() ==> !RmiVersionIsSupported(new_s, req))\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VSMMU_CREATE",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vsmmu_create_spec(rd: Address, vsmmu_ptr: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RealmAt(old_s, rd).state != REALM_NEW ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vsmmu_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegableDram(old_s, vsmmu_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vsmmu_ptr).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!GranuleAccessPermitted(old_s, params_ptr, PAS_NS) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!RmiVsmmuParamsIsValid(old_s, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!AddrIsGranuleAligned(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_base) || !AddrIsGranuleAligned(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_top)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!AddrIsProtected(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_base, RealmAt(old_s, rd)) || !AddrIsProtected(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_top, RealmAt(old_s, rd)) || (RmiVsmmuParamsAt(old_s, params_ptr).reg_top) <= (RmiVsmmuParamsAt(old_s, params_ptr).reg_base)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (result.is_Ok() ==> GranuleAt(new_s, vsmmu_ptr).state == VSMMU)\n  && (result.is_Ok() ==> VsmmuAt(new_s, vsmmu_ptr).state == VSMMU_INACTIVE)\n  && (result.is_Ok() ==> VsmmuAt(new_s, vsmmu_ptr).realm == rd)\n  && (result.is_Ok() ==> VsmmuAt(new_s, vsmmu_ptr).reg_base == RmiVsmmuParamsAt(new_s, params_ptr).reg_base)\n  && (result.is_Ok() ==> VsmmuAt(new_s, vsmmu_ptr).reg_top == RmiVsmmuParamsAt(new_s, params_ptr).reg_top)\n  && (result.is_Ok() ==> VsmmuAt(new_s, vsmmu_ptr).aidr == RmiVsmmuParamsAt(new_s, params_ptr).aidr)\n  && (result.is_Ok() ==> (VsmmuAt(new_s, vsmmu_ptr).idr[0] == RmiVsmmuParamsAt(new_s, params_ptr).idr[0] && VsmmuAt(new_s, vsmmu_ptr).idr[1] == RmiVsmmuParamsAt(new_s, params_ptr).idr[1] && VsmmuAt(new_s, vsmmu_ptr).idr[2] == RmiVsmmuParamsAt(new_s, params_ptr).idr[2] && VsmmuAt(new_s, vsmmu_ptr).idr[3] == RmiVsmmuParamsAt(new_s, params_ptr).idr[3] && VsmmuAt(new_s, vsmmu_ptr).idr[4] == RmiVsmmuParamsAt(new_s, params_ptr).idr[4] && VsmmuAt(new_s, vsmmu_ptr).idr[5] == RmiVsmmuParamsAt(new_s, params_ptr).idr[5] && VsmmuAt(new_s, vsmmu_ptr).idr[6] == RmiVsmmuParamsAt(new_s, params_ptr).idr[6]))\n  && (result.is_Ok() ==> RealmAt(new_s, rd).num_vsmmus == RealmAt(new_s, rd).num_vsmmus + 1)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       !(RealmAt(old_s, rd).state != REALM_NEW) &&\n       AddrIsGranuleAligned(old_s, vsmmu_ptr) &&\n       PaIsDelegableDram(old_s, vsmmu_ptr) &&\n       !(GranuleAt(old_s, vsmmu_ptr).state != DELEGATED) &&\n       AddrIsGranuleAligned(old_s, params_ptr) &&\n       GranuleAccessPermitted(old_s, params_ptr, PAS_NS) &&\n       RmiVsmmuParamsIsValid(old_s, params_ptr) &&\n       !((!AddrIsGranuleAligned(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_base) || !AddrIsGranuleAligned(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_top))) &&\n       !((!AddrIsProtected(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_base, RealmAt(old_s, rd)) || !AddrIsProtected(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_top, RealmAt(old_s, rd)) || (RmiVsmmuParamsAt(old_s, params_ptr).reg_top) <= (RmiVsmmuParamsAt(old_s, params_ptr).reg_base))))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> GranuleAt(new_s, vsmmu_ptr).state == GranuleAt(old_s, vsmmu_ptr).state)\n  && (result.is_Err()\n    ==> VsmmuAt(new_s, vsmmu_ptr).state == VsmmuAt(old_s, vsmmu_ptr).state)\n  && (result.is_Err()\n    ==> VsmmuAt(new_s, vsmmu_ptr).realm == VsmmuAt(old_s, vsmmu_ptr).realm)\n  && (result.is_Err()\n    ==> VsmmuAt(new_s, vsmmu_ptr).reg_base == VsmmuAt(old_s, vsmmu_ptr).reg_base)\n  && (result.is_Err()\n    ==> VsmmuAt(new_s, vsmmu_ptr).reg_top == VsmmuAt(old_s, vsmmu_ptr).reg_top)\n  && (result.is_Err()\n    ==> VsmmuAt(new_s, vsmmu_ptr).aidr == VsmmuAt(old_s, vsmmu_ptr).aidr)\n  && (result.is_Err()\n    ==> (VsmmuAt(new_s, vsmmu_ptr).idr[0] == VsmmuAt(old_s, vsmmu_ptr).idr[0] && VsmmuAt(new_s, vsmmu_ptr).idr[1] == VsmmuAt(old_s, vsmmu_ptr).idr[1] && VsmmuAt(new_s, vsmmu_ptr).idr[2] == VsmmuAt(old_s, vsmmu_ptr).idr[2] && VsmmuAt(new_s, vsmmu_ptr).idr[3] == VsmmuAt(old_s, vsmmu_ptr).idr[3] && VsmmuAt(new_s, vsmmu_ptr).idr[4] == VsmmuAt(old_s, vsmmu_ptr).idr[4] && VsmmuAt(new_s, vsmmu_ptr).idr[5] == VsmmuAt(old_s, vsmmu_ptr).idr[5] && VsmmuAt(new_s, vsmmu_ptr).idr[6] == VsmmuAt(old_s, vsmmu_ptr).idr[6]))\n  && (result.is_Err()\n    ==> RealmAt(new_s, rd).num_vsmmus == RealmAt(old_s, rd).num_vsmmus)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RMI_VSMMU_MAP",
+      "pass": false,
+      "reason": "bad_field_access",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rmi_vsmmu_map_spec(rd: Address, vsmmu_ptr: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n  (ImplFeatures(old_s).feat_da != FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))\n  && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || level < 2) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RealmAt(old_s, rd).state != REALM_NEW ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsGranuleAligned(old_s, vsmmu_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!PaIsDelegable(old_s, vsmmu_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (GranuleAt(old_s, vsmmu_ptr).state != VSMMU ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (!AddrIsRttLevelAligned(old_s, ipa, level as int) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && ((ipa) < (VsmmuAt(old_s, vsmmu_ptr).reg_base) ==> ResultEqual(result, RMI_ERROR_INPUT))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).level < level ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != EMPTY ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && ((ipa) + (RttLevelSize(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).level as int) - 1) >= (VsmmuAt(old_s, vsmmu_ptr).reg_top) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == ASSIGNED_VSMMU)\n  && (result.is_Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == VsmmuAt(new_s, vsmmu_ptr).ptr)\n  && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n       AddrIsGranuleAligned(old_s, rd) &&\n       PaIsDelegable(old_s, rd) &&\n       !(GranuleAt(old_s, rd).state != RD) &&\n       !((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int) || level < 2)) &&\n       !(RealmAt(old_s, rd).state != REALM_NEW) &&\n       AddrIsGranuleAligned(old_s, vsmmu_ptr) &&\n       PaIsDelegable(old_s, vsmmu_ptr) &&\n       !(GranuleAt(old_s, vsmmu_ptr).state != VSMMU) &&\n       AddrIsRttLevelAligned(old_s, ipa, level as int) &&\n       !((ipa) < (VsmmuAt(old_s, vsmmu_ptr).reg_base)) &&\n       !((RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).level < level)) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED) &&\n       !(RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != EMPTY) &&\n       !((ipa) + (RttLevelSize(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).level as int) - 1) >= (VsmmuAt(old_s, vsmmu_ptr).reg_top)))\n    ==> result.is_Ok())\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state)\n  && (result.is_Err()\n    ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.045,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_attestation_token_continue_spec(addr: Address, offset: UInt64, size: UInt64, result: RsiCommandReturnCode, len: UInt64, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, addr) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsProtected(old_s, addr, CurrentRealm(old_s)) ==> result == RSI_ERROR_INPUT)\n  && (RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == EMPTY ==> result == RSI_ERROR_INPUT)\n  && (offset >= RMM_GRANULE_SIZE ==> result == RSI_ERROR_INPUT)\n  && ((offset + size) < offset ==> result == RSI_ERROR_INPUT)\n  && ((offset + size) > RMM_GRANULE_SIZE ==> result == RSI_ERROR_INPUT)\n  && (CurrentRec(old_s).attest_state != ATTEST_IN_PROGRESS ==> result == RSI_ERROR_STATE)\n  && (TokenGenerationFailed(old_s, CurrentRec(old_s)) ==> result == RSI_ERROR_UNKNOWN)\n  && (result == RSI_SUCCESS ==> len == AttestationTokenWrite(new_s, addr, offset, size))\n  && (result == RSI_SUCCESS && TokenGenerationIsIncomplete(old_s, CurrentRec(old_s)) ==> result == RSI_INCOMPLETE)\n  && (result == RSI_SUCCESS && !TokenGenerationIsIncomplete(old_s, CurrentRec(old_s)) ==> CurrentRec(new_s).attest_state == NO_ATTEST_IN_PROGRESS)\n  && ((AddrIsGranuleAligned(old_s, addr) &&\n       AddrIsProtected(old_s, addr, CurrentRealm(old_s)) &&\n       !(RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == EMPTY) &&\n       !(offset >= RMM_GRANULE_SIZE) &&\n       !((offset + size) < offset) &&\n       !((offset + size) > RMM_GRANULE_SIZE) &&\n       !(CurrentRec(old_s).attest_state != ATTEST_IN_PROGRESS) &&\n       !(TokenGenerationFailed(old_s, CurrentRec(old_s))))\n    ==> result == RSI_SUCCESS)\n  && (result != RSI_SUCCESS\n    ==> CurrentRec(new_s).attest_state == CurrentRec(old_s).attest_state)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_ATTESTATION_TOKEN_INIT",
+      "pass": false,
+      "reason": "other_compile_error",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_attestation_token_init_spec(challenge_0: Bits64, challenge_1: Bits64, challenge_2: Bits64, challenge_3: Bits64, challenge_4: Bits64, challenge_5: Bits64, challenge_6: Bits64, challenge_7: Bits64, result: RsiCommandReturnCode, size: UInt64, old_s: S, new_s: S) -> bool {\n  (result == RSI_SUCCESS ==> CurrentRec(new_s).attest_state == ATTEST_IN_PROGRESS)\n  && (result == RSI_SUCCESS ==> CurrentRec(new_s).attest_challenge == (((challenge_0 :: challenge_1) :: (challenge_2 :: challenge_3)) :: ((challenge_4 :: challenge_5) :: (challenge_6 :: challenge_7))))\n  && (result == RSI_SUCCESS ==> size == AttestationTokenMaxSize(new_s, CurrentRealm(new_s)))\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_IPA_STATE_GET",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_ipa_state_get_spec(base: Address, top: Address, result: RsiCommandReturnCode, out_top: Address, ripas: RsiRipas, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, base) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsGranuleAligned(old_s, top) ==> result == RSI_ERROR_INPUT)\n  && ((top) <= (base) ==> result == RSI_ERROR_INPUT)\n  && (!AddrRangeIsProtected(old_s, base, top, CurrentRealm(old_s)) ==> result == RSI_ERROR_INPUT)\n  && (result == RSI_SUCCESS ==> out_top > base)\n  && (result == RSI_SUCCESS ==> out_top <= top)\n  && (result == RSI_SUCCESS ==> (out_top - base) == 0 ==> ripas == RsiRipas(0))\n  && ((AddrIsGranuleAligned(old_s, base) &&\n       AddrIsGranuleAligned(old_s, top) &&\n       !((top) <= (base)) &&\n       AddrRangeIsProtected(old_s, base, top, CurrentRealm(old_s)))\n    ==> result == RSI_SUCCESS)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_MEASUREMENT_READ",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.314,
+        "repetitive": true
+      },
+      "generated": "pub open spec fn rsi_measurement_read_spec(index: UInt64, result: RsiCommandReturnCode, value_0: Bits64, value_1: Bits64, value_2: Bits64, value_3: Bits64, value_4: Bits64, value_5: Bits64, value_6: Bits64, value_7: Bits64, old_s: S, new_s: S) -> bool {\n  (index > 4 ==> result == RSI_ERROR_INPUT)\n  && (result == RSI_SUCCESS && CurrentRealm(old_s).hash_algo == HASH_SHA_256 ==> (value_0 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[0] && value_1 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[1] && value_2 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[2] && value_3 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[3] && value_4 == 0 && value_5 == 0 && value_6 == 0 && value_7 == 0))\n  && (result == RSI_SUCCESS && CurrentRealm(old_s).hash_algo == HASH_SHA_512 ==> (value_0 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[0] && value_1 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[1] && value_2 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[2] && value_3 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[3] && value_4 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[4] && value_5 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[5] && value_6 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[6] && value_7 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[7]))\n  && ((!(index > 4) &&\n       result == RSI_SUCCESS)\n    ==> value_0 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[0])\n  && ((!(index > 4) &&\n       result == RSI_SUCCESS)\n    ==> value_1 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[1])\n  && ((!(index > 4) &&\n       result == RSI_SUCCESS)\n    ==> value_2 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[2])\n  && ((!(index > 4) &&\n       result == RSI_SUCCESS)\n    ==> value_3 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[3])\n  && ((!(index > 4) &&\n       result == RSI_SUCCESS)\n    ==> value_4 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[4])\n  && ((!(index > 4) &&\n       result == RSI_SUCCESS)\n    ==> value_5 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[5])\n  && ((!(index > 4) &&\n       result == RSI_SUCCESS)\n    ==> value_6 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[6])\n  && ((!(index > 4) &&\n       result == RSI_SUCCESS)\n    ==> value_7 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[index as int])[7])\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_MEM_SET_PERM_INDEX",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_mem_set_perm_index_spec(base: Address, top: Address, perm_index: UInt64, cookie: Bits64, result: RsiCommandReturnCode, new_base: Address, response: RsiResponse, new_cookie: Bits64, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, base) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsGranuleAligned(old_s, top) ==> result == RSI_ERROR_INPUT)\n  && ((top) <= (base) ==> result == RSI_ERROR_INPUT)\n  && (!AddrRangeIsProtected(old_s, base, top, CurrentRealm(old_s)) ==> result == RSI_ERROR_INPUT)\n  && (perm_index >= RMM_NUM_PERM_OVERLAY_INDICES ==> result == RSI_ERROR_INPUT)\n  && (CookieIsValid(old_s, cookie) ==> result == RSI_ERROR_INPUT)\n  && (result == RSI_SUCCESS ==> CurrentRealm(new_s).overlay_locked[perm_index as int] == MEM_PERM_LOCKED)\n  && (result == RSI_SUCCESS ==> new_base == CurrentRec(new_s).s2ap_addr)\n  && (result == RSI_SUCCESS ==> response == RecS2APResponseToRsi(new_s, CurrentRec(new_s)))\n  && (result == RSI_SUCCESS ==> new_cookie == CurrentRec(new_s).cookie)\n  && ((AddrIsGranuleAligned(old_s, base) &&\n       AddrIsGranuleAligned(old_s, top) &&\n       !((top) <= (base)) &&\n       AddrRangeIsProtected(old_s, base, top, CurrentRealm(old_s)) &&\n       !(perm_index >= RMM_NUM_PERM_OVERLAY_INDICES) &&\n       !(CookieIsValid(old_s, cookie)))\n    ==> result == RSI_SUCCESS)\n  && (result != RSI_SUCCESS\n    ==> new_base == new_base)\n  && (result != RSI_SUCCESS\n    ==> response == response)\n  && (result != RSI_SUCCESS\n    ==> new_cookie == new_cookie)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_REALM_CONFIG",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_realm_config_spec(addr: Address, result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, addr) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsProtected(old_s, addr, CurrentRealm(old_s)) ==> result == RSI_ERROR_INPUT)\n  && (RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == EMPTY ==> result == RSI_ERROR_INPUT)\n  && (result == RSI_SUCCESS ==> RsiRealmConfigAt(new_s, addr).ipa_width == CurrentRealm(new_s).ipa_width)\n  && (result == RSI_SUCCESS ==> Equal(RsiRealmConfigAt(new_s, addr).hash_algo, CurrentRealm(new_s).hash_algo))\n  && (result == RSI_SUCCESS ==> RsiRealmConfigAt(new_s, addr).num_aux_planes == CurrentRealm(new_s).num_aux_planes)\n  && (result == RSI_SUCCESS ==> RsiRealmConfigAt(new_s, addr).ats_plane == CurrentRealm(new_s).ats_plane)\n  && ((AddrIsGranuleAligned(old_s, addr) &&\n       AddrIsProtected(old_s, addr, CurrentRealm(old_s)) &&\n       !(RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == EMPTY))\n    ==> result == RSI_SUCCESS)\n  && (result != RSI_SUCCESS\n    ==> RsiRealmConfigAt(new_s, addr).ipa_width == RsiRealmConfigAt(old_s, addr).ipa_width)\n  && (result != RSI_SUCCESS\n    ==> RsiRealmConfigAt(new_s, addr).hash_algo == RsiRealmConfigAt(old_s, addr).hash_algo)\n  && (result != RSI_SUCCESS\n    ==> RsiRealmConfigAt(new_s, addr).num_aux_planes == RsiRealmConfigAt(old_s, addr).num_aux_planes)\n  && (result != RSI_SUCCESS\n    ==> RsiRealmConfigAt(new_s, addr).ats_plane == RsiRealmConfigAt(old_s, addr).ats_plane)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_VDEV_GET_INFO",
+      "pass": false,
+      "reason": "type_mismatch",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_vdev_get_info_spec(vdev_id: Bits64, addr: Address, result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {\n  (CurrentRealm(old_s).feat_da != FEATURE_TRUE ==> result == RSI_ERROR_STATE)\n  && (VdevIdIsFree(old_s, CurrentRealm(old_s), vdev_id) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsAligned(old_s, addr, 512) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsProtected(old_s, addr, CurrentRealm(old_s)) ==> result == RSI_ERROR_INPUT)\n  && (RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == EMPTY ==> result == RSI_ERROR_INPUT)\n  && (result == RSI_SUCCESS ==> Equal(RsiVdevInfoAt(new_s, addr).hash_algo, PdevAt(new_s, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).hash_algo))\n  && (result == RSI_SUCCESS ==> Equal(RsiVdevInfoAt(new_s, addr).flags.p2p_enabled, PdevAt(new_s, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).p2p_enabled))\n  && (result == RSI_SUCCESS ==> Equal(RsiVdevInfoAt(new_s, addr).flags.p2p_bound, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).vdev.p2p_bound))\n  && (result == RSI_SUCCESS ==> RsiVdevInfoAt(new_s, addr).p2p_peer == VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).vdev.p2p_peer)\n  && (result == RSI_SUCCESS ==> VdevAttestInfoEqual(RsiVdevInfoAt(new_s, addr).lock_nonce,RsiVdevInfoAt(new_s, addr).meas_nonce,RsiVdevInfoAt(new_s, addr).report_nonce,VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).vdev.attest_info))\n  && (result == RSI_SUCCESS ==> RsiVdevInfoAt(new_s, addr).vca_digest == PdevAt(new_s, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).vca_digest)\n  && (result == RSI_SUCCESS ==> RsiVdevInfoAt(new_s, addr).meas_digest == VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).vdev.meas_digest)\n  && (result == RSI_SUCCESS ==> RsiVdevInfoAt(new_s, addr).report_digest == VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).vdev.report_digest)\n  && (result == RSI_SUCCESS ==> Equal(RsiVdevInfoAt(new_s, addr).state, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).vdev.vdev_state))\n  && ((!(CurrentRealm(old_s).feat_da != FEATURE_TRUE) &&\n       !(VdevIdIsFree(old_s, CurrentRealm(old_s), vdev_id)) &&\n       AddrIsAligned(old_s, addr, 512) &&\n       AddrIsProtected(old_s, addr, CurrentRealm(old_s)) &&\n       !(RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == EMPTY))\n    ==> result == RSI_SUCCESS)\n  && (result != RSI_SUCCESS\n    ==> RsiVdevInfoAt(new_s, addr) == RsiVdevInfoAt(old_s, addr))\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_VDEV_VALIDATE_MAPPING",
+      "pass": false,
+      "reason": "wrong_arity",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_vdev_validate_mapping_spec(vdev_id: Bits64, ipa_base: Address, ipa_top: Address, pa_base: Address, flags: RsiDevMemFlags, lock_nonce: UInt64, meas_nonce: UInt64, report_nonce: UInt64, result: RsiCommandReturnCode, new_ipa_base: Address, response: RsiResponse, old_s: S, new_s: S) -> bool {\n  (CurrentRealm(old_s).feat_da != FEATURE_TRUE ==> result == RSI_ERROR_STATE)\n  && (VdevIdIsFree(old_s, CurrentRealm(old_s), vdev_id) ==> result == RSI_ERROR_INPUT)\n  && ((VdevFromVdevId(old_s, CurrentRealm(old_s), vdev_id).vdev_state != VDEV_LOCKED && VdevFromVdevId(old_s, CurrentRealm(old_s), vdev_id).vdev_state != VDEV_STARTED) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsGranuleAligned(old_s, ipa_base) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsGranuleAligned(old_s, ipa_top) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsGranuleAligned(old_s, pa_base) ==> result == RSI_ERROR_INPUT)\n  && ((ipa_top) <= (ipa_base) ==> result == RSI_ERROR_INPUT)\n  && (!AddrRangeIsProtected(old_s, ipa_base, ipa_top, CurrentRealm(old_s)) ==> result == RSI_ERROR_INPUT)\n  && (!VdevAttestInfoEqual(old_s, lock_nonce, meas_nonce, report_nonce, VdevFromVdevId(old_s, CurrentRealm(old_s), vdev_id).attest_info) ==> result == RSI_ERROR_DEVICE)\n  && (result == RSI_SUCCESS ==> new_ipa_base == CurrentRec(new_s).dev_mem_addr)\n  && (result == RSI_SUCCESS ==> response == RecDevMemResponseToRsi(new_s, CurrentRec(new_s)))\n  && ((!(CurrentRealm(old_s).feat_da != FEATURE_TRUE) &&\n       !(VdevIdIsFree(old_s, CurrentRealm(old_s), vdev_id)) &&\n       !((VdevFromVdevId(old_s, CurrentRealm(old_s), vdev_id).vdev_state != VDEV_LOCKED && VdevFromVdevId(old_s, CurrentRealm(old_s), vdev_id).vdev_state != VDEV_STARTED)) &&\n       AddrIsGranuleAligned(old_s, ipa_base) &&\n       AddrIsGranuleAligned(old_s, ipa_top) &&\n       AddrIsGranuleAligned(old_s, pa_base) &&\n       !((ipa_top) <= (ipa_base)) &&\n       AddrRangeIsProtected(old_s, ipa_base, ipa_top, CurrentRealm(old_s)) &&\n       VdevAttestInfoEqual(old_s, lock_nonce, meas_nonce, report_nonce, VdevFromVdevId(old_s, CurrentRealm(old_s), vdev_id).attest_info))\n    ==> result == RSI_SUCCESS)\n  && (result != RSI_SUCCESS\n    ==> new_ipa_base == new_ipa_base)\n  && (result != RSI_SUCCESS\n    ==> response == response)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_VERSION",
+      "pass": false,
+      "reason": "unbalanced_delimiter",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.344,
+        "repetitive": true
+      },
+      "generated": "pub open spec fn rsi_version_spec(req: RsiInterfaceVersion, result: RsiCommandReturnCode, lower: RsiInterfaceVersion, higher: RsiInterfaceVersion, old_s: S, new_s: S) -> bool {\n  (!RsiVersionIsSupported(old_s, req) && RsiVersionLowerIsSupported(old_s, req) ==> (result == RSI_ERROR_INPUT && VersionEqual(lower, RsiVersionHighestBelow(old_s, req)) && VersionEqual(higher, RsiVersionHighest(old_s))) && (!RsiVersionIsSupported(old_s, req) && !RsiVersionLowerIsSupported(old_s, req) && RsiVersionHigherIsSupported(old_s, req) ==> (result == RSI_ERROR_INPUT && VersionEqual(lower, higher) && VersionEqual(higher, RsiVersionHighest(old_s)))) ==> result == RSI_SUCCESS && VersionEqual(lower, req) && VersionEqual(higher, RsiVersionHighest(old_s)) && ((RsiVersionIsSupported(old_s, req) && !RsiVersionLowerIsSupported(old_s, req) || RsiVersionIsSupported(old_s, req) && RsiVersionLowerIsSupported(old_s, req) || (!RsiVersionIsSupported(old_s, req) && RsiVersionLowerIsSupported(old_s, req) || !RsiVersionIsSupported(old_s, req) && !RsiVersionLowerIsSupported(old_s, req))) ==> result == RSI_SUCCESS) && (result != RSI_SUCCESS ==> VersionEqual(lower, RsiVersionHighestBelow(old_s, req)) && VersionEqual(higher, RsiVersionHighest(old_s))) && (result != RSI_SUCCESS && (RsiVersionIsSupported(old_s, req) && !RsiVersionLowerIsSupported(old_s, req) || RsiVersionIsSupported(old_s, req) && RsiVersionLowerIsSupported(old_s, req) || (!RsiVersionIsSupported(old_s, req) && RsiVersionLowerIsSupported(old_s, req) || !RsiVersionIsSupported(old_s, req) && !RsiVersionLowerIsSupported(old_s, req))) ==> VersionEqual(lower, higher) && VersionEqual(higher, RsiVersionHighest(old_s))) && (result == RSI_SUCCESS && (RsiVersionIsSupported(old_s, req) && !RsiVersionLowerIsSupported(old_s, req) || RsiVersionIsSupported(old_s, req) && RsiVersionLowerIsSupported(old_s, req) || (!RsiVersionIsSupported(old_s, req) && RsiVersionLowerIsSupported(old_s, req) || !RsiVersionIsSupported(old_s, req) && !RsiVersionLowerIsSupported(old_s, req))) ==> VersionEqual(lower, req) && VersionEqual(higher, RsiVersionHighest(old_s)))\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 1,
+      "samples": null
+    },
+    {
+      "command": "RSI_VSMMU_ACTIVATE",
+      "pass": false,
+      "reason": "missing_symbol",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.059,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_vsmmu_activate_spec(base: Address, top: Address, result: RsiCommandReturnCode, new_base: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, base) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsGranuleAligned(old_s, top) ==> result == RSI_ERROR_INPUT)\n  && ((top) <= (base) ==> result == RSI_ERROR_INPUT)\n  && (!AddrRangeIsProtected(old_s, base, top, CurrentRealm(old_s)) ==> result == RSI_ERROR_INPUT)\n  && (RttWalk(old_s, CurrentRealm(old_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED_VSMMU ==> result == RSI_ERROR_INPUT)\n  && (result == RSI_SUCCESS ==> RIPAS(new_s, base, new_base) == DEV)\n  && (result == RSI_SUCCESS && (base == VsmmuAt(new_s, RttWalk(new_s, CurrentRealm(new_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).reg_base && new_base != VsmmuAt(new_s, RttWalk(new_s, CurrentRealm(new_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).reg_top) ==> VsmmuAt(new_s, RttWalk(new_s, CurrentRealm(new_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == VSMMU_ACTIVATING)\n  && (result == RSI_SUCCESS && new_base == VsmmuAt(new_s, RttWalk(new_s, CurrentRealm(new_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).reg_top ==> VsmmuAt(new_s, RttWalk(new_s, CurrentRealm(new_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == VSMMU_ACTIVE)\n  && ((AddrIsGranuleAligned(old_s, base) &&\n       AddrIsGranuleAligned(old_s, top) &&\n       !((top) <= (base)) &&\n       AddrRangeIsProtected(old_s, base, top, CurrentRealm(old_s)) &&\n       !(RttWalk(old_s, CurrentRealm(old_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED_VSMMU))\n    ==> result == RSI_SUCCESS)\n  && (result != RSI_SUCCESS\n    ==> VsmmuAt(new_s, RttWalk(new_s, CurrentRealm(new_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state == VsmmuAt(old_s, RttWalk(old_s, CurrentRealm(old_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).state)\n}",
+      "any_pass": false,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    },
+    {
+      "command": "RSI_VSMMU_GET_INFO",
+      "pass": true,
+      "reason": "ok",
+      "codebleu": null,
+      "degeneracy": {
+        "trivial_body": false,
+        "no_implication": false,
+        "has_result_param": true,
+        "dup_clause_frac": 0.0,
+        "repetitive": false
+      },
+      "generated": "pub open spec fn rsi_vsmmu_get_info_spec(addr: Address, result: RsiCommandReturnCode, top: Address, old_s: S, new_s: S) -> bool {\n  (!AddrIsGranuleAligned(old_s, addr) ==> result == RSI_ERROR_INPUT)\n  && (!AddrIsProtected(old_s, addr, CurrentRealm(old_s)) ==> result == RSI_ERROR_INPUT)\n  && (RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED_VSMMU ==> result == RSI_ERROR_INPUT)\n  && (addr != VsmmuAt(old_s, RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).reg_base ==> result == RSI_ERROR_INPUT)\n  && (result == RSI_SUCCESS ==> top == VsmmuAt(new_s, RttWalk(new_s, CurrentRealm(new_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).reg_top)\n  && ((AddrIsGranuleAligned(old_s, addr) &&\n       AddrIsProtected(old_s, addr, CurrentRealm(old_s)) &&\n       !(RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != ASSIGNED_VSMMU) &&\n       !(addr != VsmmuAt(old_s, RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).reg_base))\n    ==> result == RSI_SUCCESS)\n  && (result != RSI_SUCCESS\n    ==> top == VsmmuAt(old_s, RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.addr).reg_top)\n}",
+      "any_pass": true,
+      "n_sampled": 0,
+      "n_sampled_pass": 0,
+      "n_distinct": 1,
+      "n_truncated": 0,
+      "samples": null
+    }
+  ]
+}
