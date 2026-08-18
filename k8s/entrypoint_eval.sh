@@ -170,6 +170,12 @@ ls scripts/eval_checkpoint.py prompt_engineering/dataset_loader.py >/dev/null
 SAMPLE_ARGS=""
 [ "$SAMPLES" -gt 0 ] && SAMPLE_ARGS="--samples $SAMPLES --temperature $TEMPERATURE"
 
+# A run that fails after its retries must FAIL the Job. `continue` alone lets the
+# loop finish and the script exit 0, so k8s reports Complete with no artifact --
+# the same silent-success failure that once recorded three seed replicates as
+# done with nothing behind them. gen3-4b reproduced it exactly.
+FAILED_RUNS=""
+
 mkdir -p /work/eval
 for RUN in $RUN_IDS; do
   for CK in $CKPTS; do
@@ -196,7 +202,8 @@ for RUN in $RUN_IDS; do
         echo "[eval] attempt $a failed for $RUN/$CK; retrying in 30s"
         sleep 30
       done
-      [ -n "$ok" ] || { echo "[eval] FAILED $RUN/$CK after 3 attempts"; continue; }
+      [ -n "$ok" ] || { echo "[eval] FAILED $RUN/$CK after 3 attempts"
+                        FAILED_RUNS="$FAILED_RUNS $RUN/$CK"; continue; }
       echo "[eval] generated $(find "$GDIR" -name '*.rs' | wc -l) spec files"
       tar czf "/work/eval/${NAME}.tgz" -C /work/eval "${NAME}"
       python - <<UPLOAD_EOF
@@ -227,7 +234,8 @@ UPLOAD_EOF
       echo "[eval] attempt $a failed for $RUN/$CK; retrying in 30s"
       sleep 30
     done
-    [ -n "$ok" ] || { echo "[eval] FAILED $RUN/$CK after 3 attempts"; continue; }
+    [ -n "$ok" ] || { echo "[eval] FAILED $RUN/$CK after 3 attempts"
+                      FAILED_RUNS="$FAILED_RUNS $RUN/$CK"; continue; }
     python - <<PY
 import json, os
 from huggingface_hub import HfApi
@@ -238,4 +246,9 @@ print("[eval] uploaded eval/${NAME}.json")
 PY
   done
 done
+
+if [ -n "$FAILED_RUNS" ]; then
+  echo "[eval] FATAL: no artifact produced for:$FAILED_RUNS"
+  exit 1
+fi
 echo "[eval] done"

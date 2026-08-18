@@ -79,11 +79,17 @@ def load_preamble(version: str, tail_lines: int = PREAMBLE_TAIL_LINES) -> str:
 
 
 def load_section(version: str, command: str) -> Optional[str]:
-    """Load raw PDF section text for a command (e.g. 'RMI_DATA_CREATE')."""
+    """Load raw PDF section text for a command (e.g. 'RMI_DATA_CREATE').
+
+    `errors="replace"` because this text comes out of a PDF extractor and is not
+    guaranteed clean: a single undecodable byte anywhere in a corpus would
+    otherwise abort a whole generation run partway through, losing the commands
+    already done. A mangled character in one section is a far smaller problem.
+    """
     path = _find_data_root() / "sections" / version / f"{command}_command.txt"
     if not path.exists():
         return None
-    return path.read_text().strip()
+    return path.read_text(encoding="utf-8", errors="replace").strip()
 
 
 def load_gold_spec(version: str, command: str) -> Optional[str]:
