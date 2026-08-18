@@ -98,11 +98,34 @@ def main():
               f"range {max(rates)-min(rates):.1f}pp  sd {statistics.stdev(rates):.1f}pp")
     if len(rows) == args.folds:
         tot = sum(v for v in core_all.values())
-        print(f"  pooled over all folds: {tot}/{len(core_all)} = "
-              f"{100*tot/len(core_all):.1f}%")
-        print("\n  Read the fold sd against the seed sd measured on the same model\n"
-              "  (4B: 1.2pp). Larger means command choice moves the number more than\n"
-              "  retraining does, and every single-split comparison inherits that.")
+        n = len(core_all)
+        p_hat = tot / n
+        print(f"  pooled over all folds: {tot}/{n} = {100*p_hat:.1f}%"
+              f"  (SE {100*(p_hat*(1-p_hat)/n)**0.5:.1f}pp)")
+
+        # Fold rates scatter even if every command is equally hard, purely from
+        # splitting ~16 Bernoulli draws into blocks. Comparing the observed
+        # scatter against that floor is the difference between "some command
+        # subsets are harder" and "this is what random partitioning looks like" --
+        # and reporting the first without checking is how four other conclusions
+        # tonight went wrong.
+        exp_sd = statistics.mean(
+            [(p_hat * (1 - p_hat) / r[2]) ** 0.5 for r in rows]) * 100
+        obs_sd = statistics.stdev(rates)
+        print(f"\n  fold sd observed  {obs_sd:.1f}pp")
+        print(f"  fold sd expected  {exp_sd:.1f}pp  from binomial sampling alone"
+              f" (n~{round(statistics.mean([r[2] for r in rows]))} per fold)")
+        if obs_sd <= exp_sd:
+            print("  -> observed <= expected: the folds are consistent with every\n"
+                  "     command being equally hard. No evidence of a subset effect;\n"
+                  "     the spread is the price of a small test set, not a property\n"
+                  "     of which commands are in it.")
+        else:
+            print(f"  -> observed exceeds expected by {obs_sd-exp_sd:.1f}pp: some of the\n"
+                  "     spread is the command subset rather than sampling.")
+        print("\n  Either way the pooled SE above, not the 1.2pp seed sd, is the error\n"
+              "  bar a single-split comparison deserves. Seeds and command choice are\n"
+              "  separate sources and the smaller one was being quoted alone.")
 
 
 if __name__ == "__main__":
