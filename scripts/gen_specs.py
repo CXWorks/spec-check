@@ -69,7 +69,16 @@ def preamble_decls(err, preamble):
     types`, where the fix is mechanical once the real declaration is visible.
     Without this the model is asked to correct a name it still cannot see.
     """
+    # Backticks alone are not enough. E0061 -- `this function takes 3 arguments
+    # but 4 were supplied`, nine of sixteen repair failures in the first run --
+    # never backticks the callee; it quotes the offending source line instead. So
+    # the model saw its own bad call, saw that the arity was wrong, and was never
+    # shown the declaration that says what the right arity is. Pull identifiers
+    # out of the quoted source as well as the backticks.
     names = set(re.findall(r"`([A-Za-z_][A-Za-z0-9_]*)`", err))
+    for line in err.split("\n"):
+        if re.match(r"^\s*\d+\s*\|", line):          # a quoted source line
+            names |= set(re.findall(r"\b([A-Z][A-Za-z0-9_]{2,})\s*\(", line))
     decl_of = {}
     for n in names:
         for m in re.finditer(rf"(?m)^.*\b{re.escape(n)}\b.*$", preamble):
@@ -225,7 +234,8 @@ def main():
                             f"## Function\n```rust\n{spec}\n```\n\n"
                             f"## Verus error\n```\n{err}\n```\n\n"
                             + (f"## Relevant preamble declarations\n```rust\n{decls}\n```\n"
-                               if decls else "")},
+                               if decls else "")
+},
                     ]
                     rtext = render_generation_prompt(tok, rmsgs)
                     rraw = tok(rtext, return_tensors="pt", add_special_tokens=False)
