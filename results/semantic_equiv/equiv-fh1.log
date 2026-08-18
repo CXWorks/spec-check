@@ -1,0 +1,27 @@
+[equiv] 20 spec pairs, 12 parallel, 300s timeout each (2 Verus runs per pair)
+[equiv] sft2-1-final-pre-fh RMI_MEC_SET_SHARED: incomparable
+[equiv] sft2-1-final-pre-fh RMI_DATA_CREATE_UNKNOWN: incomparable
+[equiv] sft2-1-final-pre-fh RMI_RTT_CREATE: incomparable
+[equiv] sft2-1-final-pre-fh RMI_DATA_CREATE: incomparable
+[equiv] sft2-1-final-pre-fh RMI_REC_DESTROY: stronger
+[equiv] sft2-1-final-pre-fh RMI_GRANULE_DELEGATE: weaker
+[equiv] sft2-1-final-pre-fh RMI_RTT_AUX_UNMAP_UNPROTECTED: weaker
+[equiv] sft2-1-final-pre-fh RMI_DATA_DESTROY: weaker
+[equiv] sft2-1-final-pre-fh PSCI_CPU_OFF: equivalent
+[equiv] sft2-1-final-pre-fh RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-1-final-pre-fh RMI_PDEV_SET_PUBKEY: equivalent
+[equiv] sft2-1-final-pre-fh RMI_RTT_FOLD: equivalent
+[equiv] sft2-1-final-pre-fh RMI_VDEV_AUX_COUNT: incomparable
+[equiv] sft2-1-final-pre-fh RMI_RTT_SET_S2AP: stronger
+[equiv] sft2-1-final-pre-fh RMI_VDEV_LOCK: equivalent
+[equiv] sft2-1-final-pre-fh RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-1-final-pre-fh RMI_VSMMU_CREATE: stronger
+[equiv] sft2-1-final-pre-fh RMI_VDEV_START: equivalent
+[equiv] sft2-1-final-pre-fh RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-1-final-pre-fh RSI_VSMMU_GET_INFO: equivalent
+
+=== verdicts by run
+  sft2-1-final-pre-fh: equivalent=9  incomparable=5  weaker=3  stronger=3
+     -> 8/20 admit behaviour gold forbids (40%); equivalent 9/20
+
+[equiv] wrote /work/an/equiv-fh1.json

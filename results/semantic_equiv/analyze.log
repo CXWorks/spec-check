@@ -1,0 +1,45 @@
+[analyze] re-checking 120 generations from 3 runs
+
+=== taxonomy (corrected classifier; old label in brackets when it moved)
+
+  sft2-0: PASS=14  other_compile_error=12  missing_symbol=7  type_mismatch=4  wrong_arity=3
+      reclassified  8x  verus_error -> other_compile_error
+      reclassified  4x  parse_error -> other_compile_error
+      reclassified  3x  parse_error -> type_mismatch
+      reclassified  2x  parse_error -> wrong_arity
+      reclassified  1x  verus_error -> wrong_arity
+
+  sft2-1: PASS=18  other_compile_error=8  missing_symbol=7  type_mismatch=4  wrong_arity=3
+      reclassified  8x  verus_error -> other_compile_error
+      reclassified  4x  parse_error -> type_mismatch
+      reclassified  1x  verus_error -> wrong_arity
+      reclassified  1x  parse_error -> wrong_arity
+      reclassified  1x  type_mismatch -> wrong_arity
+
+  sft2-3: other_compile_error=25  PASS=11  missing_symbol=2  type_mismatch=2
+      reclassified 16x  verus_error -> other_compile_error
+      reclassified  9x  parse_error -> other_compile_error
+      reclassified  2x  parse_error -> type_mismatch
+
+=== overlap across 3 runs (40 commands)
+  always pass : 8
+  never pass  : 19  (5 of them gold cannot compile either)
+  seed/config dependent : 13  <- this is the noise floor
+
+=== never-passing commands where gold DOES compile
+  RMI_DATA_CREATE                  {'missing_symbol': 1, 'wrong_arity': 1, 'other_compile_error': 1}
+  RMI_REALM_DESTROY                {'wrong_arity': 2, 'other_compile_error': 1}
+  RMI_REC_ENTER                    {'other_compile_error': 2, 'missing_symbol': 1}
+  RMI_RTT_AUX_MAP_PROTECTED        {'other_compile_error': 3}
+  RMI_RTT_AUX_MAP_UNPROTECTED      {'other_compile_error': 2, 'wrong_arity': 1}
+  RMI_RTT_AUX_UNMAP_UNPROTECTED    {'other_compile_error': 2, 'type_mismatch': 1}
+  RMI_RTT_FOLD                     {'other_compile_error': 3}
+  RMI_RTT_MAP_UNPROTECTED          {'other_compile_error': 3}
+  RMI_RTT_READ_ENTRY               {'other_compile_error': 3}
+  RMI_VDEV_DESTROY                 {'wrong_arity': 1, 'other_compile_error': 2}
+  RMI_VDEV_P2P_BIND                {'other_compile_error': 3}
+  RSI_ATTESTATION_TOKEN_CONTINUE   {'missing_symbol': 3}
+  RSI_IPA_STATE_GET                {'other_compile_error': 2, 'missing_symbol': 1}
+  RSI_VSMMU_ACTIVATE               {'missing_symbol': 2, 'other_compile_error': 1}
+
+[analyze] wrote /work/an/analysis.json

@@ -1,0 +1,59 @@
+[equiv] 48 spec pairs, 12 parallel, 300s timeout each (2 Verus runs per pair)
+[equiv] sft2-2-final-bok8 RMI_DATA_DESTROY: incomparable
+[equiv] sft2-2-final-bok8 RMI_REC_ENTER: stronger
+[equiv] sft2-2-final-bok8 RMI_VDEV_START: equivalent
+[equiv] sft2-2-final-bok8 RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-2-final-bok8 RMI_VDEV_LOCK: equivalent
+[equiv] sft2-2-final-bok8 PSCI_CPU_OFF: equivalent
+[equiv] sft2-2-final-bok8 RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-2-final-bok8 RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-2-final-bok8 RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-2-final-bok8 RMI_PDEV_SET_PUBKEY: equivalent
+[equiv] sft2-2-final-bok8 RMI_MEC_SET_SHARED: equivalent
+[equiv] sft2-2-final-bok8 RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-2-final-bok8 RSI_MEASUREMENT_READ: compile_error
+[equiv] sft2-1-final-bok8 RMI_MEC_SET_SHARED: incomparable
+[equiv] sft2-2-final-bok8 RMI_VSMMU_CREATE: stronger
+[equiv] sft2-1-final-bok8 RMI_REC_DESTROY: incomparable
+[equiv] sft2-1-final-bok8 RMI_RTT_CREATE: incomparable
+[equiv] sft2-1-final-bok8 RMI_RTT_SET_RIPAS: incomparable
+[equiv] sft2-2-final-bok8 RMI_VSMMU_MAP: weaker
+[equiv] sft2-1-final-bok8 RMI_DATA_DESTROY: weaker
+[equiv] sft2-1-final-bok8 PSCI_CPU_OFF: equivalent
+[equiv] sft2-2-final-bok8 RSI_VSMMU_GET_INFO: equivalent
+[equiv] sft2-1-final-bok8 RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-1-final-bok8 RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-1-final-bok8 RSI_MEASUREMENT_READ: compile_error
+[equiv] sft2-1-final-bok8 RMI_RTT_SET_S2AP: equivalent
+[equiv] sft2-1-final-bok8 RMI_VSMMU_MAP: incomparable
+[equiv] sft2-1-final-bok8 RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-1-final-bok8 RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-0-final-bok8 RMI_DATA_CREATE_UNKNOWN: incomparable
+[equiv] sft2-1-final-bok8 RMI_VDEV_LOCK: equivalent
+[equiv] sft2-1-final-bok8 RMI_VSMMU_CREATE: stronger
+[equiv] sft2-1-final-bok8 RSI_VSMMU_GET_INFO: stronger
+[equiv] sft2-1-final-bok8 RMI_VDEV_START: equivalent
+[equiv] sft2-1-final-bok8 RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-0-final-bok8 PSCI_CPU_OFF: equivalent
+[equiv] sft2-0-final-bok8 RSI_MEASUREMENT_READ: compile_error
+[equiv] sft2-0-final-bok8 RMI_DATA_DESTROY: weaker
+[equiv] sft2-0-final-bok8 RMI_MEC_SET_SHARED: incomparable
+[equiv] sft2-0-final-bok8 RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-0-final-bok8 RSI_VSMMU_GET_INFO: incomparable
+[equiv] sft2-0-final-bok8 RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-0-final-bok8 RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-0-final-bok8 RMI_VSMMU_MAP: weaker
+[equiv] sft2-0-final-bok8 RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-0-final-bok8 RMI_VSMMU_CREATE: stronger
+[equiv] sft2-0-final-bok8 RMI_VDEV_START: equivalent
+[equiv] sft2-0-final-bok8 RMI_VDEV_LOCK: equivalent
+
+=== verdicts by run
+  sft2-0-final-bok8: equivalent=7  incomparable=3  weaker=2  stronger=1  compile_error=1
+     -> 5/14 admit behaviour gold forbids (36%); equivalent 7/14
+  sft2-1-final-bok8: equivalent=9  incomparable=5  stronger=2  weaker=1  compile_error=1
+     -> 6/18 admit behaviour gold forbids (33%); equivalent 9/18
+  sft2-2-final-bok8: equivalent=11  stronger=2  incomparable=1  weaker=1  compile_error=1
+     -> 2/16 admit behaviour gold forbids (12%); equivalent 11/16
+
+[equiv] wrote /work/an/equiv2.json

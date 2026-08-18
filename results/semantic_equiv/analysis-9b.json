@@ -1,0 +1,397 @@
+{
+  "per_run": {
+    "sft2-2": {
+      "PSCI_CPU_OFF": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1369
+      },
+      "RMI_DATA_CREATE_UNKNOWN": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Let me analyze this RMI_DATA_CREATE_UNKNOWN command specification:  1. **Inputs**: rd (Address), data (Address), ipa (Address), result (Result<(), RmiStatusCode>)  2. **Failure conditions** (pre ==> post):    - !AddrIsGranuleAligned(data) ==> ResultEqual(result, RMI_ERROR_INPUT) ",
+        "gold_compiles": true,
+        "chars": 8536
+      },
+      "RMI_DATA_CREATE": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Let me analyze the RMI_DATA_CREATE command specification:  1. **Inputs**: rd, data, ipa, src, flags (all Address or RmiDataFlags types) 2. **Result**: RmiCommandReturnCode (RmiStatusCode)  3. **Failure conditions** (implications):    - !AddrIsGranuleAligned(src) ==> ResultEqual(r",
+        "gold_compiles": true,
+        "chars": 8206
+      },
+      "RMI_DATA_DESTROY": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Let me analyze the RMI_DATA_DESTROY command specification:  1. **Inputs**:    - rd: Address (PA of the RD which owns the target Data)    - ipa: Address (IPA at which the Granule is mapped in the target Realm)    - result: Result<(), RmiStatusCode>    - data: Address (output - PA ",
+        "gold_compiles": true,
+        "chars": 7561
+      },
+      "RMI_GRANULE_DELEGATE": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 7290
+      },
+      "RMI_MEC_SET_SHARED": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Okay, let's tackle this spec for the RMI_MEC_SET_SHARED command. First, I need to understand the inputs and outputs. The command takes mecid as a Bits64 and returns a Result<(), RmiStatusCode>.   Looking at the failure conditions: there's mecid_bound which checks if mecid is grea",
+        "gold_compiles": true,
+        "chars": 9356
+      },
+      "RMI_PDEV_IDE_RESET": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1360
+      },
+      "RMI_PDEV_SET_PUBKEY": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Let me analyze this RMI_PDEV_SET_PUBKEY command specification:  1. **Inputs**:    - pdev_ptr: Address    - params_ptr: Address    - result: Result<(), RmiStatusCode>  2. **Failure conditions** (from B4.3.19.2):    - da_supp: ImplFeatures().feat_da != FEATURE_TRUE ==> ResultEqual(",
+        "gold_compiles": true,
+        "chars": 9689
+      },
+      "RMI_PSMMU_MSI_CONFIG": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": false,
+        "chars": 837
+      },
+      "RMI_REALM_CREATE": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "The user wants a Verus formal specification function for the `RMI_REALM_CREATE` command.  1.  **Identify command inputs and state variables:**     *   Inputs: `rd: Address`, `params_ptr: Address`, `result: Result<(), RmiStatusCode>`.     *   State: `S` (S is the state struct).   ",
+        "gold_compiles": false,
+        "chars": 6254
+      },
+      "RMI_REALM_DESTROY": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Thinking Process:  1.  **Analyze the Request:**     *   Target: Generate a Verus formal specification function for the `RMI_REALM_DESTROY` command.     *   Input: Command specification text (B4.3.26).     *   Output: A single `pub open spec fn rmi_realm_destroy_spec(...) -> bool`",
+        "gold_compiles": true,
+        "chars": 6997
+      },
+      "RMI_REC_DESTROY": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find value `rd_pre` in this scope\n    --> /tmp/tmpaex9pqon_RMI_REC_DESTROY.rs:1639:95\n     |\n1639 |   && (result.is_Ok() ==> AuxStateEqual32(new_s, RecAt(new_s, rec_ptr).aux, RecAuxCount(new_s, rd_pre), DELEGATED))\n     |                                                                                               ^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `rd_pre` in this scope\n    --> /tmp/tmpaex9pqon_RMI_REC_DESTROY.rs:1640:41\n     |\n1640 |   && (result.is_Ok() ==> RealmAt(new_s, rd_pre).num_recs == RealmAt(new_s, rd_pre).num_recs - 1)\n     |                                         ^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `rd_pre` in this scope\n    --> /tmp/tmpaex9pqon_RMI_REC_DESTROY.rs:1640:76\n     |\n1640 |   && (result.is_Ok() ==> RealmAt(new_s, rd_pre).num_recs == RealmAt(new_s, rd_pre).num_recs - 1)\n     |                                                                            ^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `rd_pre` in this scope\n    --> /tmp/tmpaex9pqon_RMI_REC_DESTROY.rs:1649:24\n     |\n1649 |     ==> RealmAt(new_s, rd_pre).num_recs == RealmAt(old_s, rd_pre).num_recs)\n     |                        ^^^^^^ not found in this scope\n",
+        "gold_compiles": true,
+        "chars": 1156
+      },
+      "RMI_REC_ENTER": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 4472
+      },
+      "RMI_RTT_AUX_MAP_PROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp1c96mla1_RMI_RTT_AUX_MAP_PROTECTED.rs:1643:172\n     |\n1633 | pub open spec fn rmi_rtt_aux_map_protected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, state: RmiRttEntryState, ripas: RmiRipas, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                    - closing delimiter possibly meant for this\n...\n1643 |   && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,index).rtte.state == AUX_DESTROYED ==> (ResultEqual(result, RMI_ERROR_RTT_AUX(RttWalk(new_s, RealmAt(new_s\n     |                                                                                                                                                                            ^ unclosed delimiter\n...\n1651 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp1c96mla1_RMI_RTT_AUX_MAP_PROTECTED.rs:1651:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1651 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6855
+      },
+      "RMI_RTT_AUX_MAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpxl5wli09_RMI_RTT_AUX_MAP_UNPROTECTED.rs:1654:6\n     |\n1633 | pub open spec fn rmi_rtt_aux_map_unprotected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                            - closing delimiter possibly meant for this\n...\n1654 |   && (result.is_Err()\n     |      ^ unclosed delimiter\n...\n1658 | }\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 6159
+      },
+      "RMI_RTT_AUX_UNMAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "type_mismatch",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: mismatched types\n    --> /tmp/tmp4fs2ur7g_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1640:107\n     |\n1640 | ...) ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index).rtte.state == UNASSIGNED_NS)\n     |          ------- arguments to this function are incorrect                                 ^^^^^ expected `int`, found `u64`\n     |\nnote: function defined here\n    --> /tmp/tmp4fs2ur7g_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1591:18\n     |\n1591 | pub open spec fn RttWalk(s: S, realm: RmmRealm, addr: Address, level: int, index: int) -> RmmRttWalkResult;\n     |                  ^^^^^^^                                                   ----------\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmp4fs2ur7g_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1641:14\n     |\n1641 |   && (result.is_Ok() ==> top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RealmAt(new_s, rd...\n     |              ^^^^^\n\nerror[E0308]: mismatched types\n    --> /tmp/tmp4fs2ur7g_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1641:156\n     |\n1641 | ...ew_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index).rtt_addr),RttWalk(new_s, RealmAt(...\n     |          ------- arguments to this function are incorrect                                 ^^^^^ expected `int`, found `u64`\n     |",
+        "gold_compiles": true,
+        "chars": 3941
+      },
+      "RMI_RTT_CREATE": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpr493gmo__RMI_RTT_CREATE.rs:1651:239\n     |\n1633 | pub open spec fn rmi_rtt_create_spec(rd: Address, rtt: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                            - closing delimiter possibly meant for this\n...\n1651 |   && (result.is_Ok() && (RttWalk(old_s, ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY).rtte.state != UNASSIGNED && RttWalk(old_s, ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY).rtte.state != UNASSIGNED_NS) ==> RttAllEntriesContiguous(new_s, RttAt(new...\n     |                                                                                                                                                                                                                                               ^ unclosed delimiter\n...\n1659 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpr493gmo__RMI_RTT_CREATE.rs:1659:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1659 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6833
+      },
+      "RMI_RTT_FOLD": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpavr7ghx__RMI_RTT_FOLD.rs:1647:306\n     |\n1633 | pub open spec fn rmi_rtt_fold_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                          - closing delimiter possibly meant for this\n...\n1647 |   && (result.is_Ok() && RttFold(old_s, RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY).rtte.addr)).state == ASSIGNED_NS ==> (RttMemAttrEqual(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY), RttFold(new_s, RttAt(new_s, RttWalk(new...\n     |                                                                                                                                                                                                                                                                                                                  ^ unclosed delimiter\n...\n1655 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpavr7ghx__RMI_RTT_FOLD.rs:1655:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1655 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6173
+      },
+      "RMI_RTT_MAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Let me analyze this RMI_RTT_MAP_UNPROTECTED command specification:  1. **Inputs**: rd, ipa, level, desc, result (RmiCommandReturnCode)  2. **Failure conditions** (pre ==> post):    - !RttDescriptorIsValidForUnprotected(desc) ==> ResultEqual(result, RMI_ERROR_INPUT)    - !AddrIsGr",
+        "gold_compiles": true,
+        "chars": 7684
+      },
+      "RMI_RTT_READ_ENTRY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: this file contains an unclosed delimiter\n    --> /tmp/tmpvm9tc45y_RMI_RTT_READ_ENTRY.rs:1653:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1653 | } // verus!\n     |            ^\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 6594
+      },
+      "RMI_RTT_SET_RIPAS": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpzyqq43c4_RMI_RTT_SET_RIPAS.rs:1651:89\n     |\n1633 | pub open spec fn rmi_rtt_set_ripas_spec(rd: Address, rec_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                      - closing delimiter possibly meant for this\n...\n1651 |   && (result.is_Ok() ==> out_top == MinAddressRmi(new_s, top, RttSkipEntriesWithRipasRmi(new_s, Rtt\n     |                                                                                         ^ unclosed delimiter\n...\n1659 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpzyqq43c4_RMI_RTT_SET_RIPAS.rs:1659:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1659 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6434
+      },
+      "RMI_RTT_SET_S2AP": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Let me analyze this RMI_RTT_SET_S2AP command specification:  1. **Inputs**: rd, rec_ptr, base, top (all Address type), result (RmiCommandReturnCode) 2. **Output**: out_top (Address), rtt_tree (UInt64)  3. **Failure conditions** (pre ==> post):    - rd_align: !AddrIsGranuleAligned",
+        "gold_compiles": true,
+        "chars": 4851
+      },
+      "RMI_VDEV_AUX_COUNT": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 8400
+      },
+      "RMI_VDEV_DESTROY": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 3057
+      },
+      "RMI_VDEV_GET_INTERFACE_REPORT": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Let me analyze this RMI_VDEV_GET_INTERFACE_REPORT command specification:  1. **Inputs**:    - rd: Address (PA of the RD)    - vdev_ptr: Address (PA of the VDEV)    - result: Result<(), RmiStatusCode>  2. **Failure conditions** (from B4.3.53.2):    - da_supp: pre: ImplFeatures().f",
+        "gold_compiles": true,
+        "chars": 8302
+      },
+      "RMI_VDEV_GET_STATE": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp0v8yzzu1_RMI_VDEV_GET_STATE.rs:1638:26\n     |\n1638 |   && (result.is_Ok() ==> Equal(state, VdevAt(new_s, vdev_ptr).vdev_state))\n     |                          ^^^^^ -----  ---------------------------------- expected `RmiFeature`, found `RmmVdevState`\n     |                                |\n     |                                expected `RmmFeature`, found `RmiVdevState`\n     |\nnote: function defined here\n    --> /tmp/tmp0v8yzzu1_RMI_VDEV_GET_STATE.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmp0v8yzzu1_RMI_VDEV_GET_STATE.rs:1643:16\n     |\n1643 |     ==> result.is_Ok())\n     |                ^^^^^\n\nerror: aborting due to 1 previous error; 446 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.",
+        "gold_compiles": false,
+        "chars": 797
+      },
+      "RMI_VDEV_LOCK": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 4386
+      },
+      "RMI_VDEV_P2P_BIND": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpdho8eod__RMI_VDEV_P2P_BIND.rs:1649:7\n     |\n1633 | pub open spec fn rmi_vdev_p2p_bind_spec(stream_ptr: Address, rd: Address, rec_ptr: Address, pdev_1_ptr: Address, pdev_2_ptr: Address, vdev_1_ptr: Address, vdev_2_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                                                                - closing delimiter possibly meant for this\n...\n1649 |   && ((PdevAt(old_s, pdev_1_ptr).p2p_stream_valid != RMM_TRUE || PdevAt(old_s, pdev_1_ptr).p2p_stream !=\n     |       ^ unclosed delimiter\n...\n1657 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpdho8eod__RMI_VDEV_P2P_BIND.rs:1657:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1657 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6439
+      },
+      "RMI_VDEV_START": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 4155
+      },
+      "RMI_VDEV_UNLOCK": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 4276
+      },
+      "RMI_VSMMU_CREATE": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpnd3onw22_RMI_VSMMU_CREATE.rs:1653:26\n     |\n1633 | pub open spec fn rmi_vsmmu_create_spec(rd: Address, vsmmu_ptr: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                             - closing delimiter possibly meant for this\n...\n1653 |   && (result.is_Ok() ==> (VsmmuAt(new_s, vsmmu_ptr).idr[0] == RmiVsmmuParamsAt(new_s, params_ptr).\n     |                          ^ unclosed delimiter\n...\n1661 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpnd3onw22_RMI_VSMMU_CREATE.rs:1661:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1661 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 7282
+      },
+      "RMI_VSMMU_MAP": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `)`\n    --> /tmp/tmp3lxblb3i_RMI_VSMMU_MAP.rs:1633:161\n     |\n1633 | ...ol {\n     |       ^ unclosed delimiter\n...\n1648 | ...g_top)) ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int, RMM_RTT_TREE_PRIMARY).level)))\n     |                                                                                                                                     ^ mismatched closing delimiter\n\nerror: mismatched closing delimiter: `}`\n    --> /tmp/tmp3lxblb3i_RMI_VSMMU_MAP.rs:1665:47\n     |\n   3 | verus! {\n     |        - closing delimiter possibly meant for this\n...\n1665 |        !(((ipa) + (RttLevelSize(old_s, RttWalk(old_s, RealmAt(old_s, rd),\n     |                                               ^ unclosed delimiter\n...\n1673 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6316
+      },
+      "RSI_ATTESTATION_TOKEN_CONTINUE": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "The user wants a Verus formal specification function for the `RSI_ATTESTATION_TOKEN_CONTINUE` command.  1.  **Identify command inputs and state variables:**     *   Inputs: `addr: Address`, `offset: UInt64`, `size: UInt64`, `result: RsiCommandReturnCode`.     *   State: `CurrentR",
+        "gold_compiles": true,
+        "chars": 7986
+      },
+      "RSI_IPA_STATE_GET": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Thinking Process:  1.  **Analyze the Request:**     *   Target: Generate a Verus formal specification function for the `RSI_IPA_STATE_GET` command.     *   Input: Command specification text (B5.3.5).     *   Output: A single `pub open spec fn rsi_ipa_state_get_spec(...)` block.  ",
+        "gold_compiles": true,
+        "chars": 8150
+      },
+      "RSI_MEASUREMENT_READ": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Looking at this RSI_MEASUREMENT_READ command specification, I need to:  1. Identify inputs: `index` (UInt64), `result` (RsiCommandReturnCode), and output values `value_0` through `value_7` (Bits64)  2. Extract failure conditions:    - `index > 4 ==> result == RSI_ERROR_INPUT`  3.",
+        "gold_compiles": false,
+        "chars": 8162
+      },
+      "RSI_MEM_SET_PERM_INDEX": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "The user wants me to generate a Verus formal specification function for the RSI_MEM_SET_PERM_INDEX command.  Let me analyze the specification:  1. **Command inputs:**    - base: Address    - top: Address    - perm_index: UInt64    - cookie: Bits64    - result: RsiCommandReturnCod",
+        "gold_compiles": false,
+        "chars": 9099
+      },
+      "RSI_REALM_CONFIG": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmpd4irh_v1_RSI_REALM_CONFIG.rs:1638:33\n     |\n1638 |   && (result == RSI_SUCCESS ==> Equal(RsiRealmConfigAt(new_s, addr).hash_algo, CurrentRealm(new_s).hash_algo))\n     |                                 ^^^^^ ---------------------------------------  ----------------------------- expected `RmiFeature`, found `RmmHashAlgorithm`\n     |                                       |\n     |                                       expected `RmmFeature`, found `RsiHashAlgorithm`\n     |\nnote: function defined here\n    --> /tmp/tmpd4irh_v1_RSI_REALM_CONFIG.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nerror: aborting due to 1 previous error; 444 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.",
+        "gold_compiles": false,
+        "chars": 1126
+      },
+      "RSI_VDEV_GET_INFO": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp2z8jr6y2_RSI_VDEV_GET_INFO.rs:1647:107\n     |\n1633 | pub open spec fn rsi_vdev_get_info_spec(vdev_id: Bits64, addr: Address, result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                   - closing delimiter possibly meant for this\n...\n1647 |   && (result == RSI_SUCCESS ==> Equal(RsiVdevInfoAt(new_s, addr).state, VdevFromVdevId(new_s, CurrentRealm(new_s\n     |                                                                                                           ^ unclosed delimiter\n...\n1655 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp2z8jr6y2_RSI_VDEV_GET_INFO.rs:1655:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1655 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": false,
+        "chars": 6709
+      },
+      "RSI_VSMMU_ACTIVATE": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Thinking Process:  1.  **Analyze the Request:**     *   Target: Generate a Verus formal specification function for the `RSI_VSMMU_ACTIVATE` command.     *   Input: Command specification text (B5.3.21).     *   Output: A single `pub open spec fn rsi_vsmmu_activate_spec(..., old_s:",
+        "gold_compiles": true,
+        "chars": 5043
+      },
+      "RSI_VSMMU_GET_INFO": {
+        "pass": false,
+        "reason_old": "no_pub_open_spec_fn_found",
+        "reason": "no_pub_open_spec_fn_found",
+        "output_head": "Thinking Process:  1.  **Analyze the Request:**     *   Target: Generate a Verus formal specification function for the `RSI_VSMMU_GET_INFO` command.     *   Input: Command specification text (B5.3.22).     *   Output: A single `pub open spec fn rsi_vsmmu_get_info_spec(..., old_s:",
+        "gold_compiles": true,
+        "chars": 6478
+      }
+    }
+  },
+  "never": [
+    "RMI_DATA_CREATE",
+    "RMI_DATA_CREATE_UNKNOWN",
+    "RMI_DATA_DESTROY",
+    "RMI_MEC_SET_SHARED",
+    "RMI_PDEV_SET_PUBKEY",
+    "RMI_REALM_CREATE",
+    "RMI_REALM_DESTROY",
+    "RMI_REC_DESTROY",
+    "RMI_RTT_AUX_MAP_PROTECTED",
+    "RMI_RTT_AUX_MAP_UNPROTECTED",
+    "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+    "RMI_RTT_CREATE",
+    "RMI_RTT_FOLD",
+    "RMI_RTT_MAP_UNPROTECTED",
+    "RMI_RTT_READ_ENTRY",
+    "RMI_RTT_SET_RIPAS",
+    "RMI_RTT_SET_S2AP",
+    "RMI_VDEV_GET_INTERFACE_REPORT",
+    "RMI_VDEV_GET_STATE",
+    "RMI_VDEV_P2P_BIND",
+    "RMI_VSMMU_CREATE",
+    "RMI_VSMMU_MAP",
+    "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "RSI_IPA_STATE_GET",
+    "RSI_MEASUREMENT_READ",
+    "RSI_MEM_SET_PERM_INDEX",
+    "RSI_REALM_CONFIG",
+    "RSI_VDEV_GET_INFO",
+    "RSI_VSMMU_ACTIVATE",
+    "RSI_VSMMU_GET_INFO"
+  ],
+  "always": [
+    "PSCI_CPU_OFF",
+    "RMI_GRANULE_DELEGATE",
+    "RMI_PDEV_IDE_RESET",
+    "RMI_PSMMU_MSI_CONFIG",
+    "RMI_REC_ENTER",
+    "RMI_VDEV_AUX_COUNT",
+    "RMI_VDEV_DESTROY",
+    "RMI_VDEV_LOCK",
+    "RMI_VDEV_START",
+    "RMI_VDEV_UNLOCK"
+  ],
+  "flips": [],
+  "hard_gold_compiles": [
+    "RMI_DATA_CREATE",
+    "RMI_DATA_CREATE_UNKNOWN",
+    "RMI_DATA_DESTROY",
+    "RMI_MEC_SET_SHARED",
+    "RMI_PDEV_SET_PUBKEY",
+    "RMI_REALM_DESTROY",
+    "RMI_REC_DESTROY",
+    "RMI_RTT_AUX_MAP_PROTECTED",
+    "RMI_RTT_AUX_MAP_UNPROTECTED",
+    "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+    "RMI_RTT_CREATE",
+    "RMI_RTT_FOLD",
+    "RMI_RTT_MAP_UNPROTECTED",
+    "RMI_RTT_READ_ENTRY",
+    "RMI_RTT_SET_RIPAS",
+    "RMI_RTT_SET_S2AP",
+    "RMI_VDEV_GET_INTERFACE_REPORT",
+    "RMI_VDEV_P2P_BIND",
+    "RMI_VSMMU_CREATE",
+    "RMI_VSMMU_MAP",
+    "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "RSI_IPA_STATE_GET",
+    "RSI_VSMMU_ACTIVATE",
+    "RSI_VSMMU_GET_INFO"
+  ]
+}

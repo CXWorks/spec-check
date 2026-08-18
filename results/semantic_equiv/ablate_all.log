@@ -1,0 +1,23 @@
+19 weaker verdicts to localise
+
+=== what the weaker specs dropped: {'frame': 18, 'other': 1}
+  RMI_VSMMU_MAP                  sft2-2         FRAME COND
+  RMI_DATA_DESTROY               sft2-1         FRAME COND
+  RMI_DATA_DESTROY               sft2-0         FRAME COND
+  RMI_VSMMU_MAP                  sft2-0         FRAME COND
+  RMI_DATA_DESTROY               sft2-0-s1337   FRAME COND
+  RMI_DATA_CREATE_UNKNOWN        sft2-0-s2024   FRAME COND
+  RMI_DATA_DESTROY               sft2-0-s2024   FRAME COND
+  RMI_VSMMU_MAP                  sft2-0-s2024   FRAME COND
+  RMI_DATA_DESTROY               sft2-1-s1337   FRAME COND
+  RMI_RTT_CREATE                 sft2-1-s1337   FRAME COND
+  RMI_VSMMU_MAP                  sft2-1-s1337   FRAME COND
+  RMI_DATA_CREATE_UNKNOWN        sft2-1-s2024   FRAME COND
+  RMI_DATA_DESTROY               sft2-1-s2024   FRAME COND
+  RMI_VSMMU_MAP                  sft2-1-s2024   FRAME COND
+  RMI_RTT_FOLD                   sft2-3         FRAME COND
+  RMI_VDEV_AUX_COUNT             sft2-3         other
+      (result.is_Ok() ==> aux_count == VdevAuxCount(new_s, RmiPdevFlagsDecode(new_s, pdev_flags), RmiVdevFlagsDecode(new_s, vd
+  RMI_DATA_DESTROY               sft2-3-s1337   FRAME COND
+  RMI_RTT_AUX_UNMAP_UNPROTECTED  sft2-3-s1337   FRAME COND
+  RMI_RTT_CREATE                 sft2-3-s1337   FRAME COND

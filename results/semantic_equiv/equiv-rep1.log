@@ -1,0 +1,32 @@
+[equiv] 25 spec pairs, 12 parallel, 300s timeout each (2 Verus runs per pair)
+[equiv] sft2-1-repair-final-spec RMI_MEC_SET_SHARED: incomparable
+[equiv] sft2-1-repair-final-spec RMI_REC_DESTROY: incomparable
+[equiv] sft2-1-repair-final-spec RMI_REALM_DESTROY: incomparable
+[equiv] sft2-1-repair-final-spec RMI_RTT_MAP_UNPROTECTED: incomparable
+[equiv] sft2-1-repair-final-spec RMI_RTT_SET_RIPAS: incomparable
+[equiv] sft2-1-repair-final-spec RMI_DATA_CREATE: incomparable
+[equiv] sft2-1-repair-final-spec RMI_RTT_CREATE: incomparable
+[equiv] sft2-1-repair-final-spec RMI_DATA_DESTROY: weaker
+[equiv] sft2-1-repair-final-spec RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-1-repair-final-spec RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-1-repair-final-spec PSCI_CPU_OFF: equivalent
+[equiv] sft2-1-repair-final-spec RMI_RTT_FOLD: equivalent
+[equiv] sft2-1-repair-final-spec RSI_MEASUREMENT_READ: compile_error
+[equiv] sft2-1-repair-final-spec RMI_VDEV_DESTROY: incomparable
+[equiv] sft2-1-repair-final-spec RSI_REALM_CONFIG: compile_error
+[equiv] sft2-1-repair-final-spec RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-1-repair-final-spec RMI_VSMMU_MAP: incomparable
+[equiv] sft2-1-repair-final-spec RMI_VDEV_START: equivalent
+[equiv] sft2-1-repair-final-spec RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-1-repair-final-spec RMI_VDEV_LOCK: equivalent
+[equiv] sft2-1-repair-final-spec RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-1-repair-final-spec RSI_ATTESTATION_TOKEN_CONTINUE: stronger
+[equiv] sft2-1-repair-final-spec RMI_RTT_SET_S2AP: equivalent
+[equiv] sft2-1-repair-final-spec RMI_VSMMU_CREATE: stronger
+[equiv] sft2-1-repair-final-spec RSI_VSMMU_GET_INFO: stronger
+
+=== verdicts by run
+  sft2-1-repair-final-spec: equivalent=10  incomparable=9  stronger=3  compile_error=2  weaker=1
+     -> 10/25 admit behaviour gold forbids (40%); equivalent 10/25
+
+[equiv] wrote /work/an/equiv-rep1.json

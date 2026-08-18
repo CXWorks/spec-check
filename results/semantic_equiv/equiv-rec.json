@@ -1,0 +1,130 @@
+[
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "proved",
+    "verdict": "weaker",
+    "gold_vacuous": false,
+    "run": "sft2-2-final-bok8-recovered",
+    "command": "RMI_DATA_CREATE_UNKNOWN"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "sft2-2-final-bok8-recovered",
+    "command": "RMI_REC_DESTROY"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-2-final-bok8-recovered",
+    "command": "RMI_RTT_CREATE"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-2-final-bok8-recovered",
+    "command": "RMI_RTT_MAP_UNPROTECTED"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-2-final-bok8-recovered",
+    "command": "RMI_RTT_SET_RIPAS"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft2-2-final-bok8-recovered",
+    "command": "RMI_RTT_SET_S2AP"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "sft2-2-final-bok8-recovered",
+    "command": "RMI_VDEV_DESTROY"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "sft2-2-final-bok8-recovered",
+    "command": "RSI_IPA_STATE_GET"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-1-final-bok8-recovered",
+    "command": "RMI_DATA_CREATE_UNKNOWN"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-1-final-bok8-recovered",
+    "command": "RMI_PDEV_SET_PUBKEY"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "sft2-1-final-bok8-recovered",
+    "command": "RMI_RTT_FOLD"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-1-final-bok8-recovered",
+    "command": "RMI_VDEV_DESTROY"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-1-final-bok8-recovered",
+    "command": "RSI_IPA_STATE_GET"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-0-final-bok8-recovered",
+    "command": "RMI_RTT_CREATE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "sft2-0-final-bok8-recovered",
+    "command": "RMI_RTT_SET_RIPAS"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "sft2-0-final-bok8-recovered",
+    "command": "RMI_VDEV_DESTROY"
+  }
+]

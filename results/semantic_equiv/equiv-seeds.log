@@ -1,0 +1,104 @@
+[equiv] 87 spec pairs, 12 parallel, 300s timeout each (2 Verus runs per pair)
+[equiv] sft2-0-s1337-final RMI_RTT_AUX_MAP_UNPROTECTED: incomparable
+[equiv] sft2-0-s1337-final RMI_RTT_AUX_MAP_PROTECTED: incomparable
+[equiv] sft2-0-s1337-final RMI_DATA_DESTROY: weaker
+[equiv] sft2-0-s1337-final RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-0-s2024-final PSCI_CPU_OFF: signature_mismatch
+[equiv] sft2-0-s1337-final RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-0-s1337-final RMI_VDEV_LOCK: equivalent
+[equiv] sft2-0-s1337-final RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-0-s1337-final RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-0-s1337-final RMI_MEC_SET_SHARED: equivalent
+[equiv] sft2-0-s1337-final PSCI_CPU_OFF: equivalent
+[equiv] sft2-0-s1337-final RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-0-s1337-final RMI_VDEV_START: equivalent
+[equiv] sft2-0-s1337-final RSI_IPA_STATE_GET: stronger
+[equiv] sft2-0-s2024-final RMI_MEC_SET_SHARED: incomparable
+[equiv] sft2-0-s1337-final RMI_VSMMU_CREATE: stronger
+[equiv] sft2-0-s1337-final RSI_VSMMU_GET_INFO: equivalent
+[equiv] sft2-0-s2024-final RMI_DATA_DESTROY: weaker
+[equiv] sft2-0-s2024-final RMI_DATA_CREATE_UNKNOWN: weaker
+[equiv] sft2-0-s2024-final RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-0-s2024-final RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-0-s2024-final RMI_RTT_SET_RIPAS: stronger
+[equiv] sft2-0-s2024-final RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-0-s2024-final RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-0-s2024-final RMI_VDEV_LOCK: equivalent
+[equiv] sft2-0-s2024-final RSI_MEASUREMENT_READ: compile_error
+[equiv] sft2-0-s2024-final RMI_VSMMU_CREATE: stronger
+[equiv] sft2-0-s2024-final RMI_VDEV_START: equivalent
+[equiv] sft2-0-s2024-final RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-0-s2024-final RMI_VSMMU_MAP: weaker
+[equiv] sft2-1-s1337-final RMI_PDEV_SET_PUBKEY: incomparable
+[equiv] sft2-0-s2024-final RSI_VSMMU_GET_INFO: equivalent
+[equiv] sft2-1-s1337-final RMI_DATA_DESTROY: weaker
+[equiv] sft2-1-s1337-final RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-1-s1337-final PSCI_CPU_OFF: equivalent
+[equiv] sft2-1-s1337-final RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-1-s1337-final RMI_MEC_SET_SHARED: equivalent
+[equiv] sft2-1-s1337-final RMI_RTT_AUX_MAP_PROTECTED: incomparable
+[equiv] sft2-1-s1337-final RSI_MEASUREMENT_READ: compile_error
+[equiv] sft2-1-s1337-final RMI_RTT_CREATE: weaker
+[equiv] sft2-1-s1337-final RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-1-s1337-final RSI_VSMMU_GET_INFO: incomparable
+[equiv] sft2-1-s1337-final RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-1-s1337-final RMI_VDEV_LOCK: equivalent
+[equiv] sft2-1-s1337-final RMI_VDEV_START: equivalent
+[equiv] sft2-1-s1337-final RMI_VSMMU_CREATE: stronger
+[equiv] sft2-1-s1337-final RMI_VSMMU_MAP: weaker
+[equiv] sft2-1-s1337-final RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-1-s2024-final PSCI_CPU_OFF: equivalent
+[equiv] sft2-1-s2024-final RMI_DATA_CREATE_UNKNOWN: weaker
+[equiv] sft2-1-s2024-final RMI_DATA_DESTROY: weaker
+[equiv] sft2-1-s2024-final RMI_MEC_SET_SHARED: equivalent
+[equiv] sft2-1-s2024-final RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-1-s2024-final RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-1-s2024-final RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-1-s2024-final RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-1-s2024-final RMI_VDEV_LOCK: equivalent
+[equiv] sft2-1-s2024-final RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-1-s2024-final RMI_VSMMU_CREATE: stronger
+[equiv] sft2-1-s2024-final RMI_VDEV_START: equivalent
+[equiv] sft2-1-s2024-final RMI_VSMMU_MAP: weaker
+[equiv] sft2-1-s2024-final RSI_MEASUREMENT_READ: compile_error
+[equiv] sft2-1-s2024-final RSI_IPA_STATE_GET: stronger
+[equiv] sft2-3-final RSI_MEM_SET_PERM_INDEX: compile_error
+[equiv] sft2-3-final RMI_PDEV_SET_PUBKEY: incomparable
+[equiv] sft2-3-final PSCI_CPU_OFF: equivalent
+[equiv] sft2-1-s2024-final RSI_VSMMU_GET_INFO: equivalent
+[equiv] sft2-3-final RMI_VDEV_AUX_COUNT: weaker
+[equiv] sft2-3-final RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-3-final RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-3-final RMI_RTT_FOLD: weaker
+[equiv] sft2-3-final RMI_VDEV_LOCK: equivalent
+[equiv] sft2-3-final RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-3-final RMI_VDEV_START: equivalent
+[equiv] sft2-3-final RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-3-final RSI_VSMMU_GET_INFO: equivalent
+[equiv] sft2-3-s1337-final RMI_DATA_DESTROY: weaker
+[equiv] sft2-3-s1337-final RMI_GRANULE_DELEGATE: equivalent
+[equiv] sft2-3-s1337-final RMI_RTT_AUX_UNMAP_UNPROTECTED: weaker
+[equiv] sft2-3-s1337-final RMI_RTT_CREATE: weaker
+[equiv] sft2-3-s1337-final RMI_PDEV_IDE_RESET: equivalent
+[equiv] sft2-3-s1337-final RMI_VDEV_AUX_COUNT: equivalent
+[equiv] sft2-3-s1337-final RMI_VDEV_GET_INTERFACE_REPORT: equivalent
+[equiv] sft2-3-s1337-final RMI_VDEV_LOCK: equivalent
+[equiv] sft2-3-s1337-final RMI_VDEV_START: equivalent
+[equiv] sft2-3-s1337-final RMI_VDEV_UNLOCK: equivalent
+[equiv] sft2-3-s1337-final RSI_VSMMU_GET_INFO: equivalent
+
+=== verdicts by run
+  sft2-0-s1337-final: equivalent=10  incomparable=2  stronger=2  weaker=1
+     -> 3/15 admit behaviour gold forbids (20%); equivalent 10/15
+  sft2-0-s2024-final: equivalent=8  weaker=3  stronger=2  signature_mismatch=1  incomparable=1  compile_error=1
+     -> 4/16 admit behaviour gold forbids (25%); equivalent 8/16
+  sft2-1-s1337-final: equivalent=9  weaker=3  incomparable=3  stronger=1  compile_error=1
+     -> 6/17 admit behaviour gold forbids (35%); equivalent 9/17
+  sft2-1-s2024-final: equivalent=10  weaker=3  stronger=2  compile_error=1
+     -> 3/16 admit behaviour gold forbids (19%); equivalent 10/16
+  sft2-3-final: equivalent=8  weaker=2  incomparable=1  compile_error=1
+     -> 3/12 admit behaviour gold forbids (25%); equivalent 8/12
+  sft2-3-s1337-final: equivalent=8  weaker=3
+     -> 3/11 admit behaviour gold forbids (27%); equivalent 8/11
+
+[equiv] wrote /work/an/equiv-seeds.json

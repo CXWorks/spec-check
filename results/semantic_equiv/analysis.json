@@ -1,0 +1,1032 @@
+{
+  "per_run": {
+    "sft2-0": {
+      "PSCI_CPU_OFF": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 73
+      },
+      "RMI_DATA_CREATE_UNKNOWN": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 3281
+      },
+      "RMI_DATA_CREATE": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find value `realm` in this scope\n    --> /tmp/tmpvbn6suge_RMI_DATA_CREATE.rs:1646:22\n     |\n1646 |   && (RttWalk(old_s, realm, ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level < RMM_RTT_PAGE_LEVEL ==> ResultEqual(...\n     |                      ^^^^^\n     |\n    --> builtin/src/lib.rs:782:0\n     |\n     = note: similarly named unit struct `real` defined here\nhelp: a unit struct with a similar name exists\n     |\n1646 -   && (RttWalk(old_s, realm, ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level < RMM_RTT_PAGE_LEVEL ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, realm, ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n1646 +   && (RttWalk(old_s, real, ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level < RMM_RTT_PAGE_LEVEL ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, realm, ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)))\n     |\n\nerror[E0425]: cannot find value `realm` in this scope\n    --> /tmp/tmpvbn6suge_RMI_DATA_CREATE.rs:1646:168\n     |\n1646 | ...E_LEVEL ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, realm, ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int)....\n     |                                                                 ^^^^^\n     |\n    --> builtin/src/lib.rs:782:0\n     |\n     = note: similarly named unit struct `real` defined here",
+        "gold_compiles": true,
+        "chars": 4711
+      },
+      "RMI_DATA_DESTROY": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 4095
+      },
+      "RMI_GRANULE_DELEGATE": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 846
+      },
+      "RMI_MEC_SET_SHARED": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 604
+      },
+      "RMI_PDEV_IDE_RESET": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1360
+      },
+      "RMI_PDEV_SET_PUBKEY": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `KeyIsInvalid` in this scope\n    --> /tmp/tmp9ue_re_e_RMI_PDEV_SET_PUBKEY.rs:1642:25\n     |\n1642 |   && (result.is_Ok() && KeyIsInvalid(RmiPublicKeyParamsAt(old_s, params_ptr)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n     |                         ^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `MetadataIsInvalid` in this scope\n    --> /tmp/tmp9ue_re_e_RMI_PDEV_SET_PUBKEY.rs:1643:25\n     |\n1643 |   && (result.is_Ok() && MetadataIsInvalid(RmiPublicKeyParamsAt(old_s, params_ptr)) ==> ResultEqual(result, RMI_ERROR_INPUT))\n     |                         ^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `KeyIsInvalid` in this scope\n    --> /tmp/tmp9ue_re_e_RMI_PDEV_SET_PUBKEY.rs:1655:28\n     |\n1655 |        !(result.is_Ok() && KeyIsInvalid(RmiPublicKeyParamsAt(old_s, params_ptr))) &&\n     |                            ^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `MetadataIsInvalid` in this scope\n    --> /tmp/tmp9ue_re_e_RMI_PDEV_SET_PUBKEY.rs:1656:28\n     |\n1656 |        !(result.is_Ok() && MetadataIsInvalid(RmiPublicKeyParamsAt(old_s, params_ptr))) &&\n     |                            ^^^^^^^^^^^^^^^^^ not found in this scope\n",
+        "gold_compiles": true,
+        "chars": 2302
+      },
+      "RMI_PSMMU_MSI_CONFIG": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find value `rd` in this scope\n    --> /tmp/tmpn4iqo0wl_RMI_PSMMU_MSI_CONFIG.rs:1639:84\n     |\n 475 |   RD,\n     |   -- similarly named unit variant `RD` defined here\n...\n1639 |   && (result.is_Ok() ==> gerr_addr == SMMU_R_GERROR_IRQ_CFG0(new_s, RealmAt(new_s, rd).smmu).addr)\n     |                                                                                    ^^\n     |\nhelp: a unit variant with a similar name exists\n     |\n1639 -   && (result.is_Ok() ==> gerr_addr == SMMU_R_GERROR_IRQ_CFG0(new_s, RealmAt(new_s, rd).smmu).addr)\n1639 +   && (result.is_Ok() ==> gerr_addr == SMMU_R_GERROR_IRQ_CFG0(new_s, RealmAt(new_s, RD).smmu).addr)\n     |\n\nerror[E0425]: cannot find value `rd` in this scope\n    --> /tmp/tmpn4iqo0wl_RMI_PSMMU_MSI_CONFIG.rs:1640:84\n     |\n 475 |   RD,\n     |   -- similarly named unit variant `RD` defined here\n...\n1640 |   && (result.is_Ok() ==> gerr_data == SMMU_R_GERROR_IRQ_CFG1(new_s, RealmAt(new_s, rd).smmu).data)\n     |                                                                                    ^^\n     |",
+        "gold_compiles": false,
+        "chars": 2101
+      },
+      "RMI_REALM_CREATE": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpuunoyjei_RMI_REALM_CREATE.rs:1687:24\n     |\n1633 | pub open spec fn rmi_realm_create_spec(rd: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                         - closing delimiter possibly meant for this\n...\n1687 |        RttConfigIsValid(old_s, RmiRealmParamsAt(old_s, params_ptr).s2sz, RmiRealmParamsAt(old_s, params_ptr).rtt_level_start, RmiRealmParams\n     |                        ^ unclosed delimiter\n...\n1695 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpuunoyjei_RMI_REALM_CREATE.rs:1695:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1695 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": false,
+        "chars": 6332
+      },
+      "RMI_REALM_DESTROY": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "wrong_arity",
+        "output_head": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied\n    --> /tmp/tmpz4mi7_7h_RMI_REALM_DESTROY.rs:1638:26\n     |\n1638 |   && (result.is_Ok() ==> RttsStateEqual(new_s, RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start as int, DELEGATED))\n     |                          ^^^^^^^^^^^^^^ ----- unexpected argument #1 of type `S`\n     |\nnote: function defined here\n    --> /tmp/tmpz4mi7_7h_RMI_REALM_DESTROY.rs:1589:18\n     |\n1589 | pub open spec fn RttsStateEqual(rtt_base: Address, rtt_num_start: int, state: RmmGranuleState) -> bool;\n     |                  ^^^^^^^^^^^^^^\nhelp: remove the extra argument\n     |\n1638 -   && (result.is_Ok() ==> RttsStateEqual(new_s, RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start as int, DELEGATED))\n1638 +   && (result.is_Ok() ==> RttsStateEqual(RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start as int, DELEGATED))\n     |\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmpz4mi7_7h_RMI_REALM_DESTROY.rs:1639:14\n     |\n1639 |   && (result.is_Ok() ==> GranuleAt(new_s, rd).state == DELEGATED)\n     |              ^^^^^\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html",
+        "gold_compiles": true,
+        "chars": 1495
+      },
+      "RMI_REC_DESTROY": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "wrong_arity",
+        "output_head": "error[E0061]: this function takes 2 arguments but 3 arguments were supplied\n    --> /tmp/tmp2gysh2ky_RMI_REC_DESTROY.rs:1637:54\n     |\n1637 |   && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, result, RMI_ERROR_REC))\n     |                                                      ^^^^^^^^^^^         ------ unexpected argument #2 of type `std::result::Result<(), RmiStatusCode>`\n     |\nnote: function defined here\n    --> /tmp/tmp2gysh2ky_RMI_REC_DESTROY.rs:1439:18\n     |\n1439 | pub open spec fn ResultEqual(result: Result<(), RmiStatusCode>, status: RmiStatusCode) -> bool {\n     |                  ^^^^^^^^^^^\nhelp: remove the extra argument\n     |\n1637 -   && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, result, RMI_ERROR_REC))\n1637 +   && (RecAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, RMI_ERROR_REC))\n     |\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmp2gysh2ky_RMI_REC_DESTROY.rs:1638:14\n     |\n1638 |   && (result.is_Ok() ==> GranuleAt(new_s, rec_ptr).state == DELEGATED)\n     |              ^^^^^\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html",
+        "gold_compiles": true,
+        "chars": 1203
+      },
+      "RMI_REC_ENTER": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: expected `,`\n    --> /tmp/tmpu5q8q7s0_RMI_REC_ENTER.rs:1646:35\n     |\n1646 |   && (result.is_Ok() ==> run.exit contains Realm exit syndrome information.)\n     |                                   ^^^^^^^^\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 2613
+      },
+      "RMI_RTT_AUX_MAP_PROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp085eujwg_RMI_RTT_AUX_MAP_PROTECTED.rs:1645:493\n     |\n1633 | pub open spec fn rmi_rtt_aux_map_protected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, state: RmiRttEntryState, ripas: RmiRipas, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                    - closing delimiter possibly meant for this\n...\n1645 |   && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas != DEV ==> (ResultEqual(result, RMI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RttWalk(new_s, RealmAt(new_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level as int)) && (state == RttEntryStateToRmi(new_s,\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ^ unclosed delimiter\n...\n1653 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp085eujwg_RMI_RTT_AUX_MAP_PROTECTED.rs:1653:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1653 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6017
+      },
+      "RMI_RTT_AUX_MAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpf8swiqbf_RMI_RTT_AUX_MAP_UNPROTECTED.rs:1642:6\n     |\n1633 | pub open spec fn rmi_rtt_aux_map_unprotected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                            - closing delimiter possibly meant for this\n...\n1642 |   && (result.is_Ok() ==> (RttMemAttrEqual(RttWalk(new_s, realm, ipa, realm.rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte, RttWalk(new_s, realm, ipa, realm....\n     |      ^ unclosed delimiter\n...\n1658 | }\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 3210
+      },
+      "RMI_RTT_AUX_UNMAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: unexpected closing delimiter: `}`\n    --> /tmp/tmp9sz5ova__RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1661:1\n     |\n1633 | pub open spec fn rmi_rtt_aux_unmap_unprotected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, top: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                            - the nearest open delimiter\n...\n1652 |     ==> RttEntry(new_s, RttAt(new_s, RttWalk(new_s,RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start,index).rtt_addr), RttEntryIndex(new_s,ipa, RttWalk(new_s,RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start,index).level)).state == RttEntry(old_s, RttAt(old_s, RttWalk(old_s,RealmAt(old_s, rd), ipa,RealmAt(old_s, rd).rtt_level_start,index).rtt_addr), RttEntryIndex(old_s,ipa, RttWalk(old_s,RealmAt(old_s, rd), ipa,RealmAt(old_s, rd).rtt_level_start,index).level)).state))\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          - missing open `(` for this delimiter\n...\n1661 | } // verus!\n     | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 2928
+      },
+      "RMI_RTT_CREATE": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: unexpected closing delimiter: `}`\n    --> /tmp/tmpyelgnp9o_RMI_RTT_CREATE.rs:1672:1\n     |\n   3 | verus! {\n     |        - the nearest open delimiter\n...\n1633 | pub open spec fn rmi_rtt_create_spec(rd: Address, rtt: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                            - the nearest open delimiter\n...\n1650 |   && (result.is_Ok() ==> RttAllEntriesState(new_s, RttAt(new_s, rtt), RttEntryAt(new_s, RttAt(new_s, RttWalk(new_s,RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtt_addr), RttEntryIndex(new_s, ipa, RttWalk(new_s,RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level)))))\n     |                                                                                                                                                                                                                                                                                                                            - missing open `(` for this delimiter\n1651 |   && (result.is_Ok() && (RttWalk(old_s,RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED && RttWalk(old_s,RealmAt(old_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.state != UNASSIGNED_NS) ==> RttAllEntriesContiguous(new_s, RttAt(new_s, rtt), RttEntryAt(new_s, RttAt(new_s, RttWalk(new_s,RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtt_addr), RttEntryIndex(new_s, ipa, RttWalk(new_s,RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).level))),level))\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            - missing open `(` for this delimiter\n...\n1672 | }\n     | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 4776
+      },
+      "RMI_RTT_FOLD": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp_0mr88eg_RMI_RTT_FOLD.rs:1667:114\n     |\n1633 | pub open spec fn rmi_rtt_fold_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                          - closing delimiter possibly meant for this\n...\n1667 |     ==> RttWalk(new_s,RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s,RealmAt(old_s, rd), ip\n     |                                                                                                                  ^ unclosed delimiter\n...\n1675 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp_0mr88eg_RMI_RTT_FOLD.rs:1675:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1675 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 5817
+      },
+      "RMI_RTT_MAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `)`\n    --> /tmp/tmpb3h0t8ho_RMI_RTT_MAP_UNPROTECTED.rs:1633:165\n     |\n1633 | ...sult: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                 ^ unclosed delimiter\n...\n1642 | ...rd))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n     |                                                  ^ mismatched closing delimiter\n\nerror: mismatched closing delimiter: `}`\n    --> /tmp/tmpb3h0t8ho_RMI_RTT_MAP_UNPROTECTED.rs:1675:16\n     |\n   3 | verus! {\n     |        - closing delimiter possibly meant for this\n...\n1675 |     ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, level,RMM\n     |                ^ unclosed delimiter\n...\n1683 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6282
+      },
+      "RMI_RTT_READ_ENTRY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp7o_twrbx_RMI_RTT_READ_ENTRY.rs:1646:804\n     |\n1633 | pub open spec fn rmi_rtt_read_entry_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, walk_level: UInt64, state: RmiRttEntryState, desc: Bits64, ripas: RmiRipas, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                                              - closing delimiter possibly meant for this\n...\n1646 |   && (result.is_Ok() ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_VSMMU ==> (RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.attr_unprot == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.base_index == S2AP_NO_ACCESS && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.overlay_index == 0 && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.read == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.s2ap_indirect.write == RMM_FALSE && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.addr == RttWalk(new...\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ^ unclosed delimiter\n...\n1654 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp7o_twrbx_RMI_RTT_READ_ENTRY.rs:1654:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1654 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6063
+      },
+      "RMI_RTT_SET_RIPAS": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpvfza0itf_RMI_RTT_SET_RIPAS.rs:1671:678\n     |\n1633 | pub open spec fn rmi_rtt_set_ripas_spec(rd: Address, rec_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                      - closing delimiter possibly meant for this\n...\n1671 |     ==> RttEntriesInRangeRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level,base, RttSkipEntriesWithRipas(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).level,base, top, (RecAt(new_s, rec_ptr).ripas_value == RAM) && (RecAt(new_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)),rec_ptr.ripas_value) == RttEntriesInRangeRipas(old\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^ unclosed delimiter\n...\n1679 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpvfza0itf_RMI_RTT_SET_RIPAS.rs:1679:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1679 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6338
+      },
+      "RMI_RTT_SET_S2AP": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find value `not_aligned` in this scope\n    --> /tmp/tmp1aey_ym8_RMI_RTT_SET_S2AP.rs:1646:177\n     |\n1646 | ...n(old_s, base, top,AlignDownToRttLevel(old_s, not_aligned.addr,not_aligned.walk.level as int),AlignUpToRttLevel(old_s, not_alig...\n     |                                                  ^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `not_aligned` in this scope\n    --> /tmp/tmp1aey_ym8_RMI_RTT_SET_S2AP.rs:1646:194\n     |\n1646 | ...p,AlignDownToRttLevel(old_s, not_aligned.addr,not_aligned.walk.level as int),AlignUpToRttLevel(old_s, not_aligned.addr,not_alig...\n     |                                                  ^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `not_aligned` in this scope\n    --> /tmp/tmp1aey_ym8_RMI_RTT_SET_S2AP.rs:1646:250\n     |\n1646 | ...d.walk.level as int),AlignUpToRttLevel(old_s, not_aligned.addr,not_aligned.walk.level as int)) && not_aligned.index == RMM_RTT_...\n     |                                                  ^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `not_aligned` in this scope\n    --> /tmp/tmp1aey_ym8_RMI_RTT_SET_S2AP.rs:1646:267\n     |\n1646 | ...nt),AlignUpToRttLevel(old_s, not_aligned.addr,not_aligned.walk.level as int)) && not_aligned.index == RMM_RTT_TREE_PRIMARY && n...\n     |                                                  ^^^^^^^^^^^ not found in this scope\n",
+        "gold_compiles": true,
+        "chars": 3945
+      },
+      "RMI_VDEV_AUX_COUNT": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 479
+      },
+      "RMI_VDEV_DESTROY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "wrong_arity",
+        "output_head": "error[E0609]: no field `vdev_id` on type `RmmRealm`\n    --> /tmp/tmps0tcbvvf_RMI_VDEV_DESTROY.rs:1650:65\n     |\n1650 |   && (result.is_Ok() ==> VdevIdIsFree(new_s, RealmAt(new_s, rd).vdev_id))\n     |                                                                 ^^^^^^^ unknown field\n     |\n     = note: available fields are: `feat_lpa2`, `ipa_width`, `measurements`, `hash_algo`, `rec_index` ... and 20 others\n\nerror[E0061]: this function takes 3 arguments but 2 arguments were supplied\n    --> /tmp/tmps0tcbvvf_RMI_VDEV_DESTROY.rs:1650:26\n     |\n1650 |   && (result.is_Ok() ==> VdevIdIsFree(new_s, RealmAt(new_s, rd).vdev_id))\n     |                          ^^^^^^^^^^^^----------------------------------- argument #3 of type `u64` is missing\n     |\nnote: function defined here\n    --> /tmp/tmps0tcbvvf_RMI_VDEV_DESTROY.rs:1611:18\n     |\n1611 | pub open spec fn VdevIdIsFree(s: S, realm: RmmRealm, vdev_id: u64) -> bool;\n     |                  ^^^^^^^^^^^^                        ------------\nhelp: provide the argument\n     |\n1650 |   && (result.is_Ok() ==> VdevIdIsFree(new_s, RealmAt(new_s, rd).vdev_id, /* u64 */))\n     |                                                                        +++++++++++\n",
+        "gold_compiles": true,
+        "chars": 3444
+      },
+      "RMI_VDEV_GET_INTERFACE_REPORT": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 2005
+      },
+      "RMI_VDEV_GET_STATE": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmpwsde8f6b_RMI_VDEV_GET_STATE.rs:1638:26\n     |\n1638 |   && (result.is_Ok() ==> Equal(state, VdevAt(new_s, vdev_ptr).vdev_state))\n     |                          ^^^^^ -----  ---------------------------------- expected `RmiFeature`, found `RmmVdevState`\n     |                                |\n     |                                expected `RmmFeature`, found `RmiVdevState`\n     |\nnote: function defined here\n    --> /tmp/tmpwsde8f6b_RMI_VDEV_GET_STATE.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmpwsde8f6b_RMI_VDEV_GET_STATE.rs:1643:16\n     |\n1643 |     ==> result.is_Ok())\n     |                ^^^^^\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Err`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmpwsde8f6b_RMI_VDEV_GET_STATE.rs:1644:14\n     |\n1644 |   && (result.is_Err()",
+        "gold_compiles": false,
+        "chars": 877
+      },
+      "RMI_VDEV_LOCK": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1875
+      },
+      "RMI_VDEV_P2P_BIND": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmphzmlg7ub_RMI_VDEV_P2P_BIND.rs:1680:7\n     |\n1633 | pub open spec fn rmi_vdev_p2p_bind_spec(stream_ptr: Address, rd: Address, rec_ptr: Address, pdev_1_ptr: Address, pdev_2_ptr: Address, vdev_1_ptr: Address, vdev_2_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                                                                - closing delimiter possibly meant for this\n...\n1680 |   && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n     |       ^ unclosed delimiter\n...\n1716 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmphzmlg7ub_RMI_VDEV_P2P_BIND.rs:1716:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1716 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6195
+      },
+      "RMI_VDEV_START": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1873
+      },
+      "RMI_VDEV_UNLOCK": {
+        "pass": false,
+        "reason_old": "type_mismatch",
+        "reason": "type_mismatch",
+        "output_head": "error: mismatched types; types must be compatible to use == or !=\n    --> /tmp/tmpnowcqtgb_RMI_VDEV_UNLOCK.rs:1641:7\n     |\n1641 |   && (VdevAt(old_s, vdev_ptr).realm != RealmAt(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))\n     |       -----------------------------^^^^------------------\n     |       |                                |\n     |       |                                this is `tmpnowcqtgb_RMI_VDEV_UNLOCK::RmmRealm`\n     |       this is `usize`\n     |\n     = help: decorations (like &,Ghost,Tracked,Box,Rc,...) are transparent for == or != in spec code\n\nerror: aborting due to 1 previous error; 451 warnings emitted",
+        "gold_compiles": true,
+        "chars": 2442
+      },
+      "RMI_VSMMU_CREATE": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 5205
+      },
+      "RMI_VSMMU_MAP": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 4015
+      },
+      "RSI_ATTESTATION_TOKEN_CONTINUE": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationFailed` in this scope\n    --> /tmp/tmpq9k6jpbp_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1641:7\n     |\n1641 |   && (TokenGenerationFailed(old_s) ==> result == RSI_ERROR_UNKNOWN)\n     |       ^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationIncomplete` in this scope\n    --> /tmp/tmpq9k6jpbp_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1643:32\n     |\n1643 |   && (result == RSI_SUCCESS && TokenGenerationIncomplete(old_s) ==> result == RSI_INCOMPLETE)\n     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationIncomplete` in this scope\n    --> /tmp/tmpq9k6jpbp_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1644:33\n     |\n1644 |   && (result == RSI_SUCCESS && !TokenGenerationIncomplete(old_s) ==> CurrentRec(new_s).attest_state == NO_ATTEST_IN_PROGRESS)\n     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationFailed` in this scope\n    --> /tmp/tmpq9k6jpbp_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1652:10\n     |\n1652 |        !(TokenGenerationFailed(old_s)))\n     |          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n",
+        "gold_compiles": true,
+        "chars": 1745
+      },
+      "RSI_IPA_STATE_GET": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: unexpected closing delimiter: `}`\n    --> /tmp/tmpaio_av7v_RSI_IPA_STATE_GET.rs:1658:1\n     |\n1633 | pub open spec fn rsi_ipa_state_get_spec(base: Address, top: Address, result: RsiCommandReturnCode, out_top: Address, ripas: RsiRipas, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                   - the nearest open delimiter\n...\n1640 |   && (result == RSI_SUCCESS ==> (forall |a: Address| [base, out_top).contains(a) ==> RIPAS(new_s, a) == ripas))\n     |                                                      -             - missing open `(` for this delimiter      - missing open `(` for this delimiter\n     |                                                      |\n     |                                                      the nearest open delimiter\n...\n1658 | } // verus!\n     | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 977
+      },
+      "RSI_MEASUREMENT_READ": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": false,
+        "chars": 1851
+      },
+      "RSI_MEM_SET_PERM_INDEX": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find value `realm` in this scope\n    --> /tmp/tmp1ejowjgc_RSI_MEM_SET_PERM_INDEX.rs:1640:33\n     |\n1640 |   && (result == RSI_SUCCESS ==> realm.overlay_locked[new_s][perm_index as int] == MEM_PERM_LOCKED)\n     |                                 ^^^^^\n     |\n    --> builtin/src/lib.rs:782:0\n     |\n     = note: similarly named unit struct `real` defined here\nhelp: a unit struct with a similar name exists\n     |\n1640 -   && (result == RSI_SUCCESS ==> realm.overlay_locked[new_s][perm_index as int] == MEM_PERM_LOCKED)\n1640 +   && (result == RSI_SUCCESS ==> real.overlay_locked[new_s][perm_index as int] == MEM_PERM_LOCKED)\n     |\n\nerror[E0425]: cannot find value `realm` in this scope\n    --> /tmp/tmp1ejowjgc_RSI_MEM_SET_PERM_INDEX.rs:1652:9\n     |\n1652 |     ==> realm.overlay_locked[new_s][perm_index as int] == realm.overlay_locked[old_s][perm_index as int])\n     |         ^^^^^\n     |\n    --> builtin/src/lib.rs:782:0\n     |\n     = note: similarly named unit struct `real` defined here",
+        "gold_compiles": false,
+        "chars": 1735
+      },
+      "RSI_REALM_CONFIG": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmpfy8548f9_RSI_REALM_CONFIG.rs:1638:33\n     |\n1638 |   && (result == RSI_SUCCESS ==> Equal(RsiRealmConfigAt(new_s, addr).hash_algo, CurrentRealm(new_s).hash_algo))\n     |                                 ^^^^^ ---------------------------------------  ----------------------------- expected `RmiFeature`, found `RmmHashAlgorithm`\n     |                                       |\n     |                                       expected `RmmFeature`, found `RsiHashAlgorithm`\n     |\nnote: function defined here\n    --> /tmp/tmpfy8548f9_RSI_REALM_CONFIG.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nerror: aborting due to 1 previous error; 444 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.",
+        "gold_compiles": false,
+        "chars": 1616
+      },
+      "RSI_VDEV_GET_INFO": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp6nfuglho_RSI_VDEV_GET_INFO.rs:1639:33\n     |\n1639 | ...=> Equal(RsiVdevInfoAt(new_s, addr).hash_algo, PdevAt(new_s, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).hash_algo))\n     |       ^^^^^ ------------------------------------  -------------------------------------------------------------------------------- expected `RmiFeature`, found `RmmHashAlgorithm`\n     |             |\n     |             expected `RmmFeature`, found `RsiHashAlgorithm`\n     |\nnote: function defined here\n    --> /tmp/tmp6nfuglho_RSI_VDEV_GET_INFO.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nerror[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp6nfuglho_RSI_VDEV_GET_INFO.rs:1640:33\n     |\n1640 | ...=> Equal(RsiVdevInfoAt(new_s, addr).flags.p2p_enabled, PdevAt(new_s, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).p2p_enabled))\n     |       ^^^^^ --------------------------------------------  ---------------------------------------------------------------------------------- argument #2 of type `RmiFeature` is missing\n     |             |\n     |             unexpected argument #1 of type `RsiFeature`\n     |\nnote: function defined here\n    --> /tmp/tmp6nfuglho_RSI_VDEV_GET_INFO.rs:1341:18",
+        "gold_compiles": false,
+        "chars": 3343
+      },
+      "RSI_VSMMU_ACTIVATE": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `RIPAS` in this scope\n    --> /tmp/tmplcusqhrm_RSI_VSMMU_ACTIVATE.rs:1639:33\n     |\n1639 |   && (result == RSI_SUCCESS ==> RIPAS(new_s, base, new_base) == DEV)\n     |                                 ^^^^^ not found in this scope\n\nerror: aborting due to 1 previous error; 171 warnings emitted\n\nFor more information about this error, try `rustc --explain E0425`.",
+        "gold_compiles": true,
+        "chars": 2104
+      },
+      "RSI_VSMMU_GET_INFO": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1218
+      }
+    },
+    "sft2-1": {
+      "PSCI_CPU_OFF": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 73
+      },
+      "RMI_DATA_CREATE_UNKNOWN": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `ContentsOfGranule` in this scope\n    --> /tmp/tmp3jockikj_RMI_DATA_CREATE_UNKNOWN.rs:1646:26\n     |\n1646 |   && (result.is_Ok() ==> ContentsOfGranule(new_s, data) == 0)\n     |                          ^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `ContentsOfGranule` in this scope\n    --> /tmp/tmp3jockikj_RMI_DATA_CREATE_UNKNOWN.rs:1666:9\n     |\n1666 |     ==> ContentsOfGranule(new_s, data) == ContentsOfGranule(old_s, data))\n     |         ^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `ContentsOfGranule` in this scope\n    --> /tmp/tmp3jockikj_RMI_DATA_CREATE_UNKNOWN.rs:1666:43\n     |\n1666 |     ==> ContentsOfGranule(new_s, data) == ContentsOfGranule(old_s, data))\n     |                                           ^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror: aborting due to 3 previous errors; 171 warnings emitted\n\nFor more information about this error, try `rustc --explain E0425`.",
+        "gold_compiles": true,
+        "chars": 4104
+      },
+      "RMI_DATA_CREATE": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "wrong_arity",
+        "output_head": "error[E0061]: this function takes 5 arguments but 4 arguments were supplied\n    --> /tmp/tmpvb1up9e9_RMI_DATA_CREATE.rs:1654:64\n     |\n1654 |   && (result.is_Ok() ==> RealmAt(new_s, rd).measurements[0] == RimExtendData(RealmAt(new_s, rd), ipa, data, flags))\n     |                                                                ^^^^^^^^^^^^^ ------------------ argument #1 of type `S` is missing\n     |\nnote: function defined here\n    --> /tmp/tmpvb1up9e9_RMI_DATA_CREATE.rs:1443:18\n     |\n1443 | pub open spec fn RimExtendData(s: S, realm: RmmRealm, ipa: Address, data: Address, flags: RmiDataFlags) -> RmmRealmMeasurement;\n     |                  ^^^^^^^^^^^^^ ----\nhelp: provide the argument\n     |\n1654 -   && (result.is_Ok() ==> RealmAt(new_s, rd).measurements[0] == RimExtendData(RealmAt(new_s, rd), ipa, data, flags))\n1654 +   && (result.is_Ok() ==> RealmAt(new_s, rd).measurements[0] == RimExtendData(/* S */, RealmAt(new_s, rd), data, ipa, flags))\n     |\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmpvb1up9e9_RMI_DATA_CREATE.rs:1669:16\n     |\n1669 |     ==> result.is_Ok())\n     |                ^^^^^\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Err`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html",
+        "gold_compiles": true,
+        "chars": 4985
+      },
+      "RMI_DATA_DESTROY": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 4339
+      },
+      "RMI_GRANULE_DELEGATE": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 846
+      },
+      "RMI_MEC_SET_SHARED": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 604
+      },
+      "RMI_PDEV_IDE_RESET": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1360
+      },
+      "RMI_PDEV_SET_PUBKEY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp8ln64qm9_RMI_PDEV_SET_PUBKEY.rs:1744:29\n     |\n1633 | pub open spec fn rmi_pdev_set_pubkey_spec(pdev_ptr: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                  - closing delimiter possibly meant for this\n...\n1744 |     && (AddrIsGranuleAligned(old_s, p\n     |                             ^ unclosed delimiter\n...\n1752 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp8ln64qm9_RMI_PDEV_SET_PUBKEY.rs:1752:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1752 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6452
+      },
+      "RMI_PSMMU_MSI_CONFIG": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `SMMU_R_GERROR_IRQ_CFG0` in this scope\n    --> /tmp/tmpdlcx_nxp_RMI_PSMMU_MSI_CONFIG.rs:1639:39\n     |\n1639 |   && (result.is_Ok() ==> gerr_addr == SMMU_R_GERROR_IRQ_CFG0(new_s).ns)\n     |                                       ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `SMMU_R_GERROR_IRQ_CFG1` in this scope\n    --> /tmp/tmpdlcx_nxp_RMI_PSMMU_MSI_CONFIG.rs:1640:39\n     |\n1640 |   && (result.is_Ok() ==> gerr_data == SMMU_R_GERROR_IRQ_CFG1(new_s))\n     |                                       ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `SMMU_R_EVENTQ_IRQ_CFG0` in this scope\n    --> /tmp/tmpdlcx_nxp_RMI_PSMMU_MSI_CONFIG.rs:1641:41\n     |\n1641 |   && (result.is_Ok() ==> eventq_addr == SMMU_R_EVENTQ_IRQ_CFG0(new_s).ns)\n     |                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `SMMU_R_EVENTQ_IRQ_CFG1` in this scope\n    --> /tmp/tmpdlcx_nxp_RMI_PSMMU_MSI_CONFIG.rs:1642:41\n     |\n1642 |   && (result.is_Ok() ==> eventq_data == SMMU_R_EVENTQ_IRQ_CFG1(new_s))\n     |                                         ^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n",
+        "gold_compiles": false,
+        "chars": 1759
+      },
+      "RMI_REALM_CREATE": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpb0lus3ll_RMI_REALM_CREATE.rs:1683:8\n     |\n1633 | pub open spec fn rmi_realm_create_spec(rd: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                         - closing delimiter possibly meant for this\n...\n1683 |   && (!(AddrIsGranuleAligned(old_s, params_ptr) &&\n     |        ^ unclosed delimiter\n...\n1693 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpb0lus3ll_RMI_REALM_CREATE.rs:1693:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1693 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": false,
+        "chars": 6277
+      },
+      "RMI_REALM_DESTROY": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "wrong_arity",
+        "output_head": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied\n    --> /tmp/tmpdsde02mn_RMI_REALM_DESTROY.rs:1638:26\n     |\n1638 |   && (result.is_Ok() ==> RttsStateEqual(new_s, RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start as int, DELEGATED))\n     |                          ^^^^^^^^^^^^^^ ----- unexpected argument #1 of type `S`\n     |\nnote: function defined here\n    --> /tmp/tmpdsde02mn_RMI_REALM_DESTROY.rs:1589:18\n     |\n1589 | pub open spec fn RttsStateEqual(rtt_base: Address, rtt_num_start: int, state: RmmGranuleState) -> bool;\n     |                  ^^^^^^^^^^^^^^\nhelp: remove the extra argument\n     |\n1638 -   && (result.is_Ok() ==> RttsStateEqual(new_s, RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start as int, DELEGATED))\n1638 +   && (result.is_Ok() ==> RttsStateEqual(RealmAt(new_s, rd).rtt_base[0], RealmAt(new_s, rd).rtt_num_start as int, DELEGATED))\n     |\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmpdsde02mn_RMI_REALM_DESTROY.rs:1639:14\n     |\n1639 |   && (result.is_Ok() ==> GranuleAt(new_s, rd).state == DELEGATED)\n     |              ^^^^^\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html",
+        "gold_compiles": true,
+        "chars": 1495
+      },
+      "RMI_REC_DESTROY": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1301
+      },
+      "RMI_REC_ENTER": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find value `rec` in this scope\n    --> /tmp/tmp55p98y3q_RMI_REC_ENTER.rs:1639:22\n     |\n 476 |   REC,\n     |   --- similarly named unit variant `REC` defined here\n...\n1639 |   && (RealmAt(old_s, rec.owner).state == REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM(0)))\n     |                      ^^^\n     |\nhelp: a unit variant with a similar name exists\n     |\n1639 -   && (RealmAt(old_s, rec.owner).state == REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM(0)))\n1639 +   && (RealmAt(old_s, REC.owner).state == REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM(0)))\n     |\n\nerror[E0425]: cannot find value `rec` in this scope\n    --> /tmp/tmp55p98y3q_RMI_REC_ENTER.rs:1640:22\n     |\n 476 |   REC,\n     |   --- similarly named unit variant `REC` defined here\n...\n1640 |   && (RealmAt(old_s, rec.owner).state == REALM_SYSTEM_OFF ==> ResultEqual(result, RMI_ERROR_REALM(1)))\n     |                      ^^^\n     |",
+        "gold_compiles": true,
+        "chars": 2578
+      },
+      "RMI_RTT_AUX_MAP_PROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp5nj5edjq_RMI_RTT_AUX_MAP_PROTECTED.rs:1649:7\n     |\n1633 | pub open spec fn rmi_rtt_aux_map_protected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, state: RmiRttEntryState, ripas: RmiRipas, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                    - closing delimiter possibly meant for this\n...\n1649 |   && ((AddrIsGranuleAligned(old_s, rd) &&\n     |       ^ unclosed delimiter\n...\n1665 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp5nj5edjq_RMI_RTT_AUX_MAP_PROTECTED.rs:1665:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1665 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6158
+      },
+      "RMI_RTT_AUX_MAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "type_mismatch",
+        "reason": "wrong_arity",
+        "output_head": "error[E0308]: mismatched types\n    --> /tmp/tmpkoy2kt3q_RMI_RTT_AUX_MAP_UNPROTECTED.rs:1640:46\n     |\n1640 |   && (RttWalk(old_s, RealmAt(old_s, rd), ipa,RealmAt(old_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIG...\n     |       -------                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `int`, found `i64`\n     |       |\n     |       arguments to this function are incorrect\n     |\nnote: function defined here\n    --> /tmp/tmpkoy2kt3q_RMI_RTT_AUX_MAP_UNPROTECTED.rs:1591:18\n     |\n1591 | pub open spec fn RttWalk(s: S, realm: RmmRealm, addr: Address, level: int, index: int) -> RmmRttWalkResult;\n     |                  ^^^^^^^                                       ----------\n\nerror[E0308]: mismatched types\n    --> /tmp/tmpkoy2kt3q_RMI_RTT_AUX_MAP_UNPROTECTED.rs:1640:215\n     |\n1640 | ...MI_ERROR_RTT(RttWalk(new_s, RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start,RMM_RTT_TREE_PRIMARY as int).level as in...\n     |                 -------                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `int`, found `i64`\n     |                 |\n     |                 arguments to this function are incorrect\n     |\nnote: function defined here\n    --> /tmp/tmpkoy2kt3q_RMI_RTT_AUX_MAP_UNPROTECTED.rs:1591:18",
+        "gold_compiles": true,
+        "chars": 3995
+      },
+      "RMI_RTT_AUX_UNMAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp3w5640bq_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1640:26\n     |\n1640 | ..._Ok() ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start,index).rtte.state == UNASSIGNED_NS)\n     |              ^^^^^^^                                ---------------------------------- ----- expected `int`, found `u64`\n     |                                                     |\n     |                                                     expected `int`, found `i64`\n     |\nnote: function defined here\n    --> /tmp/tmp3w5640bq_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1591:18\n     |\n1591 | pub open spec fn RttWalk(s: S, realm: RmmRealm, addr: Address, level: int, index: int) -> RmmRttWalkResult;\n     |                  ^^^^^^^                                       ----------  ----------\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmp3w5640bq_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1641:14\n     |\n1641 |   && (result.is_Ok() ==> top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RealmAt(new_s, rd...\n     |              ^^^^^\n\nerror[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp3w5640bq_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1641:75\n     |\n1641 | ...At(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start,index).rtt_addr),RttWalk(new_s, RealmAt(new...",
+        "gold_compiles": true,
+        "chars": 2790
+      },
+      "RMI_RTT_CREATE": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 4334
+      },
+      "RMI_RTT_FOLD": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpk37bcmqt_RMI_RTT_FOLD.rs:1667:114\n     |\n1633 | pub open spec fn rmi_rtt_fold_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                          - closing delimiter possibly meant for this\n...\n1667 |     ==> RttWalk(new_s,RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s,RealmAt\n     |                                                                                                                  ^ unclosed delimiter\n...\n1675 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpk37bcmqt_RMI_RTT_FOLD.rs:1675:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1675 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 5812
+      },
+      "RMI_RTT_MAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `)`\n    --> /tmp/tmpxuu5kvkn_RMI_RTT_MAP_UNPROTECTED.rs:1633:165\n     |\n1633 | ...sult: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                 ^ unclosed delimiter\n...\n1642 | ...rd))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n     |                                                  ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 6242
+      },
+      "RMI_RTT_READ_ENTRY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpm2rldcs3_RMI_RTT_READ_ENTRY.rs:1645:547\n     |\n1633 | pub open spec fn rmi_rtt_read_entry_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, walk_level: UInt64, state: RmiRttEntryState, desc: Bits64, ripas: RmiRipas, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                                              - closing delimiter possibly meant for this\n...\n1645 |   && (result.is_Ok() && RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.state == ASSIGNED_DEV ==> (RttDescriptorDecode(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.desc,RealmAt(new_s, rd).rtt_s2ap_encoding).attr_unprot == 0 && RttDescriptorDecode(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY).rtte.desc,RealmAt(new_s, rd).rtt_s2ap_encoding).s2ap_indirect.base_index == S2AP_NO_ACCESS && RttDescriptorDecode(new_s, RttWalk(new_s, RealmAt(new_s\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ^ unclosed delimiter\n...\n1653 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpm2rldcs3_RMI_RTT_READ_ENTRY.rs:1653:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1653 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6135
+      },
+      "RMI_RTT_SET_RIPAS": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 5350
+      },
+      "RMI_RTT_SET_S2AP": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 5771
+      },
+      "RMI_VDEV_AUX_COUNT": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 479
+      },
+      "RMI_VDEV_DESTROY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpjsn_z2a2_RMI_VDEV_DESTROY.rs:1724:6\n     |\n1633 | pub open spec fn rmi_vdev_destroy_spec(rd: Address, pdev_ptr: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                          - closing delimiter possibly meant for this\n...\n1724 |   && (result.is_Err()\n     |      ^ unclosed delimiter\n...\n1733 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpjsn_z2a2_RMI_VDEV_DESTROY.rs:1733:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1733 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 5963
+      },
+      "RMI_VDEV_GET_INTERFACE_REPORT": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 2005
+      },
+      "RMI_VDEV_GET_STATE": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmpgljyi1cx_RMI_VDEV_GET_STATE.rs:1638:26\n     |\n1638 |   && (result.is_Ok() ==> Equal(state, VdevAt(new_s, vdev_ptr).vdev_state))\n     |                          ^^^^^ -----  ---------------------------------- expected `RmiFeature`, found `RmmVdevState`\n     |                                |\n     |                                expected `RmmFeature`, found `RmiVdevState`\n     |\nnote: function defined here\n    --> /tmp/tmpgljyi1cx_RMI_VDEV_GET_STATE.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmpgljyi1cx_RMI_VDEV_GET_STATE.rs:1643:16\n     |\n1643 |     ==> result.is_Ok())\n     |                ^^^^^\n\nerror: aborting due to 1 previous error; 446 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.",
+        "gold_compiles": false,
+        "chars": 797
+      },
+      "RMI_VDEV_LOCK": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1875
+      },
+      "RMI_VDEV_P2P_BIND": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpnebhzcgs_RMI_VDEV_P2P_BIND.rs:1708:28\n     |\n1633 | pub open spec fn rmi_vdev_p2p_bind_spec(stream_ptr: Address, rd: Address, rec_ptr: Address, pdev_1_ptr: Address, pdev_2_ptr: Address, vdev_1_ptr: Address, vdev_2_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                                                                - closing delimiter possibly meant for this\n...\n1708 |        AddrIsGranuleAligned(old_s\n     |                            ^ unclosed delimiter\n...\n1716 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpnebhzcgs_RMI_VDEV_P2P_BIND.rs:1716:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1716 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6200
+      },
+      "RMI_VDEV_START": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1873
+      },
+      "RMI_VDEV_UNLOCK": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 2410
+      },
+      "RMI_VSMMU_CREATE": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 5135
+      },
+      "RMI_VSMMU_MAP": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 3913
+      },
+      "RSI_ATTESTATION_TOKEN_CONTINUE": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationFailed` in this scope\n    --> /tmp/tmpmi9roduv_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1641:7\n     |\n1641 |   && (TokenGenerationFailed(old_s) ==> result == RSI_ERROR_UNKNOWN)\n     |       ^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationIncomplete` in this scope\n    --> /tmp/tmpmi9roduv_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1643:32\n     |\n1643 |   && (result == RSI_SUCCESS && TokenGenerationIncomplete(old_s) ==> result == RSI_INCOMPLETE)\n     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationIncomplete` in this scope\n    --> /tmp/tmpmi9roduv_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1644:33\n     |\n1644 |   && (result == RSI_SUCCESS && !TokenGenerationIncomplete(old_s) ==> CurrentRec(new_s).attest_state == NO_ATTEST_IN_PROGRESS)\n     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationFailed` in this scope\n    --> /tmp/tmpmi9roduv_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1652:10\n     |\n1652 |        !(TokenGenerationFailed(old_s)))\n     |          ^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n",
+        "gold_compiles": true,
+        "chars": 1745
+      },
+      "RSI_IPA_STATE_GET": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `AllAddressesInRange` in this scope\n    --> /tmp/tmp53q32ayf_RSI_IPA_STATE_GET.rs:1640:33\n     |\n1640 |   && (result == RSI_SUCCESS ==> AllAddressesInRange(old_s, base, out_top).Ripas == ripas)\n     |                                 ^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `AllAddressesInRange` in this scope\n    --> /tmp/tmp53q32ayf_RSI_IPA_STATE_GET.rs:1643:33\n     |\n1643 |   && (result == RSI_SUCCESS ==> AllAddressesInRange(new_s, base, out_top).Ripas == ripas)\n     |                                 ^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror: aborting due to 2 previous errors; 171 warnings emitted\n\nFor more information about this error, try `rustc --explain E0425`.",
+        "gold_compiles": true,
+        "chars": 1047
+      },
+      "RSI_MEASUREMENT_READ": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": false,
+        "chars": 2333
+      },
+      "RSI_MEM_SET_PERM_INDEX": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `CookieIsValid` in this scope\n    --> /tmp/tmp8126o9ru_RSI_MEM_SET_PERM_INDEX.rs:1639:7\n     |\n1639 |   && (CookieIsValid(old_s, cookie) ==> result == RSI_ERROR_INPUT)\n     |       ^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `CookieIsValid` in this scope\n    --> /tmp/tmp8126o9ru_RSI_MEM_SET_PERM_INDEX.rs:1649:10\n     |\n1649 |        !(CookieIsValid(old_s, cookie)))\n     |          ^^^^^^^^^^^^^ not found in this scope\n\nerror: aborting due to 2 previous errors; 171 warnings emitted\n\nFor more information about this error, try `rustc --explain E0425`.",
+        "gold_compiles": false,
+        "chars": 1652
+      },
+      "RSI_REALM_CONFIG": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmpxgb51u_j_RSI_REALM_CONFIG.rs:1638:33\n     |\n1638 |   && (result == RSI_SUCCESS ==> Equal(RsiRealmConfigAt(new_s, addr).hash_algo, CurrentRealm(new_s).hash_algo))\n     |                                 ^^^^^ ---------------------------------------  ----------------------------- expected `RmiFeature`, found `RmmHashAlgorithm`\n     |                                       |\n     |                                       expected `RmmFeature`, found `RsiHashAlgorithm`\n     |\nnote: function defined here\n    --> /tmp/tmpxgb51u_j_RSI_REALM_CONFIG.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nerror: aborting due to 1 previous error; 444 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.",
+        "gold_compiles": false,
+        "chars": 1616
+      },
+      "RSI_VDEV_GET_INFO": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp98giylsc_RSI_VDEV_GET_INFO.rs:1639:33\n     |\n1639 | ...=> Equal(RsiVdevInfoAt(new_s, addr).hash_algo, PdevAt(new_s, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).hash_algo))\n     |       ^^^^^ ------------------------------------  -------------------------------------------------------------------------------- expected `RmiFeature`, found `RmmHashAlgorithm`\n     |             |\n     |             expected `RmmFeature`, found `RsiHashAlgorithm`\n     |\nnote: function defined here\n    --> /tmp/tmp98giylsc_RSI_VDEV_GET_INFO.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nerror[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp98giylsc_RSI_VDEV_GET_INFO.rs:1640:33\n     |\n1640 | ...=> Equal(RsiVdevInfoAt(new_s, addr).flags.p2p_enabled, PdevAt(new_s, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).p2p_enabled))\n     |       ^^^^^ --------------------------------------------  ---------------------------------------------------------------------------------- argument #2 of type `RmiFeature` is missing\n     |             |\n     |             unexpected argument #1 of type `RsiFeature`\n     |\nnote: function defined here\n    --> /tmp/tmp98giylsc_RSI_VDEV_GET_INFO.rs:1341:18",
+        "gold_compiles": false,
+        "chars": 3343
+      },
+      "RSI_VSMMU_ACTIVATE": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find function, tuple struct or tuple variant `RIPAS` in this scope\n    --> /tmp/tmpwd7809ov_RSI_VSMMU_ACTIVATE.rs:1639:33\n     |\n1639 |   && (result == RSI_SUCCESS ==> RIPAS(new_s, base, new_base) == DEV)\n     |                                 ^^^^^ not found in this scope\n\nerror: aborting due to 1 previous error; 171 warnings emitted\n\nFor more information about this error, try `rustc --explain E0425`.",
+        "gold_compiles": true,
+        "chars": 2113
+      },
+      "RSI_VSMMU_GET_INFO": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1393
+      }
+    },
+    "sft2-3": {
+      "PSCI_CPU_OFF": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 73
+      },
+      "RMI_DATA_CREATE_UNKNOWN": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: expected `,`\n    --> /tmp/tmpx5_l6cbx_RMI_DATA_CREATE_UNKNOWN.rs:1646:35\n     |\n1646 |   && (result.is_Ok() ==> Contents of target Granule are wiped)\n     |                                   ^^\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 4001
+      },
+      "RMI_DATA_CREATE": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: expected `,`\n    --> /tmp/tmpx1h18rov_RMI_DATA_CREATE.rs:1649:35\n     |\n1649 |   && (result.is_Ok() ==> Contents of target Granule are copied from source Granule)\n     |                                   ^^\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 5068
+      },
+      "RMI_DATA_DESTROY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpyppqgjai_RMI_DATA_DESTROY.rs:1678:6\n     |\n1633 | pub open spec fn rmi_data_destroy_spec(rd: Address, ipa: Address, result: Result<(), RmiStatusCode>, data: Address, top: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                               - closing delimiter possibly meant for this\n...\n1678 |   && (result.is_Err()\n     |      ^ unclosed delimiter\n...\n1687 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpyppqgjai_RMI_DATA_DESTROY.rs:1687:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1687 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6077
+      },
+      "RMI_GRANULE_DELEGATE": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 846
+      },
+      "RMI_MEC_SET_SHARED": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: unexpected closing delimiter: `}`\n    --> /tmp/tmp9bveq5gg_RMI_MEC_SET_SHARED.rs:1650:1\n     |\n1633 | pub open spec fn rmi_mec_set_shared_spec(mecid: Bits64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                        - the nearest open delimiter\n...\n1639 |     ==> result.is_Ok())\n     |                       - missing open `(` for this delimiter\n...\n1650 | } // verus!\n     | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 605
+      },
+      "RMI_PDEV_IDE_RESET": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1360
+      },
+      "RMI_PDEV_SET_PUBKEY": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1724
+      },
+      "RMI_PSMMU_MSI_CONFIG": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: expected `,`\n    --> /tmp/tmpdk9gu3jw_RMI_PSMMU_MSI_CONFIG.rs:1639:50\n     |\n1639 |   && (result.is_Ok() ==> gerr_addr is programmed to SMMU_R_GERROR_IRQ_CFG0 with NS)\n     |                                                  ^^\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": false,
+        "chars": 1690
+      },
+      "RMI_REALM_CREATE": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `)`\n    --> /tmp/tmpl2yct71e_RMI_REALM_CREATE.rs:1633:137\n     |\n1633 | ...: S) -> bool {\n     |                 ^ unclosed delimiter\n...\n1693 | ...dsAreFree(old_s, RmiRealmParamsAt(old_s, params_ptr).vmid, RmiRealmParamsAt(old_s, params_ptr).aux_vmid))) &&\n     |                                                                                                             ^ mismatched closing delimiter\n\nerror: mismatched closing delimiter: `}`\n    --> /tmp/tmpl2yct71e_RMI_REALM_CREATE.rs:1695:30\n     |\n   3 | verus! {\n     |        - closing delimiter possibly meant for this\n...\n1695 |        GranuleAccessPermitted(old_s\n     |                              ^ unclosed delimiter\n...\n1703 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": false,
+        "chars": 6676
+      },
+      "RMI_REALM_DESTROY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpiv8s64fe_RMI_REALM_DESTROY.rs:1761:48\n     |\n1633 | pub open spec fn rmi_realm_destroy_spec(rd: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                     - closing delimiter possibly meant for this\n...\n1761 |     ==> GranuleAt(new_s, rd).state == GranuleAt(old_s\n     |                                                ^ unclosed delimiter\n...\n1769 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpiv8s64fe_RMI_REALM_DESTROY.rs:1769:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1769 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6206
+      },
+      "RMI_REC_DESTROY": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find value `rd_pre` in this scope\n    --> /tmp/tmp7_5w_m0__RMI_REC_DESTROY.rs:1639:95\n     |\n1639 |   && (result.is_Ok() ==> AuxStateEqual32(new_s, RecAt(new_s, rec_ptr).aux, RecAuxCount(new_s, rd_pre), DELEGATED))\n     |                                                                                               ^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `rd_pre` in this scope\n    --> /tmp/tmp7_5w_m0__RMI_REC_DESTROY.rs:1640:41\n     |\n1640 |   && (result.is_Ok() ==> RealmAt(new_s, rd_pre).num_recs == RealmAt(new_s, rd_pre).num_recs - 1)\n     |                                         ^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `rd_pre` in this scope\n    --> /tmp/tmp7_5w_m0__RMI_REC_DESTROY.rs:1640:76\n     |\n1640 |   && (result.is_Ok() ==> RealmAt(new_s, rd_pre).num_recs == RealmAt(new_s, rd_pre).num_recs - 1)\n     |                                                                            ^^^^^^ not found in this scope\n\nerror[E0425]: cannot find value `rd_pre` in this scope\n    --> /tmp/tmp7_5w_m0__RMI_REC_DESTROY.rs:1649:78\n     |\n1649 |     ==> AuxStateEqual32(new_s, RecAt(new_s, rec_ptr).aux, RecAuxCount(new_s, rd_pre), DELEGATED))\n     |                                                                              ^^^^^^ not found in this scope\n",
+        "gold_compiles": true,
+        "chars": 1276
+      },
+      "RMI_REC_ENTER": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: expected `,`\n    --> /tmp/tmpmhr29rqt_RMI_REC_ENTER.rs:1640:26\n     |\n1640 |   && (RealmAt(old_s, rec owner).state == REALM_SYSTEM_OFF ==> ResultEqual(result, RMI_ERROR_REALM(1)))\n     |                          ^^^^^\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 2672
+      },
+      "RMI_RTT_AUX_MAP_PROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpg63ze8ee_RMI_RTT_AUX_MAP_PROTECTED.rs:1656:10\n     |\n1633 | pub open spec fn rmi_rtt_aux_map_protected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, state: RmiRttEntryState, ripas: RmiRipas, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                    - closing delimiter possibly meant for this\n...\n1656 |        !((RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == ASSIGNED && RttWalk(old_s, RealmAt(old_s, rd), ipa,RMM_RTT_PAGE_LEVEL as int,RMM_...\n     |          ^ unclosed delimiter\n...\n1664 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpg63ze8ee_RMI_RTT_AUX_MAP_PROTECTED.rs:1664:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1664 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6160
+      },
+      "RMI_RTT_AUX_MAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp8lytrigg_RMI_RTT_AUX_MAP_UNPROTECTED.rs:1657:16\n     |\n1633 | pub open spec fn rmi_rtt_aux_map_unprotected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                            - closing delimiter possibly meant for this\n...\n1657 |     ==> RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtte.addr == RttWalk(old_s, RealmAt(old_s, rd), ipa, RealmAt(old_s, rd).rtte.addr)\n     |                ^ unclosed delimiter\n1658 | }\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 2965
+      },
+      "RMI_RTT_AUX_UNMAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp3jka3io6_RMI_RTT_AUX_UNMAP_UNPROTECTED.rs:1641:54\n     |\n1633 | pub open spec fn rmi_rtt_aux_unmap_unprotected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, top: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                            - closing delimiter possibly meant for this\n...\n1641 |   && (result.is_Ok() ==> top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s, RealmAt(new_s, rd), ipa, RealmAt(new_s, rd).rtt_addr),RttWalk(new_s, RealmAt(new_s, rd...\n     |                                                      ^ unclosed delimiter\n...\n1652 | }\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 2166
+      },
+      "RMI_RTT_CREATE": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpxocazh08_RMI_RTT_CREATE.rs:1686:115\n     |\n1633 | pub open spec fn rmi_rtt_create_spec(rd: Address, rtt: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                            - closing delimiter possibly meant for this\n...\n1686 |     ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s, RealmAt(old_s, rd), ipa,level - 1 as ...\n     |                                                                                                                   ^ unclosed delimiter\n...\n1694 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpxocazh08_RMI_RTT_CREATE.rs:1694:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1694 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 5905
+      },
+      "RMI_RTT_FOLD": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpuyjd8nhj_RMI_RTT_FOLD.rs:1667:115\n     |\n1633 | pub open spec fn rmi_rtt_fold_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                          - closing delimiter possibly meant for this\n...\n1667 |     ==> RttWalk(new_s, RealmAt(new_s, rd), ipa,level - 1 as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas == RttWalk(old_s,\n     |                                                                                                                   ^ unclosed delimiter\n...\n1675 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpuyjd8nhj_RMI_RTT_FOLD.rs:1675:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1675 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 5849
+      },
+      "RMI_RTT_MAP_UNPROTECTED": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpmz66a9sr_RMI_RTT_MAP_UNPROTECTED.rs:1693:29\n     |\n1633 | pub open spec fn rmi_rtt_map_unprotected_spec(rd: Address, ipa: Address, level: Int64, desc: Bits64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                     - closing delimiter possibly meant for this\n...\n1693 |        AddrIsRttLevelAligned(old_s, ip\n     |                             ^ unclosed delimiter\n...\n1701 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpmz66a9sr_RMI_RTT_MAP_UNPROTECTED.rs:1701:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1701 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6350
+      },
+      "RMI_RTT_READ_ENTRY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp6c5ffoi3_RMI_RTT_READ_ENTRY.rs:1646:25\n     |\n1633 | pub open spec fn rmi_rtt_read_entry_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                  - closing delimiter possibly meant for this\n...\n1646 |   && (result.is_Ok() && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED ==>  && RttWalk(o...\n     |                         ^ unclosed delimiter\n...\n1654 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp6c5ffoi3_RMI_RTT_READ_ENTRY.rs:1654:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1654 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6278
+      },
+      "RMI_RTT_SET_RIPAS": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `)`\n    --> /tmp/tmpz9hz7_m3_RMI_RTT_SET_RIPAS.rs:1633:182\n     |\n1633 | ...ol {\n     |       ^ unclosed delimiter\n...\n1651 | ...REE_PRIMARY as int).rtt_addr),RttRipas(new_s, RttWalk(new_s, RealmAt(new_s, rd), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas),RecAt(new_s, rec_ptr).ripas_value),RecAt(new_s, rec_ptr).ripas_destroyed != CHANGE_DESTROYED)))\n     |                                                                                                                                                                                                                                                           ^ mismatched closing delimiter\n\nerror: mismatched closing delimiter: `}`\n    --> /tmp/tmpz9hz7_m3_RMI_RTT_SET_RIPAS.rs:1689:50\n     |\n   3 | verus! {\n     |        - closing delimiter possibly meant for this\n...\n1689 |     ==> RecAt(new_s, rec_ptr).ripas_addr == RecAt(old_s, rec_ptr\n     |                                                  ^ unclosed delimiter\n...\n1697 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6275
+      },
+      "RMI_RTT_SET_S2AP": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpns9hsxu9_RMI_RTT_SET_S2AP.rs:1657:36\n     |\n1633 | pub open spec fn rmi_rtt_set_s2ap_spec(rd: Address, rec_ptr: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, rtt_tree: UInt64, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                       - closing delimiter possibly meant for this\n...\n1657 |        AddrIsGranuleAligned(old_s, (not_aligned.valid == RMM_TRUE && !AddrRangeIsWithin(old_s, base, top, AlignDownToRttLevel(old_s, not_aligned.addr, NotAligned(old_s, RttWalkAnyNotAligned(old_s, Realm...\n     |                                    ^ unclosed delimiter\n...\n1821 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpns9hsxu9_RMI_RTT_SET_S2AP.rs:1821:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1821 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6641
+      },
+      "RMI_VDEV_AUX_COUNT": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 342
+      },
+      "RMI_VDEV_DESTROY": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmpbhiofsoy_RMI_VDEV_DESTROY.rs:1729:15\n     |\n1633 | pub open spec fn rmi_vdev_destroy_spec(rd: Address, pdev_ptr: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                          - closing delimiter possibly meant for this\n...\n1729 |     ==> PdevAt(new\n     |               ^ unclosed delimiter\n...\n1737 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmpbhiofsoy_RMI_VDEV_DESTROY.rs:1737:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1737 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 5883
+      },
+      "RMI_VDEV_GET_INTERFACE_REPORT": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 2005
+      },
+      "RMI_VDEV_GET_STATE": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmpw14493es_RMI_VDEV_GET_STATE.rs:1638:26\n     |\n1638 |   && (result.is_Ok() ==> Equal(state, VdevAt(new_s, vdev_ptr).vdev_state))\n     |                          ^^^^^ -----  ---------------------------------- expected `RmiFeature`, found `RmmVdevState`\n     |                                |\n     |                                expected `RmmFeature`, found `RmiVdevState`\n     |\nnote: function defined here\n    --> /tmp/tmpw14493es_RMI_VDEV_GET_STATE.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nwarning: use of deprecated method `vstd::prelude::ResultAdditionalSpecFns::is_Ok`: is_Variant is deprecated - use `->` or `matches` instead: https://verus-lang.github.io/verus/guide/datatypes_enum.html\n    --> /tmp/tmpw14493es_RMI_VDEV_GET_STATE.rs:1643:16\n     |\n1643 |     ==> result.is_Ok())\n     |                ^^^^^\n\nerror: aborting due to 1 previous error; 446 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.",
+        "gold_compiles": false,
+        "chars": 797
+      },
+      "RMI_VDEV_LOCK": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1875
+      },
+      "RMI_VDEV_P2P_BIND": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp0j4w92u1_RMI_VDEV_P2P_BIND.rs:1707:9\n     |\n1633 | pub open spec fn rmi_vdev_p2p_bound_spec(stream_ptr: Address, rd: Address, rec_ptr: Address, pdev_1_ptr: Address, pdev_2_ptr: Address, vdev_1_ptr: Address, vdev_2_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                                                                                                 - closing delimiter possibly meant for this\n...\n1707 |        !(VdevAt(old_s, vdev_1_ptr).p2p_bound\n     |         ^ unclosed delimiter\n...\n1715 | } // verus!\n     | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n    --> /tmp/tmp0j4w92u1_RMI_VDEV_P2P_BIND.rs:1715:13\n     |\n   3 | verus! {\n     |        - unclosed delimiter\n...\n1715 | } // verus!\n     |            ^\n\nerror: aborting due to 2 previous errors",
+        "gold_compiles": true,
+        "chars": 6159
+      },
+      "RMI_VDEV_START": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1873
+      },
+      "RMI_VDEV_UNLOCK": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 2410
+      },
+      "RMI_VSMMU_CREATE": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: unexpected closing delimiter: `)`\n    --> /tmp/tmpc37cirxe_RMI_VSMMU_CREATE.rs:1669:76\n     |\n   3 | ...s! {\n     |       - the nearest open delimiter\n...\n1633 | ...open spec fn rmi_vsmmu_create_spec(rd: Address, vsmmu_ptr: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                            - the nearest open delimiter\n...\n1646 | ... ((!AddrIsProtected(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_base, RealmAt(old_s, rd)) || !AddrIsGranuleAligned(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_top)) || ((RmiVsmmuParamsAt(old_s, params_ptr).reg_base) <= (RmiVsmmuParamsAt(old_s, params_ptr).reg_base))) ==> ResultEqual(result, RMI_ERROR_INPUT))\n     |                                                                                                                                                                                                                                                                                                                              - missing open `(` for this delimiter\n...\n1668 | ...   result.is_Ok() ==> GranuleAt(new_s, vsmmu_ptr).state == VSMMU) &&\n     |                                                                    - missing open `(` for this delimiter\n1669 | ...   result.is_Ok() ==> VsmmuAt(new_s, vsmmu_ptr).state == VSMMU_INACTIVE) &&\n     |                                                                           ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 5874
+      },
+      "RMI_VSMMU_MAP": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp9n1l9vd7_RMI_VSMMU_MAP.rs:1651:6\n     |\n1633 | pub open spec fn rmi_vsmmu_map_spec(rd: Address, vsmmu_ptr: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                 - closing delimiter possibly meant for this\n...\n1651 |   && ((!(ImplFeatures(old_s).feat_da != FEATURE_TRUE) &&\n     |      ^ unclosed delimiter\n...\n1671 | }\n     | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 4032
+      },
+      "RSI_ATTESTATION_TOKEN_CONTINUE": {
+        "pass": false,
+        "reason_old": "missing_symbol",
+        "reason": "missing_symbol",
+        "output_head": "error[E0425]: cannot find value `RSI_COMPLETE` in this scope\n    --> /tmp/tmp0nxpxt_v_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1643:206\n     |\n 343 |   RSI_INCOMPLETE,\n     |   -------------- similarly named unit variant `RSI_INCOMPLETE` defined here\n...\n1643 |   && (result == RSI_SUCCESS && TokenGenerationIsComplete(old_s, CurrentRec(old_s), RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas) ==> result == RSI_COMPLETE)\n     |                                                                                                                                                                                                              ^^^^^^^^^^^^\n     |\nhelp: a unit variant with a similar name exists\n     |\n1643 |   && (result == RSI_SUCCESS && TokenGenerationIsComplete(old_s, CurrentRec(old_s), RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.ripas) ==> result == RSI_INCOMPLETE)\n     |                                                                                                                                                                                                                  ++\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationIsNotComplete` in this scope\n    --> /tmp/tmp0nxpxt_v_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1642:32\n     |\n1642 |   && (result == RSI_SUCCESS && TokenGenerationIsNotComplete(old_s, CurrentRec(old_s), RttWalk(old_s, CurrentRealm(old_s), addr,RMM...\n     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function, tuple struct or tuple variant `TokenGenerationIsComplete` in this scope\n    --> /tmp/tmp0nxpxt_v_RSI_ATTESTATION_TOKEN_CONTINUE.rs:1643:32\n     |\n1643 |   && (result == RSI_SUCCESS && TokenGenerationIsComplete(old_s, CurrentRec(old_s), RttWalk(old_s, CurrentRealm(old_s), addr,RMM_RT...",
+        "gold_compiles": true,
+        "chars": 1796
+      },
+      "RSI_IPA_STATE_GET": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: unexpected closing delimiter: `}`\n    --> /tmp/tmpenu7p037_RSI_IPA_STATE_GET.rs:1652:1\n     |\n1633 | pub open spec fn rsi_ipa_state_get_spec(base: Address, top: Address, result: RsiCommandReturnCode, out_top: Address, ripas: RsiRipas, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                                   - the nearest open delimiter\n...\n1638 |   && (result == RSI_SUCCESS ==> Value of out_top is such that RIPAS of address range [base, out_top) == ripas)\n     |                                                                                      -             -         - missing open `(` for this delimiter\n     |                                                                                      |             |\n     |                                                                                      |             missing open `(` for this delimiter\n     |                                                                                      the nearest open delimiter\n...\n1652 | } // verus!\n     | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": true,
+        "chars": 782
+      },
+      "RSI_MEASUREMENT_READ": {
+        "pass": false,
+        "reason_old": "verus_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `)`\n    --> /tmp/tmpk54fc8dp_RSI_MEASUREMENT_READ.rs:1636:723\n     |\n1636 | ...7 == RealmMeasurementEncode(new_s, CurrentRealm(new_s).measurements[7)))\n     |                               -                                       ^ ^ mismatched closing delimiter\n     |                               |                                       |\n     |                               |                                       unclosed delimiter\n     |                               closing delimiter possibly meant for this\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": false,
+        "chars": 1716
+      },
+      "RSI_MEM_SET_PERM_INDEX": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": false,
+        "chars": 1541
+      },
+      "RSI_REALM_CONFIG": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "type_mismatch",
+        "output_head": "error[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp4y0_h211_RSI_REALM_CONFIG.rs:1638:33\n     |\n1638 |   && (result == RSI_SUCCESS ==> Equal(RsiRealmConfigAt(new_s, addr).hash_algo, CurrentRealm(new_s).hash_algo))\n     |                                 ^^^^^ ---------------------------------------  ----------------------------- expected `RmiFeature`, found `RmmHashAlgorithm`\n     |                                       |\n     |                                       expected `RmmFeature`, found `RsiHashAlgorithm`\n     |\nnote: function defined here\n    --> /tmp/tmp4y0_h211_RSI_REALM_CONFIG.rs:1341:18\n     |\n1341 | pub open spec fn Equal(abstract_: RmmFeature, concrete: RmiFeature) -> bool;\n     |                  ^^^^^ ---------------------  --------------------\n\nerror[E0308]: arguments to this function are incorrect\n    --> /tmp/tmp4y0_h211_RSI_REALM_CONFIG.rs:1648:9\n     |\n1648 |     ==> Equal(RsiRealmConfigAt(new_s, addr).hash_algo, RsiRealmConfigAt(old_s, addr).hash_algo))\n     |         ^^^^^ ---------------------------------------  --------------------------------------- expected `RmiFeature`, found `RsiHashAlgorithm`\n     |               |\n     |               expected `RmmFeature`, found `RsiHashAlgorithm`\n     |\nnote: function defined here\n    --> /tmp/tmp4y0_h211_RSI_REALM_CONFIG.rs:1341:18",
+        "gold_compiles": false,
+        "chars": 1621
+      },
+      "RSI_VDEV_GET_INFO": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: unexpected closing delimiter: `)`\n    --> /tmp/tmpti06j9ph_RSI_VDEV_GET_INFO.rs:1657:153\n     |\n   3 | ...s! {\n     |       - the nearest open delimiter\n...\n1633 | ...open spec fn rsi_vdev_get_info_spec(vdev_id: Bits64, addr: Address, result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                  - the nearest open delimiter\n...\n1655 | ...==> VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).hash_algo == VdevFromVdevId(old_s, CurrentRealm(old_s),vdev_id).pdev).hash_algo)\n     |                                                                                                                                                - missing open `(` for this delimiter\n1656 | ... (result != RSI_SUCCESS\n1657 | ...==> VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).flags.p2p_enabled, VdevFromVdevId(new_s, CurrentRealm(new_s),vdev_id).pdev).p2p_enabled))\n     |                                                                                                                                           -            ^ unexpected closing delimiter\n     |                                                                                                                                           |\n     |                                                                                                                                           missing open `(` for this delimiter\n\nerror: aborting due to 1 previous error",
+        "gold_compiles": false,
+        "chars": 6219
+      },
+      "RSI_VSMMU_ACTIVATE": {
+        "pass": false,
+        "reason_old": "parse_error",
+        "reason": "other_compile_error",
+        "output_head": "error: mismatched closing delimiter: `}`\n    --> /tmp/tmp7l9m_s5n_RSI_VSMMU_ACTIVATE.rs:1640:48\n     |\n   3 | verus! {\n     |        - closing delimiter possibly meant for this\n...\n1640 |   && (result == RSI_SUCCESS && (base == VsmmuAt(old_s, RttWalk(old_s, CurrentRealm(old_s), base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_...\n     |                                                ^ unclosed delimiter\n...\n1648 | }\n     | ^ mismatched closing delimiter\n\nerror: unexpected closing delimiter: `}`\n    --> /tmp/tmp7l9m_s5n_RSI_VSMMU_ACTIVATE.rs:1656:1\n     |\n1633 | pub open spec fn rsi_vsmmu_activate_spec(base: Address, top: Address, result: RsiCommandReturnCode, new_base: Address, old_s: S, new_s: S) -> bool {\n     |                                                                                                                                                    - the nearest open delimiter\n...\n1639 |   && (result == RSI_SUCCESS ==> [base, new_base).state == VSMMU_ACTIVATING)\n     |                                 -              -                          - missing open `(` for this delimiter\n     |                                 |              |\n     |                                 |              missing open `(` for this delimiter\n     |                                 the nearest open delimiter\n...",
+        "gold_compiles": true,
+        "chars": 1791
+      },
+      "RSI_VSMMU_GET_INFO": {
+        "pass": true,
+        "reason_old": "ok",
+        "reason": "ok",
+        "output_head": null,
+        "gold_compiles": true,
+        "chars": 1219
+      }
+    }
+  },
+  "never": [
+    "RMI_DATA_CREATE",
+    "RMI_PSMMU_MSI_CONFIG",
+    "RMI_REALM_CREATE",
+    "RMI_REALM_DESTROY",
+    "RMI_REC_ENTER",
+    "RMI_RTT_AUX_MAP_PROTECTED",
+    "RMI_RTT_AUX_MAP_UNPROTECTED",
+    "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+    "RMI_RTT_FOLD",
+    "RMI_RTT_MAP_UNPROTECTED",
+    "RMI_RTT_READ_ENTRY",
+    "RMI_VDEV_DESTROY",
+    "RMI_VDEV_GET_STATE",
+    "RMI_VDEV_P2P_BIND",
+    "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "RSI_IPA_STATE_GET",
+    "RSI_REALM_CONFIG",
+    "RSI_VDEV_GET_INFO",
+    "RSI_VSMMU_ACTIVATE"
+  ],
+  "always": [
+    "PSCI_CPU_OFF",
+    "RMI_GRANULE_DELEGATE",
+    "RMI_PDEV_IDE_RESET",
+    "RMI_VDEV_AUX_COUNT",
+    "RMI_VDEV_GET_INTERFACE_REPORT",
+    "RMI_VDEV_LOCK",
+    "RMI_VDEV_START",
+    "RSI_VSMMU_GET_INFO"
+  ],
+  "flips": [
+    "RMI_DATA_CREATE_UNKNOWN",
+    "RMI_DATA_DESTROY",
+    "RMI_MEC_SET_SHARED",
+    "RMI_PDEV_SET_PUBKEY",
+    "RMI_REC_DESTROY",
+    "RMI_RTT_CREATE",
+    "RMI_RTT_SET_RIPAS",
+    "RMI_RTT_SET_S2AP",
+    "RMI_VDEV_UNLOCK",
+    "RMI_VSMMU_CREATE",
+    "RMI_VSMMU_MAP",
+    "RSI_MEASUREMENT_READ",
+    "RSI_MEM_SET_PERM_INDEX"
+  ],
+  "hard_gold_compiles": [
+    "RMI_DATA_CREATE",
+    "RMI_REALM_DESTROY",
+    "RMI_REC_ENTER",
+    "RMI_RTT_AUX_MAP_PROTECTED",
+    "RMI_RTT_AUX_MAP_UNPROTECTED",
+    "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+    "RMI_RTT_FOLD",
+    "RMI_RTT_MAP_UNPROTECTED",
+    "RMI_RTT_READ_ENTRY",
+    "RMI_VDEV_DESTROY",
+    "RMI_VDEV_P2P_BIND",
+    "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "RSI_IPA_STATE_GET",
+    "RSI_VSMMU_ACTIVATE"
+  ]
+}

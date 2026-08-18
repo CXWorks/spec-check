@@ -1,0 +1,27 @@
+[equiv] 16 spec pairs, 12 parallel, 300s timeout each (2 Verus runs per pair)
+[equiv] sft2-1-final-bok8-recovered RMI_PDEV_SET_PUBKEY: incomparable
+[equiv] sft2-1-final-bok8-recovered RMI_VDEV_DESTROY: incomparable
+[equiv] sft2-1-final-bok8-recovered RMI_DATA_CREATE_UNKNOWN: incomparable
+[equiv] sft2-2-final-bok8-recovered RMI_RTT_SET_RIPAS: incomparable
+[equiv] sft2-2-final-bok8-recovered RMI_RTT_CREATE: incomparable
+[equiv] sft2-2-final-bok8-recovered RMI_RTT_MAP_UNPROTECTED: incomparable
+[equiv] sft2-2-final-bok8-recovered RMI_REC_DESTROY: stronger
+[equiv] sft2-2-final-bok8-recovered RSI_IPA_STATE_GET: stronger
+[equiv] sft2-2-final-bok8-recovered RMI_VDEV_DESTROY: stronger
+[equiv] sft2-2-final-bok8-recovered RMI_DATA_CREATE_UNKNOWN: weaker
+[equiv] sft2-1-final-bok8-recovered RMI_RTT_FOLD: equivalent
+[equiv] sft2-2-final-bok8-recovered RMI_RTT_SET_S2AP: equivalent
+[equiv] sft2-1-final-bok8-recovered RSI_IPA_STATE_GET: incomparable
+[equiv] sft2-0-final-bok8-recovered RMI_VDEV_DESTROY: incomparable
+[equiv] sft2-0-final-bok8-recovered RMI_RTT_CREATE: incomparable
+[equiv] sft2-0-final-bok8-recovered RMI_RTT_SET_RIPAS: stronger
+
+=== verdicts by run
+  sft2-0-final-bok8-recovered: incomparable=2  stronger=1
+     -> 2/3 admit behaviour gold forbids (67%); equivalent 0/3
+  sft2-1-final-bok8-recovered: incomparable=4  equivalent=1
+     -> 4/5 admit behaviour gold forbids (80%); equivalent 1/5
+  sft2-2-final-bok8-recovered: stronger=3  incomparable=3  weaker=1  equivalent=1
+     -> 4/8 admit behaviour gold forbids (50%); equivalent 1/8
+
+[equiv] wrote /work/an/equiv-rec.json
