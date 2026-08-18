@@ -237,6 +237,65 @@ still leaves `walk_level` unconstrained after repair: a pass optimising for
 compilation could have filled in the undefined output and refuted the session's
 main finding with its own tooling.
 
+### The repair fix does work — it needed a working instrument to show it
+
+`572e70f` (take identifiers from the error's quoted source, not just backticks)
+was committed unvalidated. Rerun as `rep4-9b`, single-variable against `rep3-9b`:
+
+| `sft3-2` eac5, verus_rmm | TP | detected |
+|---|---|---|
+| baseline, no repair | 1/4 | `RSI_ATTESTATION_TOKEN_CONTINUE` |
+| repair 1 round, **old** feedback | 1/4 | same — no gain |
+| repair 1 round, **fixed** feedback | **2/4** | **+ `RMI_DATA_DESTROY:ripas`** |
+| **preamble**, no repair | **2/4** | **+ `RMI_DATA_DESTROY:ripas`** |
+| gold | 4/4 | |
+
+Two independent levers, the same one item unlocked. The preamble and the repair
+fix are not obviously additive; `genpr-9b` tests the corner.
+
+The new diagnostics say the loop is now mechanically sound, and that this is not
+where the remaining failure lives:
+
+| | `rep4-9b` |
+|---|---|
+| compile first try | 25/41 (was 24) |
+| repairs attempted | 18 |
+| declarations reached the prompt | **17 of 18** (2–6 lines each) |
+| model returned a usable function | 18 of 18 |
+| output text actually changed | 17 of 18 |
+| SHRANK | **0** |
+| failures converted to compiling | **2 of 18** |
+
+So the model is being shown the declaration, is answering, and is not cheating —
+and still fixes only two. The reason is visible in the class transitions:
+`wrong_arity` goes 13 → 8, but the five it fixes surface as `bad_field_access`
+(3) and `type_mismatch` (2) instead of passing. **Errors cascade, and one round
+sees only the first one.** That makes rounds, not feedback quality, the next
+variable worth moving.
+
+### The preamble effect shrinks after decontamination, and is not significant here
+
+`gpu-and-runs.md` records +22.5pp compiling at p = 0.004 for the 9B. That was
+`sft2-*` on `dataset_clean`, 40 commands. On `sft3-*` / `dataset_bench`, 49
+commands, paired on the same test set:
+
+| | baseline | + preamble | net | McNemar exact |
+|---|---|---|---|---|
+| 4B | 18/49 (36.7%) | 21/49 (42.9%) | +3 | p = 0.375 |
+| 9B | 22/49 (44.9%) | **27/49 (55.1%)** | +5 | p = 0.227 |
+
+**Neither is significant**, and the effect is roughly half its previously
+recorded size. The preamble is also not monotone — it breaks 1 command on the 4B
+and 3 on the 9B, and `RMI_RTT_CREATE` moves in opposite directions on the two
+models.
+
+What can honestly be said: four separate measurements move the same way —
+4B compile +3, 9B compile +5, verus_rmm 1/4 → 2/4, rule_check false alarms
+1 → 0. Consistent direction across four is the argument; no single one of them
+carries it, and the two that have p-values do not clear 0.05. Given how this
+window went, that distinction is the whole point: a consistent direction is a
+reason to keep the condition, not a result to report as established.
+
 **The 4B's two VERSION "misses" are a scoring artifact.** It read the prose that
 defines `lower`/`higher` and encoded it, so nothing dangles and the check cannot
 fire. Gold and the models that leave it blank are credited. The benchmark rewards
