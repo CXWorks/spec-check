@@ -31,7 +31,14 @@ BENCH_BRANCH="${BENCH_BRANCH:-origin/baseline1-general-model-rule-check}"
 WORK="${BENCH_WORKTREE:-${TMPDIR:-/tmp}/spec-check-bench}"
 
 LOCAL_DIR=""
-if [[ "${1:-}" == "--local" ]]; then LOCAL_DIR="${2:?--local needs a path}"; shift 2; fi
+if [[ "${1:-}" == "--local" ]]; then
+  # Absolute, immediately. Both scorers are invoked after `cd` into another
+  # directory, so a relative path silently resolves somewhere else, finds no
+  # files, and reports a clean 0/4 instead of failing. That cost a wrong
+  # conclusion once already.
+  LOCAL_DIR="$(cd "${2:?--local needs a path}" && pwd)"
+  shift 2
+fi
 NAME="${1:-}"
 [[ -n "$LOCAL_DIR" || -n "$NAME" ]] || {
   echo "usage: $0 <gen-name>   |   $0 --local <dir>" >&2; exit 1; }
@@ -75,8 +82,13 @@ PY
     [[ -n "$inner" ]] && LOCAL_DIR="$inner"
   fi
 fi
+LOCAL_DIR="$(cd "$LOCAL_DIR" && pwd)"
+NRS="$(find "$LOCAL_DIR" -name '*.rs' | wc -l | tr -d ' ')"
 echo "==> scoring $LOCAL_DIR"
-echo "    $(find "$LOCAL_DIR" -name '*.rs' | wc -l | tr -d ' ') spec files"
+echo "    $NRS spec files"
+# An empty input scores 0/4 with everything inconclusive, which reads exactly
+# like a real bad result. Refuse instead.
+[[ "$NRS" -gt 0 ]] || { echo "no .rs files under $LOCAL_DIR -- refusing to report a score" >&2; exit 1; }
 
 # --- 1. rule check (no Verus) ------------------------------------------------
 echo
@@ -98,7 +110,9 @@ if [[ -n "${VERUS_BIN:-}" && -x "${VERUS_BIN}" ]]; then
   ln -sf "$VERUS_BIN" "$WORK/training/verus-x86-linux/verus"
   for v in eac5 rel0 alp14; do
     [[ -d "$LOCAL_DIR/$v" ]] || continue
-    echo "--- $v"
+    nv="$(find "$LOCAL_DIR/$v" -name '*.rs' | wc -l | tr -d ' ')"
+    echo "--- $v  ($nv files)"
+    [[ "$nv" -gt 0 ]] || { echo "    empty, skipping"; continue; }
     # --version selects BOTH the ground truth and the preamble. Without it every
     # version is scored against eac5's, which silently mislabels: rel0 specs read
     # against eac5 ground truth report items that do not exist in rel0 and go
