@@ -258,7 +258,8 @@ where the remaining failure lives:
 
 | | `rep4-9b` |
 |---|---|
-| compile first try | 25/41 (was 24) |
+| compile first try | 23/41 |
+| compile after repair | 25/41 (`rep3-9b`: 24) |
 | repairs attempted | 18 |
 | declarations reached the prompt | **17 of 18** (2–6 lines each) |
 | model returned a usable function | 18 of 18 |
@@ -295,6 +296,44 @@ What can honestly be said: four separate measurements move the same way —
 carries it, and the two that have p-values do not clear 0.05. Given how this
 window went, that distinction is the whole point: a consistent direction is a
 reason to keep the condition, not a result to report as established.
+
+### The 2×2: the levers do not compose, and the TP column was hiding the story
+
+`sft3-2`, eac5, all four cells:
+
+| | TP (of 4) | FP fired (of 6) | compile first try | compile after repair |
+|---|---|---|---|---|
+| baseline | 1/4 | 0/6 | 23/41 | — |
+| + repair 1 | 2/4 | 0/6 | 23/41 | 25/41 |
+| + preamble | 2/4 | 0/6 | 27/41 | — |
+| + preamble + repair | **2/4** | **3/6** | 27/41 | **32/41** |
+| gold | 4/4 | 6/6 | 41/41 | — |
+
+**On TP they do not compose.** Both single levers reach 2/4; together, still 2/4.
+Read alone, that column says the combination bought nothing.
+
+**It bought a great deal.** Compilation goes 23 → 32 of 41, and the preamble
+makes the repair loop three times more effective: it converts 5 of 14 failures
+where the no-preamble run converted 2 of 18. Giving the model the API surface it
+trained with is what makes its self-repair work — the two interact even though
+the TP score does not show it.
+
+**And the FP column is not a precision result.** The 0/6 in the first three rows
+is not the generator being careful; it is the obligation never running because
+the spec did not compile. As compilation rises the known-FP items start firing,
+and gold fires all six — the benchmark's own note says a faithful generator
+fails them exactly as gold does, so they measure the pipeline's ceiling rather
+than generator quality. On both axes the combination moves toward gold's
+profile, from (1/4, 0/6) to (2/4, 3/6) against gold's (4/4, 6/6).
+
+The general lesson is the one this window keeps repeating in different clothes:
+**`inconclusive` is not a score, and a metric computed over mostly-inconclusive
+items is measuring whether the pipeline ran, not how well it did.** Three rows
+of this table read as "0 false alarms" while nothing had executed.
+
+rel0, preamble, no repair: **2/3 TP, 2/6 FP** — the 4B was 1/3. rule_check with
+the preamble is 16/16 across both versions with one false alarm (`desc` on rel0,
+none on eac5); without it, two.
 
 **The 4B's two VERSION "misses" are a scoring artifact.** It read the prose that
 defines `lower`/`higher` and encoded it, so nothing dangles and the check cannot
