@@ -13,9 +13,33 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/boogiebonjour}"
+KUBECONFIG_FILE="${KUBECONFIG_FILE:-${KUBECONFIG:-}}"
 KUBECTL="${KUBECTL:-kubectl}"
 NS=default
+
+# Cluster profile — see the same block in make_jobs.sh. Defaults to
+# boogiebonjour so existing invocations are unchanged. turbox's GPU nodes have
+# 63.4 CPU, so boogiebonjour's 32/64 CPU request for a sampling run is near the
+# node ceiling and its 400Gi memory limit is fine, but the storage class is the
+# real difference: shared-wekafs is RWX, so an eval pod is not pinned to the node
+# its PVC was created on.
+CLUSTER="${CLUSTER:-boogiebonjour}"
+case "$CLUSTER" in
+  turbox)
+    : "${KUBECONFIG_FILE:=$HOME/.kube/configs/turbox-h100.yaml}"
+    STORAGE_CLASS="${STORAGE_CLASS:-shared-wekafs}"
+    ACCESS_MODE="${ACCESS_MODE:-ReadWriteMany}"
+    MEM_LIM="${MEM_LIM:-400Gi}"; MEM_REQ="${MEM_REQ:-200Gi}"
+    BAD=() ;;
+  boogiebonjour)
+    : "${KUBECONFIG_FILE:=$HOME/.kube/boogiebonjour}"
+    STORAGE_CLASS="${STORAGE_CLASS:-local-path}"
+    ACCESS_MODE="${ACCESS_MODE:-ReadWriteOnce}"
+    MEM_LIM="${MEM_LIM:-400Gi}"; MEM_REQ="${MEM_REQ:-200Gi}"
+    BAD=(003 006 013 043 056 057 090 097 101 102 104 105 108) ;;
+  *) echo "unknown CLUSTER=$CLUSTER (expected boogiebonjour|turbox)" >&2; exit 1 ;;
+esac
+export KUBECONFIG="$KUBECONFIG_FILE"
 
 NAME="${1:?usage: make_eval_job.sh <name> <base-model> <run-ids> [ckpts]}"
 BASE="${2:?base model}"
@@ -44,8 +68,24 @@ if [ "$SAMPLES" -gt 0 ]; then CPU_REQ=32; CPU_LIM=64; JOBS=16; else CPU_REQ=16; 
 # family on the stack it trained with.
 case "$BASE" in *3.5*) DEPS=new ;; *) DEPS=ngc ;; esac
 
-BAD=(003 006 013 043 056 057 090 097 101 102 104 105 108)
-bad_values() { for n in "${BAD[@]}"; do echo "                - boogiebonjour-$n.cloud.together.ai"; done; }
+bad_values() { for n in "${BAD[@]:-}"; do [[ -n "$n" ]] && echo "                - boogiebonjour-$n.cloud.together.ai"; done; }
+
+# Omitted entirely rather than emitted with an empty `values:`, which the API
+# server rejects.
+affinity_block() {
+  [[ ${#BAD[@]} -eq 0 ]] && return 0
+  cat <<EOF
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+$(bad_values)
+EOF
+}
 
 echo "==> configmap $CM"
 "$KUBECTL" create configmap "$CM" -n "$NS" \
@@ -68,8 +108,8 @@ metadata:
   namespace: ${NS}
   labels: {owner: de2, task: de2-rl-test-eval2, run: ${NAME}}
 spec:
-  accessModes: [ReadWriteOnce]
-  storageClassName: local-path
+  accessModes: [${ACCESS_MODE}]
+  storageClassName: ${STORAGE_CLASS}
   resources: {requests: {storage: 400Gi}}
 ---
 apiVersion: batch/v1
@@ -93,23 +133,14 @@ spec:
       restartPolicy: Never
       runtimeClassName: nvidia
       hostIPC: true
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: NotIn
-                values:
-$(bad_values)
-      containers:
+$(affinity_block)      containers:
       - name: main
         image: nvcr.io/nvidia/pytorch:25.01-py3
         command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /entry/repair_eval.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
         securityContext: {privileged: true}
         resources:
-          limits:   {cpu: "${CPU_LIM}", memory: 400Gi, nvidia.com/gpu: 2}
-          requests: {cpu: "${CPU_REQ}", memory: 200Gi, nvidia.com/gpu: 2}
+          limits:   {cpu: "${CPU_LIM}", memory: ${MEM_LIM}, nvidia.com/gpu: 2}
+          requests: {cpu: "${CPU_REQ}", memory: ${MEM_REQ}, nvidia.com/gpu: 2}
         env:
         - {name: RUN_IDS,     value: "${RUNS}"}
         - {name: BASE_MODEL,  value: "${BASE}"}

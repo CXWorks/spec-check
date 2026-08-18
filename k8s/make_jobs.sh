@@ -10,7 +10,9 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/boogiebonjour}"
+# KUBECONFIG is chosen by the cluster profile below; an explicitly exported
+# KUBECONFIG still wins, via KUBECONFIG_FILE.
+KUBECONFIG_FILE="${KUBECONFIG_FILE:-${KUBECONFIG:-}}"
 KUBECTL="${KUBECTL:-kubectl}"
 NS=default
 CM=de2-rl-test-sft2-entry
@@ -24,6 +26,39 @@ CM=de2-rl-test-sft2-entry
 # that dataset's splits.json.
 DATASET_DIR="${DATASET_DIR:-dataset_clean}"
 echo "==> dataset: $DATASET_DIR"
+
+# Cluster profile. Defaults are boogiebonjour's, so an unqualified run is
+# unchanged. `CLUSTER=turbox` targets turbox-h100, which differs in ways that
+# are not cosmetic:
+#   - shared-wekafs is a real shared filesystem (RWX), not node-local. That
+#     removes the whole local-path failure mode: PVCs no longer pin a replacement
+#     pod to the node that just failed, and rescuing a checkpoint no longer needs
+#     one helper pod per node.
+#   - its GPU nodes have 63.4 CPU / 723Gi, so boogiebonjour's 96 CPU / 900Gi
+#     limits would never schedule. This is a hard failure, not a slow one.
+CLUSTER="${CLUSTER:-boogiebonjour}"
+case "$CLUSTER" in
+  turbox)
+    : "${KUBECONFIG_FILE:=$HOME/.kube/configs/turbox-h100.yaml}"
+    STORAGE_CLASS="${STORAGE_CLASS:-shared-wekafs}"
+    ACCESS_MODE="${ACCESS_MODE:-ReadWriteMany}"
+    CPU_LIM="${CPU_LIM:-60}";  CPU_REQ="${CPU_REQ:-32}"
+    MEM_LIM="${MEM_LIM:-700Gi}"; MEM_REQ="${MEM_REQ:-400Gi}"
+    SHM="${SHM:-128Gi}"
+    BAD=()                     # no known-bad node list for this cluster
+    ;;
+  boogiebonjour)
+    : "${KUBECONFIG_FILE:=$HOME/.kube/boogiebonjour}"
+    STORAGE_CLASS="${STORAGE_CLASS:-local-path}"
+    ACCESS_MODE="${ACCESS_MODE:-ReadWriteOnce}"
+    CPU_LIM="${CPU_LIM:-96}";  CPU_REQ="${CPU_REQ:-56}"
+    MEM_LIM="${MEM_LIM:-900Gi}"; MEM_REQ="${MEM_REQ:-512Gi}"
+    SHM="${SHM:-256Gi}"
+    ;;
+  *) echo "unknown CLUSTER=$CLUSTER (expected boogiebonjour|turbox)" >&2; exit 1 ;;
+esac
+export KUBECONFIG="$KUBECONFIG_FILE"
+echo "==> cluster: $CLUSTER  storage: $STORAGE_CLASS ($ACCESS_MODE)"
 
 # run-id | base model | precision | method | deps profile (see entrypoint.sh) | seed
 #
@@ -49,10 +84,19 @@ RUNS=(
   "sft2-1-s2024|Qwen/Qwen3-4B|fp16|lora|ngc|2024"
   "sft2-3-s1337|Qwen/Qwen3-4B|bf16|full|ngc|1337"
   "sft2-3-s2024|Qwen/Qwen3-4B|bf16|full|ngc|2024"
+
+  # sft3-*: same configurations as sft2-0 and sft2-2, retrained on dataset_bench
+  # (DATASET_DIR=dataset_bench). The index is kept aligned with sft2 so the pair
+  # to compare is obvious. These are the first runs that can be scored on the
+  # bug-finding benchmarks at all -- every sft2-* was trained on the commands
+  # those benchmarks check.
+  "sft3-0|Qwen/Qwen3-4B|bf16|lora|ngc|42"
+  "sft3-2|Qwen/Qwen3.5-9B|bf16|lora|new|42"
 )
 
-# Nodes the cluster's own production Jobs avoid. Reused rather than rediscovered.
-BAD=(003 006 013 043 056 057 090 097 101 102 104 105 108)
+# Nodes boogiebonjour's own production Jobs avoid. Reused rather than
+# rediscovered. Set above per cluster profile; turbox has none.
+[[ "$CLUSTER" == "boogiebonjour" ]] && BAD=(003 006 013 043 056 057 090 097 101 102 104 105 108)
 
 DRY=""
 [[ "${1:-}" == "--dry-run" ]] && { DRY=1; shift; }
@@ -67,7 +111,24 @@ want() {
 # 16 spaces: these are items of `values:`, which sits at 16 in the template below.
 # At 12 they parse as siblings of nodeSelectorTerms and the API rejects the Job
 # with a confusing "cannot unmarshal string into NodeSelectorTerm".
-bad_values() { for n in "${BAD[@]}"; do echo "                - boogiebonjour-$n.cloud.together.ai"; done; }
+bad_values() { for n in "${BAD[@]:-}"; do [[ -n "$n" ]] && echo "                - boogiebonjour-$n.cloud.together.ai"; done; }
+
+# An `affinity:` with an empty `values:` list is rejected by the API server, so
+# the whole block is omitted rather than emitted empty when there are no bad nodes.
+affinity_block() {
+  [[ ${#BAD[@]} -eq 0 ]] && return 0
+  cat <<EOF
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+$(bad_values)
+EOF
+}
 
 if [[ -z "$DRY" ]]; then
   echo "==> configmap $CM (train.py + entrypoint)"
@@ -96,8 +157,8 @@ metadata:
   namespace: ${NS}
   labels: {owner: de2, task: de2-rl-test-sft2, run: ${RUN}}
 spec:
-  accessModes: [ReadWriteOnce]
-  storageClassName: local-path
+  accessModes: [${ACCESS_MODE}]
+  storageClassName: ${STORAGE_CLASS}
   resources: {requests: {storage: ${SIZE}}}
 ---
 apiVersion: batch/v1
@@ -116,23 +177,14 @@ spec:
       restartPolicy: Never
       runtimeClassName: nvidia
       hostIPC: true
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: NotIn
-                values:
-$(bad_values)
-      containers:
+$(affinity_block)      containers:
       - name: main
         image: nvcr.io/nvidia/pytorch:25.01-py3
         command: ["bash", "/entry/de2_entrypoint.sh"]
         securityContext: {privileged: true}
         resources:
-          limits:   {cpu: "96", memory: 900Gi, nvidia.com/gpu: 8}
-          requests: {cpu: "56", memory: 512Gi, nvidia.com/gpu: 8}
+          limits:   {cpu: "${CPU_LIM}", memory: ${MEM_LIM}, nvidia.com/gpu: 8}
+          requests: {cpu: "${CPU_REQ}", memory: ${MEM_REQ}, nvidia.com/gpu: 8}
         env:
         - {name: RUN_ID,     value: "${RUN}"}
         - {name: BASE_MODEL, value: "${MODEL}"}
@@ -156,7 +208,7 @@ $(bad_values)
         - {name: entry, mountPath: /entry}
       volumes:
       - {name: work,  persistentVolumeClaim: {claimName: ${JOB}-work}}
-      - {name: dshm,  emptyDir: {medium: Memory, sizeLimit: 256Gi}}
+      - {name: dshm,  emptyDir: {medium: Memory, sizeLimit: ${SHM}}}
       - {name: entry, configMap: {name: ${CM}, defaultMode: 493}}
 YAML
 )
