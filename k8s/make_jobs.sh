@@ -15,6 +15,16 @@ KUBECTL="${KUBECTL:-kubectl}"
 NS=default
 CM=de2-rl-test-sft2-entry
 
+# Which built dataset in the HF data repo to train on. dataset_clean is the
+# shipped split every sft2-* run so far used. dataset_bench additionally holds
+# out the commands the bug-finding benchmarks score, without which those
+# benchmarks cannot measure a fine-tuned model at all — it was trained on the
+# answers (training-dataset/benchmark_commands.json). Whatever is chosen here,
+# the eval job needs the SAME DATASET_DIR and the prompt variant recorded in
+# that dataset's splits.json.
+DATASET_DIR="${DATASET_DIR:-dataset_clean}"
+echo "==> dataset: $DATASET_DIR"
+
 # run-id | base model | precision | method | deps profile (see entrypoint.sh) | seed
 #
 # The -s#### runs are seed replicates, not new configurations: same data, same
@@ -131,6 +141,7 @@ $(bad_values)
         - {name: DEPS,       value: "${DEPS}"}
         - {name: SEED,       value: "${SEED}"}
         - {name: EPOCHS,     value: "3"}
+        - {name: DATASET_DIR, value: "${DATASET_DIR}"}
         - {name: BATCH,      value: "${BATCH}"}
         - {name: HOME,       value: /work/home}
         - {name: HF_HOME,    value: /work/hf-cache}

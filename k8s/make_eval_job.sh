@@ -28,6 +28,10 @@ ROUNDS="${ROUNDS:-2}"
 SAMPLES="${SAMPLES:-0}"
 TEMPERATURE="${TEMPERATURE:-0.8}"
 OUT_TAG="${OUT_TAG:-}"
+# Must match the checkpoint's training dataset/prompt pair. Defaults reproduce
+# every run scored so far.
+DATASET_DIR="${DATASET_DIR:-dataset_clean}"
+PROMPT_VARIANT="${PROMPT_VARIANT:-v3}"
 JOB="de2-rl-test-$NAME"
 CM="de2-rl-test-$NAME-entry"
 
@@ -118,6 +122,8 @@ $(bad_values)
         - {name: SAMPLES,     value: "${SAMPLES}"}
         - {name: TEMPERATURE, value: "${TEMPERATURE}"}
         - {name: OUT_TAG,     value: "${OUT_TAG}"}
+        - {name: DATASET_DIR,    value: "${DATASET_DIR}"}
+        - {name: PROMPT_VARIANT, value: "${PROMPT_VARIANT}"}
         - {name: JOBS,        value: "${JOBS}"}
         - {name: HOME,       value: /work/home}
         - {name: HF_HOME,    value: /work/hf-cache}

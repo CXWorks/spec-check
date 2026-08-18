@@ -15,6 +15,7 @@ Version splits:
   Test:  alp14
 """
 
+import os
 import sys
 from pathlib import Path
 from typing import List, Optional
@@ -137,8 +138,23 @@ def load_version(version: str) -> List[SpecOracle]:
     return samples
 
 
+DATASET_DIR_ENV = "SPEC_CHECK_DATASET_DIR"
+
+
+def dataset_dir_name() -> str:
+    """Which built dataset to read the split from. Defaults to dataset_clean.
+
+    A second dataset exists once benchmark commands are forced out of training
+    (build_dataset.py --hold-out-file), and it has a LARGER held-out set. Scoring
+    a checkpoint against the wrong one either misses the commands it was retrained
+    to hold out, or scores it on commands it was trained on — so the directory is
+    explicit rather than guessed.
+    """
+    return os.environ.get(DATASET_DIR_ENV, "dataset_clean")
+
+
 def load_held_out_commands() -> set:
-    """Command names held out for evaluation, per dataset_clean/splits.json.
+    """Command names held out for evaluation, per <dataset dir>/splits.json.
 
     This is the authoritative eval set. The version-based TEST_VERSIONS split
     above is NOT: 79 of alp14's 98 commands have their gold answer verbatim in
@@ -146,13 +162,19 @@ def load_held_out_commands() -> set:
     module splits by version. See docs/data-leakage.md.
     """
     import json
-    path = _find_data_root() / "dataset_clean" / "splits.json"
+    name = dataset_dir_name()
+    path = _find_data_root() / name / "splits.json"
     if not path.exists():
         raise FileNotFoundError(
-            f"{path} not found — run `python3 training/build_dataset.py` first.\n"
-            "Evaluating without it silently scores on leaked commands."
+            f"{path} not found — run `python3 training/build_dataset.py` first"
+            + (f" with --out-dir {name}" if name != "dataset_clean" else "")
+            + ".\nEvaluating without it silently scores on leaked commands."
         )
-    return set(json.loads(path.read_text())["command_test"])
+    doc = json.loads(path.read_text())
+    held = set(doc["command_test"])
+    print(f"[dataset] held-out split: {name}/splits.json — {len(held)} commands"
+          + (f", prompt {doc['prompt_variant']}" if doc.get("prompt_variant") else ""))
+    return held
 
 
 def load_dataset(

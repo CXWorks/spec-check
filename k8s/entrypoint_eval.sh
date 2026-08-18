@@ -19,9 +19,18 @@ TEMPERATURE="${TEMPERATURE:-0.8}"
 JOBS="${JOBS:-8}"
 OUT_TAG="${OUT_TAG:-}"           # suffix so a best-of-k run cannot overwrite a greedy one
 DATA_REPO="${DATA_REPO:-jisenli/spec-check-data}"
+# Must match the checkpoint's training dataset and prompt, both recorded in that
+# dataset's splits.json. Unlike training, eval RENDERS the prompt, so a mismatch
+# here silently scores a checkpoint with a prompt it never saw — the failure
+# RESULTS_V3.md Iteration 7 spent an iteration on. DATASET_DIR also selects the
+# held-out list: dataset_bench holds out 49 commands where dataset_clean holds 40.
+DATASET_DIR="${DATASET_DIR:-dataset_clean}"
+PROMPT_VARIANT="${PROMPT_VARIANT:-v3}"
+export SPEC_CHECK_DATASET_DIR="$DATASET_DIR"
 VERUS_VER="0.2026.04.12.f1166c4"  # the version the project's history used
 
 echo "[eval] runs=$RUN_IDS base=$BASE_MODEL ckpts=$CKPTS"
+echo "[eval] dataset=$DATASET_DIR prompt=$PROMPT_VARIANT"
 
 # The NGC image sets pypi.ngc.nvidia.com as an extra index in /etc/pip.conf and
 # that hostname does not resolve here, so every install burns its retry budget on
@@ -104,8 +113,10 @@ import os, shutil, tarfile
 p = snapshot_download(repo_id="${DATA_REPO}", repo_type="dataset",
                       token=os.environ.get("HF_TOKEN"))
 os.makedirs("training-dataset", exist_ok=True)
-shutil.copytree(os.path.join(p, "dataset_clean"), "training-dataset/dataset_clean",
-                dirs_exist_ok=True)
+src = os.path.join(p, "${DATASET_DIR}")
+assert os.path.isdir(src), (
+    "${DATASET_DIR}/ is not in the data repo - upload it before scoring against it")
+shutil.copytree(src, "training-dataset/${DATASET_DIR}", dirs_exist_ok=True)
 os.makedirs("training-dataset/specs/alp14", exist_ok=True)
 shutil.copy(os.path.join(p, "specs/alp14/preamble.rs"), "training-dataset/specs/alp14/")
 with tarfile.open(os.path.join(p, "specs/alp14_gold.tgz")) as t:
@@ -156,7 +167,7 @@ for RUN in $RUN_IDS; do
       python "$SCRIPT" \
         --base "$BASE_MODEL" \
         --adapter "${HF_CKPT_REPO}" --subfolder "${RUN}/${CK}" \
-        --jobs "$JOBS" $MODE_ARGS \
+        --jobs "$JOBS" --prompt-variant "$PROMPT_VARIANT" $MODE_ARGS \
         --out "$OUT" && { ok=1; break; }
       echo "[eval] attempt $a failed for $RUN/$CK; retrying in 30s"
       sleep 30

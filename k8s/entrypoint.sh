@@ -17,9 +17,17 @@ GRAD_ACCUM="${GRAD_ACCUM:-4}"
 LR="${LR:-2e-4}"
 SEED="${SEED:-42}"
 DATA_REPO="${DATA_REPO:-jisenli/spec-check-data}"
+# Which built dataset to train on. There is no PROMPT_VARIANT here on purpose:
+# build_dataset.py has already baked the system prompt into every example, so
+# train.py never renders one and a knob here would configure nothing. The
+# variant is a property OF the dataset, read back from its splits.json below —
+# and the eval job must be given the matching --prompt-variant, or it renders a
+# different prompt than the checkpoint was trained on (RESULTS_V3.md Iteration 7).
+DATASET_DIR="${DATASET_DIR:-dataset_clean}"
 EXTRA_ARGS="${EXTRA_ARGS:-}"
 
 echo "[entry] run=$RUN_ID model=$BASE_MODEL precision=$PRECISION method=$METHOD seed=$SEED"
+echo "[entry] dataset=$DATASET_DIR"
 
 # Two dependency profiles, because the two model families cannot share one.
 #
@@ -101,10 +109,19 @@ from huggingface_hub import snapshot_download
 import os, shutil
 p = snapshot_download(repo_id="${DATA_REPO}", repo_type="dataset",
                       token=os.environ.get("HF_TOKEN"),
-                      allow_patterns=["dataset_clean/*"])
-shutil.copytree(os.path.join(p, "dataset_clean"), "/work/data/dataset_clean",
-                dirs_exist_ok=True)
-print("[entry] dataset ready")
+                      allow_patterns=["${DATASET_DIR}/*"])
+src = os.path.join(p, "${DATASET_DIR}")
+assert os.path.isdir(src), (
+    "${DATASET_DIR}/ is not in the data repo - upload it before training on it")
+shutil.copytree(src, "/work/data/${DATASET_DIR}", dirs_exist_ok=True)
+import json
+sp = os.path.join(src, "splits.json")
+if os.path.exists(sp):
+    d = json.load(open(sp))
+    print(f"[entry] dataset ready: {len(d['command_test'])} held out, "
+          f"prompt {d.get('prompt_variant', '?')}")
+else:
+    print("[entry] dataset ready")
 PY
 }
 for a in 1 2 3 4 5 6; do
@@ -113,7 +130,7 @@ for a in 1 2 3 4 5 6; do
   echo "[entry] fetch attempt $a failed (likely transient DNS); retrying in 30s"
   sleep 30
 done
-wc -l /work/data/dataset_clean/*.jsonl
+wc -l /work/data/$DATASET_DIR/*.jsonl
 
 # Probe wandb before training rather than discovering it at on_train_begin: a
 # bad entity raises there and kills the run after the model is loaded and the
@@ -154,8 +171,8 @@ NPROC="$(python -c 'import torch;print(torch.cuda.device_count())')"
 echo "[entry] launching on $NPROC GPUs"
 
 torchrun --nproc_per_node="$NPROC" /entry/train.py \
-  --train /work/data/dataset_clean/train.jsonl \
-  --val   /work/data/dataset_clean/val.jsonl \
+  --train /work/data/$DATASET_DIR/train.jsonl \
+  --val   /work/data/$DATASET_DIR/val.jsonl \
   --out   "/work/out/$RUN_ID" \
   --run-id "$RUN_ID" \
   --model "$BASE_MODEL" \

@@ -41,6 +41,9 @@ results/ab_test/v3/alp14/
 # Leak-free dataset — regenerate with `python3 training/build_dataset.py`.
 # splits.json IS tracked: it is the authoritative record of the split.
 training-dataset/dataset_clean/*.jsonl
+# dataset_bench: same, plus the benchmark commands forced out of training
+# (--hold-out-file training-dataset/benchmark_commands.json --prompt-variant v3.1).
+training-dataset/dataset_bench/*.jsonl
 
 # Eval results are pulled from $HF_CKPT_REPO/eval/ by whoever needs them; the
 # checkpoint repo is the store of record, and these carry generated spec bodies.
