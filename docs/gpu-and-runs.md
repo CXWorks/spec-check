@@ -1398,7 +1398,17 @@ that motivated moving there was a moment, not a property; plan for about half.
 |---|---|---|
 | gold (control) | 4/4 TP, 6/6 FP | 3/3 TP, 6/6 FP |
 | `sft3-0` 4B | 0/4, 4 inconclusive | 1/3, 2 inconclusive |
-| `sft3-2` 9B | 0/4, 4 inconclusive | — |
+| `sft3-2` 9B | **1/4, 3 inconclusive** | 1/3, 2 inconclusive |
+| `sft3-2` 9B + 1 repair round | 1/4, 3 inconclusive | — |
+| `sft3-2` 9B **+ training preamble** | **2/4, 2 inconclusive** | — |
+
+The 9B eac5 cell read `0/4, 4 inconclusive` until 2026-08-18. It was wrong: the
+detected item, `RSI_ATTESTATION_TOKEN_CONTINUE:dual_error`, was there from the
+start. Everything else in this table re-scored identically, including gold
+against the branch's own `scores_eac5_gold.json`, so the error is confined to
+that one cell — but a claim was built on it (*"the repair round moved 0/4 to
+1/4"*) and that claim is withdrawn in `docs/overnight-2026-08-18.md`. The repair
+round changes nothing here. Restoring the training preamble is what moves it.
 
 `inconclusive` means the generated function does not compile, so the obligation
 never runs: `E0061` wrong arity, `E0308` mismatched types, `E0425` unknown

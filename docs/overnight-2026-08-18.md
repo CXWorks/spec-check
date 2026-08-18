@@ -176,41 +176,66 @@ alp14. Fixing the feedback for arity is worth doing and will not move this.
 |---|---|---|---|
 | gold | 16/16 | 0 | 4/4 |
 | Claude + no-invent | 16/16 | 2 `RSI_FEATURES` | 1/4 |
-| `sft3-2` 9B | 16/16 | 2 `desc`* | 0/4 |
+| `sft3-2` 9B **+ preamble** | 8/8 eac5 | **0** | **2/4** |
+| `sft3-2` 9B | 16/16 | 2 `desc`* | **1/4** |
 | Claude base | 14/16 | 2 `RSI_FEATURES` | 1/4 |
 | `sft3-0` 4B | 11/16 | 0 | 0/4 |
+
+The `sft3-2` eac5 cell read 0/4 until 2026-08-18 and was wrong; see below. The
+preamble row is eac5-only because that run generated eac5 only.
 
 \* SCOPE's own patch marks `desc` FP — a checker limitation. Claude's
 `RSI_FEATURES` is a real miss: the table defines `value` and it wrote `true`.
 
-**verus_rmm is bounded by Verus syntax, and the repair pass proves it.** One
-feedback round on `sft3-2` moved eac5 from 0/4 to 1/4 — not the 1/4 → 4/4 that
-BENCHMARK_VERUS_RMM.md reports for Claude. The per-command log says why: of 41
-commands 24 repaired clean, and **9 of the 17 failures are wrong_arity**,
-concentrated exactly on the verus_rmm TP items (all four RTT commands fail, three
-on arity).
+**The repair claim is withdrawn. The preamble result replaces it.**
 
-The limit was the feedback, not the model. `preamble_decls` pulled identifiers
-from backticks, and `E0061 this function takes 3 arguments but 4 were supplied`
-never backticks the callee — it quotes the source line instead. So the model was
-told its arity was wrong and never shown the declaration saying what the right
-arity is. Fixed (identifiers now come from the quoted source too); **not yet
-validated by a rerun** — `rep4-9b` above is that rerun.
+This document previously read: *one feedback round on `sft3-2` moved eac5 from
+0/4 to 1/4, and that proves verus_rmm is compile-bound.* Re-scored today against
+a validated gold control:
 
-A caveat on how much that log could ever have said: its only repair diagnostic
-was the implication count, and all 17 failures logged `N->N`. That reads like
-"the repair ran and preserved the constraints", but it is equally consistent
-with the repair never running — fixing a call's arity does not change the `==>`
-count either way. The instrument was blind to the repair it most needed to
-describe. `1f06d87` logs the first failure's class, how many rounds actually
-replaced the text, whether the text changed at all, and how many preamble
-declarations reached the repair prompt; `rep4-9b` was relaunched to get it.
+| `sft3-2` eac5 | verus_rmm TP | rule_check | false alarms |
+|---|---|---|---|
+| unrepaired | **1/4** | 8/8 | 1 `desc` |
+| + 1 repair round | **1/4** | 8/8 | 1 `desc` |
+| **+ training preamble** | **2/4** | 8/8 | **0** |
 
-Two controls held. **SHRANK: 0 across all 41** — no repair bought compilation by
-dropping constraints, which is the precondition for any of this meaning anything.
-And `RMI_RTT_READ_ENTRY` still leaves `walk_level` unconstrained after repair: a
-pass optimising for compilation could have filled in the undefined output and
-refuted the session's main finding with its own tooling.
+**The unrepaired baseline was 1/4 all along; the repair round changed nothing.**
+Both score the same single item, `RSI_ATTESTATION_TOKEN_CONTINUE:dual_error`
+(proof accepted). The recorded 0/4 was an error in this repo, not a result.
+
+Restoring the preamble that training used adds `RMI_DATA_DESTROY:ripas` (proof
+rejected) for 2/4, and separately removes the one rule_check false alarm. It is
+the only intervention tried so far that moves this benchmark.
+
+The **conclusion** the withdrawn evidence supported still holds, now on better
+evidence: every non-detected item is `inconclusive`, meaning the function does
+not compile and the obligation never runs. What changed is which lever works —
+teaching the model the API surface it trained with, not showing it its own error.
+
+Controls on the re-score, all four reproducing the committed record exactly:
+
+| | verus_rmm eac5 | rule_check |
+|---|---|---|
+| gold | 4/4 TP, 6/6 FP | 8/8, 0 false alarms |
+| `sft3-0` 4B | 0/4 | 6/8 eac5, 5/8 rel0 |
+
+Gold matches `scores_eac5_gold.json` on the branch; the 4B matches every number
+in `gpu-and-runs.md`. Only the 9B eac5 cell was wrong.
+
+**How it was caught, which is the uncomfortable part.** It surfaced from
+`gen4-9b` — a run submitted only because of the contamination false alarm below,
+to re-establish a baseline that never needed re-establishing. Its output is
+byte-identical to `gen3-9b` across all 41 commands (greedy decoding is
+deterministic, so the pipeline reproduces exactly), and that identical artifact
+scored 1/4 where the record said 0/4. **A mistaken alarm ran the replicate that
+found a real error, and no deliberate check had.** Nothing in the process
+deserves credit for this.
+
+The two controls on the repair pass did hold. **SHRANK: 0 across all 41** — no
+repair bought compilation by dropping constraints. And `RMI_RTT_READ_ENTRY`
+still leaves `walk_level` unconstrained after repair: a pass optimising for
+compilation could have filled in the undefined output and refuted the session's
+main finding with its own tooling.
 
 **The 4B's two VERSION "misses" are a scoring artifact.** It read the prose that
 defines `lower`/`higher` and encoded it, so nothing dangles and the check cannot
