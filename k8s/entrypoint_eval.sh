@@ -151,12 +151,22 @@ print(f"[eval] data ready ({n} alp14 sections)")
 for v in ("${GEN_VERSIONS}".split() if "${MODE}" == "gen" else []):
     os.makedirs(f"training-dataset/specs/{v}", exist_ok=True)
     shutil.copy(os.path.join(p, f"specs/{v}/preamble.rs"), f"training-dataset/specs/{v}/")
+    # Gold too, not just sections: dataset_loader.load_version SKIPS any command
+    # whose gold spec is missing, so sections alone load 0 commands and the
+    # generation emits nothing at all. Generation does not read gold -- the loader
+    # simply refuses to build a sample without it.
+    with tarfile.open(os.path.join(p, f"specs/{v}_gold.tgz")) as t:
+        t.extractall(f"training-dataset/specs/{v}")
     with tarfile.open(os.path.join(p, f"sections/{v}.tgz")) as t:
         t.extractall("training-dataset")
     m = len([f for f in os.listdir(f"training-dataset/sections/{v}")
              if f.endswith("_command.txt")])
-    assert m > 0, f"no {v} section files - generation would emit nothing"
-    print(f"[eval] {v} ready ({m} sections)")
+    g = len([f for f in os.listdir(f"training-dataset/specs/{v}")
+             if f.endswith("_spec.rs")])
+    assert m > 0 and g > 0, (
+        f"{v}: {m} sections, {g} gold specs - the loader needs BOTH and would "
+        "otherwise load 0 commands")
+    print(f"[eval] {v} ready ({m} sections, {g} gold)")
 PY
 }
 
