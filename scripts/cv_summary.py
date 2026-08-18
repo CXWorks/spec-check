@@ -21,9 +21,17 @@ The comparison that means something is fold-to-fold. Tight clustering says a
 single 49-command sample is representative and the existing conclusions carry.
 A wide spread says any single-sample comparison -- including the 9B-over-4B gap --
 needs an error bar wider than seed noise alone provides.
+
+Note what the rate measures. `pass` in these files is check_text's status: Verus
+accepted the generated function with zero errors. It is a COMPILE rate. Whether
+the spec says what gold says is a different axis, measured by semantic_equiv,
+and it is roughly half as high (20.4% / 22.4% against 36.7% / 44.9%). Nothing in
+this repo labelled the distinction on the number itself, which is an easy way to
+read a syntax result as a correctness result.
 """
 
 import argparse
+import collections
 import json
 import os
 import statistics
@@ -77,7 +85,7 @@ def main():
             if r["command"] in core_all:
                 sys.exit(f"command {r['command']} scored in two folds -- "
                          "folds are not disjoint, the split is wrong")
-            core_all[r["command"]] = r["pass"]
+            core_all[r["command"]] = r
         p = sum(r["pass"] for r in core)
         rows.append((name, p, len(core), 100 * p / len(core) if core else 0,
                      d["summary"]["pass"], d["summary"]["n"]))
@@ -87,6 +95,11 @@ def main():
     if not rows:
         sys.exit("nothing to summarise")
 
+    print("  rate = Verus accepts the generated spec (zero errors). This is a")
+    print("  COMPILE rate, not a correctness rate -- `pass` in these files is")
+    print("  check_text status, and agreement with gold is measured separately by")
+    print("  semantic_equiv (20.4% / 22.4% where this reports 36.7% / 44.9%).")
+    print()
     print(f"  {'fold':10s} {'core':>12s}  {'rate':>7s}   {'(all held out)':>16s}")
     for name, p, n, rate, ap_, an in rows:
         print(f"  {name:10s} {p:5d}/{n:<6d} {rate:6.1f}%   {ap_:5d}/{an:<5d}")
@@ -97,7 +110,7 @@ def main():
         print(f"  fold rates: mean {statistics.mean(rates):.1f}%  "
               f"range {max(rates)-min(rates):.1f}pp  sd {statistics.stdev(rates):.1f}pp")
     if len(rows) == args.folds:
-        tot = sum(v for v in core_all.values())
+        tot = sum(bool(v["pass"]) for v in core_all.values())
         n = len(core_all)
         p_hat = tot / n
         print(f"  pooled over all folds: {tot}/{n} = {100*p_hat:.1f}%"
@@ -126,6 +139,28 @@ def main():
         print("\n  Either way the pooled SE above, not the 1.2pp seed sd, is the error\n"
               "  bar a single-split comparison deserves. Seeds and command choice are\n"
               "  separate sources and the smaller one was being quoted alone.")
+
+        # Every core command is scored exactly once across the folds, by a model
+        # that never trained on it, so these two breakdowns are the cleanest
+        # description of the failure this repo has. They are descriptive: the
+        # per-family n is 7-48, so read the counts, not a ranking.
+        print(f"\n  why the {n - tot} failures fail:")
+        for reason, k in collections.Counter(
+                v["reason"] for v in core_all.values()).most_common():
+            if reason != "ok":
+                print(f"    {k:3d}  {reason}")
+        print("\n  by command family (compile rate, n in brackets):")
+
+        def family(c):
+            return "RMI_RTT_*" if c.startswith("RMI_RTT") else c.split("_")[0] + "_*"
+
+        fam = collections.defaultdict(lambda: [0, 0])
+        for c, v in core_all.items():
+            fam[family(c)][0] += bool(v["pass"])
+            fam[family(c)][1] += 1
+        for f, (p_, n_) in sorted(fam.items(), key=lambda kv: -kv[1][1]):
+            se = 100 * ((p_ / n_) * (1 - p_ / n_) / n_) ** 0.5
+            print(f"    {f:12s} {p_:2d}/{n_:<3d} {100*p_/n_:5.1f}%  (SE {se:.1f}pp)")
 
 
 if __name__ == "__main__":
