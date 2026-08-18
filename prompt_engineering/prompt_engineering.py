@@ -209,15 +209,21 @@ def format_retrieved_rules_block(results: List[Dict[str, Any]]) -> str:
 # Claude Model (Placeholder for real API)
 # ============================================================================
 
-class ClaudeHaikuModel:
+class ClaudeModel:
     """
-    Real Claude 4.5 Haiku API integration.
+    Real Claude API integration (configurable model/effort).
     """
 
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: str = None, model: str = None, effort: str = None):
         import os
 
-        self.name = "claude-haiku-4-5-20251001"  # Haiku 4.5 - faster and cheaper
+        self.name = model or "claude-haiku-4-5-20251001"  # Haiku 4.5 - faster and cheaper
+        self.effort = effort
+        # Opus 4.7+/Sonnet 5/Fable 5 reject temperature/top_p/top_k (400) and
+        # need thinking set explicitly (off by default); Haiku 4.5 takes
+        # temperature and has no adaptive-thinking mode.
+        self.supports_sampling_params = self.name.startswith("claude-haiku")
+        self.supports_adaptive_thinking = not self.name.startswith("claude-haiku")
         self.api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
         self.call_count = 0
 
@@ -231,11 +237,12 @@ class ClaudeHaikuModel:
         except ImportError:
             raise ImportError("anthropic package not installed. Run: pip install anthropic")
 
-    def generate(self, messages: List[Dict[str, str]]) -> str:
+    def generate(self, messages: List[Dict[str, str]], temperature: float = None) -> str:
         """
         Generate using Claude API.
         Args:
             messages: [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}]
+            temperature: optional sampling temperature (e.g. to escalate across repair retries)
         Returns:
             Generated Verus code
         """
@@ -254,14 +261,21 @@ class ClaudeHaikuModel:
         wait = 15
         for attempt in range(5):
             try:
-                response = self.client.messages.create(
+                kwargs = dict(
                     model=self.name,
-                    max_tokens=4096,
+                    max_tokens=8192,
                     system=system_msg,
                     messages=user_msgs,
                 )
+                if temperature is not None and self.supports_sampling_params:
+                    kwargs["temperature"] = temperature
+                if self.supports_adaptive_thinking:
+                    kwargs["thinking"] = {"type": "adaptive"}
+                    kwargs["output_config"] = {"effort": self.effort or "high"}
+                response = self.client.messages.create(**kwargs)
                 time.sleep(1.5)  # throttle requests to reduce token/min spikes
-                return response.content[0].text.strip()
+                text_blocks = [b.text for b in response.content if b.type == "text"]
+                return "".join(text_blocks).strip()
             except Exception as e:
                 err = str(e)
                 if "rate_limit_error" in err or "429" in err:
@@ -624,7 +638,7 @@ def run_ab_testing(
 
     # Create Claude model instance
     try:
-        model = ClaudeHaikuModel(api_key=api_key)
+        model = ClaudeModel(api_key=api_key)
         print("Connected to Claude API\n")
     except Exception as e:
         print(f"Failed to connect to Claude API: {e}\n")
