@@ -29,7 +29,12 @@ case "$CLUSTER" in
     : "${KUBECONFIG_FILE:=$HOME/.kube/configs/turbox-h100.yaml}"
     STORAGE_CLASS="${STORAGE_CLASS:-shared-wekafs}"
     ACCESS_MODE="${ACCESS_MODE:-ReadWriteMany}"
-    MEM_LIM="${MEM_LIM:-400Gi}"; MEM_REQ="${MEM_REQ:-200Gi}"
+    # 200Gi was inherited from boogiebonjour, whose nodes are larger. On turbox
+    # (723Gi/node) it does not fit beside a 9B training job requesting 400Gi, and
+    # the eval does not need it: the biggest model here is 18GB in bf16, the rest
+    # is Verus subprocesses. Requesting what is actually used lets an eval run
+    # alongside training instead of sitting Pending until the cluster drains.
+    MEM_LIM="${MEM_LIM:-200Gi}"; MEM_REQ="${MEM_REQ:-64Gi}"
     BAD=() ;;
   boogiebonjour)
     : "${KUBECONFIG_FILE:=$HOME/.kube/boogiebonjour}"
