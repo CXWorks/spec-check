@@ -10,7 +10,12 @@ set -euo pipefail
 : "${BASE_MODEL:?BASE_MODEL is required}"
 DEPS="${DEPS:-new}"
 CKPTS="${CKPTS:-final}"          # space-separated: final checkpoint-41 ...
-MODE="${MODE:-score}"            # score | repair (compile-feedback self-repair)
+MODE="${MODE:-score}"            # score | repair | gen
+# gen: write one <version>/<command>.rs per command for the rule-check benchmark
+# (benchmark/rule_check_8bugs/score.py). Its eight findings are eac5/rel0 items,
+# so this mode needs those versions' section text, not alp14's, and it needs no
+# Verus at all -- the dangling-output check is textual.
+GEN_VERSIONS="${GEN_VERSIONS:-eac5 rel0}"
 WITH_PREAMBLE="${WITH_PREAMBLE:-0}"  # 1 restores the preamble that training used
 FRAME_HINT="${FRAME_HINT:-0}"        # 1 demands frame conditions explicitly
 ROUNDS="${ROUNDS:-2}"            # repair mode only
@@ -94,7 +99,9 @@ if [ ! -x "$CARGO_HOME/bin/rustc" ]; then
 fi
 
 export VERUS_BIN=/work/tools/verus/verus-x86-linux/verus
-if [ ! -x "$VERUS_BIN" ]; then
+if [ "$MODE" = "gen" ]; then
+  echo "[eval] mode=gen: skipping verus (the dangling-output check is textual)"
+elif [ ! -x "$VERUS_BIN" ]; then
   echo "[eval] installing verus $VERUS_VER"
   mkdir -p /work/tools && cd /work/tools
   curl -sSL --retry 5 --retry-all-errors --retry-delay 10 -o verus.zip \
@@ -102,7 +109,7 @@ if [ ! -x "$VERUS_BIN" ]; then
   command -v unzip >/dev/null || (apt-get update -qq && apt-get install -y -qq unzip) >/dev/null 2>&1
   rm -rf verus && unzip -q verus.zip -d verus
 fi
-"$VERUS_BIN" --version | head -1
+[ "$MODE" = "gen" ] || "$VERUS_BIN" --version | head -1
 
 # Retry the fetch in-process rather than letting the pod die on it.
 #
@@ -135,7 +142,18 @@ with tarfile.open(os.path.join(p, "sections/alp14.tgz")) as t:
     t.extractall("training-dataset")
 n = len([f for f in os.listdir("training-dataset/sections/alp14") if f.endswith("_command.txt")])
 assert n > 0, "no section files - eval would score nothing"
-print(f"[eval] data ready ({n} sections)")
+print(f"[eval] data ready ({n} alp14 sections)")
+
+# gen mode scores eac5/rel0, whose sections are separate archives in the repo.
+for v in ("${GEN_VERSIONS}".split() if "${MODE}" == "gen" else []):
+    os.makedirs(f"training-dataset/specs/{v}", exist_ok=True)
+    shutil.copy(os.path.join(p, f"specs/{v}/preamble.rs"), f"training-dataset/specs/{v}/")
+    with tarfile.open(os.path.join(p, f"sections/{v}.tgz")) as t:
+        t.extractall("training-dataset")
+    m = len([f for f in os.listdir(f"training-dataset/sections/{v}")
+             if f.endswith("_command.txt")])
+    assert m > 0, f"no {v} section files - generation would emit nothing"
+    print(f"[eval] {v} ready ({m} sections)")
 PY
 }
 
@@ -162,6 +180,35 @@ for RUN in $RUN_IDS; do
     # hit the same DNS blip, and `continue` alone would silently drop a run from
     # the comparison — the worst failure mode here, because the summary table
     # would still look complete.
+    if [ "$MODE" = "gen" ]; then
+      # Output is a directory of .rs files rather than a JSON, so this branch has
+      # its own invocation and its own upload instead of sharing the score path.
+      GDIR="/work/eval/${NAME}"
+      GEN_ARGS="--versions $GEN_VERSIONS --out-dir $GDIR"
+      [ "$WITH_PREAMBLE" = "1" ] && GEN_ARGS="$GEN_ARGS --with-preamble"
+      ok=""
+      for a in 1 2 3; do
+        # shellcheck disable=SC2086
+        python scripts/gen_specs.py \
+          --base "$BASE_MODEL" \
+          --adapter "${HF_CKPT_REPO}" --subfolder "${RUN}/${CK}" \
+          --prompt-variant "$PROMPT_VARIANT" $GEN_ARGS && { ok=1; break; }
+        echo "[eval] attempt $a failed for $RUN/$CK; retrying in 30s"
+        sleep 30
+      done
+      [ -n "$ok" ] || { echo "[eval] FAILED $RUN/$CK after 3 attempts"; continue; }
+      echo "[eval] generated $(find "$GDIR" -name '*.rs' | wc -l) spec files"
+      tar czf "/work/eval/${NAME}.tgz" -C /work/eval "${NAME}"
+      python - <<UPLOAD_EOF
+import os
+from huggingface_hub import HfApi
+HfApi(token=os.environ["HF_TOKEN"]).upload_file(
+    path_or_fileobj="/work/eval/${NAME}.tgz", path_in_repo="gen/${NAME}.tgz",
+    repo_id=os.environ["HF_CKPT_REPO"], repo_type="model")
+print("[eval] uploaded gen/${NAME}.tgz")
+UPLOAD_EOF
+      continue
+    fi
     if [ "$MODE" = "repair" ]; then
       SCRIPT="scripts/repair_eval.py"; MODE_ARGS="--rounds $ROUNDS"
     else

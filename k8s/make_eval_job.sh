@@ -49,6 +49,7 @@ MODE="${MODE:-score}"
 WITH_PREAMBLE="${WITH_PREAMBLE:-0}"
 FRAME_HINT="${FRAME_HINT:-0}"
 ROUNDS="${ROUNDS:-2}"
+GEN_VERSIONS="${GEN_VERSIONS:-eac5 rel0}"   # MODE=gen only
 SAMPLES="${SAMPLES:-0}"
 TEMPERATURE="${TEMPERATURE:-0.8}"
 OUT_TAG="${OUT_TAG:-}"
@@ -92,6 +93,7 @@ echo "==> configmap $CM"
   --from-file=de2_entrypoint.sh="$REPO_ROOT/k8s/entrypoint_eval.sh" \
   --from-file=eval_checkpoint.py="$REPO_ROOT/scripts/eval_checkpoint.py" \
   --from-file=repair_eval.py="$REPO_ROOT/scripts/repair_eval.py" \
+  --from-file=gen_specs.py="$REPO_ROOT/scripts/gen_specs.py" \
   --from-file=dataset_loader.py="$REPO_ROOT/prompt_engineering/dataset_loader.py" \
   --from-file=verify_generated_verus.py="$REPO_ROOT/prompt_engineering/verify_generated_verus.py" \
   --from-file=prompt_engineering_v3.py="$REPO_ROOT/prompt_engineering/prompt_engineering_v3.py" \
@@ -136,7 +138,7 @@ spec:
 $(affinity_block)      containers:
       - name: main
         image: nvcr.io/nvidia/pytorch:25.01-py3
-        command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /entry/repair_eval.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
+        command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /entry/repair_eval.py /entry/gen_specs.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
         securityContext: {privileged: true}
         resources:
           limits:   {cpu: "${CPU_LIM}", memory: ${MEM_LIM}, nvidia.com/gpu: 2}
@@ -150,6 +152,7 @@ $(affinity_block)      containers:
         - {name: WITH_PREAMBLE, value: "${WITH_PREAMBLE}"}
         - {name: FRAME_HINT,    value: "${FRAME_HINT}"}
         - {name: ROUNDS,      value: "${ROUNDS}"}
+        - {name: GEN_VERSIONS,  value: "${GEN_VERSIONS}"}
         - {name: SAMPLES,     value: "${SAMPLES}"}
         - {name: TEMPERATURE, value: "${TEMPERATURE}"}
         - {name: OUT_TAG,     value: "${OUT_TAG}"}
