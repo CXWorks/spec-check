@@ -67,6 +67,8 @@ def _find_data_root() -> str:
 
 
 BASE_DIR    = _find_data_root()
+# Default output directory. `--out-dir` overrides it, so a variant build never
+# overwrites the shipped dataset_clean/ that existing checkpoints were trained on.
 DATASET_DIR = os.path.join(BASE_DIR, "dataset_clean")
 
 for _candidate in (os.path.join(_SCRIPT_DIR, "prompt_engineering"),        # server layout
@@ -74,7 +76,7 @@ for _candidate in (os.path.join(_SCRIPT_DIR, "prompt_engineering"),        # ser
     if os.path.isdir(_candidate):
         sys.path.insert(0, _candidate)
         break
-from prompt_engineering_v3 import V3_PROMPT  # command-kind prompt: no preamble, deduped rules
+from prompt_engineering_v3 import V3_PROMPT, get_v3_prompt  # command-kind prompt: no preamble, deduped rules
 
 ALL_VERSIONS = ["eac5", "rel0", "alp11", "alp12", "alp13", "alp14"]
 EVAL_VERSION = "alp14"   # test commands are drawn from (and scored on) this version
@@ -364,22 +366,106 @@ def all_item_names(kind: str) -> list[str]:
 # Main
 # ---------------------------------------------------------------------------
 
+def load_hold_out_file(path: str) -> list[str]:
+    """Command names from a JSON list, or {"commands": [...]}, or one per line."""
+    raw = open(path).read()
+    try:
+        doc = json.loads(raw)
+        names = doc if isinstance(doc, list) else doc["commands"]
+    except (json.JSONDecodeError, KeyError, TypeError):
+        names = [l.split("#")[0].strip() for l in raw.splitlines()]
+    return [n.upper() for n in names if n and not n.startswith("#")]
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--cascaded-context", metavar="DIR",
                         help="Directory with model-generated type files "
                              "({version}_types.rs) to use instead of golden preamble")
+    parser.add_argument("--out-dir", metavar="DIR", default=DATASET_DIR,
+                        help="Where to write train/val/test.jsonl + splits.json "
+                             f"(default: {os.path.relpath(DATASET_DIR, BASE_DIR)}/). "
+                             "Point a variant build somewhere else so the shipped "
+                             "dataset stays intact and revertible.")
+    parser.add_argument("--hold-out-commands", nargs="+", metavar="CMD", default=[],
+                        help="Extra command names to force into the held-out set, "
+                             "on top of the random CMD_TEST_SIZE draw. Removed from "
+                             "training at EVERY version. Use for commands a benchmark "
+                             "scores — otherwise the model was trained on the answer.")
+    parser.add_argument("--hold-out-file", metavar="PATH", default=None,
+                        help="File of command names to force into the held-out set "
+                             "(JSON list, {'commands': [...]}, or one per line).")
+    parser.add_argument("--prompt-variant", default=None, choices=["v3", "v3.1"],
+                        help="Command-kind system prompt. Default v3 — the frozen "
+                             "prompt every existing checkpoint was trained on. v3.1 "
+                             "corrects the unconstrained-specs bullet (RSI_FEATURES "
+                             "and version queries are NOT `true`); using it requires "
+                             "a retrain, since the prompt is baked into the weights.")
     args = parser.parse_args()
     cascaded_dir = args.cascaded_context
 
-    os.makedirs(DATASET_DIR, exist_ok=True)
+    out_dir = os.path.abspath(args.out_dir)
+
+    # Selecting a non-default prompt changes what the model is trained on, so it
+    # may not silently overwrite the shipped dataset.
+    prompt = get_v3_prompt(args.prompt_variant)
+    global SYSTEM_PROMPT
+    SYSTEM_PROMPT = prompt.system
+    if prompt is not V3_PROMPT and out_dir == os.path.abspath(DATASET_DIR):
+        raise SystemExit(
+            f"--prompt-variant {args.prompt_variant} would overwrite the shipped "
+            f"{os.path.relpath(DATASET_DIR, BASE_DIR)}/ with a dataset built on a "
+            "different system prompt. Pass --out-dir to write it elsewhere."
+        )
+
+    forced = {n.upper() for n in args.hold_out_commands}
+    if args.hold_out_file:
+        forced |= set(load_hold_out_file(args.hold_out_file))
+    if forced and out_dir == os.path.abspath(DATASET_DIR):
+        raise SystemExit(
+            f"--hold-out-commands would overwrite the shipped "
+            f"{os.path.relpath(DATASET_DIR, BASE_DIR)}/, whose split existing eval "
+            "results are keyed to. Pass --out-dir to write it elsewhere."
+        )
+
+    os.makedirs(out_dir, exist_ok=True)
+    print(f"Prompt variant: {prompt.name}")
+    print(f"Output dir:     {out_dir}")
 
     # --- Commands: hold out CMD_TEST_SIZE names drawn from EVAL_VERSION ---------
     # Held-out names are removed from training at EVERY version, not just EVAL_VERSION.
     eval_cmds = [c for c in list_commands(EVAL_VERSION) if load_spec(EVAL_VERSION, c)]
     _, cmd_test = split_two(eval_cmds, CMD_TEST_SIZE)
-    cmd_train = set(all_item_names("command")) - cmd_test
+
+    # Forced hold-outs are ADDED to the random draw, never substituted into it, so
+    # the original CMD_TEST_SIZE names stay exactly as they were and every eval
+    # already run on them remains comparable to an eval run on the superset.
+    all_cmds = set(all_item_names("command"))
+    if forced:
+        unknown = sorted(forced - all_cmds)
+        if unknown:
+            raise SystemExit(
+                "--hold-out-commands names no command in any version: "
+                + ", ".join(unknown)
+            )
+        # A forced name absent from EVAL_VERSION still leaves training, but it
+        # cannot produce a test example — say so rather than let the count confuse.
+        no_eval = sorted(c for c in forced if not load_spec(EVAL_VERSION, c))
+        added   = sorted(forced - cmd_test)
+        already = sorted(forced & cmd_test)
+        cmd_test = cmd_test | forced
+        print(f"Forced hold-out: {len(forced)} requested, {len(added)} added, "
+              f"{len(already)} already held out")
+        if added:
+            print("  added:   " + ", ".join(added))
+        if already:
+            print("  already: " + ", ".join(already))
+        if no_eval:
+            print(f"  WARNING: absent from {EVAL_VERSION}, so removed from training "
+                  f"but NOT evaluable: " + ", ".join(no_eval))
+
+    cmd_train = all_cmds - cmd_test
 
     # --- Types / helpers: name-based 90/10 train/val, used only for monitoring ---
     type_names   = all_item_names("type")
@@ -447,20 +533,25 @@ def main():
 
     # Write JSONL files
     for name, exs in [("train", train_exs), ("val", val_exs), ("test", test_exs)]:
-        path = os.path.join(DATASET_DIR, f"{name}.jsonl")
+        path = os.path.join(out_dir, f"{name}.jsonl")
         with open(path, "w") as fh:
             for ex in exs:
                 fh.write(json.dumps(ex, ensure_ascii=False) + "\n")
         print(f"  {name}: {len(exs)} examples → {path}")
 
     # The evaluator needs the held-out command list to score the right subset.
-    splits_path = os.path.join(DATASET_DIR, "splits.json")
+    splits_path = os.path.join(out_dir, "splits.json")
     with open(splits_path, "w") as fh:
         json.dump({
             "seed": SPLIT_SEED,
             "eval_version": EVAL_VERSION,
             "cmd_test_size": CMD_TEST_SIZE,
             "th_val_frac": TH_VAL_FRAC,
+            # Recorded so an artifact says which prompt and which forced hold-outs
+            # produced it. A dataset that does not carry this is unidentifiable
+            # once two variants exist side by side.
+            "prompt_variant": prompt.name,
+            "forced_hold_out": sorted(forced),
             "command_test":  sorted(cmd_test),
             "command_train": sorted(cmd_train),
             "type_val":      sorted(type_val),

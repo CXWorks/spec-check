@@ -1,0 +1,67 @@
+{
+  "note": [
+    "Commands scored by a bug-finding benchmark. Any of these left in the training",
+    "set makes that benchmark unmeasurable for a fine-tuned model: the model was",
+    "trained on the very gold answer the benchmark checks, and the check is often",
+    "'did the model leave this output unconstrained' -- which is exactly what the",
+    "gold does. Pass this file to build_dataset.py --hold-out-file to force them",
+    "all into the held-out set at every version.",
+    "",
+    "This file is a list, not a claim that these commands are buggy. It is the",
+    "union of every command either benchmark scores, including the items labelled",
+    "false positives, because a scored FP item is as contaminated as a scored TP."
+  ],
+  "sources": {
+    "scope_rule_8bugs": {
+      "what": "SCOPE's dangling-output true positives on eac5/rel0",
+      "ground_truth": "scope/patch/{eac5,rel0}_rule.patch, hand-labelled '// XXX: TP' by SCOPE's authors",
+      "consumed_by": "training/scope_ground_truth_eac5_rel0.json, benchmark/rule_check_8bugs/",
+      "commands": [
+        "PSCI_VERSION",
+        "RMI_RTT_READ_ENTRY",
+        "RMI_VERSION",
+        "RSI_ATTESTATION_TOKEN_CONTINUE",
+        "RSI_ATTESTATION_TOKEN_INIT",
+        "RSI_IPA_STATE_GET",
+        "RSI_MEASUREMENT_READ",
+        "RSI_VERSION"
+      ]
+    },
+    "verus_rmm_benchmark": {
+      "what": "Machine-checked contradiction/obligation items (TP + FP)",
+      "ground_truth": "benchmark/verus_rmm/ground_truth_{eac5,rel0,alp14}.json",
+      "consumed_by": "benchmark/verus_rmm/run_bench.py",
+      "commands": [
+        "RMI_DATA_DESTROY",
+        "RMI_PDEV_STOP",
+        "RMI_RTT_CREATE",
+        "RMI_RTT_DESTROY",
+        "RMI_RTT_FOLD",
+        "RMI_RTT_INIT_RIPAS",
+        "RMI_RTT_SET_RIPAS",
+        "RMI_VDEV_VALIDATE_MAPPING",
+        "RSI_ATTESTATION_TOKEN_CONTINUE",
+        "RSI_VDEV_VALIDATE_MAPPING"
+      ]
+    }
+  },
+  "commands": [
+    "PSCI_VERSION",
+    "RMI_DATA_DESTROY",
+    "RMI_PDEV_STOP",
+    "RMI_RTT_CREATE",
+    "RMI_RTT_DESTROY",
+    "RMI_RTT_FOLD",
+    "RMI_RTT_INIT_RIPAS",
+    "RMI_RTT_READ_ENTRY",
+    "RMI_RTT_SET_RIPAS",
+    "RMI_VDEV_VALIDATE_MAPPING",
+    "RMI_VERSION",
+    "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "RSI_ATTESTATION_TOKEN_INIT",
+    "RSI_IPA_STATE_GET",
+    "RSI_MEASUREMENT_READ",
+    "RSI_VDEV_VALIDATE_MAPPING",
+    "RSI_VERSION"
+  ]
+}
