@@ -211,6 +211,11 @@ def main():
     ap.add_argument("--adapter", default=None, help="HF repo id, or a local path")
     ap.add_argument("--subfolder", default=None, help="e.g. sft2-0/final")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--prompt-variant", default=None, choices=["v3", "v3.1"],
+                    help="System prompt to score with. MUST match the checkpoint's "
+                         "training prompt (see prompt_variant in the splits.json "
+                         "that built its dataset). Default v3, or "
+                         "$SPEC_CHECK_PROMPT_VARIANT.")
     ap.add_argument("--specs-dir", default=str(ROOT / "training-dataset/specs/alp14"))
     ap.add_argument("--max-new-tokens", type=int, default=6144,
                     help="Was 2048, which silently truncated the long commands: "
@@ -242,8 +247,16 @@ def main():
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from dataset_loader import load_dataset
-    from prompt_engineering_v3 import V3_PROMPT
+    from prompt_engineering_v3 import get_v3_prompt
     from verify_generated_verus import check_text, find_verus_bin, read_preamble
+
+    # Must match the prompt the checkpoint was TRAINED on, which build_dataset.py
+    # records in its splits.json as `prompt_variant`. Scoring a v3.1-trained
+    # checkpoint with the v3 prompt reproduces the train/inference mismatch that
+    # cost this project an entire iteration (RESULTS_V3.md Iteration 7). Defaults
+    # to v3, so every existing checkpoint is unaffected.
+    V3_PROMPT = get_v3_prompt(args.prompt_variant)
+    print(f"[eval] prompt variant: {V3_PROMPT.name}", flush=True)
 
     verus = find_verus_bin(None)
     if not verus:
@@ -436,6 +449,7 @@ def main():
                            if r["reason"] == "no_pub_open_spec_fn_found"),
         "with_preamble": bool(args.with_preamble),
         "frame_hint": bool(args.frame_hint),
+        "prompt_variant": V3_PROMPT.name,
         "gold_ceiling_note": "gold compiles on 33/40 (82.5%) with this Verus build",
     }
     if args.samples:

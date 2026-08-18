@@ -104,6 +104,91 @@ Keep unchanged-state constraints when implied by the command behavior."""
 V3_PROMPT = PromptVariant("V3-Structured", PROMPT_V3_SYSTEM, PROMPT_V3_TEMPLATE)
 
 
+# ---------------------------------------------------------------------------
+# V3.1 — same prompt with one factually wrong bullet corrected.
+#
+# `V3_PROMPT` above is FROZEN. Every checkpoint trained so far learned that exact
+# string, and `build_dataset.py` bakes it into the training examples, so editing
+# it in place would silently desynchronise existing checkpoints from their own
+# eval prompt. The correction is therefore a second variant, selected explicitly.
+#
+# What is wrong with the V3 bullet, measured against the oracles in
+# training-dataset/specs/{version}/:
+#
+#   claim in V3                     actual oracle
+#   PSCI_FEATURES -> `true`         `true` in eac5 and alp14                 correct
+#   RSI_FEATURES  -> `true`         eac5/rel0: `result == RSI_SUCCESS ==> value == 0`
+#                                   alp11-14:  `... ==> value == RsiFeatureRegisterEncode(...)`
+#                                                                            WRONG, all 6 versions
+#   "version queries" -> `true`     eac5/rel0: `true`
+#                                   alp11-14:  multi-clause bodies over
+#                                              RmiVersionIsSupported/VersionEqualRmi/...
+#                                                                            WRONG from alp11 on
+#
+# The rule itself is kept — "if the text states no constraint, say nothing rather
+# than inventing one" is the behaviour the dangling-output check rewards, and
+# inventing a definition for an output the document never defines is exactly how
+# a capable model hides a spec gap. Only the worked examples were wrong, and they
+# named three commands (RSI_FEATURES, RMI_VERSION, RSI_VERSION) that the
+# benchmarks score.
+# ---------------------------------------------------------------------------
+
+_V3_UNCONSTRAINED_BULLET = (
+    "- **Fully unconstrained specs rule**: If you find NO meaningful constraints in the spec "
+    "text for the command (e.g., pure query, feature detector, version/status check with no "
+    "state change), return `true` directly. Do NOT attempt to fabricate constraint logic. "
+    "Examples: PSCI_FEATURES (fully unconstrained, oracle returns `true`), RSI_FEATURES, "
+    "version queries → all should return `true`. For these commands, preserve the oracle's "
+    "signature order exactly when known; do not reorder arguments for stylistic reasons."
+)
+
+_V31_UNCONSTRAINED_BULLET = (
+    "- **Fully unconstrained specs rule**: If the spec text states NO constraint on an output, "
+    "leave it unconstrained — and if it states none on any output, return `true` directly. Do "
+    "NOT fabricate constraint logic: a specification that invents a condition the document "
+    "never states is worse than one that says nothing, because it silently accepts or rejects "
+    "behaviour the document never ruled on. Decide this from THIS command's own spec text, "
+    "never from the command's name — PSCI_FEATURES is genuinely unconstrained, but "
+    "RSI_FEATURES constrains `value` in every published version, and version queries are "
+    "unconstrained only in the earliest ones. For genuinely unconstrained commands, preserve "
+    "the oracle's signature order exactly when known; do not reorder arguments for stylistic "
+    "reasons."
+)
+
+if _V3_UNCONSTRAINED_BULLET not in PROMPT_V3_SYSTEM:
+    # Fail loudly rather than ship a "corrected" variant identical to the original.
+    raise RuntimeError(
+        "prompt_engineering_v3: the V3 unconstrained-specs bullet no longer matches "
+        "verbatim, so the V3.1 correction cannot be applied. Update "
+        "_V3_UNCONSTRAINED_BULLET to the current text."
+    )
+
+PROMPT_V31_SYSTEM = PROMPT_V3_SYSTEM.replace(
+    _V3_UNCONSTRAINED_BULLET, _V31_UNCONSTRAINED_BULLET
+)
+
+V3_1_PROMPT = PromptVariant("V3.1-Structured", PROMPT_V31_SYSTEM, PROMPT_V3_TEMPLATE)
+
+PROMPT_VARIANTS = {"v3": V3_PROMPT, "v3.1": V3_1_PROMPT}
+PROMPT_VARIANT_ENV = "SPEC_CHECK_PROMPT_VARIANT"
+
+
+def get_v3_prompt(variant: Optional[str] = None) -> PromptVariant:
+    """The command prompt to use. Defaults to V3 — the frozen, shipped one.
+
+    Resolution order: explicit argument, then $SPEC_CHECK_PROMPT_VARIANT, then
+    "v3". With the variable unset and no argument this returns `V3_PROMPT`
+    itself, so every existing caller and artifact is unaffected.
+    """
+    key = (variant or os.environ.get(PROMPT_VARIANT_ENV) or "v3").strip().lower()
+    if key not in PROMPT_VARIANTS:
+        raise SystemExit(
+            f"unknown prompt variant {key!r}; expected one of "
+            f"{', '.join(sorted(PROMPT_VARIANTS))}"
+        )
+    return PROMPT_VARIANTS[key]
+
+
 def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
     parser = argparse.ArgumentParser(description="Run prompt engineering with only the V3 prompt")
     parser.add_argument("--split", default="test", choices=["train", "val", "test", "all"])

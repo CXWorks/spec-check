@@ -66,6 +66,9 @@ def main():
     ap.add_argument("--adapter", default=None)
     ap.add_argument("--subfolder", default=None)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--prompt-variant", default=None, choices=["v3", "v3.1"],
+                    help="Must match the checkpoint's training prompt. "
+                         "Default v3, or $SPEC_CHECK_PROMPT_VARIANT.")
     ap.add_argument("--specs-dir", default=str(ROOT / "training-dataset/specs/alp14"))
     ap.add_argument("--max-new-tokens", type=int, default=6144)
     ap.add_argument("--rounds", type=int, default=2, help="repair attempts per command")
@@ -77,8 +80,13 @@ def main():
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from dataset_loader import load_dataset
-    from prompt_engineering_v3 import V3_PROMPT
+    from prompt_engineering_v3 import get_v3_prompt
     from verify_generated_verus import check_text, find_verus_bin, read_preamble
+
+    # Same rule as eval_checkpoint.py: the prompt has to be the one the checkpoint
+    # was trained on. Defaults to v3.
+    V3_PROMPT = get_v3_prompt(args.prompt_variant)
+    print(f"[repair] prompt variant: {V3_PROMPT.name}", flush=True)
     from eval_checkpoint import (build_prompt, render_generation_prompt,
                                  strip_output, degeneracy_flags)
 
@@ -164,6 +172,7 @@ def main():
     ratios = [r["clauses_final"] / max(r["clauses_round0"], 1) for r in fixed]
     summary = {
         "base": args.base, "subfolder": args.subfolder, "rounds": args.rounds, "n": n,
+        "prompt_variant": V3_PROMPT.name,
         "pass_round0": p0, "pass_rate_round0": round(100 * p0 / n, 2),
         "pass_final": pf, "pass_rate_final": round(100 * pf / n, 2),
         "repaired": len(fixed),
