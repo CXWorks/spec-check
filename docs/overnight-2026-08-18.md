@@ -61,6 +61,31 @@ Correctness (`semantic_equiv` vs gold):
 The 9B's zero `weaker` is its only defensible advantage: that is the failure a
 compile check structurally cannot see.
 
+### Seed spread is 1.2pp, and it reframes everything above
+
+Three 4B seeds on `dataset_bench`, differing only in initialisation and batch
+order: 36.7% / 34.7% / 34.7%. Range 2.0pp, **sd 1.2pp**.
+
+Every "inside seed noise" verdict in this repo was measured against ±5pp, taken
+from the sft2-* replicates on the old contaminated split. Against 1.2pp:
+
+| | gap | vs 1.2pp sd |
+|---|---|---|
+| 9B vs 4B, 49 commands | +8.2pp | ~7 sd |
+| 9B new vs old, shared 40 | +10pp | — |
+| 4B new vs old, shared 40 | +5pp | ~4 sd |
+
+**This does not overturn the McNemar results and the two are not substitutes.**
+McNemar was non-significant because the disagreeing commands are few (16 for
+4B vs 9B) — a power problem in the command set, not instability across seeds.
+Together: the gaps are stable under retraining, and are not yet established
+across a different set of commands. Only k-fold over command names fixes the
+second; more seeds cannot.
+
+Plausible reason the old split was noisier: 79 of its 98 evaluated commands were
+in training, so performance there leans on memorisation, which is more sensitive
+to initialisation than generalisation is.
+
 ---
 
 ## Benchmarks
@@ -76,10 +101,25 @@ compile check structurally cannot see.
 \* SCOPE's own patch marks `desc` FP — a checker limitation. Claude's
 `RSI_FEATURES` is a real miss: the table defines `value` and it wrote `true`.
 
-**verus_rmm measures nothing yet.** Every generator is bounded by Verus syntax,
-not bug-finding: `E0599 no method spec_shl` (shifting the mathematical `int`),
-`E0308 mismatched types`. Unrepaired Claude sat here too, and one repair round
-took it to 4/4.
+**verus_rmm is bounded by Verus syntax, and the repair pass proves it.** One
+feedback round on `sft3-2` moved eac5 from 0/4 to 1/4 — not the 1/4 → 4/4 that
+BENCHMARK_VERUS_RMM.md reports for Claude. The per-command log says why: of 39
+commands 22 repaired clean, and **9 of the 16 failures are wrong_arity**,
+concentrated exactly on the verus_rmm TP items (all four RTT commands fail, three
+on arity).
+
+The limit was the feedback, not the model. `preamble_decls` pulled identifiers
+from backticks, and `E0061 this function takes 3 arguments but 4 were supplied`
+never backticks the callee — it quotes the source line instead. So the model was
+told its arity was wrong and never shown the declaration saying what the right
+arity is. Fixed (identifiers now come from the quoted source too); **not yet
+validated by a rerun**.
+
+Two controls held. **SHRANK: 0 across all 39** — no repair bought compilation by
+dropping constraints, which is the precondition for any of this meaning anything.
+And `RMI_RTT_READ_ENTRY` still leaves `walk_level` unconstrained after repair: a
+pass optimising for compilation could have filled in the undefined output and
+refuted the session's main finding with its own tooling.
 
 **The 4B's two VERSION "misses" are a scoring artifact.** It read the prose that
 defines `lower`/`higher` and encoded it, so nothing dangles and the check cannot
