@@ -65,7 +65,12 @@ with tarfile.open(fileobj=io.BytesIO(urllib.request.urlopen(req).read())) as t:
     t.extractall(dest)
 print(f"  extracted to {dest}")
 PY
-    # the tarball carries its own top directory
+  fi
+  # Unwrap the tarball's own top directory. This must happen on the cached path
+  # too, not only right after extracting: on a second run the download is skipped
+  # and LOCAL_DIR would still point at the wrapper, so every version directory
+  # comes up empty and the scorer reports a cheerful 0/0.
+  if [[ ! -d "$LOCAL_DIR/eac5" && ! -d "$LOCAL_DIR/alp14" ]]; then
     inner="$(find "$LOCAL_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)"
     [[ -n "$inner" ]] && LOCAL_DIR="$inner"
   fi
