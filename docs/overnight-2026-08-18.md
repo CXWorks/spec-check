@@ -334,13 +334,26 @@ reason to keep the condition, not a result to report as established.
 | | TP (of 4) | FP fired (of 6) | compile first try | compile after repair |
 |---|---|---|---|---|
 | baseline | 1/4 | 0/6 | 23/41 | — |
-| + repair 1 | 2/4 | 0/6 | 23/41 | 25/41 |
+| + repair ×1 | 2/4 | 0/6 | 23/41 | 25/41 |
+| + repair ×3 | 2/4 | 3/6 | 23/41 | — |
 | + preamble | 2/4 | 0/6 | 27/41 | — |
-| + preamble + repair | **2/4** | **3/6** | 27/41 | **32/41** |
+| + preamble + repair ×1 | 2/4 | 3/6 | 27/41 | 32/41 |
+| **+ preamble + repair ×3** | **3/4** | **5/6** | 27/41 | — |
 | gold | 4/4 | 6/6 | 41/41 | — |
 
-**On TP they do not compose.** Both single levers reach 2/4; together, still 2/4.
-Read alone, that column says the combination bought nothing.
+**Rounds were the right next variable, but only together with the preamble.**
+Three rounds without it stays at 2/4. Three rounds with it reaches 3/4 with a
+single item left inconclusive — 8 of the 10 obligations now actually execute,
+against 1 of 10 at baseline. The cascade reading holds: each round clears one
+error class and exposes the next, so the loop needs both the declarations to fix
+against and enough rounds to walk the chain.
+
+This is the closest anything in this project has come to gold's (4/4, 6/6), and
+it is entirely inference-time scaffolding — same checkpoint, same weights.
+
+**At one round they do not compose.** Both single levers reach 2/4; together,
+still 2/4. Read alone, that column says the combination bought nothing — and at
+one round that reading is right. It stops being right at three.
 
 **It bought a great deal.** Compilation goes 23 → 32 of 41, and the preamble
 makes the repair loop three times more effective: it converts 5 of 14 failures
