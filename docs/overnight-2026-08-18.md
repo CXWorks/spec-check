@@ -177,8 +177,9 @@ alp14. Fixing the feedback for arity is worth doing and will not move this.
 | generator | rule_check (16) | false alarms | verus_rmm eac5 |
 |---|---|---|---|
 | gold | 16/16 | 0 | 4/4 |
+| `sft3-2` 9B **+ preamble + repair ×3** | 8/8 eac5 | **0** | **3/4** |
 | Claude + no-invent | 16/16 | 2 `RSI_FEATURES` | 1/4 |
-| `sft3-2` 9B **+ preamble** | 8/8 eac5 | **0** | **2/4** |
+| `sft3-2` 9B + preamble | 8/8 eac5 | **0** | 2/4 |
 | `sft3-2` 9B | 16/16 | 2 `desc`* | **1/4** |
 | Claude base | 14/16 | 2 `RSI_FEATURES` | 1/4 |
 | `sft3-0` 4B | 11/16 | 0 | 0/4 |
