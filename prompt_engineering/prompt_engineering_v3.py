@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the prompt-engineering pipeline with only the V3-Structured prompt."""
 
+import json
 import argparse
 import os
 import sys
@@ -147,6 +148,19 @@ def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
         choices=["low", "medium", "high", "xhigh", "max"],
         help="output_config.effort, only used on models with adaptive thinking (i.e. not Haiku)",
     )
+    parser.add_argument(
+        "--backend",
+        default="api",
+        choices=["api", "cli"],
+        help="How to reach the model: 'api' = anthropic SDK (needs ANTHROPIC_API_KEY), "
+             "'cli' = `claude -p` (subscription auth, suspends/resumes on usage limits)",
+    )
+    parser.add_argument(
+        "--variant-key",
+        default=V3_KEY,
+        help="Results subdirectory under results/ab_test/ (default: v3). Use a distinct "
+             "key per generator model so cached generations are never reused across models.",
+    )
     args = parser.parse_args(argv)
     return {
         "split": args.split,
@@ -159,6 +173,8 @@ def parse_cli_args(argv: List[str]) -> Dict[str, Any]:
         "rag_top_k": args.rag_top_k,
         "model": args.model,
         "effort": args.effort,
+        "backend": args.backend,
+        "variant_key": args.variant_key,
     }
 
 
@@ -173,24 +189,40 @@ def run_v3_only(
     rag_top_k: int = 0,
     model_name: str = None,
     effort: str = None,
+    backend: str = "api",
+    variant_key: str = V3_KEY,
 ) -> Dict[str, Any] | None:
     """Evaluate only the V3 prompt variant and report Best@k metrics."""
     print(f"\n{'=' * 70}")
     print(f"V3-only evaluation")
     print(f"Model: {model_name or 'claude-haiku-4-5-20251001'} (effort={effort or 'default'}) | Problems: {limit} | Samples/problem: {n_samples}")
+    print(f"Backend: {backend} | Results key: {variant_key}")
     print(f"Prompt: {V3_PROMPT.name}")
     print(f"{'=' * 70}")
 
-    try:
-        model = ClaudeModel(api_key=api_key, model=model_name, effort=effort)
-        print("Connected to Claude API\n")
-    except Exception as e:
-        print(f"Failed to connect to Claude API: {e}\n")
-        return None
+    results_root = ROOT_DIR / "results" / "ab_test"
+
+    if backend == "cli":
+        from claude_cli_model import build_cli_model_for_results
+
+        model = build_cli_model_for_results(
+            results_root / variant_key,
+            model=model_name or "claude-opus-5",
+            effort=effort or "high",
+            stage="generate",
+        )
+        print(f"Using `claude -p` CLI backend ({model.name}, effort={model.effort})\n")
+    else:
+        try:
+            model = ClaudeModel(api_key=api_key, model=model_name, effort=effort)
+            print("Connected to Claude API\n")
+        except Exception as e:
+            print(f"Failed to connect to Claude API: {e}\n")
+            return None
 
     result = evaluate_prompt_variant(
         V3_PROMPT,
-        variant_key=V3_KEY,
+        variant_key=variant_key,
         dataset=dataset,
         model=model,
         limit=limit,
@@ -214,6 +246,9 @@ def run_v3_only(
     print(f"Prompt ({V3_PROMPT.name}):")
     print(f"System:\n{V3_PROMPT.system}\n")
     print(f"Template (first 300 chars):\n{V3_PROMPT.user_template[:300]}...\n")
+
+    if hasattr(model, "summary"):
+        print(f"[cli] {json.dumps(model.summary())}\n")
 
     return {
         "prompt": V3_PROMPT.name,
@@ -243,7 +278,7 @@ def main() -> None:
     print(f"Loaded {len(dataset)} samples (running first {limit})\n")
 
     api_key = os.getenv("ANTHROPIC_API_KEY") or cli["api_key"]
-    if not api_key:
+    if not api_key and cli["backend"] != "cli":
         print("ANTHROPIC_API_KEY not set")
         return
 
@@ -278,6 +313,8 @@ def main() -> None:
         rag_top_k=rag_top_k,
         model_name=cli["model"],
         effort=cli["effort"],
+        backend=cli["backend"],
+        variant_key=cli["variant_key"],
     )
 
     if result is None:

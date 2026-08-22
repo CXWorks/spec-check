@@ -60,8 +60,29 @@ from repair_loop_verus import (  # noqa: E402
 )
 
 
+def already_done_fresh(cmd_dir: Path, max_retries: int) -> bool:
+    """already_done(), but only trusting a repair_log.json that belongs to the
+    *current* generation.
+
+    The upstream already_done() only reads `resolved`/`attempts`, with no notion
+    of which generation the log describes.  That is what produced the documented
+    "51/51 resolved" vs 62.24% contradiction in BASELINE2 Iteration 7: stale
+    Haiku-era repair logs were treated as done for freshly regenerated Opus
+    outputs.  A log that predates generated.raw.rs describes code that no longer
+    exists, so it is ignored.
+    """
+    log_path = cmd_dir / "repair_log.json"
+    gen_path = cmd_dir / "generated.raw.rs"
+    if not log_path.exists():
+        return False
+    if gen_path.exists() and log_path.stat().st_mtime < gen_path.stat().st_mtime:
+        print(f"    [stale] ignoring repair_log.json older than generated.raw.rs in {cmd_dir.name}")
+        return False
+    return already_done(cmd_dir, max_retries)
+
+
 def repair_one(
-    model: ClaudeModel,
+    model,
     verus_bin: Path,
     preamble: str,
     sample,
@@ -111,6 +132,20 @@ def repair_one(
         ]
 
         temperature = temp_schedule[min(attempt - 2, len(temp_schedule) - 1)]
+        if getattr(model, "cli_backend", False):
+            # The `claude -p` CLI exposes no sampling controls, so the
+            # temperature schedule below cannot break a stuck 2-cycle (it was
+            # already inert on Opus via the SDK: ClaudeModel only sends
+            # temperature for Haiku).  Vary the prompt text instead.
+            messages[-1]["content"] = (
+                prompt
+                + f"\n\nThis is repair attempt {attempt} of {max_retries}. Every approach "
+                  f"listed under the ruled-out attempts above has already failed Verus — "
+                  f"do not re-emit a variation of them. Take a materially different approach "
+                  f"to this command's constraints."
+            )
+            model.current_command = cmd
+            model.current_attempt = attempt
         raw = model.generate(messages, temperature=temperature)
         fmt = normalize_verus_with_verusfmt(raw)
         result = check_text(verus_bin, preamble, cmd, fmt, timeout_s)
@@ -165,6 +200,7 @@ def parse_args():
     p.add_argument("--api-key", default=None, help="Anthropic API key (else ANTHROPIC_API_KEY env / .env)")
     p.add_argument("--model", default=None, help="Claude model ID (default: claude-haiku-4-5-20251001). E.g. claude-opus-4-8")
     p.add_argument("--effort", default=None, choices=["low", "medium", "high", "xhigh", "max"], help="output_config.effort, only used on models with adaptive thinking (i.e. not Haiku)")
+    p.add_argument("--backend", default="api", choices=["api", "cli"], help="'api' = anthropic SDK (needs ANTHROPIC_API_KEY); 'cli' = `claude -p` (subscription auth, suspends/resumes on usage limits)")
     p.add_argument("--max-retries", type=int, default=10, help="Max total attempts per command (including the already-failing one)")
     p.add_argument("--timeout", type=int, default=45, help="Timeout per verus check (seconds)")
     p.add_argument("--limit", type=int, default=0, help="Only repair the first N failing commands (debugging)")
@@ -200,10 +236,23 @@ def main():
     dataset = load_dataset(split="test")
     by_command = {s.command.upper(): s for s in dataset}
 
-    api_key = args.api_key or os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise SystemExit("ANTHROPIC_API_KEY not set. Pass --api-key or set the env var / .env.")
-    model = ClaudeModel(api_key=api_key, model=args.model, effort=args.effort)
+    if args.backend == "cli":
+        sys.path.insert(0, str(SPEC_GEN / "prompt_engineering"))
+        from claude_cli_model import build_cli_model_for_results
+
+        model = build_cli_model_for_results(
+            results_root.parent,
+            model=args.model or "claude-opus-5",
+            effort=args.effort or "high",
+            stage="repair",
+        )
+        model.cli_backend = True
+        print(f"[info] backend: `claude -p` CLI ({model.name}, effort={model.effort})")
+    else:
+        api_key = args.api_key or os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise SystemExit("ANTHROPIC_API_KEY not set. Pass --api-key or set the env var / .env.")
+        model = ClaudeModel(api_key=api_key, model=args.model, effort=args.effort)
 
     resolved_count = 0
     still_failing_count = 0
@@ -220,7 +269,7 @@ def main():
             print(f"[{i}/{len(failing)}] {cmd}: [skip] no result dir {cmd_dir}")
             continue
 
-        if args.resume and already_done(cmd_dir, args.max_retries):
+        if args.resume and already_done_fresh(cmd_dir, args.max_retries):
             log = json.loads((cmd_dir / "repair_log.json").read_text(encoding="utf-8"))
             resolved_count += 1 if log["resolved"] else 0
             still_failing_count += 0 if log["resolved"] else 1
@@ -267,6 +316,9 @@ def main():
         f"[info] pass rate after repair: {s['pass']}/{s['checked']} "
         f"({s['pass_rate']:.2f}%)"
     )
+
+    if hasattr(model, "summary"):
+        print(f"[cli] {json.dumps(model.summary())}")
 
     out_path = summary_path.parent / f"{summary_path.stem}_repaired.json"
     out_path.write_text(json.dumps(final, indent=2), encoding="utf-8")

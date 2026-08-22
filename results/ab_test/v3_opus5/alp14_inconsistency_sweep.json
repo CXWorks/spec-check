@@ -1,0 +1,789 @@
+{
+  "results_root": "/mnt/sdc/xiang/spec-opus/results/ab_test/v3_opus5/alp14",
+  "generated_name": "generated.formatted.rs",
+  "summary": {
+    "consistent": 95,
+    "skipped": 3
+  },
+  "inconsistent": [],
+  "results": [
+    {
+      "command": "psci_affinity_info",
+      "fn_name": "psci_affinity_info_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "psci_cpu_off",
+      "verdict": "skipped",
+      "reason": "trivial_true_body",
+      "fn_name": "psci_cpu_off_spec"
+    },
+    {
+      "command": "psci_cpu_on",
+      "fn_name": "psci_cpu_on_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "psci_cpu_suspend",
+      "verdict": "skipped",
+      "reason": "trivial_true_body",
+      "fn_name": "psci_cpu_suspend_spec"
+    },
+    {
+      "command": "psci_features",
+      "verdict": "skipped",
+      "reason": "trivial_true_body",
+      "fn_name": "psci_features_spec"
+    },
+    {
+      "command": "psci_system_off",
+      "fn_name": "psci_system_off_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "psci_system_reset",
+      "fn_name": "psci_system_reset_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "psci_version",
+      "fn_name": "psci_version_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_data_create",
+      "fn_name": "rmi_data_create_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_data_create_unknown",
+      "fn_name": "rmi_data_create_unknown_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_data_destroy",
+      "fn_name": "rmi_data_destroy_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_features",
+      "fn_name": "rmi_features_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_granule_delegate",
+      "fn_name": "rmi_granule_delegate_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_granule_undelegate",
+      "fn_name": "rmi_granule_undelegate_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_mec_set_private",
+      "fn_name": "rmi_mec_set_private_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_mec_set_shared",
+      "fn_name": "rmi_mec_set_shared_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_abort",
+      "fn_name": "rmi_pdev_abort_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_aux_count",
+      "fn_name": "rmi_pdev_aux_count_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_communicate",
+      "fn_name": "rmi_pdev_communicate_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_create",
+      "fn_name": "rmi_pdev_create_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_destroy",
+      "fn_name": "rmi_pdev_destroy_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_get_state",
+      "fn_name": "rmi_pdev_get_state_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_ide_key_refresh",
+      "fn_name": "rmi_pdev_ide_key_refresh_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_ide_reset",
+      "fn_name": "rmi_pdev_ide_reset_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_p2p_connect",
+      "fn_name": "rmi_pdev_p2p_connect_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_p2p_disconnect",
+      "fn_name": "rmi_pdev_p2p_disconnect_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_set_pubkey",
+      "fn_name": "rmi_pdev_set_pubkey_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_pdev_stop",
+      "fn_name": "rmi_pdev_stop_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_psci_complete",
+      "fn_name": "rmi_psci_complete_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_psmmu_irq_notify",
+      "fn_name": "rmi_psmmu_irq_notify_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_psmmu_msi_config",
+      "fn_name": "rmi_psmmu_msi_config_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_realm_activate",
+      "fn_name": "rmi_realm_activate_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_realm_create",
+      "fn_name": "rmi_realm_create_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_realm_destroy",
+      "fn_name": "rmi_realm_destroy_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rec_aux_count",
+      "fn_name": "rmi_rec_aux_count_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rec_create",
+      "fn_name": "rmi_rec_create_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rec_destroy",
+      "fn_name": "rmi_rec_destroy_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rec_enter",
+      "fn_name": "rmi_rec_enter_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_aux_create",
+      "fn_name": "rmi_rtt_aux_create_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_aux_destroy",
+      "fn_name": "rmi_rtt_aux_destroy_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_aux_fold",
+      "fn_name": "rmi_rtt_aux_fold_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_aux_map_protected",
+      "fn_name": "rmi_rtt_aux_map_protected_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_aux_map_unprotected",
+      "fn_name": "rmi_rtt_aux_map_unprotected_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_aux_unmap_protected",
+      "fn_name": "rmi_rtt_aux_unmap_protected_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_aux_unmap_unprotected",
+      "fn_name": "rmi_rtt_aux_unmap_unprotected_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_create",
+      "fn_name": "rmi_rtt_create_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_destroy",
+      "fn_name": "rmi_rtt_destroy_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_fold",
+      "fn_name": "rmi_rtt_fold_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_init_ripas",
+      "fn_name": "rmi_rtt_init_ripas_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_map_unprotected",
+      "fn_name": "rmi_rtt_map_unprotected_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_read_entry",
+      "fn_name": "rmi_rtt_read_entry_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_set_ripas",
+      "fn_name": "rmi_rtt_set_ripas_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_set_s2ap",
+      "fn_name": "rmi_rtt_set_s2ap_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_rtt_unmap_unprotected",
+      "fn_name": "rmi_rtt_unmap_unprotected_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_abort",
+      "fn_name": "rmi_vdev_abort_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_aux_count",
+      "fn_name": "rmi_vdev_aux_count_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_communicate",
+      "fn_name": "rmi_vdev_communicate_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_complete",
+      "fn_name": "rmi_vdev_complete_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_create",
+      "fn_name": "rmi_vdev_create_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_destroy",
+      "fn_name": "rmi_vdev_destroy_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_get_interface_report",
+      "fn_name": "rmi_vdev_get_interface_report_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_get_measurements",
+      "fn_name": "rmi_vdev_get_measurements_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_get_state",
+      "fn_name": "rmi_vdev_get_state_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_lock",
+      "fn_name": "rmi_vdev_lock_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_map",
+      "fn_name": "rmi_vdev_map_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_p2p_bind",
+      "fn_name": "rmi_vdev_p2p_bind_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_p2p_unbind",
+      "fn_name": "rmi_vdev_p2p_unbind_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_start",
+      "fn_name": "rmi_vdev_start_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_unlock",
+      "fn_name": "rmi_vdev_unlock_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_unmap",
+      "fn_name": "rmi_vdev_unmap_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vdev_validate_mapping",
+      "fn_name": "rmi_vdev_validate_mapping_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_version",
+      "fn_name": "rmi_version_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vsmmu_create",
+      "fn_name": "rmi_vsmmu_create_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vsmmu_destroy",
+      "fn_name": "rmi_vsmmu_destroy_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vsmmu_map",
+      "fn_name": "rmi_vsmmu_map_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rmi_vsmmu_unmap",
+      "fn_name": "rmi_vsmmu_unmap_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_attestation_token_continue",
+      "fn_name": "rsi_attestation_token_continue_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_attestation_token_init",
+      "fn_name": "rsi_attestation_token_init_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_features",
+      "fn_name": "rsi_features_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_host_call",
+      "fn_name": "rsi_host_call_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_ipa_state_get",
+      "fn_name": "rsi_ipa_state_get_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_ipa_state_set",
+      "fn_name": "rsi_ipa_state_set_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_measurement_extend",
+      "fn_name": "rsi_measurement_extend_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_measurement_read",
+      "fn_name": "rsi_measurement_read_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_mem_get_perm_value",
+      "fn_name": "rsi_mem_get_perm_value_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_mem_set_perm_index",
+      "fn_name": "rsi_mem_set_perm_index_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_mem_set_perm_value",
+      "fn_name": "rsi_mem_set_perm_value_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_plane_enter",
+      "fn_name": "rsi_plane_enter_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_plane_sysreg_read",
+      "fn_name": "rsi_plane_sysreg_read_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_plane_sysreg_write",
+      "fn_name": "rsi_plane_sysreg_write_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_realm_config",
+      "fn_name": "rsi_realm_config_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_vdev_dma_enable",
+      "fn_name": "rsi_vdev_dma_enable_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_vdev_get_info",
+      "fn_name": "rsi_vdev_get_info_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_vdev_p2p_bind",
+      "fn_name": "rsi_vdev_p2p_bind_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_vdev_validate_mapping",
+      "fn_name": "rsi_vdev_validate_mapping_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_version",
+      "fn_name": "rsi_version_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_vsmmu_activate",
+      "fn_name": "rsi_vsmmu_activate_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    },
+    {
+      "command": "rsi_vsmmu_get_info",
+      "fn_name": "rsi_vsmmu_get_info_spec",
+      "verdict": "consistent",
+      "verified": 7,
+      "errors": 1,
+      "output_head": ""
+    }
+  ]
+}

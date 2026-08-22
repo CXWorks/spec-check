@@ -6,8 +6,9 @@
 engineering) on the same task — generating Verus specs for the alp14 command
 set (98 commands) — and check both output quality (CodeBLEU) and actual
 correctness (Verus compile/verify pass rate). Two general models have been
-run so far: **Claude** (Iterations 1–6 on Claude 4.5 Haiku, superseded by
-Iteration 7 on Claude Opus 4.8 — see below) and **GPT (`gpt-5.6-sol`)**
+run so far: **Claude** (Iterations 1–6 on Claude 4.5 Haiku, then Iteration 7
+on Claude Opus 4.8, both superseded by **Iteration 8 on Claude Opus 5 via the
+`claude -p` CLI** — see below) and **GPT (`gpt-5.6-sol`)**
 (this session, see below).
 
 The general-model side started as a synthesis of existing work
@@ -33,14 +34,14 @@ general model's frozen weights.
 All three were evaluated on the same benchmark: alp14, 98 commands, CodeBLEU
 against oracle + real Verus verification (not just similarity).
 
-| | General model 1 (Claude Opus 4.8, `effort=high`) | General model 2 (GPT `gpt-5.6-sol`) | Our pipeline (fine-tuned Qwen) |
+| | General model 1 (Claude **Opus 5**, `effort=high`, via `claude -p`) | General model 2 (GPT `gpt-5.6-sol`) | Our pipeline (fine-tuned Qwen) |
 |---|---|---|---|
-| Generator | Claude Opus 4.8 via API, zero-shot/few-shot prompting (Iterations 1–6 used Claude 4.5 Haiku on the same prompt; superseded, see Iteration 7) | GPT `gpt-5.6-sol` via OpenAI API, zero-shot/few-shot prompting | `item_split_v4_best` — Qwen 4B, LoRA fine-tuned on alp14-style train split |
+| Generator | Claude Opus 5 via the `claude -p` CLI (subscription), zero-shot/few-shot prompting. Iterations 1–6 used Claude 4.5 Haiku and Iteration 7 used Opus 4.8 via the `anthropic` SDK, both on the same prompt; superseded, see Iteration 8 | GPT `gpt-5.6-sol` via OpenAI API, zero-shot/few-shot prompting | `item_split_v4_best` — Qwen 4B, LoRA fine-tuned on alp14-style train split |
 | Adaptation method | Prompt engineering (5 iterations) + preamble restored + Verus-feedback repair loop (Iteration 6, model swapped to Opus 4.8 in Iteration 7) | Same prompt as Claude (preamble restored, see below); no GPT-specific tuning, no repair loop | Fine-tuning on train split + prompt alignment + Verus-feedback repair loop |
-| Result artifacts | `results/ab_test/v3/alp14/`, `results/ab_test/v3/alp14_verus_check_summary.json`, `results/ab_test/v3/alp14_verus_check_summary_repaired.json` | `results/ab_test_gpt/v3_gpt/alp14/`, `results/ab_test_gpt/v3_gpt/alp14_verus_check_summary.json` | `results/ab_test_qwen_v3retrained/`, `results/ab_test_qwen_v4/` |
-| Source doc | `prompt_engineering/RESULTS_V3.md` Iterations 1–5, this doc's Iterations 6–7 | This session (see below) | `prompt_engineering/RESULTS_V3.md` Iterations 6–7 |
+| Result artifacts | `results/ab_test/v3_opus5/alp14/` (+ `alp14_prerepair/`), `alp14_verus_check_summary.json`, `..._repaired.json`, `..._recheck.json`, `alp14_inconsistency_sweep.json`, `opus5_scores.json`, `cli_calls.jsonl` | `results/ab_test_gpt/v3_gpt/alp14/`, `results/ab_test_gpt/v3_gpt/alp14_verus_check_summary.json` | `results/ab_test_qwen_v3retrained/`, `results/ab_test_qwen_v4/` |
+| Source doc | `prompt_engineering/RESULTS_V3.md` Iterations 1–5, this doc's Iterations 6–8 | This session (see below) | `prompt_engineering/RESULTS_V3.md` Iterations 6–7 |
 
-## General model (Claude 4.5 Haiku): Iterations 1–5 summary (historical — superseded by Iteration 7)
+## General model (Claude 4.5 Haiku): Iterations 1–5 summary (historical — superseded by Iteration 8)
 
 All numbers below are from `prompt_engineering/RESULTS_V3.md`; re-verified
 against the saved artifacts in `results/ab_test/v3/` for this doc.
@@ -58,7 +59,7 @@ Best/final general-model result (Iteration 5): **CodeBLEU Best@1 = 0.4437,
 Verus pass rate = 95/98 (96.94%)**. The 3 remaining failures are all
 `missing_symbol` (fabricated helper names), not systemic prompt bugs.
 
-## Iteration 6 (Claude 4.5 Haiku, historical — superseded by Iteration 7): restoring the preamble the GPT track already had
+## Iteration 6 (Claude 4.5 Haiku, historical — superseded by Iteration 8): restoring the preamble the GPT track already had
 
 **Bug found:** `prompt_engineering_v3.py`'s `PROMPT_V3_TEMPLATE` (the Claude
 track) never actually included `{context}` (the preamble: struct/enum/helper
@@ -163,7 +164,7 @@ was never apples-to-apples in the first place. Result artifacts:
 `results/ab_test/v3/alp14_verus_check_summary_repaired.json` (post-repair,
 95/98).
 
-## Iteration 7 (Claude): switching the generator from Haiku to Opus 4.8 — current headline result
+## Iteration 7 (Claude, historical — superseded by Iteration 8): switching the generator from Haiku to Opus 4.8
 
 Same `PROMPT_V3_SYSTEM`/`PROMPT_V3_TEMPLATE`, same RAG setup, same repair
 loop (`repair_loop_verus_claude.py`) as Iteration 6 — the only change is the
@@ -366,6 +367,152 @@ candidate tried, not after an exhaustive search, which suggests more may be
 findable the same way across the other 97 commands (not yet done — see Not
 yet done).
 
+## Iteration 8 (Claude): Opus 5 via the `claude -p` CLI — current headline result
+
+Same `PROMPT_V3_SYSTEM`/`PROMPT_V3_TEMPLATE`, same RAG setup, same repair loop
+as Iteration 7. Two things changed: the generator model
+(`claude-opus-4-8` → **`claude-opus-5`**, still `effort=high`), and the
+*transport* — instead of the `anthropic` Python SDK with an
+`ANTHROPIC_API_KEY`, every call now goes through the **`claude -p` CLI** on a
+Claude subscription. That transport change is what the new
+`prompt_engineering/claude_cli_model.py` (`ClaudeCLIModel`, a drop-in for
+`ClaudeModel`) exists for; `--backend cli` selects it in both
+`prompt_engineering_v3.py` and `repair_loop_verus_claude.py`. Artifacts live in
+a **new** results key, `results/ab_test/v3_opus5/`, rather than overwriting
+`v3/` — see the stale-cache hazard Iteration 7 documented.
+
+Full run:
+`./run_opus5_eval.sh` (7 resumable stages), whose stage 1 is
+`python3 prompt_engineering/prompt_engineering_v3.py --split test --limit 98
+--n-samples 5 --rag-index rag/index.json --rag-top-k 3 --save-results --resume
+--backend cli --model claude-opus-5 --effort high --variant-key v3_opus5`.
+
+**Fresh generation, before repair — a large improvement over Opus 4.8 on both metrics:**
+
+| Run | CodeBLEU Best@1/3/5 | Verus pass rate |
+|---|---|---|
+| Iteration 7a (Opus 4.8, fresh, no repair) | 0.5664 / 0.5937 / 0.6051 | 47/98 (47.96%) |
+| **Iteration 8a (Opus 5, fresh, no repair)** | **0.6445 / 0.6640 / 0.6723** | **62/98 (63.27%)** |
+
+This is the first generator change in this doc where CodeBLEU and raw Verus
+pass rate moved in the *same* direction (Iterations 6 and 7 both raised
+CodeBLEU while lowering the pre-repair pass rate). The 36 remaining failures
+are `type_mismatch` (21), `verus_error` (10), `parse_error` (4) and
+`missing_symbol` (1) — note only **one** fabricated-symbol failure, versus the
+invented-name class that dominated Haiku's blind Iteration-5 run.
+
+**Repair loop — 100% pass rate, reached faster than Opus 4.8:**
+
+| Run | CodeBLEU | Verus pass rate |
+|---|---|---|
+| Iteration 6c (Haiku, post-repair) | 0.5410 | 95/98 (96.94%) |
+| Iteration 7b (Opus 4.8, post-repair) | 0.6063 | 98/98 (100.00%) |
+| **Iteration 8b (Opus 5, post-repair) — current best** | **0.6641 mean / 0.6963 median** | **98/98 (100.00%)** |
+
+**All 36 failing commands resolved, none unresolved**, and the effort needed
+was far lower than Iteration 7b's: mean **2.2** attempts (attempt 1 is the
+already-failing generation, so most commands needed a *single* corrective
+round), max 4, and **zero** commands needed more than 5 — where Iteration 7b
+had commands running to 10. Distribution: 30 commands at 2 attempts, 5 at 3,
+1 at 4.
+
+Unlike Iteration 7b, the `codebleu` field in `repair_log.json` is populated
+for real here (the run happened in an env where the `codebleu` package is
+importable, so `compute_codebleu()` is not silently returning 0.0), and the
+headline CodeBLEU was still recomputed independently from
+`generated.formatted.rs` by `tools/score_opus5.py`, the same methodology used
+for every other number in this doc.
+
+**The 100% was independently re-verified.** Iteration 7b's stale-cache
+incident surfaced as a disagreement between the repair loop's self-report and
+a real re-check, so stage 5 now re-runs `verify_generated_verus.py` from
+scratch over the final tree and writes a separate
+`alp14_verus_check_summary_recheck.json`. Both agree at 98/98 (100.00%).
+`already_done()` was also wrapped with a staleness guard
+(`already_done_fresh()` in `repair_loop_verus_claude.py`) that ignores any
+`repair_log.json` older than the `generated.raw.rs` it claims to describe —
+the exact failure mode Iteration 7 hit by hand.
+
+### Iteration 8b, additional checks: dangling-output, footprint, Z3 inconsistency
+
+Same three rule-based checks as Iteration 7b, against the final
+`results/ab_test/v3_opus5/alp14/`:
+
+| Check | Opus 5 result | Opus 4.8 (Iteration 7b) |
+|---|---|---|
+| Dangling-output | **1 flagged** (`RMI_PSMMU_IRQ_NOTIFY`) | 3 flagged |
+| Footprint (naive) | 1 flagged (`RMI_REALM_ACTIVATE`) | 1 flagged (`RMI_RTT_SET_S2AP`) |
+| Footprint (semantic-normalized) | **0 flagged** | 0 flagged |
+| Z3 `ensures false`, blind sweep | **0/98 inconsistent** (95 consistent, 3 trivial-`true` skips, **0 type-error**) | 0/98 inconsistent |
+| Z3 `ensures false`, targeted witness | **1/1 confirmed** (`RMI_RTT_SET_S2AP`) | 1/1 confirmed |
+
+**Dangling-output improved from 3 to 1.** `RMI_PSMMU_IRQ_NOTIFY` is the one
+carry-over — its generated signature still omits the oracle's `action, rd,
+vsmmu, msi_addr, msi_data` outputs entirely. The two Opus-4.8 flags that are
+now gone (`RMI_RTT_READ_ENTRY`'s invented `rtte: RmmRttEntry` in place of the
+oracle's `desc: Bits64`, and `RSI_MEM_SET_PERM_INDEX`'s missing `new_cookie`)
+are fixed in Opus 5's output. Still worse than Haiku's 0, and still invisible
+to Verus, which only checks a spec against *its own* declared signature.
+
+**The blind sweep reports 0 type-errors, which is a real cross-check.** The
+sweep classifies each command as inconsistent / consistent / type-error, and
+95 + 3 skipped + 0 type-error exactly accounts for all 98 — consistent with
+the independent 98/98 Verus result. (Run the same sweep against the *oracle*
+specs and 19 come back `type_error`, because an oracle spec is written against
+the full gold file rather than the standalone `preamble.rs`; those same
+commands fail `verify_generated_verus.py --oracle` identically, so this is a
+property of standalone checking, not of the sweep.)
+
+**The targeted witness reproduces.** Scanning Iteration 8b's output for
+commands with 3+ distinct `RMI_ERROR_*`/`RSI_ERROR_*` targets and no
+mutual-exclusion guard yields 33 candidates. `RMI_RTT_SET_S2AP` — the command
+Iteration 7b confirmed — is still inconsistent in Opus 5's generated spec
+under the identical hypotheses (`!AddrIsGranuleAligned(old_s, rd)` and
+`RecAt(old_s, rec_ptr).state == REC_RUNNING`), Verus reporting `8 verified, 0
+errors`. As in Iteration 7b, this reproduces on the **oracle** spec too, so it
+is a property of the ARM spec text (§B4.3.45.2.1: *"does not have any failure
+condition orderings"*), not a model artifact.
+
+### Methodology delta: what running on `claude -p` changes
+
+Worth recording because it is not a like-for-like transport swap:
+
+- **No temperature control.** The CLI exposes no sampling parameters, so the
+  repair loop's `temp_schedule` cannot apply. This is *not* a regression
+  versus Iteration 7: `ClaudeModel.supports_sampling_params` is
+  `name.startswith("claude-haiku")`, so the schedule was already inert on Opus
+  4.8. In CLI mode the loop instead varies the prompt text per attempt
+  ("attempt N of M … take a materially different approach") to break stuck
+  2-cycles, and the `seen_fmt` cycle-break still applies.
+- **Quota, not money, is the binding constraint.** The run cost **$51.96** of
+  metered value across **534 calls** and only **2.7 h** of actual API time —
+  but took **three days of wall clock**, because it accumulated **95.7 h** of
+  quota waiting across 161 suspend/probe/resume cycles. Prompt caching kept
+  per-call cost low (~$0.10/call; ~19k cached input tokens per call once the
+  byte-identical system prompt is warm).
+- **Two distinct limits exist.** Beyond the rolling 5-hour session limit
+  (`"You've hit your session limit · resets 12:30pm"`), the run hit a **weekly**
+  limit (`"You've hit your weekly limit · resets 8pm"`) that stalled it for
+  **~26 hours** with zero progress. Any future rerun on a subscription plan
+  should budget for this; it is the single largest cost in the schedule.
+- **Resumability is what made it survivable.** `ClaudeCLIModel` caches every
+  response on disk keyed by sha256(model+effort+system+user), storing an
+  ordered list per key so the *k*-th repeat of an identical prompt (n_samples=5
+  sends the same prompt 5×) consumes the *k*-th cached response. The run was
+  restarted five times mid-flight without losing a single completed call.
+- **A second worker can safely pre-warm that cache.** `tools/prewarm_cache.py`
+  walks the command list in reverse through the *same* `evaluate_prompt_variant`
+  code path, so its prompts — and therefore its cache keys — are byte-identical
+  to the main run's (verified against 6 already-completed commands before
+  launch). It roughly doubled throughput during a degraded-API stretch.
+
+Result artifacts: `results/ab_test/v3_opus5/alp14/` (post-repair),
+`results/ab_test/v3_opus5/alp14_prerepair/` (pre-repair snapshot, preserved so
+8a is recomputable — Iteration 7 lost its equivalent by repairing in place),
+`alp14_verus_check_summary.json` (62/98), `..._repaired.json` (98/98),
+`..._recheck.json` (independent, 98/98), `alp14_inconsistency_sweep.json`,
+`opus5_scores.json`, and the per-call ledger `cli_calls.jsonl`.
+
 ## General model 2 (GPT, `gpt-5.6-sol`): new run this session
 
 New script: [`prompt_engineering/prompt_engineering_v3_gpt.py`](prompt_engineering/prompt_engineering_v3_gpt.py).
@@ -445,14 +592,17 @@ From the same `RESULTS_V3.md`, Iterations 6–7, and re-verified against
 
 ## Head-to-head
 
-| Metric | Claude Opus 4.8 (preamble + repair loop, Iteration 7b) | GPT `gpt-5.6-sol` (prompted only, preamble restored, no repair) | Our fine-tuned Qwen (+ repair loop) |
-|---|---|---|---|
-| CodeBLEU Best@1 | 0.6063 (all-98 post-repair; fresh-gen Best@1/3/5 was 0.5664/0.5937/0.6051) | 0.5720 / 0.6014 / 0.6285 (Best@1/3/5) | **0.8389** / — / — |
-| Verus pass rate | **98/98 (100.00%)** | 65/98 (66.33%) | 47/98 (48.0%) |
+| Metric | **Claude Opus 5 (preamble + repair loop, Iteration 8b — current)** | Claude Opus 4.8 (Iteration 7b) | GPT `gpt-5.6-sol` (prompted only, preamble restored, no repair) | Our fine-tuned Qwen (+ repair loop) |
+|---|---|---|---|---|
+| CodeBLEU Best@1 | **0.6641 mean post-repair** (fresh-gen Best@1/3/5 was 0.6445/0.6640/0.6723) | 0.6063 (fresh-gen 0.5664/0.5937/0.6051) | 0.5720 / 0.6014 / 0.6285 (Best@1/3/5) | **0.8389** / — / — |
+| Verus pass rate, fresh | **62/98 (63.27%)** | 47/98 (47.96%) | 65/98 (66.33%) | — |
+| Verus pass rate, post-repair | **98/98 (100.00%)** | **98/98 (100.00%)** | 65/98 (66.33%) — no repair loop | 47/98 (48.0%) |
+| Repair effort to reach it | **2.2 attempts mean, max 4** | up to 10 attempts | n/a | — |
 
 (For reference, Iteration 6c's Claude 4.5 Haiku result — preamble + repair
-loop, same prompt — was 0.5410 CodeBLEU / 95/98 (96.94%); Opus 4.8 beats it
-on both metrics, see Iteration 7 above.)
+loop, same prompt — was 0.5410 CodeBLEU / 95/98 (96.94%). Both Opus
+generations beat it on both metrics; Opus 5 additionally beats Opus 4.8 on
+fresh-generation pass rate, CodeBLEU, and repair effort — see Iterations 7–8.)
 
 Note the Claude and GPT numbers are no longer produced by identical
 pipelines: Claude's went through the Iteration-6 preamble-restoration +
@@ -538,13 +688,13 @@ than picking whichever metric favors "our" pipeline:
 
 For this specific goal — generating Verus specs that actually **pass
 verification** — all general-purpose models beat our fine-tuned,
-repair-augmented Qwen pipeline on real Verus pass rate (Claude Opus 4.8
+repair-augmented Qwen pipeline on real Verus pass rate (Claude Opus 5
 **100.00%**, GPT 66.33%, vs our 48.0%), even though our pipeline wins on
-CodeBLEU similarity (0.8389 vs 0.6063 / 0.5720). But Claude's number is no
+CodeBLEU similarity (0.8389 vs 0.6641 / 0.5720). But Claude's number is no
 longer a clean "general model, prompted only" result — it now reflects
 prompt engineering *plus* a Verus-feedback repair loop (Iteration 6) *plus*
-a stronger generator model (Opus 4.8, Iteration 7), the same repair-loop
-lever our own pipeline uses. GPT hasn't had that lever applied yet, so the
+a stronger generator model (Opus 4.8 in Iteration 7, Opus 5 in Iteration 8),
+the same repair-loop lever our own pipeline uses. GPT hasn't had that lever applied yet, so the
 66.33% vs 100.00% gap overstates the pure model-capability difference; it's
 at least partly "had a repair loop" vs "didn't." This reinforces that
 CodeBLEU should not be used alone to judge pipeline quality, and that a
@@ -558,6 +708,22 @@ Iteration 7a's Opus 4.8 at 47.96% (47/98) — Opus is somewhat better
 pre-repair, but both are far below either model's post-repair number
 (96.94% / 100.00%). The repair loop, not the choice of Haiku vs. Opus, is
 doing most of the correctness work in both cases.
+
+Iteration 8 sharpens that last point rather than overturning it. Opus 5 is
+the first generator here to improve the *pre-repair* pass rate substantially
+(63.27% vs Opus 4.8's 47.96% and Haiku's 40.82% on the same
+preamble-in-context setup) while also raising CodeBLEU — every earlier change
+in this doc moved those two in opposite directions. So model capability does
+show up in the raw number once the model stops fabricating symbols (Opus 5
+had exactly 1 `missing_symbol` failure out of 36). But the post-repair
+endpoint is unchanged at 100.00%: a better generator did not raise the
+ceiling, it just got there cheaply — mean 2.2 repair attempts versus
+Iteration 7b's up-to-10. The honest reading is that the repair loop sets the
+final number and the generator sets the *cost* of reaching it. That also
+means the headline "100%" says nothing about spec completeness: Opus 5 still
+ships 1 dangling-output bug, and `RMI_RTT_SET_S2AP` remains Z3-provably
+self-contradictory in both the generated spec and the ARM oracle it came
+from.
 
 ## Not yet done
 
@@ -578,8 +744,10 @@ doing most of the correctness work in both cases.
   that a targeted prompt rule could fix, the same way Iterations 3 and 5 fixed
   Claude's dominant failure modes?
 - Cost/latency comparison (API cost + wall-clock for Claude vs GPT vs local
-  GPU time for Qwen fine-tuning + inference) — not measured in any track so
-  far. Worth noting operationally: GPT's run took noticeably longer in
+  GPU time for Qwen fine-tuning + inference) — now measured for the Claude
+  track only (Iteration 8: $51.96, 534 calls, 2.7 h API time, but ~3 days
+  wall-clock against 95.7 h of subscription quota waiting; see the
+  Methodology-delta subsection), still unmeasured for GPT and Qwen. Worth noting operationally: GPT's run took noticeably longer in
   wall-clock time than Claude's (multi-hour for 490 generations, including
   one single-command hang before a timeout was added), which matters for
   practical pipeline choice even independent of quality.

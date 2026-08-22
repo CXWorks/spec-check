@@ -592,7 +592,11 @@ def evaluate_prompt_variant(
 
         oracle_fmt = normalize_verus_with_verusfmt(sample.oracle)
         candidates = []
-        for _ in range(n_samples):
+        for sample_idx in range(n_samples):
+            # CLI backend records which command/sample each call belongs to.
+            if hasattr(model, "current_command"):
+                model.current_command = sample.command
+                model.current_attempt = sample_idx + 1
             raw = model.generate(messages)
             formatted = normalize_verus_with_verusfmt(raw)
             score = compute_codebleu(formatted, oracle_fmt)

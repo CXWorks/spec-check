@@ -37,3 +37,9 @@ wrapped_check_results.txt
 logs/
 results/ab_test/*_backup_*/
 results/ab_test/v3/alp14/
+results/ab_test/v3_opus5/alp14/
+results/ab_test/v3_opus5/alp14_prerepair/
+results/ab_test/v3_opus5/.cli_cache/
+results/ab_test/v3_opus5_warm/
+results/ab_test/v3_opus5/STAGE
+results/ab_test/v3_opus5/logs/
