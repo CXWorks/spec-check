@@ -603,3 +603,91 @@ row, take gold's clause and the model's clause *for that row* and ask Z3 whether
 they agree. That localises a disagreement to a row of the PDF instead of to a
 whole command, and it is the version that could adjudicate the `stronger`
 verdicts — the family that contains the one known case of gold being wrong.
+
+---
+
+## The preamble window hides half the API, and it explains four earlier results
+
+Found by taking the clause-level tool to the eight `incomparable` commands and
+then reading one disagreement by hand.
+
+### What the disagreement actually was
+
+`RMI_DATA_DESTROY`, success conditions. The model's clauses are *structurally
+identical* to gold's. One token differs:
+
+```rust
+gold : RttWalk_(new_s, rd, ipa, RMM_RTT_PAGE_LEVEL as int).rtte.state == UNASSIGNED
+model: RttWalk (new_s, rd, ipa)                           .rtte.state == UNASSIGNED
+```
+
+Both are declared in the preamble and both are uninterpreted, so Z3 can never
+prove them equal:
+
+```
+line   75:  pub open spec fn RttWalk_(s, rd, addr, level) -> RmmRttWalkResult;
+line  674:  pub open spec fn RttWalk (s, rd, addr)        -> RmmRttWalkResult;
+```
+
+**The model is shown the last 200 lines of a 683-line preamble — lines 484–683.**
+`RttWalk_` is at line 75. It has never seen the function gold uses 147 times
+across these commands, and it uses it zero times.
+
+### The arity numbers say the same thing twice
+
+| | `RttWalk` 4 args | `RttWalk` 3 args |
+|---|---|---|
+| no preamble shown | **254** | 0 |
+| preamble tail shown | 91 | **144** |
+| gold (`RttWalk_`) | 238 | 1 |
+
+With nothing shown, the model writes the **arity it learned in training** under
+the **only name it can recall** — which is literally `E0061: this function takes
+3 arguments but 4 were supplied`, the dominant repair failure at 9 of 17. Shown
+the tail, it switches to the three-argument function: it compiles, and it means
+something else.
+
+### Scale
+
+| version | preamble | window | share of the API gold uses that is **invisible** |
+|---|---|---|---|
+| eac5 | 683 lines | 484–683 | 18 of 87 — **21%** |
+| **alp14** | 1632 lines | 1433–1632 | 94 of 185 — **51%** |
+
+alp14 is the version the 49-command held-out eval runs on. `AddrIsGranuleAligned`
+and `AddrIsProtected` — the predicates in nearly every failure condition — are
+outside the window.
+
+### Four results this unifies
+
+1. **`wrong_arity`**, 9 of 17 repair failures — the `RttWalk`/`RttWalk_` arity gap.
+2. **`missing_symbol`**, 10 of 42 CV failures — depending on a symbol table that
+   is not shown.
+3. **Clause-level agreement 58% on failure conditions but 3% on success
+   conditions** — success conditions are the ones that walk the RTT.
+4. **"The preamble raises compilation and not correctness"** — measured three
+   separate times as a correlation. Here is the mechanism: the tail supplies a
+   function that compiles instead of the function that is meant.
+
+The cross-validation compile rate of 48.1% was measured under this handicap.
+
+### The fix, and its cost
+
+`load_preamble(version, section_text=...)` selects declarations named in the
+command's own document section, one transitive step through the types they
+mention, plus constants and type definitions.
+
+| | eac5 | alp14 |
+|---|---|---|
+| tail-200 coverage | 79% | **49%** |
+| selected coverage | **98.1%** | **99.6%** |
+| prompt size | 7.5k → 8.3k chars | 8.9k → 21.8k chars |
+
+2.4× the prompt on alp14, which is the honest cost. Opt-in via
+`--preamble-mode selected` / `PREAMBLE_MODE=selected`; the default stays the tail
+because every published number was produced with it.
+
+**Not yet measured.** Four jobs are running to find out whether fixing the window
+moves anything: `gsel3-9b` (generation, eac5) and `sel3-9b` / `sel3-4b` (the
+49-command held-out eval, where the hidden share is 51%). A mechanism this clean
+still has to be shown to pay.
