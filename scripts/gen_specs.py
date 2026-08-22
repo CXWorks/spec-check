@@ -127,6 +127,15 @@ def main():
                     help="Must match the checkpoint's training prompt. Default v3, "
                          "or $SPEC_CHECK_PROMPT_VARIANT. sft3-* is v3.1.")
     ap.add_argument("--max-new-tokens", type=int, default=6144)
+    ap.add_argument("--preamble-mode", default="tail", choices=["tail", "selected"],
+                    help="How --with-preamble picks context. `tail` is the last "
+                         "200 lines, the training condition and the default. "
+                         "`selected` picks declarations named in this command's "
+                         "own document section plus constants and types: the tail "
+                         "hides 21%% of the API gold uses on eac5 and 51%% on "
+                         "alp14, including RttWalk_, which is why the model "
+                         "substitutes the 3-argument RttWalk and every RTT "
+                         "success condition then disagrees with gold.")
     ap.add_argument("--with-preamble", action="store_true",
                     help="Restore the 200-line preamble tail that training embedded "
                          "in every prompt. Matching training is the correct inference "
@@ -204,15 +213,23 @@ def main():
             sys.exit(f"no commands loaded for {version} — is "
                      f"training-dataset/sections/{version}/ present?")
 
-        preamble = load_train_preamble(ROOT / "training-dataset" / "specs" / version) \
-            if args.with_preamble else None
+        # In `selected` mode the context is per-command, so it is built inside
+        # the loop below; `preamble` here stays None as the "not shown" marker.
+        preamble = (load_train_preamble(ROOT / "training-dataset" / "specs" / version)
+                    if args.with_preamble and args.preamble_mode == "tail" else None)
         vdir = out_root / version
         vdir.mkdir(parents=True, exist_ok=True)
-        print(f"[gen] {version}: {len(samples)} commands -> {vdir}"
-              f"{' (with preamble)' if preamble else ''}", flush=True)
+        shown = ("preamble=tail" if preamble else
+                 "preamble=selected" if args.with_preamble else "preamble=none")
+        print(f"[gen] {version}: {len(samples)} commands -> {vdir} ({shown})",
+              flush=True)
 
         for i, s in enumerate(samples, 1):
-            msgs = build_prompt(s, prompt, preamble)
+            pre = preamble
+            if args.with_preamble and args.preamble_mode == "selected":
+                from dataset_loader import load_preamble
+                pre = load_preamble(version, section_text=s.section_text)
+            msgs = build_prompt(s, prompt, pre)
             text = render_generation_prompt(tok, msgs)
             raw = tok(text, return_tensors="pt", add_special_tokens=False)
             ids = (raw["input_ids"] if hasattr(raw, "keys") else raw).to(model.device)

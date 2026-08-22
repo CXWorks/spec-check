@@ -20,6 +20,10 @@ GEN_VERSIONS="${GEN_VERSIONS:-eac5 rel0}"
 # and rustup after all, so the skips below are conditional on it being 0.
 REPAIR_ROUNDS="${REPAIR_ROUNDS:-0}"
 WITH_PREAMBLE="${WITH_PREAMBLE:-0}"  # 1 restores the preamble that training used
+# tail = the 200-line window training used and every published number was
+# produced with. selected = declarations named in the command's own section;
+# the tail hides 51% of the API gold uses on alp14.
+PREAMBLE_MODE="${PREAMBLE_MODE:-tail}"
 FRAME_HINT="${FRAME_HINT:-0}"        # 1 demands frame conditions explicitly
 ROUNDS="${ROUNDS:-2}"            # repair mode only
 SAMPLES="${SAMPLES:-0}"          # >0 turns on best-of-k on top of the greedy sample
@@ -226,7 +230,7 @@ for RUN in $RUN_IDS; do
       # guard is kept because the retry path above is real, not because that was.
       rm -rf "$GDIR"
       GEN_ARGS="--versions $GEN_VERSIONS --out-dir $GDIR --repair-rounds $REPAIR_ROUNDS"
-      [ "$WITH_PREAMBLE" = "1" ] && GEN_ARGS="$GEN_ARGS --with-preamble"
+      [ "$WITH_PREAMBLE" = "1" ] && GEN_ARGS="$GEN_ARGS --with-preamble --preamble-mode $PREAMBLE_MODE"
       ok=""
       for a in 1 2 3; do
         # shellcheck disable=SC2086

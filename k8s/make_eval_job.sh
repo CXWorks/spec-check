@@ -64,6 +64,7 @@ RUNS="${3:?run ids}"
 CKPTS="${4:-final}"
 MODE="${MODE:-score}"
 WITH_PREAMBLE="${WITH_PREAMBLE:-0}"
+PREAMBLE_MODE="${PREAMBLE_MODE:-tail}"
 FRAME_HINT="${FRAME_HINT:-0}"
 ROUNDS="${ROUNDS:-2}"
 GEN_VERSIONS="${GEN_VERSIONS:-eac5 rel0}"   # MODE=gen only
@@ -193,6 +194,7 @@ $(affinity_block)      containers:
         - {name: DEPS,        value: "${DEPS}"}
         - {name: MODE,        value: "${MODE}"}
         - {name: WITH_PREAMBLE, value: "${WITH_PREAMBLE}"}
+        - {name: PREAMBLE_MODE, value: "${PREAMBLE_MODE}"}
         - {name: FRAME_HINT,    value: "${FRAME_HINT}"}
         - {name: ROUNDS,      value: "${ROUNDS}"}
         - {name: GEN_VERSIONS,  value: "${GEN_VERSIONS}"}
