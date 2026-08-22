@@ -606,7 +606,7 @@ verdicts — the family that contains the one known case of gold being wrong.
 
 ---
 
-## The preamble window hides half the API, and it explains four earlier results
+## The preamble window hides half the API — but not the way I first said
 
 Found by taking the clause-level tool to the eight `incomparable` commands and
 then reading one disagreement by hand.
@@ -633,6 +633,20 @@ line  674:  pub open spec fn RttWalk (s, rd, addr)        -> RmmRttWalkResult;
 `RttWalk_` is at line 75. It has never seen the function gold uses 147 times
 across these commands, and it uses it zero times.
 
+> **This example is misdiagnosed and I am leaving the diagnosis visible.** I ran
+> the corrected window and the model still used `RttWalk_` zero times, out of 273
+> RTT walk calls. The reason: **the document never mentions `RttWalk_` — zero of
+> 41 eac5 sections.** The PDF writes `RttWalk(rd, ipa, level)`. Gold's
+> `RttWalk_(s, rd, addr, level)` is a Verus-side convention that threads the state
+> through, and it appears nowhere in the source document.
+>
+> So the model is not failing to see a function. **It is using the name the
+> document uses**, and gold is using a project convention that is not derivable
+> from the PDF — the same class as the signature-ordering convention recorded
+> earlier, which no instruction can recover because the document does not contain
+> it. Relevance selection seeds from the section text, so it can never surface
+> `RttWalk_`, which is exactly why the fix did not move this case.
+
 ### The arity numbers say the same thing twice
 
 | | `RttWalk` 4 args | `RttWalk` 3 args |
@@ -649,14 +663,25 @@ something else.
 
 ### Scale
 
-| version | preamble | window | share of the API gold uses that is **invisible** |
-|---|---|---|---|
-| eac5 | 683 lines | 484–683 | 18 of 87 — **21%** |
-| **alp14** | 1632 lines | 1433–1632 | 94 of 185 — **51%** |
+| version | preamble | window | gold's API that is **invisible** | of which the document names |
+|---|---|---|---|---|
+| eac5 | 683 lines | 484–683 | 18 of 87 — 21% | 14 |
+| **alp14** | 1632 lines | 1433–1632 | 94 of 185 — **51%** | **89** |
 
-alp14 is the version the 49-command held-out eval runs on. `AddrIsGranuleAligned`
-and `AddrIsProtected` — the predicates in nearly every failure condition — are
-outside the window.
+The split is what matters, and it is the split I did not make the first time:
+
+- **89 of alp14's 94 hidden symbols are named in the document**, so relevance
+  selection recovers them. `AddrIsGranuleAligned`, `AddrIsProtected`,
+  `AddrIsRttLevelAligned` — the predicates in nearly every failure condition —
+  are all in this group. **This is a real visibility gap and it is the bulk of
+  the finding.**
+- **5 are not in the document at all** — `RttWalk_`, `S`, `RmiStatusCode`,
+  `VersionEqualRmi`, `VersionEqualRsi`. These are conventions, and no amount of
+  preamble selection can teach them, because the source text does not contain
+  them.
+
+I led with an example from the second group and described it as the first. The
+scale claim survives; the mechanism story for `RttWalk_` does not.
 
 ### Four results this unifies
 
