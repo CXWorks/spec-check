@@ -783,3 +783,41 @@ contain, and my fix does not and cannot address it.
 The strongest result of the whole session is not this. It is that
 `preamble + repair ×3` reaches **3/3 TP and 6/6 FP on rel0 — item-for-item gold
 parity** — and 3/4 on eac5, from an unchanged checkpoint.
+
+---
+
+## rel0 gold parity, with the controls
+
+`sft3-2` + preamble + repair ×3 scores **3/3 TP and 6/6 FP on rel0** — every item
+gold scores, item for item. That number alone proves nothing: a spec that
+contradicts everything would also fire all nine obligations. Four controls, all
+on the same artifact:
+
+| rel0, 41 commands | baseline | **+ preamble + repair ×3** | gold |
+|---|---|---|---|
+| verus_rmm TP | 1/3 | **3/3** | 3/3 |
+| verus_rmm FP fired | 0/6 | 6/6 | 6/6 |
+| compiles | 23/41 | **33/41** | 41/41 |
+| **`semantic_equiv` equivalent** | 19/41 | **22/41** | — |
+| **`weaker`** | 0 | **0** | 0 |
+| implications per spec | — | 11.2 | 10.4 |
+| repair dropped constraints (SHRANK) | — | **0** | — |
+
+1. **Not degenerate.** 11.2 implications per spec against gold's 10.4 — neither
+   trivially weak nor pumped up with junk constraints.
+2. **Better than half are provably right.** 22 of 41 are Z3-equivalent to gold,
+   up from 19.
+3. **Zero `weaker`, preserved.** Nothing admits behaviour gold forbids. This is
+   the property the alp14 preamble runs *lost* (0 → 2); on rel0 the full scaffold
+   keeps it.
+4. **The repair pass did not cheat.** SHRANK is 0 across all 82 commands: no
+   repair bought compilation by constraining less.
+
+So the parity is earned, not an artifact of an over-constrained spec.
+
+**The honest limits.** Three TP items is a very small denominator, `incomparable`
+rose 2 → 9 alongside the compile-rate gain (the same trade seen on eac5), and 8
+of 41 still do not compile. What is established is that on rel0 an unchanged
+checkpoint, given the training preamble and three rounds of Verus feedback,
+finds every bug gold finds while staying semantically closer to gold than it was
+and never becoming weaker.
