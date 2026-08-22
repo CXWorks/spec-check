@@ -530,3 +530,76 @@ discriminating false positives. Separately, two distinct items share the id
 scorer iterates the list rather than keying on id, so both are scored and the
 denominator is intact — but any consumer that does key on id would silently
 drop one.
+
+---
+
+## A document-anchored check, and what it says about `incomparable`
+
+`scripts/provenance.py` scores a spec against the **document** rather than against
+gold, which is possible because each command section carries Failure / Success /
+Footprint tables with stable IDs. Gold self-tests at 93.8% row coverage on eac5
+and 96.3% on alp14 — those are measurements of the attributor, not of gold.
+
+Applied to the `preamble + repair ×3` generation and to gold, same eac5 commands:
+
+| | row coverage | clauses grounded | dangling outputs |
+|---|---|---|---|
+| gold | 437/466 (93.8%) | 96.7% | 9 |
+| `sft3-2` + scaffold | **439/466 (94.2%)** | 95.5% | 9 |
+
+**The model tracks the document as well as gold does** — while `semantic_equiv`
+says the two agree on only 23 of 41 commands. Those are not contradictory, and
+resolving them is the point of having both.
+
+### The eight `incomparable` commands
+
+For each, whether the model or gold covers document rows the other misses:
+
+| command | doc rows | gold | model | |
+|---|---|---|---|---|
+| `RMI_DATA_CREATE_UNKNOWN` | 18 | 15 | 15 | same rows |
+| `RMI_DATA_DESTROY` | 18 | 17 | 17 | same rows |
+| `RMI_REC_DESTROY` | 9 | 9 | 9 | same rows |
+| `RMI_RTT_CREATE` | 23 | 22 | 22 | same rows |
+| `RMI_RTT_FOLD` | 22 | 21 | 21 | same rows |
+| `RMI_RTT_INIT_RIPAS` | 18 | 18 | 18 | same rows |
+| `RMI_RTT_READ_ENTRY` | 16 | 16 | 16 | same rows, **+4 ungrounded** |
+| `RMI_RTT_UNMAP_UNPROTECTED` | 12 | 11 | 11 | same rows |
+
+**Every one covers exactly the same document rows as gold.** So `incomparable`
+here is not "the model missed something the document states" — both encode the
+same set of stated conditions, and disagree on *how*.
+
+**The limit that makes this weaker than it sounds:** coverage is row-level, and
+two clauses can both cover row *X* while saying materially different things
+about it. "Same rows" therefore means *the disagreement is below this check's
+resolution*, not *the two are equally faithful*. Row-level provenance and
+`semantic_equiv` are complementary and neither subsumes the other.
+
+### The one command with a real signal
+
+`RMI_RTT_READ_ENTRY` — the `walk_level` command — is the only one where the model
+writes clauses matching no document row, and it writes four:
+
+```rust
+result.is_Err() ==> RttEntryFromDescriptor(new_s, desc).MemAttr == ...old_s...
+                                                       .S2AP    == ...
+                                                       .SH      == ...
+                                                       .addr    == ...
+```
+
+Gold has zero ungrounded clauses here. The command's Footprint is empty — the
+document says it changes nothing — so these four are *consistent* with the
+document while being stated by none of its rows.
+
+And both gold and the model leave `walk_level` dangling. **The document gap is
+reproduced, not papered over**, now confirmed from a third independent direction
+after the 12-cell prompt table and the rule-check benchmark.
+
+### What this makes possible next
+
+The natural instrument is clause-level rather than row-level: for each document
+row, take gold's clause and the model's clause *for that row* and ask Z3 whether
+they agree. That localises a disagreement to a row of the PDF instead of to a
+whole command, and it is the version that could adjudicate the `stronger`
+verdicts — the family that contains the one known case of gold being wrong.
