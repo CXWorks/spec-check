@@ -46,6 +46,11 @@ NAME="${1:-}"
 # --- benchmark worktree ------------------------------------------------------
 if [[ ! -d "$WORK/benchmark" ]]; then
   echo "==> checking out $BENCH_BRANCH at $WORK"
+  # TMPDIR is cleaned periodically but the worktree stays registered in git's
+  # metadata, and `worktree add` then refuses the path as already in use. The
+  # registration outliving the directory is the normal state here, not an edge
+  # case, so prune before adding.
+  git -C "$REPO_ROOT" worktree prune
   git -C "$REPO_ROOT" fetch -q origin
   git -C "$REPO_ROOT" worktree add -q --detach "$WORK" "$BENCH_BRANCH"
 fi
