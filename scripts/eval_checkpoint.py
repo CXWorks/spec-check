@@ -327,10 +327,23 @@ def main():
     train_preamble = (load_train_preamble(args.specs_dir)
                       if args.with_preamble and args.preamble_mode == "tail" else None)
     if args.with_preamble:
-        if not train_preamble:
+        # Check the FILE, not `train_preamble`. In `selected` mode the context is
+        # built per command further down, so this variable is deliberately None
+        # and the old truthiness check aborted both eval jobs with a message
+        # blaming a missing preamble.rs that was present all along.
+        if not (Path(args.specs_dir) / "preamble.rs").exists():
             sys.exit(f"--with-preamble but no preamble.rs under {args.specs_dir}")
-        print(f"[eval] preamble ON: {len(train_preamble)} chars "
-              f"(last {PREAMBLE_TAIL_LINES} lines, as training used)", flush=True)
+        if args.preamble_mode == "tail":
+            print(f"[eval] preamble ON: tail, {len(train_preamble)} chars "
+                  f"(last {PREAMBLE_TAIL_LINES} lines, as training used)", flush=True)
+        else:
+            # Per command, so report the first one rather than a number that does
+            # not exist yet -- and report it, because the whole point of this mode
+            # is that the tail was showing the wrong declarations.
+            _probe = load_train_preamble(args.specs_dir,
+                                         section_text=dataset[0].section_text)
+            print(f"[eval] preamble ON: selected, {len(_probe)} chars for "
+                  f"{dataset[0].command} (per-command)", flush=True)
 
     report_prompt_alignment(
         tok, render_generation_prompt(tok, build_prompt(dataset[0], V3_PROMPT, train_preamble, args.frame_hint)))
