@@ -352,6 +352,41 @@ against and enough rounds to walk the chain.
 This is the closest anything in this project has come to gold's (4/4, 6/6), and
 it is entirely inference-time scaffolding — same checkpoint, same weights.
 
+**But 3/4 is a benchmark number, and the correctness picture is weaker.** Same
+two artifacts, `semantic_equiv` against eac5 gold, all 41 commands:
+
+| eac5 | equivalent | compile_error | incomparable | stronger |
+|---|---|---|---|---|
+| baseline | 20/41 | 18 | 1 | 2 |
+| + preamble + repair ×3 | **23/41** | **8** | **8** | 2 |
+
+Compile errors fall 18 → 8, so ten specs start compiling. **Only three of those
+ten become `equivalent`; seven become `incomparable`** — they now disagree with
+gold in both directions where before they made no checkable claim at all. By the
+"admits behaviour gold forbids" measure (`weaker` + `incomparable`) that is
+1/41 → 8/41.
+
+This is the 4B preamble trade again at larger scale, and it is the honest
+qualification on the headline: the scaffolding converts *does-not-compile* into
+*compiles*, and most of that conversion lands in *compiles and is wrong* rather
+than *compiles and is right*.
+
+Whether that is progress depends on the goal, and the two goals in this project
+diverge here:
+
+- **For bug-finding** it is straightforwardly good. An obligation that cannot run
+  detects nothing; verus_rmm went 1/4 → 3/4 for exactly this reason, and a wrong
+  spec that compiles is at least visible to the checker.
+- **For faithful spec generation** it is close to neutral: +3 correct against
+  +7 newly-wrong-and-checkable.
+
+Neither `weaker` count moved (0 in both), which is the one guardrail that held —
+nothing became a spec that silently permits what gold forbids in the pure sense.
+
+`--with-preamble`'s help text and the claims table should be read with this
+attached: the condition is a compile-rate and benchmark lever, and it has never
+been shown to be a correctness lever on either model. On the 4B it was negative.
+
 **At one round they do not compose.** Both single levers reach 2/4; together,
 still 2/4. Read alone, that column says the combination bought nothing — and at
 one round that reading is right. It stops being right at three.

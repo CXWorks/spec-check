@@ -1,0 +1,658 @@
+[
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "PSCI_AFFINITY_INFO"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "PSCI_CPU_OFF"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "PSCI_CPU_ON"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "PSCI_CPU_SUSPEND"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "PSCI_FEATURES"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "PSCI_SYSTEM_OFF"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "PSCI_SYSTEM_RESET"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "PSCI_VERSION"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_DATA_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_DATA_CREATE_UNKNOWN"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_DATA_DESTROY"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_FEATURES"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_GRANULE_DELEGATE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_GRANULE_UNDELEGATE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_PSCI_COMPLETE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_REALM_ACTIVATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: arguments to this function are incorrect",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_REALM_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_REALM_DESTROY"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_REC_AUX_COUNT"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 2 arguments but 1 argument was supplied",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_REC_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_REC_DESTROY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 2 arguments but 1 argument was supplied",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_REC_ENTER"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_RTT_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `RMI_SUCCESS` in this scope",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_RTT_DESTROY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_RTT_FOLD"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `walk_top` in this scope",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_RTT_INIT_RIPAS"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_RTT_MAP_UNPROTECTED"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_RTT_READ_ENTRY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RealmAt` in this scope",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_RTT_SET_RIPAS"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_RTT_UNMAP_UNPROTECTED"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RMI_VERSION"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_ATTESTATION_TOKEN_INIT"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_FEATURES"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_HOST_CALL"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_IPA_STATE_GET"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_IPA_STATE_SET"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: unexpected token, expected `]`",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_MEASUREMENT_EXTEND"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_MEASUREMENT_READ"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: arguments to this function are incorrect",
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_REALM_CONFIG"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-v2",
+    "command": "RSI_VERSION"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "PSCI_AFFINITY_INFO"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "PSCI_CPU_OFF"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "PSCI_CPU_ON"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "PSCI_CPU_SUSPEND"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "PSCI_FEATURES"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "PSCI_SYSTEM_OFF"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "PSCI_SYSTEM_RESET"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "PSCI_VERSION"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0277]: the trait bound `RmmRealmState: std::marker::Copy` is not satisfied",
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_DATA_CREATE"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_DATA_CREATE_UNKNOWN"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_DATA_DESTROY"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_FEATURES"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_GRANULE_DELEGATE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_GRANULE_UNDELEGATE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_PSCI_COMPLETE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_REALM_ACTIVATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_REALM_CREATE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_REALM_DESTROY"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_REC_AUX_COUNT"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_REC_CREATE"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_REC_DESTROY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0609]: no field `enter` on type `RmmRec`",
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_REC_ENTER"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_RTT_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_RTT_DESTROY"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_RTT_FOLD"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_RTT_INIT_RIPAS"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 4 arguments were supplied",
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_RTT_MAP_UNPROTECTED"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_RTT_READ_ENTRY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: mismatched closing delimiter: `}`",
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_RTT_SET_RIPAS"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_RTT_UNMAP_UNPROTECTED"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RMI_VERSION"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "disproved",
+    "verdict": "stronger",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_ATTESTATION_TOKEN_INIT"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_FEATURES"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_HOST_CALL"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_IPA_STATE_GET"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_IPA_STATE_SET"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_MEASUREMENT_EXTEND"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": false,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_MEASUREMENT_READ"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: arguments to this function are incorrect",
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_REALM_CONFIG"
+  },
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-sft3-2-final-prerep3",
+    "command": "RSI_VERSION"
+  }
+]
