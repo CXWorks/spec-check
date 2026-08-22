@@ -264,7 +264,7 @@ UPLOAD_EOF
       SCRIPT="scripts/repair_eval.py"; MODE_ARGS="--rounds $ROUNDS"
     else
       SCRIPT="scripts/eval_checkpoint.py"; MODE_ARGS="$SAMPLE_ARGS"
-      [ "$WITH_PREAMBLE" = "1" ] && MODE_ARGS="$MODE_ARGS --with-preamble"
+      [ "$WITH_PREAMBLE" = "1" ] && MODE_ARGS="$MODE_ARGS --with-preamble --preamble-mode $PREAMBLE_MODE"
       [ "$FRAME_HINT" = "1" ] && MODE_ARGS="$MODE_ARGS --frame-hint"
     fi
     ok=""

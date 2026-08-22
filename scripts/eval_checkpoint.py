@@ -46,16 +46,28 @@ sys.path.insert(0, str(ROOT / "prompt_engineering"))
 PREAMBLE_TAIL_LINES = 200      # must match build_dataset.py
 
 
-def load_train_preamble(specs_dir):
+def load_train_preamble(specs_dir, section_text=None):
     """The preamble exactly as training saw it: last 200 lines, stripped.
 
     Not `read_preamble()` — that one rewrites `struct` to `pub struct` for the
     standalone compile probe and is a different string from what the model was
     trained on.
+
+    `section_text` switches to relevance selection instead. It matters most here:
+    the held-out eval runs on **alp14**, whose preamble is 1632 lines, so the
+    200-line window hides 51% of the symbols gold uses — `AddrIsGranuleAligned`
+    and `AddrIsProtected` among them, which appear in nearly every failure
+    condition. `missing_symbol` is 10 of 42 cross-validation failures and
+    `wrong_arity` another 7; both are what depending on an unshown symbol table
+    looks like.
     """
     p = Path(specs_dir) / "preamble.rs"
     if not p.exists():
         return ""
+    if section_text is not None:
+        sys.path.insert(0, str(ROOT / "prompt_engineering"))
+        from dataset_loader import load_preamble
+        return load_preamble(Path(specs_dir).name, section_text=section_text)
     lines = p.read_text(encoding="utf-8", errors="ignore").splitlines(keepends=True)
     return "".join(lines[-PREAMBLE_TAIL_LINES:]).strip()
 
@@ -235,6 +247,10 @@ def main():
                     help="Replace the closing instruction with an explicit demand "
                          "for frame conditions, the omission behind 18 of 19 "
                          "`weaker` verdicts.")
+    ap.add_argument("--preamble-mode", default="tail", choices=["tail", "selected"],
+                    help="`tail` is the 200-line training window and the default; "
+                         "on alp14 it hides 51%% of the API gold uses. `selected` "
+                         "picks declarations named in the command's own section.")
     ap.add_argument("--with-preamble", action="store_true",
                     help="Prepend the preamble, restoring the training condition. "
                          "Training put it in every prompt; inference has been "
@@ -306,7 +322,10 @@ def main():
     except ImportError:
         calc_codebleu = None
 
-    train_preamble = load_train_preamble(args.specs_dir) if args.with_preamble else None
+    # In selected mode the context depends on the command, so it is resolved per
+    # sample below; this holds the tail (or None) for the fixed case.
+    train_preamble = (load_train_preamble(args.specs_dir)
+                      if args.with_preamble and args.preamble_mode == "tail" else None)
     if args.with_preamble:
         if not train_preamble:
             sys.exit(f"--with-preamble but no preamble.rs under {args.specs_dir}")
@@ -318,7 +337,10 @@ def main():
 
     def generate(s):
         """Greedy first, then args.samples sampled continuations of the same prompt."""
-        text = render_generation_prompt(tok, build_prompt(s, V3_PROMPT, train_preamble, args.frame_hint))
+        pre = train_preamble
+        if args.with_preamble and args.preamble_mode == "selected":
+            pre = load_train_preamble(args.specs_dir, section_text=s.section_text)
+        text = render_generation_prompt(tok, build_prompt(s, V3_PROMPT, pre, args.frame_hint))
         # add_special_tokens=False: the template already emitted every special
         # token as text, so letting the tokenizer add more would shift the prompt
         # away from the training prefix this function just went to the trouble of
@@ -448,6 +470,7 @@ def main():
         "no_fn_found": sum(1 for r in results
                            if r["reason"] == "no_pub_open_spec_fn_found"),
         "with_preamble": bool(args.with_preamble),
+        "preamble_mode": args.preamble_mode,
         "frame_hint": bool(args.frame_hint),
         "prompt_variant": V3_PROMPT.name,
         "gold_ceiling_note": "gold compiles on 33/40 (82.5%) with this Verus build",
