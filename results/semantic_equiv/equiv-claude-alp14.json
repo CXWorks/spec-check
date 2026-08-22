@@ -1,0 +1,302 @@
+[
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "pseudo-claude-alp14",
+    "command": "PSCI_CPU_OFF"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "4 params vs gold 3",
+    "run": "pseudo-claude-alp14",
+    "command": "PSCI_VERSION"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'S', 'S', 'Address', 'Address', 'Address', 'Address', 'RmiDataFlags'] vs gold ['Address', 'Address', 'Address', 'Address', 'RmiDataFlags', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_DATA_CREATE"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'S', 'S', 'Address', 'Address', 'Address'] vs gold ['Address', 'Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_DATA_CREATE_UNKNOWN"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Result<(), RmiStatusCode>', 'Address', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_DATA_DESTROY"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "proved",
+    "verdict": "weaker",
+    "gold_vacuous": false,
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_GRANULE_DELEGATE"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'u64', 'S', 'S'] vs gold ['Bits64', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_MEC_SET_SHARED"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'S', 'S'] vs gold ['Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_PDEV_IDE_RESET"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_PDEV_SET_PUBKEY"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'S', 'S'] vs gold ['Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_PDEV_STOP"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'u64', 'Address', 'u64', 'Address', 'u64', 'S', 'S'] vs gold ['Address', 'Address', 'Bits64', 'Address', 'Bits64', 'Address', 'Bits64', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_PSMMU_MSI_CONFIG"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'S', 'S', 'Address', 'Address'] vs gold ['Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_REALM_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_REALM_DESTROY"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'S', 'S'] vs gold ['Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_REC_DESTROY"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_REC_ENTER"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'RmiRttEntryState', 'RmiRipas', 'Address', 'Address', 'u64', 'S', 'S'] vs gold ['Address', 'Address', 'UInt64', 'Result<(), RmiStatusCode>', 'RmiRttEntryState', 'RmiRipas', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_AUX_MAP_PROTECTED"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'u64', 'S', 'S'] vs gold ['Address', 'Address', 'UInt64', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_AUX_MAP_UNPROTECTED"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'u64', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'UInt64', 'Result<(), RmiStatusCode>', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_AUX_UNMAP_UNPROTECTED"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'Address', 'u64', 'S', 'S'] vs gold ['Address', 'Address', 'Address', 'Int64', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_CREATE"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'Address', 'Address', 'i64', 'S', 'S'] vs gold ['Address', 'Address', 'Int64', 'Result<(), RmiStatusCode>', 'Address', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_DESTROY"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'u64', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Int64', 'Result<(), RmiStatusCode>', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_FOLD"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Address', 'Result<(), RmiStatusCode>', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_INIT_RIPAS"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'S', 'S', 'Address', 'Address', 'i64', 'u64'] vs gold ['Address', 'Address', 'Int64', 'Bits64', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_MAP_UNPROTECTED"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'i64', 'u64', 'RmiRttEntryState', 'u64', 'RmiRipas', 'S', 'S'] vs gold ['Address', 'Address', 'Int64', 'Result<(), RmiStatusCode>', 'UInt64', 'RmiRttEntryState', 'Bits64', 'RmiRipas', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_READ_ENTRY"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'Address', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Address', 'Address', 'Result<(), RmiStatusCode>', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_SET_RIPAS"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'u64', 'Address', 'Address', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Address', 'Address', 'Result<(), RmiStatusCode>', 'Address', 'UInt64', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_RTT_SET_S2AP"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Bits64', 'Bits64', 'UInt64', 'S', 'S'] vs gold ['Bits64', 'Bits64', 'Result<(), RmiStatusCode>', 'UInt64', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_AUX_COUNT"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_DESTROY"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_GET_INTERFACE_REPORT"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'RmiVdevState', 'S', 'S'] vs gold ['Address', 'Result<(), RmiStatusCode>', 'RmiVdevState', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_GET_STATE"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_LOCK"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'Address', 'Address', 'Address', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Address', 'Address', 'Address', 'Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_P2P_BIND"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_START"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_UNLOCK"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'Address', 'Address', 'Address', 'Address', 'Address', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'Address', 'Address', 'Address', 'Address', 'Result<(), RmiStatusCode>', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VDEV_VALIDATE_MAPPING"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'RmiInterfaceVersion', 'RmiInterfaceVersion', 'RmiInterfaceVersion', 'S', 'S'] vs gold ['RmiInterfaceVersion', 'Result<(), RmiStatusCode>', 'RmiInterfaceVersion', 'RmiInterfaceVersion', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VERSION"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'S', 'S', 'Address', 'Address', 'Address'] vs gold ['Address', 'Address', 'Address', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VSMMU_CREATE"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['Result<(), RmiStatusCode>', 'S', 'S', 'Address', 'Address', 'Address', 'u64'] vs gold ['Address', 'Address', 'Address', 'Int64', 'Result<(), RmiStatusCode>', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RMI_VSMMU_MAP"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'u64', 'Address', 'u64', 'u64', 'S', 'S'] vs gold ['Address', 'UInt64', 'UInt64', 'RsiCommandReturnCode', 'UInt64', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'u64', 'u64', 'u64', 'u64', 'u64', 'u64', 'u64', 'u64', 'u64', 'S', 'S'] vs gold ['Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'RsiCommandReturnCode', 'UInt64', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_ATTESTATION_TOKEN_INIT"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'Address', 'Address', 'Address', 'RsiRipas', 'S', 'S'] vs gold ['Address', 'Address', 'RsiCommandReturnCode', 'Address', 'RsiRipas', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_IPA_STATE_GET"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'UInt64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'S', 'S'] vs gold ['UInt64', 'RsiCommandReturnCode', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'Bits64', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_MEASUREMENT_READ"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "9 params vs gold 10",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_MEM_SET_PERM_INDEX"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'Address', 'S', 'S'] vs gold ['Address', 'RsiCommandReturnCode', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_REALM_CONFIG"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'u64', 'Address', 'S', 'S'] vs gold ['Bits64', 'Address', 'RsiCommandReturnCode', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_VDEV_GET_INFO"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'Address', 'RsiResponse', 'u64', 'Address', 'Address', 'Address', 'RsiDevMemFlags', 'u64', 'u64', 'u64', 'S', 'S'] vs gold ['Bits64', 'Address', 'Address', 'Address', 'RsiDevMemFlags', 'UInt64', 'UInt64', 'UInt64', 'RsiCommandReturnCode', 'Address', 'RsiResponse', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_VDEV_VALIDATE_MAPPING"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'RsiInterfaceVersion', 'RsiInterfaceVersion', 'RsiInterfaceVersion', 'S', 'S'] vs gold ['RsiInterfaceVersion', 'RsiCommandReturnCode', 'RsiInterfaceVersion', 'RsiInterfaceVersion', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_VERSION"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'Address', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'Address', 'RsiCommandReturnCode', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_VSMMU_ACTIVATE"
+  },
+  {
+    "verdict": "signature_mismatch",
+    "detail": "types ['RsiCommandReturnCode', 'Address', 'Address', 'S', 'S'] vs gold ['Address', 'RsiCommandReturnCode', 'Address', 'S', 'S']",
+    "run": "pseudo-claude-alp14",
+    "command": "RSI_VSMMU_GET_INFO"
+  }
+]

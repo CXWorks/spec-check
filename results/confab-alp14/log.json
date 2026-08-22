@@ -292,5 +292,299 @@
     "version": "alp14",
     "command": "RSI_VSMMU_GET_INFO",
     "chars": 1259
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "PSCI_CPU_OFF",
+    "chars": 75
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "PSCI_VERSION",
+    "chars": 163
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_DATA_CREATE",
+    "chars": 4275
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_DATA_CREATE_UNKNOWN",
+    "chars": 3342
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_DATA_DESTROY",
+    "chars": 2174
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_GRANULE_DELEGATE",
+    "chars": 655
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_MEC_SET_SHARED",
+    "chars": 501
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_PDEV_IDE_RESET",
+    "chars": 1153
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_PDEV_SET_PUBKEY",
+    "chars": 1683
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_PDEV_STOP",
+    "chars": 1413
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_PSMMU_MSI_CONFIG",
+    "chars": 898
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_REALM_CREATE",
+    "chars": 6874
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_REALM_DESTROY",
+    "chars": 1203
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_REC_DESTROY",
+    "chars": 1026
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_REC_ENTER",
+    "chars": 2406
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_AUX_MAP_PROTECTED",
+    "chars": 7239
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_AUX_MAP_UNPROTECTED",
+    "chars": 3165
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+    "chars": 2057
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_CREATE",
+    "chars": 3589
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_DESTROY",
+    "chars": 4676
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_FOLD",
+    "chars": 5360
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_INIT_RIPAS",
+    "chars": 3844
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_MAP_UNPROTECTED",
+    "chars": 3391
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_READ_ENTRY",
+    "chars": 3155
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_SET_RIPAS",
+    "chars": 3179
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_RTT_SET_S2AP",
+    "chars": 2547
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_AUX_COUNT",
+    "chars": 492
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_DESTROY",
+    "chars": 3078
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_GET_INTERFACE_REPORT",
+    "chars": 1802
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_GET_STATE",
+    "chars": 813
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_LOCK",
+    "chars": 1648
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_P2P_BIND",
+    "chars": 6697
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_START",
+    "chars": 1678
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_UNLOCK",
+    "chars": 2204
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VDEV_VALIDATE_MAPPING",
+    "chars": 5773
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VERSION",
+    "chars": 962
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VSMMU_CREATE",
+    "chars": 3976
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RMI_VSMMU_MAP",
+    "chars": 3782
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+    "chars": 1716
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_ATTESTATION_TOKEN_INIT",
+    "chars": 301
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_IPA_STATE_GET",
+    "chars": 964
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_MEASUREMENT_READ",
+    "chars": 371
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_MEM_SET_PERM_INDEX",
+    "chars": 1159
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_REALM_CONFIG",
+    "chars": 1038
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_VDEV_GET_INFO",
+    "chars": 1528
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_VDEV_VALIDATE_MAPPING",
+    "chars": 2233
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_VERSION",
+    "chars": 936
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_VSMMU_ACTIVATE",
+    "chars": 1927
+  },
+  {
+    "arm": "sig",
+    "version": "alp14",
+    "command": "RSI_VSMMU_GET_INFO",
+    "chars": 1240
   }
 ]
