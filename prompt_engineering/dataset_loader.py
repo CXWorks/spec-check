@@ -17,6 +17,7 @@ Version splits:
 
 import os
 import sys
+import re
 from pathlib import Path
 from typing import List, Optional
 
@@ -67,15 +68,90 @@ def _find_data_root() -> Path:
     return Path(__file__).resolve().parent.parent / "training-dataset"
 
 
-def load_preamble(version: str, tail_lines: int = PREAMBLE_TAIL_LINES) -> str:
-    """Load the last `tail_lines` lines of preamble.rs for a version."""
+def _decl_blocks(lines):
+    """(symbol, block) for each top-level declaration in a preamble."""
+    out, i = [], 0
+    while i < len(lines):
+        m = re.match(
+            r"^pub (?:open )?spec (?:fn|const)\s+([A-Za-z_]\w*)"
+            r"|^pub (?:enum|struct)\s+([A-Za-z_]\w*)"
+            r"|^(?:enum|struct)\s+([A-Za-z_]\w*)", lines[i].strip())
+        if not m:
+            i += 1
+            continue
+        sym = m.group(1) or m.group(2) or m.group(3)
+        depth = lines[i].count("{") - lines[i].count("}")
+        blk = [lines[i]]
+        i += 1
+        while i < len(lines) and depth > 0:
+            depth += lines[i].count("{") - lines[i].count("}")
+            blk.append(lines[i])
+            i += 1
+        out.append((sym, blk))
+    return out
+
+
+def load_preamble(version: str, tail_lines: int = PREAMBLE_TAIL_LINES,
+                  section_text: str = None) -> str:
+    """Preamble context for a command.
+
+    Default is the last `tail_lines` lines, which is what every checkpoint so far
+    was trained and evaluated with. **That window is badly chosen** and it is the
+    largest single defect found in this pipeline:
+
+        eac5   preamble  683 lines, window = 484-683 -> hides 21% of the API gold uses
+        alp14  preamble 1632 lines, window = 1433-1632 -> hides 51%
+
+    On alp14 -- the version the 49-command eval uses -- half the functions gold
+    calls are invisible to the model at inference time, including
+    `AddrIsGranuleAligned` and `AddrIsProtected`, which appear in almost every
+    failure condition.
+
+    The clearest instance: gold calls `RttWalk_(s, rd, addr, level)`, declared at
+    line 75 and outside the window. Inside the window sits `RttWalk(s, rd, addr)`,
+    a different uninterpreted function. With no preamble the 9B writes
+    `RttWalk(...)` with FOUR arguments 254 times and zero times with three -- the
+    right arity for the function it learned in training, under the only name it
+    can recall -- which is exactly `E0061: this function takes 3 arguments but 4
+    were supplied`, the dominant repair failure. Shown the tail, it switches to
+    the three-argument `RttWalk` 144 times: now it compiles, and now it means
+    something else, so every success condition that walks the RTT disagrees with
+    gold. That is the mechanism behind "the preamble raises compilation and not
+    correctness".
+
+    Passing `section_text` selects declarations by relevance instead: every symbol
+    named in the command's own document section, one transitive step through the
+    types those declarations mention, plus all constants and type definitions,
+    which are small and carry the literals (`DELEGATED`, `RAM`) that conditions
+    compare against. It is ~5x SMALLER than the tail and covers far more.
+
+    Kept opt-in. Every published number was produced with the tail, and switching
+    the default would silently make old and new runs incomparable.
+    """
     path = _find_data_root() / "specs" / version / "preamble.rs"
     if not path.exists():
         print(f"Warning: preamble not found: {path}")
         return ""
-    lines = path.read_text().splitlines(keepends=True)
-    tail = lines[-tail_lines:]
-    return "".join(tail).strip()
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    if section_text is None:
+        lines = raw.splitlines(keepends=True)
+        return "".join(lines[-tail_lines:]).strip()
+
+    lines = raw.splitlines()
+    blocks = _decl_blocks(lines)
+    by = {sym: blk for sym, blk in blocks}
+    # Constants and type definitions are always included: a condition comparing
+    # against DELEGATED is unusable without the enum that declares it, and they
+    # are a few hundred characters in total.
+    core = {sym for sym, blk in blocks
+            if re.match(r"^pub (?:enum|struct)|^(?:enum|struct)|^pub spec const",
+                        blk[0].strip())}
+    seed = (set(re.findall(r"[A-Za-z_]\w*", section_text)) & set(by)) | core
+    sel = set(seed)
+    for sym in list(seed):
+        sel |= set(re.findall(r"[A-Za-z_]\w*", "\n".join(by[sym]))) & set(by)
+    order = {sym: i for i, (sym, _) in enumerate(blocks)}
+    return "\n".join("\n".join(by[s]) for s in sorted(sel, key=order.get)).strip()
 
 
 def load_section(version: str, command: str) -> Optional[str]:
