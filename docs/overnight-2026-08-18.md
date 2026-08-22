@@ -716,3 +716,70 @@ because every published number was produced with it.
 moves anything: `gsel3-9b` (generation, eac5) and `sel3-9b` / `sel3-4b` (the
 49-command held-out eval, where the hidden share is 51%). A mechanism this clean
 still has to be shown to pay.
+
+---
+
+## The preamble result, measured end to end
+
+Three window modes, 49 held-out alp14 commands, both checkpoints. `correct` is
+`semantic_equiv` agreement with gold, excluding the vacuous `PSCI_CPU_OFF`.
+
+| | mode | compile | correct | `weaker` |
+|---|---|---|---|---|
+| 4B | none | 18/49 | **10/49** | 1 |
+| 4B | tail | 21/49 | 9/49 | 2 |
+| 4B | selected | 21/49 | 9/49 | 1 |
+| 9B | none | 22/49 | 11/49 | **0** |
+| 9B | tail | 27/49 | 15/49 | 1 |
+| 9B | **selected** | **29/49** | **16/49** | 2 |
+
+### The mechanism is confirmed; the payoff is modest
+
+Failure classes on the 9B move exactly as the visibility story predicts:
+
+| | none | tail | selected |
+|---|---|---|---|
+| `missing_symbol` | 6 | 2 | **1** |
+| `wrong_arity` | 9 | 5 | **4** |
+| `type_mismatch` | 5 | 10 | 9 |
+
+`missing_symbol` — historically 26% of all eval failures and 10 of 42 in
+cross-validation — falls to one. That is the class that *should* fall if the
+model was depending on a symbol table it could not see, and it does, monotonically.
+`type_mismatch` rises because more specs now compile far enough to reach a type
+error at all.
+
+### What it is worth
+
+| 9B, selected vs | compile | correct |
+|---|---|---|
+| no preamble | +7 (p = 0.065) | +5 (p = 0.180) |
+| tail | +2 (p = 0.727) | +1 (p = 1.000) |
+
+**Nothing here is significant.** The +7 compile against no-preamble is the
+closest anything in this project has come, and it is still p = 0.065 on 49
+commands. Against the tail — the comparison that isolates *my* change — the gain
+is +2 compiling and +1 correct, which is noise.
+
+**On the 4B it buys nothing.** 10 correct with no preamble, 9 with either window.
+Selected at least stops the tail's extra `weaker` (2 → 1), but that is the whole
+of its benefit there.
+
+**It costs the guarantee that mattered.** The 9B's `weaker` count goes 0 → 1 → 2.
+`weaker` is the failure a compile check structurally cannot see, and the
+best-compiling configuration is also the one that has lost that property twice
+over. If the 9B's zero-`weaker` is the defensible claim, no preamble is the
+configuration that supports it.
+
+### Honest summary of two days on this
+
+The visibility defect is real, the mechanism is confirmed at the failure-class
+level, and 89 of alp14's 94 hidden symbols really are recoverable. What it buys
+is +7 compiling and +5 correct on one model, neither significant, against the
+loss of a property the paper was leaning on. The flagship example I chose to
+explain it — `RttWalk_` — turned out to be a convention the document does not
+contain, and my fix does not and cannot address it.
+
+The strongest result of the whole session is not this. It is that
+`preamble + repair ×3` reaches **3/3 TP and 6/6 FP on rel0 — item-for-item gold
+parity** — and 3/4 on eac5, from an unchanged checkpoint.
