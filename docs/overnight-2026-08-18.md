@@ -798,15 +798,17 @@ on the same artifact:
 | verus_rmm TP | 1/3 | **3/3** | 3/3 |
 | verus_rmm FP fired | 0/6 | 6/6 | 6/6 |
 | compiles | 23/41 | **33/41** | 41/41 |
-| **`semantic_equiv` equivalent** | 19/41 | **22/41** | — |
+| **`semantic_equiv` equivalent** | 13/41 | **16/41** | — |
 | **`weaker`** | 0 | **0** | 0 |
 | implications per spec | — | 11.2 | 10.4 |
 | repair dropped constraints (SHRANK) | — | **0** | — |
 
 1. **Not degenerate.** 11.2 implications per spec against gold's 10.4 — neither
    trivially weak nor pumped up with junk constraints.
-2. **Better than half are provably right.** 22 of 41 are Z3-equivalent to gold,
-   up from 19.
+2. **Provably right rises 13 to 16 of 41.** Six commands are excluded because
+   gold itself constrains nothing there, so matching it is free; counting them
+   inflates both figures by six. rel0 has six such commands where alp14 has one,
+   so the exclusion matters more here than anywhere else in this document.
 3. **Zero `weaker`, preserved.** Nothing admits behaviour gold forbids. This is
    the property the alp14 preamble runs *lost* (0 → 2); on rel0 the full scaffold
    keeps it.
