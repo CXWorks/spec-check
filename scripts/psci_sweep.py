@@ -144,9 +144,26 @@ def build_case(preamble, fn, kind):
 
 
 def run_verus(verus, path, timeout):
+    """Compile one obligation file.
+
+    cwd is the file's own directory because rustc writes its output archive to
+    the CURRENT directory and names it after the crate, i.e. the source stem. Two
+    threads compiling `vacuous.rs` therefore both write `libvacuous.rlib` into
+    the shared cwd and tear each other's archive apart, which surfaces as
+
+        failed to build archive at `libvacuous.rlib`: LLVM error: section table
+        goes past the end of the file
+
+    -- a linker error that this script's classifier then reported as
+    `compile_error`, indistinguishable from a spec that genuinely does not
+    compile. It cost 4 of 22 commands in the first run, all four of which do
+    compile. The per-case stem below is the second half of the fix; either alone
+    would do, and the failure is quiet enough to want both.
+    """
     try:
-        p = subprocess.run([str(verus), '--crate-type', 'lib', str(path)],
-                           capture_output=True, text=True, timeout=timeout)
+        p = subprocess.run([str(verus), '--crate-type', 'lib', str(path.name)],
+                           capture_output=True, text=True, timeout=timeout,
+                           cwd=str(path.parent))
         return p.returncode, (p.stdout or '') + (p.stderr or '')
     except subprocess.TimeoutExpired:
         return -9, 'TIMEOUT'
@@ -168,6 +185,12 @@ def classify(rc, out):
     if 'postcondition not satisfied' in out:
         return 'refuted', 'postcondition not satisfied'
     first = next((l for l in out.split('\n') if l.startswith('error')), '')
+    # A failure to build or map the output archive is the toolchain, not the
+    # spec. Kept as its own verdict rather than folded into compile_error: the
+    # two are reported identically by rustc and mean opposite things about the
+    # model, and the first run silently counted four working specs as broken.
+    if re.search(r'failed to (build archive|map object file)|LLVM error', out):
+        return 'toolchain_error', first[:200] or 'archive/link failure'
     if m and int(m.group(2)) > 0 and not first:
         return 'refuted', 'obligation failed'
     return 'compile_error', first[:200] or 'unknown'
@@ -183,17 +206,28 @@ def sweep_file(verus, preamble, path, timeout):
         row = {'file': Path(path).name, 'fn': fn['name'], 'trivial': fn['trivial']}
         with tempfile.TemporaryDirectory() as td:
             for kind in ('unsat', 'vacuous'):
-                p = Path(td) / f"{kind}.rs"
+                # Stem -> crate name -> output archive name. Unique per case so
+                # concurrent workers cannot collide on one .rlib; see run_verus.
+                stem = re.sub(r'\W', '_', f"{Path(path).stem}_{fn['name']}_{kind}")
+                p = Path(td) / f"{stem}.rs"
                 p.write_text(build_case(preamble, fn, kind))
                 rc, out = run_verus(verus, p, timeout)
                 row[kind] = classify(rc, out)[0]
                 row[f'{kind}_detail'] = classify(rc, out)[1]
-        if row['unsat'] == 'compile_error' or row['vacuous'] == 'compile_error':
-            row['verdict'] = 'compile_error'
-        elif row['unsat'] == 'proved':
+        # A PROVED obligation is decisive and outranks a failure on the other
+        # one: `unsat` proved means no input satisfies the spec no matter what
+        # the vacuity run did. Ordering this the other way is what let a linker
+        # failure on the vacuity run mask four specs that compile.
+        if row['unsat'] == 'proved':
             row['verdict'] = 'unsat'
         elif row['vacuous'] == 'proved':
             row['verdict'] = 'vacuous'
+        elif row['unsat'] == 'compile_error' or row['vacuous'] == 'compile_error':
+            row['verdict'] = 'compile_error'
+        elif 'toolchain_error' in (row['unsat'], row['vacuous']):
+            # Compiles -- one obligation got far enough to be refuted -- but the
+            # other never ran. Not consistent, not broken: unmeasured.
+            row['verdict'] = 'toolchain_error'
         elif 'timeout' in (row['unsat'], row['vacuous']):
             row['verdict'] = 'timeout'
         else:
@@ -255,9 +289,9 @@ def self_test(verus, preamble, timeout):
         fns = parse_spec_fns(src)
         assert len(fns) == 1, f"fixture {name} did not parse to one fn"
         with tempfile.TemporaryDirectory() as td:
-            p = Path(td) / "fx.rs"
             got = {}
             for kind in ('unsat', 'vacuous'):
+                p = Path(td) / f"{re.sub(r'\W', '_', name)}_{kind}.rs"
                 p.write_text(build_case(preamble, fns[0], kind))
                 rc, out = run_verus(verus, p, timeout)
                 got[kind] = classify(rc, out)
@@ -342,7 +376,8 @@ def main():
     from collections import Counter
     c = Counter(r['verdict'] for r in rows)
     print("\n=== verdicts over %d spec fns in %d files ===" % (len(rows), len(files)))
-    for k in ('unsat', 'vacuous', 'consistent', 'compile_error', 'timeout', 'no_spec_fn'):
+    for k in ('unsat', 'vacuous', 'consistent', 'compile_error',
+              'toolchain_error', 'timeout', 'no_spec_fn'):
         if c.get(k):
             print(f"  {k:14s} {c[k]}")
     findings = [r for r in rows if r['verdict'] in ('unsat', 'vacuous')]
