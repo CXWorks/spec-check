@@ -1,0 +1,49 @@
+5.1.1  PSCI_VERSION 
+Description 
+Return the version of PSCI implemented. See section 5.3 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+0x8400 0000 
+Return 
+Declaration 
+Value 
+uint32 
+•  Bits[31:16] Major Version 
+•  Bits[15:0] Minor Version
+
+5.3  PSCI_VERSION 
+
+5.3.1  Intended use 
+A caller can use the PSCI_VERSION function to ascertain the current version of the interface. The 
+version number is a 31-bit unsigned integer, with the upper 15 bits denoting the major revision, and the 
+lower 16 bits denoting the minor revision.  
+The following rules apply to the version numbering: 
+•  Different major revision values indicate possibly incompatible functions.  
+•  For two revisions, A and B, for which the major revision values are identical, if the minor revision 
+value of revision B is greater than the minor revision value of revision A, then every function in 
+revision A must work in a compatible way with revision B. However, it is possible for revision B 
+to have a higher function count than revision A.  
+Table 6 specifies the major and minor version numbers for each corresponding issue of the 
+specification. 
+Table 6 PSCI Versions 
+Issue 
+Major 
+Version 
+Minor 
+Version 
+F.b (F is superseded by F.b) 
+E 
+D or D.b 
+C 
+B.b 
+For the revision history of the PSCI specification, see Table 1. 
+5.3.2  Implementation responsibilities 
+An implementation conforming to the PSCI specification described in this document must implement 
+and support all the functions described, unless it is explicitly stated that a function is optional. This does 
+not mean that supervisory software using the implementation is required to use all the functions 
+implemented.  Any function that is not implemented must return NOT_SUPPORTED in accordance with 
+the SMC Calling Conventions [4]. In addition, PSCI_FEATURES must also return NOT_SUPPORTED for 
+any non-implemented function. Table 17 in section 6.9 lists all the compulsory and optional functions for 
+a given PSCI version. 

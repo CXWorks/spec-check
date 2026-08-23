@@ -1,0 +1,78 @@
+5.1.16 CPU_FREEZE 
+Description 
+Introduced in PSCI 1.0.  
+Optional.  
+Places the core into an IMPLEMENTATION DEFINED low-power state. Unlike 
+CPU_OFF, it is still valid for interrupts to be targeted to the core. However, the 
+core must remain in the low-power state until a CPU_ON command is issued for 
+it. See section 5.17 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+0x8400 000B 
+Return 
+Declaration 
+Value 
+int32 
+•  This call does not return when successful.  
+•  Otherwise, the return values are:  
+•  NOT_SUPPORTED  
+•  DENIED  
+See section 5.2.2 for integer values associated with 
+each return code.
+
+5.17  CPU_FREEZE 
+
+Introduced in PSCI1.0, this function is optional. 
+5.17.1 Intended use 
+This API places a core in an IMPLEMENTATION DEFINED low-power state. It differs from other APIs 
+that place cores into low-power states in the following ways: 
+•  Unlike CPU_SUSPEND or CPU_DEFAULT_SUSPEND, an interrupt does not return the core back 
+into a running state. Instead, the interrupt must remain pending or active.  
+•  Unlike CPU_OFF, the calling OS is not required to migrate interrupts away from the core prior to 
+calling CPU_FREEZE. 
+The effect of interrupts on a core that is powered down with a PSCI API is described in Table  12. 
+Table 12 Effect of wake interrupts 
+PSCI Function 
+Interrupt Effect 
+CPU_SUSPEND 
+Wake up 
+CPU_DEFAULT_SUSPEND  Wake up 
+CPU_OFF 
+CPU_FREEZE 
+Error condition, effect is IMPLEMENTATION DEFINED 
+Core must remain in powerdown, and interrupt must pend 
+The function must only be implemented if the power controller or power controlling logic of the platform 
+allows wakeup interrupts for a given core to be ignored.  
+This API is meant for debug cases where an OS wants to allow powering down of any core that is not 
+running a debugger. 
+5.17.2 Implementation responsibilities 
+The power state into which the platform places the calling core is IMPLEMENTATION DEFINED. The 
+level of coordination that is performed in this power state is also IMPLEMENTATION DEFINED. For 
+example, if all cores in a cluster call CPU_FREEZE, the implementation can choose to power down the 
+cluster. Although the choice of state and coordination is up to the implementation, it must not be 
+possible for the platform to enter a thermally critical condition if all except one core has called 
+CPU_FREEZE. 
+The implementation must be able to ensure that wakeup interrupts will not bring the core back into 
+execution. If this is not possible, CPU_FREEZE must not be provided. 
+5.17.3 Caller responsibilities 
+The caller must follow a standard powerdown sequence appropriate to the core. Return to execution is 
+performed through a call to CPU_ON. Therefore, the caller must observe the following conditions: 
+•  The caller must save all state required to enable resumption of execution through the call to 
+CPU_ON.  
+•  The caller is not required to perform any cache or coherency management. This management 
+must be performed by the PSCI implementation. 
+•  As the power state entered by a CPU_FREEZE is IMPLEMENTATION DEFINED, the caller 
+cannot make assumptions about what power state the core is in. Equally the level of 
+coordination with power states in other cores in the topology is IMPLEMENTATION DEFINED 
+and therefore the calling OS cannot make any assumptions about it. For example, if all cores in 
+a cluster call CPU_FREEZE, it is not safe to assume that any core or the cluster is fully power-
+gated. For a given topology node, it is only safe to make assumptions about its power state 
+when all children cores have been resumed from CPU_FREEZE. 
+When using OS-initiated Idle, a simple scheme to prevent errors in idling when cores have called 
+CPU_FREEZE is for the OS to consider those as running cores in its last man tracking algorithm.  
+CPU_FREEZE does not return when it is successful, but might return the following error codes: 
+•  NOT_SUPPORTED, if the API is not implemented. 
+•  DENIED, in the same cases as those where CPU_OFF also returns DENIED, as described in 
+section 5.9.1. 

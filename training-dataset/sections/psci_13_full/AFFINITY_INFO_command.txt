@@ -1,0 +1,88 @@
+5.1.5  AFFINITY_INFO 
+Description 
+Enable the caller to request status of an affinity instance (as defined in section 
+4.2.2). See section 5.7 for more details.  
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+•  0x8400 0004 SMC32 version 
+•  0xC400 0004 SMC64 version 
+SMC32 uint32 
+SMC64 uint64 
+target_affinity 
+In SMC32 version this is a uint32 value. 
+In SMC64 version this is a uint64 value. 
+This follows the same format as the target_cpu parameter 
+of a CPU_ON call (see section 5.1.4). 
+Denotes the lowest affinity level field that is valid in the 
+target_affinity parameter. This argument allows the 
+caller of AFFINITY_INFO to request information about 
+affinity levels higher than 0. 
+Possible values are: 
+0: All affinity level fields in target_affinity are valid. In a 
+system where processors are not hardware threaded, the 
+target_affinity parameter would represent an individual 
+core. 
+1: Aff0 field must be ignored. The target_affinity 
+parameter denotes an affinity level 1 processing unit. 
+2: Aff0 and Aff1 fields must be ignored. The target_affinity 
+parameter denotes an affinity level 2 processing unit. 
+3: Aff0, Aff1 and Aff2 fields must be ignored. The 
+target_affinity parameter denotes an affinity level 3 
+processing unit. 
+From version 1.0 of PSCI onwards, AFFINITY_INFO is 
+no longer required to support affinity levels higher than 0. 
+For more details on return values when this parameter is 
+non-zero, see section 5.7.1. 
+uint32  
+lowest_affinity_level 
+Return 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+•  2 ON_PENDING: the affinity instance is 
+transitioning to an ON state 
+•  1 OFF 
+•  0 ON: At least one core in the affinity instance is 
+ON 
+• 
+INVALID_PARAMETERS 
+•  DISABLED 
+See section 5.2.2 for integer values associated with each 
+return code.
+
+5.7  AFFINITY_INFO 
+
+5.7.1  Intended use 
+The valid states that can be returned by AFFINITY_INFO are: 
+ON: At least one core in the affinity instance, as defined in section 4.2.2, meets both of the following 
+conditions: 
+•  The core has been enabled with a call to CPU_ON or is the cold boot primary core. 
+•  The core has not called CPU_OFF.  
+Idling cores that have called CPU_SUSPEND are considered to be in the ON state. Therefore, a core 
+in this state will be running or in a low-power mode. 
+OFF: All the cores in the affinity instance have called CPU_OFF and each of these calls has been 
+processed by the PSCI implementation.   
+ON_PENDING: At least one core in the affinity instance is in the ON_PENDING state, as described in 
+section 5.5. All other cores in the affinity instance are OFF. 
+It is also possible for AFFINITY_INFO to return the DISABLED code when the processing unit described 
+by the input parameters is valid, but is disabled for physical reasons, for example, because a core is 
+faulty. 
+For versions of PSCI prior to 1.0, an implementation must track the states of all the cores in an affinity 
+instance to produce the overall return value. From version 1.0 of PSCI, it is no longer required for 
+AFFINITY_INFO to support affinity levels greater than 0. If a caller requests the state of an affinity 
+instance above level 0, the implementation can respond in one of two ways: 
+•  Provide a valid return value, behaving in a compatible fashion with a version of PSCI prior to 
+1.0. 
+•  Return INVALID_PARAMETERS. 
+5.7.2  Caller responsibilities 
+Callers must be aware that the state returned by the AFFINITY_INFO call is affected by calls to CPU_ON 
+and CPU_OFF, both of which could be in flight at the same time. 
+The caller must deal with any errors arising from the call: 
+• 
+INVALID_PARAMETERS is returned if the lowest_affinity_level and target_affinity parameters 
+describe an affinity instance that is not present in the platform.  
+•  DISABLED is returned if the parameters describe an affinity instance that is disabled for physical 
+reasons, for example, because the core is faulty. 

@@ -187,6 +187,14 @@ def list_commands(version: str) -> List[str]:
         return []
     cmds = []
     for f in sorted(sec_dir.iterdir()):
+        # `._X_command.txt` is an AppleDouble sidecar, not a command. macOS tar
+        # emits one per file with an extended attribute, and unpacking such an
+        # archive in the pod turned a 22-command document into 44 -- half of them
+        # binary resource forks that the model dutifully wrote specs for. The
+        # archive is built with COPYFILE_DISABLE now; this is the second line of
+        # defence, because the symptom is a plausible-looking doubled count.
+        if f.name.startswith("._"):
+            continue
         if f.name.endswith("_command.txt"):
             cmds.append(f.name[:-len("_command.txt")])
     return cmds

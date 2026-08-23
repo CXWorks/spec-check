@@ -1,0 +1,70 @@
+5.1.6  MIGRATE 
+Description 
+Optional. This is used to ask a uniprocessor Trusted OS to migrate its context to 
+a specific core. See section 5.8 for more details.  
+Parameters 
+Declaration 
+Value 
+uint32 Function ID 
+•  0x8400 0005 SMC32 version 
+•  0xC400 0005 SMC64 version 
+uint32/64 target_cpu 
+This field follows the same format as the target_cpu 
+parameter of a CPU_ON call (see section 5.1.4) 
+Return 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+•  SUCCESS 
+•  NOT_SUPPORTED 
+• 
+INVALID_PARAMETERS 
+•  DENIED 
+• 
+INTERNAL_FAILURE 
+•  NOT_PRESENT 
+See section 5.2.2 for integer values associated with 
+each return code.
+
+5.8  MIGRATE  
+
+5.8.1  Intended use 
+The MIGRATE function supports powering down a core where a uniprocessor (UP) migrate-capable 
+Trusted OS is resident. The function is used to move the Trusted OS to another core, and therefore 
+enable the original core to call CPU_OFF to power down.  
+5.8.2  Caller responsibilities 
+The following must be observed by the caller: 
+•  The migration target core must be powered up before any call to MIGRATE.  
+•  The target core must not make requests for Trusted OS services until after the migration has 
+completed. 
+•  MIGRATE must only be called from the core on which the Trusted OS is present. If called from 
+another core, the implementation must return a NOT_PRESENT error. 
+MIGRATE can return the following errors: 
+•  NOT_SUPPORTED, if the function is not supported, or if migration is not required (see section 
+5.9.1). 
+• 
+INVALID_PARAMETERS, if target_cpu describes an invalid MPIDR. This value is also 
+returned if the register width of the caller does not match the register width of the function ID 
+used in the call. 
+•  DENIED can be returned if the Trusted OS is UP but not migrate-capable, see section 
+5.9.1. 
+• 
+INTERNAL_FAILURE is returned for an IMPLEMENTATION DEFINED reason why the 
+MIGRATE was not possible. For example, the target core was not awake or did not 
+respond within an acceptable time. 
+•  NOT_PRESENT, if called on a core where the Trusted OS is not currently resident. 
+5.8.3  Implementation responsibilities 
+Implementation of the MIGRATE function is optional. 
+The mechanism by which the privileged platform firmware coordinates with a Trusted OS to migrate 
+context is IMPLEMENTATION DEFINED. However, Arm suggests that a callback registration scheme is 
+provided by the privileged platform firmware to the Trusted OS vendor. The privileged platform firmware 
+can use this to notify the Trusted OS when key PSCI functions like MIGRATE are received.  
+A UP Trusted OS that is migrate-capable can register for the callbacks. The privileged platform 
+firmware must track the resident core of a UP Trusted OS. This way it can directly respond to several 
+error conditions for a MIGRATE call without having to call into the Trusted OS. It is possible to handle 
+the following errors directly from the privileged platform firmware: 
+•  NOT_SUPPORTED 
+•  INVALID_PARAMETERS 
+•  DENIED 
+•  NOT_PRESENT 

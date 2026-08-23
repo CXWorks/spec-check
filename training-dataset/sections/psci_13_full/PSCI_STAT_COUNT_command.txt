@@ -1,0 +1,105 @@
+5.1.22 PSCI_STAT_COUNT 
+Description 
+Introduced in PSCI 1.0.  
+Optional. 
+Return the number of times the platform has used the given power state since 
+cold boot. See section 5.22 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID 
+SMC32 uint32 
+SMC64 uint64 
+target_cpu 
+•  0x8400 0011 SMC32 version 
+•  0xC400 0011 SMC64 version 
+This parameter follows the same format as the 
+target_cpu parameter of a CPU_ON call (see 
+section 5.1.4). 
+uint32 power_state 
+Described in section 5.22.1. 
+Return 
+Declaration 
+SMC32 uint32 
+SMC64 uint64 
+count 
+Value 
+Returns the number of times a local state, 
+identified by power_state, has been leveraged 
+since cold boot by the topology node represented 
+by the target_cpu and the highest power level 
+of power_state.
+
+5.22  PSCI_STAT_RESIDENCY/COUNT 
+
+Introduced in PSCI 1.0, these functions are optional. 
+5.22.1 Intended use 
+These APIs provide residency statistics for power states that have been used by the platform. The 
+statistics must be counted regardless of the entry mechanism to state, and therefore, any of the PSCI 
+calls that can result in a power state being entered can contribute to the statistics. 
+The functions take two input parameters: 
+•  target_cpu: This parameter follows the same format as the target_cpu parameter of a 
+CPU_ON call. See section 5.1.4. 
+•  power_state: Identifier for a specific local state. Generally, this parameter takes the same  
+form as the power_state parameter described for CPU_SUSPEND in section 5.4.2. 
+Together, both parameters can be used by the platform to index a unique state affecting a unique node 
+of the processor power topology of the system, for example, a specific core or a specific cluster.  
+Only local low-power states, and not running states, are tracked by the statistic functions. However, the 
+composite power state expressed through the power_state parameter can reflect a combination of 
+local states for the various power levels in the system. The functions return the appropriate count or 
+residency time of the local state for the highest power level expressed in the composite power_state. 
+In OS-initiated mode, the implementation must disregard the section of the power_state parameter 
+that describes the power level in which the calling core is the last man. For example, consider the 
+following example of state encoding: 
+Core level state, Bits[3:0]: 0 Run, 1 Standby, 2 Retention, 3 Powerdown. 
+Cluster level state, Bits[7:4]: 0 Run, 2 Retention, 3 Powerdown. 
+System level state, Bits[11:8]: 0 Run, 2 Retention, 3 Powerdown. 
+Core is last in Level, Bits[15:12]: 0 Core, 1 Cluster, 2 System. 
+power_state parameters with StateIDs of 0x#223 and 0x#233 both return statistics for the system 
+level retention state. Encodings that permit indexing a local state directly are also allowed. In the 
+example above, the local state for system level retention carries a state ID of 0x#200. A recommended 
+encoding for the StateIDs is described in section 6.5. 
+It is strongly recommended that, for a given power state, the power_state parameter used in 
+statistics functions matches the power_state parameter used in the CPU_SUSPEND function, as 
+described above. However, it is permissible for the power_state parameter encoding scheme that is 
+used in these functions to differ from the scheme used with CPU_SUSPEND. In this case, for a given 
+power state, firmware tables must describe the value used for power state entry separately from the 
+value used for gathering statistics on state usage. 
+PSCI_STAT_COUNT returns the number of times a power_state has been used by the node 
+represented by the target_cpu and the highest power level of power_state. Note that an OS 
+internal count of state usage (by tracking calls to PSCI) and the value returned by this API might not 
+always agree. This can be for a variety of reasons, for example, the power state requested by the OS 
+and the state entered by the implementation can differ. 
+PSCI_STAT_RESIDENCY returns the amount of time spent in power_state in microseconds, by the 
+node represented by the target_cpu and the highest level of power_state. 
+Both functions return zero if the node and power_state do not represent a valid combination. This 
+can happen if the target_cpu represents a node that is not present or if the node does not support 
+the state passed in power_state. Firmware tables, FDT or ACPI, describe the valid states that the 
+calling OS can request from any given core. 
+5.22.2 Implementation responsibilities 
+The implementation needs to observe the following conditions: 
+•  The statistics count time spent in a low-power state, regardless of the entry method. This 
+includes power states entered through CPU_OFF, CPU_FREEZE, or SYSTEM_SUSPEND. 
+•  Statistics only track local power states. This does not include the time spent in a run state by a 
+node. 
+•  Statistics are set to zero at cold boot. SYSTEM_RESET and SYSTEM_SHUTDOWN have the same 
+effect, because from the perspective of the caller the next boot will be a cold boot. 
+• 
+It is IMPLEMENTATION DEFINED whether the PSCI_STAT_COUNT updates on entry to or exit 
+from a power state. 
+•  For the purposes of measuring residency time, an implementation might only update the count 
+for a given power state and node, when the node exits that power state. When a node enters a 
+given state, it is IMPLEMENTATION DEFINED whether a call to PSCI_STAT_RESIDENCY, for 
+that node and state, will include the time since it last entered the state or not. 
+•  Though these functions are optional, both must be implemented together if statistics are 
+supported. 
+5.22.3 Caller responsibilities 
+The functions use the full resolution of the returned parameters (count or residency). Therefore, the 
+functions do not support error codes for return values. If the functions are not implemented, the returned 
+value is NOT_SUPPORTED, but the OS cannot rely on this value to determine whether the functions are 
+implemented. The calling OS must discover if the functions are present by using the PSCI_FEATURES 
+API (see section 5.1.15). 
+The calling OS must be aware that the returned count or residency values wrap when they overflow the 
+available resolution. This is not a problem for the SMC64 version of the call, but for the SMC32 
+PSCI_STAT_RESIDENCY function, a wrap is possible in just over 1 hour, 11 minutes, and 34 seconds. 
+  Additional Implementation Details 

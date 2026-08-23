@@ -1,0 +1,23 @@
+5.1.11 SYSTEM_RESET 
+Description 
+Reset the system.  See section 5.12 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID   0x8400 0009 
+Return 
+Declaration 
+Value 
+void  
+Does not return
+
+5.12  SYSTEM_RESET 
+
+5.12.1 Intended use 
+This function provides a method for performing a system cold reset. To the caller, the behavior is 
+equivalent to a hardware power-cycle sequence. As detailed in section 4.4, the reset command applies 
+to the machine view of the calling OS. 
+5.12.2 Caller responsibilities 
+Where possible, cores should be placed in a known state. No specific coordination is required between 
+cores. Apart from the case when the response to the call is virtualized, when one core calls 
+SYSTEM_RESET, the system power cycles. 

@@ -88,6 +88,12 @@ CM="de2-rl-test-$NAME-entry"
 # a time inside the generation loop, so its Verus work is serial and 16 CPU is
 # dead weight -- which matters when a shared node has 6 CPU left and the request
 # is the only thing keeping the pod Pending. Overridable either way.
+# 2 was the inherited default and is more than any model here needs: the largest
+# is a 9B at ~18GB in bf16, which fits on one H100 with room to spare. It costs
+# nothing when the cluster is empty and blocks scheduling when it is not --
+# turbox sat at 33/32 GPUs requested while this job waited for a second card it
+# would not have used.
+GPUS="${GPUS:-2}"
 if [ "$SAMPLES" -gt 0 ]; then
   : "${CPU_REQ:=32}"; : "${CPU_LIM:=64}"; : "${JOBS:=16}"
 elif [ "$MODE" = "gen" ]; then
@@ -135,7 +141,12 @@ if [ -n "$NO_GOLD_VERSIONS" ]; then
       PATHS+=("$d")
     done
   done
-  tar czf "$ZS_TGZ" -C "$REPO_ROOT" "${PATHS[@]}"
+  # COPYFILE_DISABLE, or macOS bsdtar adds an AppleDouble "._<name>" sidecar for
+  # every file carrying an extended attribute. They unpack as real files next to
+  # the sections, and list_commands() counts anything ending in _command.txt --
+  # so a 22-command document arrived in the pod as 44, and the model spent half
+  # the run generating specs for binary resource forks named ._CPU_ON.
+  COPYFILE_DISABLE=1 tar czf "$ZS_TGZ" -C "$REPO_ROOT" "${PATHS[@]}"
   base64 < "$ZS_TGZ" > "$ZS_B64"
   # 1MiB is the hard ConfigMap ceiling and base64 costs 33%; fail loudly rather
   # than letting the API server reject a job that took a minute to assemble.
@@ -214,8 +225,8 @@ $(affinity_block)      containers:
         command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /entry/repair_eval.py /entry/gen_specs.py /entry/psci_sweep.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
         securityContext: {privileged: true}
         resources:
-          limits:   {cpu: "${CPU_LIM}", memory: ${MEM_LIM}, nvidia.com/gpu: 2}
-          requests: {cpu: "${CPU_REQ}", memory: ${MEM_REQ}, nvidia.com/gpu: 2}
+          limits:   {cpu: "${CPU_LIM}", memory: ${MEM_LIM}, nvidia.com/gpu: ${GPUS}}
+          requests: {cpu: "${CPU_REQ}", memory: ${MEM_REQ}, nvidia.com/gpu: ${GPUS}}
         env:
         - {name: RUN_IDS,     value: "${RUNS}"}
         - {name: BASE_MODEL,  value: "${BASE}"}
@@ -228,6 +239,7 @@ $(affinity_block)      containers:
         - {name: ROUNDS,      value: "${ROUNDS}"}
         - {name: GEN_VERSIONS,  value: "${GEN_VERSIONS}"}
         - {name: NO_GOLD_VERSIONS, value: "${NO_GOLD_VERSIONS}"}
+        - {name: EXPECT_SECTIONS, value: "${EXPECT_SECTIONS:-}"}
         - {name: SWEEP,         value: "${SWEEP}"}
         - {name: REPAIR_ROUNDS, value: "${REPAIR_ROUNDS}"}
         - {name: SAMPLES,     value: "${SAMPLES}"}

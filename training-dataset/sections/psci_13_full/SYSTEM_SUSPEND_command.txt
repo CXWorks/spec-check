@@ -1,0 +1,76 @@
+5.1.19 SYSTEM_SUSPEND 
+Description 
+Introduced in PSCI 1.0.  
+Optional.  
+Used to implement suspend to RAM. The semantics are equivalent to a 
+CPU_SUSPEND to the deepest low-power state. Further detail can be found in 
+section 5.20. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID 
+SMC32 uint32 
+SMC64 uint64 
+entry_point_address  
+SMC32 uint32 
+SMC64 uint64 
+context_id  
+Return 
+•  0x8400 000E SMC32 version 
+•  0xC400 000E SMC64 version 
+As described for the CPU_SUSPEND function in 
+section 5.4.3 
+As described for the CPU_SUSPEND function in 
+section 5.4.4. 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+•  This call does not return when successful 
+•  Otherwise, the return values are:  
+•  NOT_SUPPORTED 
+• 
+INVALID_ADDRESS 
+•  ALREADY_ON 
+See section 5.2.2 for the integer values associated 
+with each return code.
+
+5.20  SYSTEM_SUSPEND 
+
+Introduced in PSCI 1.0, this function is optional. 
+5.20.1 Intended use 
+In a typical implementation, the semantics are equivalent to a CPU_SUSPEND to the deepest low-power 
+state. However, it is possible that an implementation might reserve a deeper state for 
+SYSTEM_SUSPEND than those used with CPU_SUSPEND. This function might be used to implement a 
+system suspend to RAM, as described by the S2 and S3 states in the ACPI specification [6]. Note that 
+entering the system into S2 or S3 carries with it several preconditions. For example, all devices in the 
+system must be in a state that is compatible with entry into the system state. These preconditions are 
+beyond the scope of this specification and are therefore not described here. The SYSTEM_SUSPEND 
+function limits itself to providing the mechanism by which the calling OS can request entry into S2 or S3, 
+having met all necessary preconditions. While ACPI distinguishes between two system-level suspend to 
+RAM states, S2 and S3, PSCI provides a single API. In practice, operating systems use only one 
+suspend to RAM state, so this is not seen as a limitation. Note that this specification is using the state 
+definitions of S2 and S3 provided by ACPI but does not limit use of this PSCI function to ACPI-based 
+systems. Semantics such as those described for sleep states S2 and S3 are used in non-ACPI based 
+systems. 
+As is the case with SYSTEM_SHUTDOWN and SYSTEM_RESET, this function applies to the machine view 
+that is available to the calling OS. See section 4.4 for more details. 
+To use this API, a calling OS must power down all but one core through calls to CPU_OFF. From this 
+point on, the remaining core can call SYSTEM_SUSPEND, passing the necessary 
+entry_point_address and context_id parameters to enable resumption on wakeup. A calling OS 
+can use the AFFINITY_INFO function to ensure that all cores are OFF prior to calling 
+SYSTEM_SUSPEND. The core which calls SYSTEM_SUSPEND is the one that resumes execution at the 
+specified entry_point_address on wakeup. 
+5.20.2 Caller responsibilities 
+The caller needs to ensure that every core apart from the one calling is in an OFF state, as returned by 
+the AFFINITY_INFO function. The caller must be able to cope with the following error return codes: 
+•  NOT_SUPPORTED, if system suspend is not implemented. 
+• 
+INVALID_ADDRESS, if the entry point address is known by the implementation to be invalid 
+because it is in a range that is known not to be available to the caller. 
+•  DENIED, if the implementation views a core, other than the one calling, as not being in the OFF 
+state. 
+Prior to the call, the OS must disable all sources of wakeup other than those it needs to support for its 
+implementation of suspend to RAM. The call is equivalent to using the CPU_SUSPEND call for the 
+deepest possible platform powerdown state. Consequently, the caller must observe all the rules 
+described for CPU_SUSPEND. See section 5.4.  

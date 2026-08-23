@@ -1,0 +1,84 @@
+5.1.18 NODE_HW_STATE 
+Description 
+Introduced in PSCI 1.0. 
+Optional.  
+This API is intended to return the true HW state of a node in the power domain 
+topology of the system.  See section 5.19 more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID 
+SMC32 uint32 
+SMC64 uint64 
+target_cpu 
+uint32 power_level 
+•  0x8400 000D SMC32 version 
+•  0xC400 000D SMC64 version 
+This field follows the same format as the target_cpu 
+parameter of a CPU_ON call (see section 5.1.4). 
+This parameter describes the power domain level for 
+the node. The power level parameter format is 
+IMPLEMENTATION DEFINED, however the value of 0 
+is reserved to represent cores (or for SMT systems, 
+hardware threads). 
+Return 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+•  2 HW_STANDBY: The power control logic 
+indicates that the node is in a standby or 
+retention power state, as defined in section 4.1 
+•  1 HW_OFF: The power control logic indicates 
+that the node is fully powered down, meaning 
+that it is in a powerdown state, as described in 
+section 4.1 
+•  0 HW_ON: The power control logic indicates 
+that the node is operational and is not in a low 
+power state but is in the run state described in 
+section 4.1. 
+•  NOT_SUPPORTED 
+• 
+INVALID_PARAMETERS 
+See section 5.2.2 for integer values associated with 
+each return code.
+
+5.19  NODE_HW_STATE 
+
+Introduced in PSCI 1.0, this function is optional. 
+5.19.1 Intended use 
+This API allows the power state of a node to be determined directly from the power controller or power 
+controlling logic. Unlike AFFINITY_INFO, which returns the view of state of the implementation, this 
+API returns the physical view of power state. 
+5.19.2 Caller responsibilities 
+The node is uniquely represented using two parameters: 
+target_cpu:Derived from the MPIDR, this parameter follows the same format as the target_cpu 
+parameter of CPU_ON. 
+power_level: This parameter denotes the power domain level for the node. The format of this 
+parameter is IMPLEMENTATION DEFINED, however 0 is always reserved to represent a core, or HW 
+thread, in an SMT system. 
+Note: It is acknowledged that an SMT system is highly unlikely to have a power domain around 
+hardware thread. However, it is useful to use 0 to uniquely identify the level that aligns to an operating 
+system’s view of a core. 
+Together, both parameters allow indexing any individual node in the power node topology of the 
+system. Power level values to be used for this function must be described alongside the power domain 
+topology using firmware table approaches such as FDT or ACPI. More details can be found in section 
+6.7. 
+The calling OS must recognize that the returned value is a snapshot of the state of the node at a point 
+in time and might therefore be stale by the time it is interpreted. In addition, the call can return the 
+following errors: 
+•  NOT_SUPPORTED, if not implemented. 
+• 
+INVALID_PARAMETERS, if the target_cpu and power_level values describe an invalid 
+node. 
+5.19.3 Implementation responsibilities 
+This API must only be implemented if the supporting power control logic allows detection of the power 
+state of nodes in the system. The values returned by this function must reflect the view of the power 
+controlling logic. 
+If successful, the values returned by NODE_HW_STATE are described below: 
+•  HW_STANDBY(2), if the node is seen by the power control logic as being in a retention of 
+standby state, as defined by the semantics described in Section 4.1.  
+•  HW_OFF(1), if the node is seen by the power control logic as being in a powerdown state, as 
+defined by the semantics described in Section 4.1.  
+•  HW_ON(0), if the node is seen by the power control logic as being in a run state, as defined by 
+the semantics described in Section 4.1.  

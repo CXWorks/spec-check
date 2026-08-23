@@ -202,12 +202,61 @@ def _clean_name(s: str) -> str:
     return re.sub(r'[^A-Z0-9_]', '', name.upper())
 
 
+# Subsections of 5.1: "5.1.4  CPU_ON". These carry the parameter list, the return
+# declarations and the Function ID -- the things an RMM command section states
+# inline. PSCI puts them in a chapter of their own, which is why every one of the
+# 22 commands cross-references material outside its own section and no RMM
+# command does.
+_PROTO_PAT = re.compile(r'(?m)^\s*(5\.1\.\d+)\s+([A-Z][A-Za-z0-9_ /]*?)\s*$')
+
+
+def _proto_name(title: str) -> str:
+    """Command name from a 5.1.x title.
+
+    Not _clean_name: that keeps only the first whitespace-separated token, and
+    the PDF breaks one title as "PSCI_SET_ SUSPEND_MODE", which would truncate to
+    "PSCI_SET_". Here the spaces are noise inside a single identifier, so they
+    are removed rather than used as a delimiter.
+    """
+    return re.sub(r'[^A-Z0-9_]', '', title.upper().replace(' ', ''))
+
+
+def extract_prototypes(cleaned_text: str) -> dict:
+    """{CMD_NAME: prototype text} for the 5.1.x function-prototype subsections.
+
+    Keyed on the LAST occurrence of each number: the table of contents lists them
+    all before the body does, and a ToC line would otherwise win.
+    """
+    seen = {}
+    for m in _PROTO_PAT.finditer(cleaned_text):
+        seen[m.group(1)] = m
+    if not seen:
+        return {}
+    ordered = sorted(seen.values(), key=lambda m: m.start())
+    out = {}
+    for i, m in enumerate(ordered):
+        if i + 1 < len(ordered):
+            end = ordered[i + 1].start()
+        else:
+            # 5.1.22 is the last prototype, so it has no successor to stop at and
+            # ran to end-of-document exactly as 5.22 did: PSCI_STAT_COUNT came out
+            # at 2599 lines. Stop at the next top-level section, which is 5.2.
+            nxt = _TOP_SEC_PAT.search(cleaned_text, m.end())
+            end = nxt.start() if nxt else len(cleaned_text)
+        name = _proto_name(m.group(2))
+        if name:
+            out.setdefault(name, cleaned_text[m.start():end].rstrip())
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
-    versions = sys.argv[1:] if len(sys.argv) > 1 else ["psci_13"]
+    argv = [a for a in sys.argv[1:] if a != "--with-prototypes"]
+    with_prototypes = "--with-prototypes" in sys.argv[1:]
+    versions = argv if argv else ["psci_13"]
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
     for version in versions:
@@ -224,6 +273,27 @@ def main():
         cleaned = preprocess(txt_path)
 
         cmds = extract_commands(cleaned)
+
+        # `<version>_full` = the same commands with their 5.1.x prototype
+        # prepended. Emitted alongside rather than instead: the plain version is
+        # what the pipeline has always produced, and the pair is what measures
+        # whether the missing parameter tables actually cost anything.
+        if with_prototypes:
+            protos = extract_prototypes(cleaned)
+            hit = sorted(set(cmds) & set(protos))
+            missing = sorted(set(cmds) - set(protos))
+            full_dir = os.path.join(base_dir, "sections", f"{version}_full")
+            os.makedirs(full_dir, exist_ok=True)
+            for cmd_name, raw_text in sorted(cmds.items()):
+                pre = protos.get(cmd_name)
+                text = (f"{pre}\n\n{raw_text}" if pre else raw_text)
+                with open(os.path.join(full_dir, f"{cmd_name}_command.txt"), "w") as fh:
+                    fh.write(text)
+            print(f"  {len(hit)}/{len(cmds)} commands matched a 5.1.x prototype "
+                  f"→ sections/{version}_full/")
+            if missing:
+                print(f"  [WARN] no prototype for: {', '.join(missing)}")
+
         if not cmds:
             print("  [WARN] No commands found — check section numbering in PDF")
         else:

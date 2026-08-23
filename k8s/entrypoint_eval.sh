@@ -202,8 +202,21 @@ PY
 if [ -f /entry/zeroshot.tgz.b64 ]; then
   base64 -d /entry/zeroshot.tgz.b64 | tar xzf - -C /work/repo
   for v in $NO_GOLD_VERSIONS; do
-    n=$(find "/work/repo/training-dataset/sections/$v" -name "*_command.txt" 2>/dev/null | wc -l)
+    # AppleDouble sidecars are deleted rather than tolerated. A "._X_command.txt"
+    # looks like a command to list_commands(), and one run reached the model with
+    # 44 commands for a 22-command document -- generating specs for binary
+    # resource forks named ._CPU_ON. The archive is built with COPYFILE_DISABLE
+    # now and dataset_loader skips the prefix, so this is the third guard on a
+    # failure whose only symptom was a plausible-looking doubled count.
+    find "/work/repo/training-dataset/sections/$v" -name '._*' -delete 2>/dev/null || true
+    n=$(find "/work/repo/training-dataset/sections/$v" -name "*_command.txt" \
+        -not -name "._*" 2>/dev/null | wc -l)
     [ "$n" -gt 0 ] || { echo "[eval] FATAL: $v unpacked 0 sections"; return 1; }
+    # An expected count turns a silent miscount into a failed job.
+    if [ -n "${EXPECT_SECTIONS:-}" ] && [ "$n" != "$EXPECT_SECTIONS" ]; then
+      echo "[eval] FATAL: $v unpacked $n sections, expected $EXPECT_SECTIONS"
+      return 1
+    fi
     [ -f "/work/repo/training-dataset/specs/$v/preamble.rs" ] || {
       echo "[eval] FATAL: $v has no preamble.rs"; return 1; }
     echo "[eval] $v ready ($n sections, no gold by design)"
