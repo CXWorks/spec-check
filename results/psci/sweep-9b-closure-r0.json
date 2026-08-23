@@ -1,0 +1,338 @@
+{
+  "gen_dir": "results/psci/9b-closure-r0/sft3-2-final-psciclos/psci_13_closure",
+  "self_test": [
+    {
+      "fixture": "bug1_conjoined_error_codes",
+      "expected": "unsat",
+      "got": "unsat",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "proved",
+          ""
+        ],
+        "vacuous": [
+          "refuted",
+          "postcondition not satisfied"
+        ]
+      }
+    },
+    {
+      "fixture": "bug2_overlapping_antecedents",
+      "expected": "unsat",
+      "got": "unsat",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "proved",
+          ""
+        ],
+        "vacuous": [
+          "refuted",
+          "postcondition not satisfied"
+        ]
+      }
+    },
+    {
+      "fixture": "bug4_free_parameter_tautology",
+      "expected": "vacuous",
+      "got": "vacuous",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "refuted",
+          "postcondition not satisfied"
+        ],
+        "vacuous": [
+          "proved",
+          ""
+        ]
+      }
+    },
+    {
+      "fixture": "vacuous_literal_true",
+      "expected": "vacuous",
+      "got": "vacuous",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "refuted",
+          "postcondition not satisfied"
+        ],
+        "vacuous": [
+          "proved",
+          ""
+        ]
+      }
+    },
+    {
+      "fixture": "ok_disjoint_error_codes",
+      "expected": "consistent",
+      "got": "consistent",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "refuted",
+          "postcondition not satisfied"
+        ],
+        "vacuous": [
+          "refuted",
+          "postcondition not satisfied"
+        ]
+      }
+    },
+    {
+      "fixture": "ok_guarded_transition",
+      "expected": "consistent",
+      "got": "consistent",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "refuted",
+          "postcondition not satisfied"
+        ],
+        "vacuous": [
+          "refuted",
+          "postcondition not satisfied"
+        ]
+      }
+    }
+  ],
+  "detector_sound": true,
+  "counts": {
+    "compile_error": 12,
+    "vacuous": 11
+  },
+  "rows": [
+    {
+      "file": "affinity_info.rs",
+      "fn": "affinity_info_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `RsiCommandReturnCode` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `RsiCommandReturnCode` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "cpu_default_suspend.rs",
+      "fn": "cpu_default_suspend_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find value `INVALID_ADDRESS` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find value `INVALID_ADDRESS` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "cpu_freeze.rs",
+      "fn": "cpu_freeze_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "cpu_off.rs",
+      "fn": "cpu_off_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "cpu_off.rs",
+      "fn": "cpu_on_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "cpu_on.rs",
+      "fn": "cpu_on_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find value `INVALID_PARAMETERS` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find value `INVALID_PARAMETERS` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "cpu_suspend.rs",
+      "fn": "cpu_suspend_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `PowerState` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `PowerState` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "mem_protect.rs",
+      "fn": "mem_protect_spec",
+      "trivial": true,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `int32` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `int32` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "mem_protect_check_range.rs",
+      "fn": "mem_protect_check_range_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "migrate.rs",
+      "fn": "migrate_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `RsiCommandReturnCode` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `RsiCommandReturnCode` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "migrate_info_type.rs",
+      "fn": "migrate_info_type_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "migrate_info_up_cpu.rs",
+      "fn": "migrate_info_up_cpu_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "node_hw_state.rs",
+      "fn": "node_hw_state_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: mismatched types; types must be compatible to use == or !=",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: mismatched types; types must be compatible to use == or !=",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "psci_features.rs",
+      "fn": "psci_features_spec",
+      "trivial": true,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `int32` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `int32` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "psci_set_suspend_mode.rs",
+      "fn": "psci_set_suspend_mode_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `int32` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `int32` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "psci_stat_count.rs",
+      "fn": "psci_stat_count_spec",
+      "trivial": true,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `int64` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `int64` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "psci_stat_residency.rs",
+      "fn": "psci_stat_residency_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "psci_version.rs",
+      "fn": "psci_version_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "system_off.rs",
+      "fn": "system_off_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "system_off2.rs",
+      "fn": "system_off2_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "system_reset.rs",
+      "fn": "system_reset_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "system_reset2.rs",
+      "fn": "system_reset2_spec",
+      "trivial": true,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `PsciStatusCode` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `PsciStatusCode` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "system_suspend.rs",
+      "fn": "system_suspend_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find type `PsciStatusCode` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find type `PsciStatusCode` in this scope",
+      "verdict": "compile_error"
+    }
+  ]
+}
