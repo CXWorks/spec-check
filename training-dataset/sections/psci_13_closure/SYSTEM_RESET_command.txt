@@ -1,0 +1,48 @@
+4.4  System shutdown, reset and suspend 
+PSCI provides an interface to allow an OS to request system shutdown, system reset, and system 
+suspend (suspend to RAM and suspend to disk). This allows a silicon vendor to provide a common 
+implementation of these functions that is independent of the supervisory software running on the 
+device.  
+The usage of the term system in the PSCI function definitions refers to the machine view that is 
+available to the calling OS. If the caller is a guest running in a virtual machine system, shutdown, reset, 
+and suspend operations affect the virtual machine and might not result in any physical power changes. 
+However, if a hypervisor is not present, or the caller is a hypervisor, the result is physical changes in 
+power. Even if the caller is running on a physical machine, the term system might not mean the entire 
+physical machine. For example, consider an advanced server system consisting of multiple boards, 
+each with a board management controller (BMC), and each containing multiple SoCs. Such a system 
+could run an OS instance per SoC. In this example, a PSCI command to shut down the system applies 
+to a single SoC, while powering down the entire board requires access to the BMC through an 
+administration interface that is beyond the reach of the calling OS or a PSCI implementation. In this 
+document, the term system refers only to the machine view that is visible to an OS. In the example 
+above, this maps to a single SoC. 
+  Functions 
+This section introduces the functions for Power State Coordination. 
+The APIs are described here without reference to the underlying conduit (SMC or HVC). However, the 
+functions adhere to the SMC Calling Conventions [4]. In an implementation that includes EL2 but not 
+EL3, a hypervisor providing support to a PSCI-compliant EL1 Rich OS can use HVC as the conduit. In 
+the HVC case, the format of the call, in terms of immediate value, and register usage, is the same as in 
+the SMC case. PSCI functions can only be called from the Normal or Realm Security states (EL1 or 
+EL2). 
+
+5.1.11 SYSTEM_RESET 
+Description 
+Reset the system.  See section 5.12 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID   0x8400 0009 
+Return 
+Declaration 
+Value 
+void  
+Does not return 
+
+5.12  SYSTEM_RESET 
+5.12.1 Intended use 
+This function provides a method for performing a system cold reset. To the caller, the behavior is 
+equivalent to a hardware power-cycle sequence. As detailed in section 4.4, the reset command applies 
+to the machine view of the calling OS. 
+5.12.2 Caller responsibilities 
+Where possible, cores should be placed in a known state. No specific coordination is required between 
+cores. Apart from the case when the response to the call is virtualized, when one core calls 
+SYSTEM_RESET, the system power cycles. 

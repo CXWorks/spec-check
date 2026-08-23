@@ -1,0 +1,266 @@
+[
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "AFFINITY_INFO",
+    "chars": 744
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "CPU_DEFAULT_SUSPEND",
+    "chars": 145
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "CPU_FREEZE",
+    "chars": 86
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "CPU_OFF",
+    "chars": 187
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "CPU_ON",
+    "chars": 1324
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "CPU_SUSPEND",
+    "chars": 315
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "MEM_PROTECT",
+    "chars": 105
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "MEM_PROTECT_CHECK_RANGE",
+    "chars": 129
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "MIGRATE",
+    "chars": 527
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "MIGRATE_INFO_TYPE",
+    "chars": 93
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "MIGRATE_INFO_UP_CPU",
+    "chars": 98
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "NODE_HW_STATE",
+    "chars": 457
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "PSCI_FEATURES",
+    "chars": 113
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "PSCI_SET_SUSPEND_MODE",
+    "chars": 343
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "PSCI_STAT_COUNT",
+    "chars": 119
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "PSCI_STAT_RESIDENCY",
+    "chars": 139
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "PSCI_VERSION",
+    "chars": 91
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "SYSTEM_OFF",
+    "chars": 73
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "SYSTEM_OFF2",
+    "chars": 111
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "SYSTEM_RESET",
+    "chars": 75
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "SYSTEM_RESET2",
+    "chars": 371
+  },
+  {
+    "arm": "base",
+    "version": "psci_13",
+    "command": "SYSTEM_SUSPEND",
+    "chars": 392
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "AFFINITY_INFO",
+    "chars": 745
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "CPU_DEFAULT_SUSPEND",
+    "chars": 302
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "CPU_FREEZE",
+    "chars": 88
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "CPU_OFF",
+    "chars": 238
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "CPU_ON",
+    "chars": 1333
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "CPU_SUSPEND",
+    "chars": 331
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "MEM_PROTECT",
+    "chars": 105
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "MEM_PROTECT_CHECK_RANGE",
+    "chars": 131
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "MIGRATE",
+    "chars": 479
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "MIGRATE_INFO_TYPE",
+    "chars": 95
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "MIGRATE_INFO_UP_CPU",
+    "chars": 98
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "NODE_HW_STATE",
+    "chars": 451
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "PSCI_FEATURES",
+    "chars": 113
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "PSCI_SET_SUSPEND_MODE",
+    "chars": 358
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "PSCI_STAT_COUNT",
+    "chars": 134
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "PSCI_STAT_RESIDENCY",
+    "chars": 139
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "PSCI_VERSION",
+    "chars": 91
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "SYSTEM_OFF",
+    "chars": 73
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "SYSTEM_OFF2",
+    "chars": 389
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "SYSTEM_RESET",
+    "chars": 75
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "SYSTEM_RESET2",
+    "chars": 370
+  },
+  {
+    "arm": "base",
+    "version": "psci_13_full",
+    "command": "SYSTEM_SUSPEND",
+    "chars": 428
+  }
+]

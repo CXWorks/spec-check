@@ -1,0 +1,454 @@
+4.2  Power state system topologies and coordination 
+Multiprocessor systems can have several different power domains to power different elements of the 
+system. Each power domain might contain a combination of one or more processing elements (such as 
+cores, coprocessors, or GPUs), memories (caches, DRAMs), and fabric (for example inter-cluster and 
+intra-cluster coherency fabric).  PSCA [1] provides detailed descriptions of how power domains can be 
+constructed in systems that use Arm components. 
+Each component in a power domain has a set of power states that affect the components in the 
+domain. Although physically the power domains are not necessarily built in a hierarchical fashion, from 
+a software control point of view, they are arranged in a logical hierarchy. The hierarchy arises out of 
+ordering dependencies that are required when placing the power domains into different power states. 
+For example, consider a power domain that encompasses a shared cache, and power domains for the 
+cores that use it. In such a system, the core power domains must be powered down before the shared 
+cache domain, to guarantee correct operation.  
+Figure 4 Example power domain topology 
+The diagram above shows the power domain topology of an example system. The example shows a 
+system-level power domain that supports two power states. This power domain has two children power 
+domains, each of which includes a cluster and supports a set of cluster power states. Each cluster 
+power domain has two children core-level power domains. Each of the core-level power domains 
+includes a core and supports additional power states. 
+From a hardware perspective, a system is divided into multiple exclusive or shared power domains. 
+Each power domain can be represented as a node in a power domain topology tree. Sibling power 
+domains are mutually exclusive. Parent power domains are shared by the children. The various levels 
+in the tree (core, cluster, and system in the example) are referred to as power levels. Higher levels are 
+closer to the root of the tree (system) and lower levels are closer to the leaves (the cores). 
+4.2.1  Local power states and composite power states 
+Individual nodes in a topology have their own specific power states, which are referred to here as local 
+power states. When an OS, running on an idle core, requests a power state, it might need to express 
+not just a local power state for the core, but also for any parent nodes. For instance, taking our example 
+system from Figure 4, if Core 1 was the last to go idle in Cluster 0, it would make sense for the OS to 
+request a local power state for the cluster as well as the core. We refer to the combined power state 
+that an OS might request as a composite power state. Not every combination of local states is possible. 
+System LevelPower States:• Retention• Power-DownCluster LevelCluster 1Power States:• Retention• Power-DownCluster LevelCluster 0Power States:• Retention• Power-DownCore LevelCore 0Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 1Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 2Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 3Power States:• Standby (clock gate)• Retention• Power-Down 
+When a node at a power level is in a certain local power state, parent nodes at higher power levels 
+cannot be in a deeper local state. In other words:  
+1.   A powerdown in a higher-level node can only be combined with powerdown states in lower-
+level children. 
+2.   A retention state in a higher-level node might only be combined with retention or powerdown 
+states in lower-level children. 
+3.   A standby (clock-gated) state in a higher-level node allows lower-level children to be in standby, 
+retention, or powerdown states. 
+4.   A running state in a higher-level node allows lower-level children to be in any state. 
+Note:  The PSCI specification is only concerned with power states that require explicit software control.  
+Hardware power modes, which are not exposed to software, are not relevant to PSCI. 
+Taking these rules into account, Table 3 illustrates the valid low-power composite states for the 
+example system described in Figure 4. 
+Table 2 Valid local state combinations for composite power states in the example system 
+System Level State 
+Cluster Level State 
+Core Level State 
+Run 
+Run 
+Run 
+Run 
+Run 
+Run 
+Retention 
+Retention 
+Retention 
+Powerdown 
+Run 
+Run 
+Run 
+Retention 
+Retention 
+Powerdown 
+Retention 
+Retention 
+Powerdown 
+Powerdown 
+Standby 
+Retention 
+Powerdown 
+Retention 
+Powerdown 
+Powerdown 
+Retention 
+Powerdown 
+Powerdown 
+Powerdown 
+4.2.2  Affinity hierarchy 
+Arm systems can have multiple cores or even multiple clusters of cores. This specification uses the 
+term affinity hierarchy to describe the hierarchical arrangement of cores. This often, but not always, 
+maps directly to the processor power topology of the system.   
+This specification uses the term affinity level to describe a level in the affinity hierarchy, for example, the 
+level of cores or clusters. Finally, the term affinity instance is used to refer to an individual entry in the 
+affinity hierarchy, for example, an individual core or cluster.  
+4.2.3  Power state coordination 
+Entry into local power states for high-level nodes in a power topology (for example, clusters or system) 
+requires coordinating children nodes. For example, entry into a cluster powerdown state is only possible 
+when all cores in the cluster are powered down. To achieve this, every core but the last one must be 
+placed into a powerdown state, and the last one places itself and the cluster into a powerdown state. 
+PSCI supports two modes of power state coordination, platform-coordinated mode, and OS-initiated 
+mode. 
+4.2.3.1  Platform-coordinated mode 
+This is the default mode of coordination. In this mode, the PSCI implementation is responsible for 
+coordinating power states. When a core has no more work to do, the OSPM requests the deepest state 
+it can tolerate for that core and its parent nodes. For power state requests that affect a topology node 
+above the core level, the implementation chooses the deepest power state that can be tolerated by all 
+the cores in the node. In effect, the power state request expresses the following two constraints:  
+1.  The caller allows entry to states up to this depth, but no deeper. 
+2.  The caller cannot tolerate a higher wakeup latency than that associated with the requested 
+state. 
+The PSCI implementation then determines the deepest state that satisfies the constraints expressed by 
+each core in a given node. Table 3 builds on the example system of Figure 4, and shows how 
+composite power state requests are arbitrated for that system. In the example, the abbreviations Ret 
+and PD denote retention and powerdown, respectively. The example is not exhaustive and assumes 
+that Cluster 1 has already been powered down. The example shows requests from Core0 and Core1, 
+and the resulting power state for the clusters and the system.  
+Table 3 Example platform coordination of power state requests.  
+Composite state requested 
+Power state granted 
+Core 0 
+Core 1 
+C
+o
+r
+e
+l
+C
+u
+s
+t
+e
+r
+S
+y
+s
+t
+e
+m
+C
+o
+r
+e
+l
+C
+u
+s
+t
+e
+r
+S
+y
+s
+t
+e
+m
+Cluster 0 
+Cluster 1 
+(we assume this 
+has already 
+powered down) 
+  System 
+Ret 
+Run 
+Run 
+Ret 
+Run 
+Run  Run 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Run 
+Ret 
+Run 
+Run  Run 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Run 
+Ret 
+Ret 
+Run  Retention 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret 
+Run  Retention 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+PD 
+Ret 
+PD 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+PD 
+Ret 
+PD 
+PD 
+Ret  Powerdown 
+Powerdown 
+  Retention 
+PD 
+PD 
+PD 
+PD 
+PD 
+Ret  Powerdown 
+Powerdown 
+  Retention 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD  Powerdown 
+Powerdown 
+  Powerdown 
+As a general rule, wakeup latency increases with depth of state, so in the example above we are 
+assuming that the retention (for core, cluster, or system) has smaller wakeup latency than powerdown. 
+However, this is not necessarily the case. There might be systems where this ordering breaks. As 
+stated by the second constraint above, the state chosen by the implementation must satisfy the wakeup 
+time associated with every core’s request. Consider a dual core system that has three system-level 
+states, ordered by increasing depth, state A, state B, and state C, but where wakeup latency ordering is 
+state A < state C < state B. If Core 0 chooses State B and Core 1 chooses State C, the system will 
+need to enter state A. State C is not possible as Core 0 does not want to go that deep, and State B is 
+not possible as Core 1 cannot tolerate its longer wakeup latency.  
+Versions of PSCI prior to 1.0 support only the platform-coordinated mode. 
+4.2.3.2  OS-initiated mode 
+Introduced in PSCI 1.0, OS-initiated mode places the responsibility for coordination on the calling OS. 
+In the OS-initiated coordination scheme, OSPM only requests an idle state for a particular topology 
+node when the last underlying core goes idle.   
+When a core goes idle it always selects an idle state for itself, but idle states for higher-level nodes such 
+as clusters are only selected when the last running core in the node goes idle. In addition, the 
+implementation only considers the most recent request for a particular node when deciding on its idle 
+state.  Using the above example of a dual cluster, dual core per cluster system, the following table 
+illustrates the steps involved in taking Cluster0 into a powerdown state. In the example, abbreviations 
+R, Ret, and PD, denote run, retention and powerdown, respectively. In addition, states where OS view 
+and implementation view differ are marked in red, and states that change during a step are underlined. 
+Table 4 Example flow: Cluster powerdown entry 
+Step 
+1: OS on Core0 requests Core0 
+powerdown 
+2: PSCI Implementation observes 
+request and places Core0 into 
+powerdown 
+3: OS on Core1 requests Core1 
+powerdown and, knowing it is last in the 
+cluster, Cluster0 powerdown 
+4: PSCI Implementation observes 
+requests for Core1 and Cluster0 and 
+processes them 
+before 
+after 
+before 
+after 
+before 
+after 
+before 
+after 
+OS View 
+PSCI View 
+C
+o
+r
+e
+R 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+PD 
+l
+C
+u
+s
+t
+e
+r
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+PD 
+PD 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+R 
+R 
+R 
+R 
+l
+C
+u
+s
+t
+e
+r
+R 
+R 
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+As the table illustrates, there are periods (marked in red) where the OS view of core state and the 
+implementation view of core state do not match. This might happen after the OS requests a state, but 
+before the implementation has processed the request. This can also happen when a core powers up, as 
+the implementation sees the core before the OS. To implement OS-initiated mode, it is necessary to 
+deal with the races that arise due to the differing views of core state. Solving the races gives rise to the 
+following requirements: 
+•  The implementation must deny any requests from the calling OS that are inconsistent with its 
+view of core state. 
+•  The calling OS must indicate when the calling core is the last running core at a particular power 
+hierarchy level. It must also specify which power hierarchy level the core is last in, for example, 
+whether it is the last core in the cluster or the last core in the system. 
+A full discussion of the reasoning behind these requirements, and races that arise is described in 
+sections 6.2 and 6.3. 
+
+5.1.20 PSCI_SET_ SUSPEND_MODE 
+Description 
+Introduced in PSCI 1.0.  
+Optional.  
+This API allows setting the mode used by CPU_SUSPEND to coordinate power 
+states. See section 4.2 for a description of coordination modes and section 5.21 
+for a full description of this function. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID 
+0x8400 000F 
+uint32 mode 
+Return 
+Declaration 
+int32 
+•  0: platform-coordinated mode 
+•  1: OS-initiated mode 
+Value 
+•  SUCCESS 
+•  NOT_SUPPORTED 
+• 
+INVALID_PARAMETERS 
+•  DENIED 
+See section 5.2.2 for integer values associated 
+with each return code. 
+
+5.2.2  Return error codes 
+Table 5 defines the values for error codes used with PSCI functions. Errors are 32-bit signed integers 
+for SMC32 functions, and 64-bit signed integers for SMC64 functions. However, any AArch32 caller of 
+an SMC64 function will get a return code of 0xFFFFFFFF (int32). 
+Table 5 Return error codes 
+SUCCESS 
+NOT_SUPPORTED 
+INVALID_PARAMETERS 
+DENIED 
+ALREADY_ON 
+ON_PENDING 
+INTERNAL_FAILURE 
+NOT_PRESENT 
+DISABLED 
+INVALID_ADDRESS 
+-1 
+-2 
+-3 
+-4 
+-5 
+-6 
+-7 
+-8 
+-9 
+
+5.21  PSCI_SET_SUSPEND_MODE 
+Introduced in PSCI 1.0, this function is optional. 
+5.21.1 Intended use 
+This function is used to switch between the two different power state coordination modes described in 
+section 4.2.  
+The platform will boot in platform-coordinated mode. If the calling OS uses OS-initiated mode, the API 
+must be called once during OS boot. CPU_DEFAULT_SUSPEND can be used before the suspend mode 
+is set. 
+Some operating systems support rebooting a new kernel within their Exception level, and without 
+resetting the system as a whole. In this case, the calling OS must place the PSCI implementation back 
+into a platform-coordinated mode before rebooting. 
+5.21.2 Implementation responsibilities 
+Switching from platform-coordinated to OS-initiated modes (see section 4.2) is only allowed if the 
+following conditions are met: 
+•  All cores are in one of the following states: 
+•  Running. 
+•  OFF, through a call to CPU_OFF or not yet booted.  
+•  Suspended, through a call to CPU_DEFAULT_SUSPEND. 
+•  None of the processors has called CPU_SUSPEND since the last change of mode or boot. 
+A switch from OS-initiated mode to platform-coordinated mode is only possible if all cores other than the 
+calling one are OFF, either through a call to CPU_OFF or not yet booted. 
+If these conditions are not met, the platform must return DENIED.   
+The default coordination mode is platform-coordinated. 
+5.21.3 Caller responsibilities 
+The caller must be able to cope with the following error return codes: 
+•  NOT_SUPPORTED, in which case the calling OS can assume the platform will work in platform-
+coordinated mode. In this case, the PSCI_FEATURES feature flag 0 for CPU_SUSPEND is also 0. 
+• 
+INVALID_PARAMETERS, if the parameter mode is not a valid value (0 or 1). 
+•  DENIED:   
+• 
+If any core is not in the correct state, as detailed in the previous section.  
+•  When switching to OS-initiated mode if a core has made use of CPU_SUSPEND. 

@@ -1,0 +1,474 @@
+4.4  System shutdown, reset and suspend 
+PSCI provides an interface to allow an OS to request system shutdown, system reset, and system 
+suspend (suspend to RAM and suspend to disk). This allows a silicon vendor to provide a common 
+implementation of these functions that is independent of the supervisory software running on the 
+device.  
+The usage of the term system in the PSCI function definitions refers to the machine view that is 
+available to the calling OS. If the caller is a guest running in a virtual machine system, shutdown, reset, 
+and suspend operations affect the virtual machine and might not result in any physical power changes. 
+However, if a hypervisor is not present, or the caller is a hypervisor, the result is physical changes in 
+power. Even if the caller is running on a physical machine, the term system might not mean the entire 
+physical machine. For example, consider an advanced server system consisting of multiple boards, 
+each with a board management controller (BMC), and each containing multiple SoCs. Such a system 
+could run an OS instance per SoC. In this example, a PSCI command to shut down the system applies 
+to a single SoC, while powering down the entire board requires access to the BMC through an 
+administration interface that is beyond the reach of the calling OS or a PSCI implementation. In this 
+document, the term system refers only to the machine view that is visible to an OS. In the example 
+above, this maps to a single SoC. 
+  Functions 
+This section introduces the functions for Power State Coordination. 
+The APIs are described here without reference to the underlying conduit (SMC or HVC). However, the 
+functions adhere to the SMC Calling Conventions [4]. In an implementation that includes EL2 but not 
+EL3, a hypervisor providing support to a PSCI-compliant EL1 Rich OS can use HVC as the conduit. In 
+the HVC case, the format of the call, in terms of immediate value, and register usage, is the same as in 
+the SMC case. PSCI functions can only be called from the Normal or Realm Security states (EL1 or 
+EL2). 
+
+5.1.10 SYSTEM_OFF2 
+Description 
+Introduced in PSCI 1.3.  
+Optional. 
+This function is used to implement suspend to disk, which is also known as 
+hibernate. 
+See 5.11 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+•  0x8400 0015 SMC32 version 
+•  0xC400 0015 SMC64 version 
+This parameter is based on the bitmap returned by the 
+features flag field of PSCI_FEATURES for 
+SYSTEM_OFF2 function ID. See Table 11 for more details. 
+This parameter is broken into the following fields: 
+•  Bit[31]  
+Reserved must be zero. 
+•  Bits[30:0]  Hibernate type. Only one type can be  
+selected. Possible values of this field are as  
+follows: 
+-  0x1 - HIBERNATE_OFF 
+All other values, except 0x0, are reserved  
+for future use. 
+See section 5.16 for discovering the 
+hibernate types supported. 
+If the value of this parameter is 0x0, the implementation 
+defaults to selecting HIBERNATE_OFF. 
+This field is reserved for future use and must be set to 
+zero.  
+uint32 type 
+SMC32 uint32 
+SMC64 uint64 
+cookie 
+Return 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+This call does not return when successful. 
+The following values can be returned on failure: 
+•  NOT_SUPPORTED 
+• 
+INVALID_PARAMETERS 
+See section 5.2.2 for integer values associated with each 
+return code. 
+Note:   PSCIv1.3 Issue F allowed the implementation to return INVALID_PARAMETERS when 
+SYSTEM_OFF2 was called with the type parameter set to 0x0. This was fixed in PSCIv1.3 
+Issue F.b, where a value of 0x0 for the type parameter indicates the default HIBERNATE_OFF. 
+Issue F.b supersedes Issue F. 
+It is possible that implementations released prior to the publication of PSCIv1.3 Issue F.b 
+return INVALID_PARAMETERS when SYSTEM_OFF2 is called with the type parameter set to 
+0x0. However, this behavior is discouraged, and implementations are strongly recommended to 
+comply with SYSTEM_OFF2 as specified in PSCIv1.3 Issue F.b or later. 
+
+5.1.15 PSCI_FEATURES 
+Description 
+Introduced in PSCI 1.0.  
+Query API that allows discovering whether SMCCC_VERSION (refer SMC 
+Calling Convention [4]) or a specific PSCI function is implemented and its 
+features. See section 5.16.1 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID 
+0x8400 000A 
+Function ID of: 
+uint32 psci_func_id 
+•  PSCI Function, or 
+•  SMCCC_VERSION 
+Return 
+Declaration 
+Value 
+int32 
+•  NOT_SUPPORTED if the function identified by 
+psci_func_id is not implemented or is an 
+invalid function ID. 
+•  A set of feature flags associated with the 
+implemented function indicated by 
+psci_func_id. Feature flags are specific to 
+each function. In all cases the format is: 
+•  Bit[31] is zero 
+•  Bits[30:0] represent the feature flags. See 
+section 5.16.2 for the defined flags. 
+See section 5.2.2 for integer values associated with 
+each return code. 
+
+5.2.1  Register usage in arguments and return values 
+The SMC Calling Conventions [4] provide support for calls using only 32-bit parameters (SMC32), and 
+for calls using 32-bit and 64-bit parameters (SMC64). Some of the PSCI functions defined above use 
+only SMC32, some of the functions have both an SMC32 and an SMC64 version.  
+For PSCI functions that use only 32-bit parameters, the arguments are passed in R0 to R3 (AArch32) or 
+W0 to W3 (AArch64), with return values in R0 or W0. 
+For versions using 64-bit parameters, the arguments are passed in X0 to X3, with return values in X0. 
+In line with the SMC Calling Conventions, the immediate value used with an SMC (or HVC) instruction 
+must be 0. 
+Adherence to the SMC Calling Conventions implies that any AArch32 caller of an SMC64 function will 
+get a return code of 0xFFFFFFFF (int32). This matches the NOT_SUPPORTED error code used in PSCI. 
+As some PSCI functions have SMC32 and SMC64 versions, it is also possible for an AArch64 client to 
+call an SMC32 function. In these cases, it is assumed that the caller understands the limitations of using 
+SMC32, and limits itself to 32-bit parameters, and the implementation is not required to provide any 
+specific error returns. 
+Note:  PSCI 0.2 instead used INVALID_PARAMETERS as the return code when an AArch32 caller 
+used an SMC64 API, or when an AArch64 caller used an SMC32 API. This requirement has been 
+dropped since PSCI 1.0 to improve alignment with the SMC Calling Conventions [4]. 
+PSCI calls between a guest and hypervisor can use the HVC conduit instead of SMC. In this case, the 
+rules described above apply. Where this document uses SMC32, the reader can assume HVC32 if the 
+conduit is HVC. Equally, SMC64 maps to HVC64.  
+
+5.2.2  Return error codes 
+Table 5 defines the values for error codes used with PSCI functions. Errors are 32-bit signed integers 
+for SMC32 functions, and 64-bit signed integers for SMC64 functions. However, any AArch32 caller of 
+an SMC64 function will get a return code of 0xFFFFFFFF (int32). 
+Table 5 Return error codes 
+SUCCESS 
+NOT_SUPPORTED 
+INVALID_PARAMETERS 
+DENIED 
+ALREADY_ON 
+ON_PENDING 
+INTERNAL_FAILURE 
+NOT_PRESENT 
+DISABLED 
+INVALID_ADDRESS 
+-1 
+-2 
+-3 
+-4 
+-5 
+-6 
+-7 
+-8 
+-9 
+
+5.11  SYSTEM_OFF2 
+5.11.1 Intended use 
+This function provides a method to implement hibernate or suspend-to-disk, as described by the S4 
+state in the ACPI specification [6].  Note that this specification is using the state definitions of S4 
+provided by ACPI but does not limit use of this PSCI function to ACPI-based systems. 
+The following start is a cold reboot from the point of view of the caller. If the system provides an FACS 
+ACPI table, then the Hardware Signature field in the table can be used to determine whether to restore 
+the saved system context or to perform a clean reboot as described in the ACPI specification [6]. 
+As detailed in section 4.4, the command applies to the machine view of the calling OS. The calls cannot 
+originate from the Secure Security state. 
+While suspend to disk might be considered a special case of SYSTEM_OFF, using SYSTEM_OFF in 
+some cases can lead to undesired behavior. For example, when virtualization is enabled, the hypervisor 
+management stack should not modify memory layout or virtual device properties if the virtual machine is 
+in hibernated state. Physical machines may need to provide visible feedback about the hibernated state 
+to users, such as a differently coloured LED. Meeting these requirements necessitates a dedicated 
+interface for suspend to disk to pass a hibernate hint to the implementation. 
+Calling SYSTEM_OFF2 carries with it several pre-conditions, including those which require that all 
+devices in the system are quiesced, and the caller state is saved into non-volatile storage before 
+invoking this function. The complete list of those preconditions is beyond the scope of this specification 
+and are therefore not described here. The SYSTEM_OFF2 function limits itself to providing the 
+mechanism by which the calling OS can request entry into hibernate, having met all the necessary 
+preconditions. 
+5.11.2 Caller responsibilities 
+The calling OS uses the PSCI_FEATURES API, with the SYSTEM_OFF2 function ID, to discover whether 
+the function is present:  
+• 
+• 
+If the function is implemented, PSCI_FEATURES returns the hibernate types supported. 
+If the function is not implemented, PSCI_FEATURES returns NOT_SUPPORTED. 
+See also section 5.1.15. Furthermore, if the function is not implemented, a call to SYSTEM_OFF2 returns 
+NOT_SUPPORTED. 
+The caller must perform any operations necessary for hibernate or suspend to disk entry. This includes, 
+but is not limited, to ensuring that: 
+•  Non-calling cores are in a known state, and that all devices have been quiesced. 
+•  Caller specific state and data has been saved to non-volatile storage, so that the caller can 
+restore its state on the subsequent reboot post exit from hibernate. 
+One way in which cores can be placed into a known state is to use calls to CPU_OFF on all online cores 
+except for the last one, which instead uses SYSTEM_OFF2.  
+It is recommended not to use hibernate if a firmware update is pending, since successful hibernation is 
+not guaranteed in such a scenario. 
+5.11.3 Implementation responsibilities 
+The implementation: 
+•  Must support SYSTEM_OFF2 calls from every core in the system. 
+•  Must save any necessary state and data in non-volatile storage to maintain the same base 
+hardware configuration of the system for the subsequent reboot. This implies maintaining the same 
+memory layout, static device properties, and OS visible firmware interfaces for the subsequent 
+reboot post exit from hibernate. 
+•  Powers off the system from the point of view of the caller such that the following start is a cold boot. 
+•  Returns INVALID_PARAMETERS if any of the input parameters are invalid. 
+
+5.16  PSCI_FEATURES 
+Introduced in PSCI 1.0, this function is mandatory. 
+5.16.1 Intended use 
+This function allows the caller to detect which PSCI functions have been implemented and their 
+properties. In addition, PSCI_FEATURES can be used to discover if SMCCC_VERSION is implemented.  
+PSCI functions generally return NOT_SUPPORTED when they are not implemented. However, it is not 
+always convenient to use that mechanism for discovery. Optional APIs such as 
+CPU_DEFAULT_SUSPEND or CPU_FREEZE can cause entry of a CPU into a low-power state. 
+Consequently, calling the functions is not an appropriate mechanism for discovering their presence. The 
+PSCI_FEATURES API identifies whether a function is present or not without needing to call the specific 
+function.  
+The caller passes the function ID in the psci_func_id parameter. The implementation returns: 
+• 
+If the function is implemented, a set of feature flag bits. In this case, bit[31] is always zero. Thus, 
+positive 32-bit integers indicate implemented functions.  
+•  NOT_SUPPORTED, if the function is not implemented. 
+Table 17 in section 6.9 lists all the compulsory and optional functions for a given PSCI version. 
+5.16.2 Implementation responsibilities 
+PSCI_FEATURES should report the presence of SMCCC_VERSION in privileged platform firmware 
+compliant with PSCI v1.0 and later revisions. For more details refer to SMC Calling Convention [4]. 
+If a function described by psci_func_id is not implemented, the implementation must return 
+NOT_SUPPORTED. If a AArch32 caller tries to discover an implemented SMC64 function, it is 
+IMPLEMENTATION DEFINED whether a valid set of feature flags is returned instead of 
+NOT_SUPPORTED. However, when a AArch32 caller invokes a SMC64 function, the implementation 
+must return NOT_SUPPORTED, as specified in Section 5.2.1. 
+For functions that are implemented, Table 11 lists possible return values. 
+Table 11 Return values if a function is implemented 
+psci_func_id parameter 
+Feature Flags 
+Function ID for CPU_SUSPEND  
+(0x8400 0001 SMC32 version 
+0xC400 0001 SMC 64 version) 
+Bits[31:2]  Reserved, must be zero. 
+Bit[1] 
+     Parameter Format bit 
+     0 if the implementation uses Original Format 
+        (PSCI0.2) for the power_state parameter. 
+     1 if the implementation uses the new extended 
+        StateID Format for the power_state     
+        parameter. 
+Bit[0] 
+     OS-initiated mode. 
+     0 if the platform does not support OS- 
+        initiated mode. 
+     1 if the platform supports OS-initiated mode. 
+Function ID for SYSTEM_OFF2   Bit[31]       Reserved, must be zero. 
+(0x8400 0015 SMC32 version 
+Bits[30:0]  Hibernate types supported.  
+0xC400 0015 SMC64 version) 
+     This field is a bitmap. 
+                 Bits[30:1]   Reserved for future use. Must be 0
+            for this version of the specification. 
+     Bit[0]   
+HIBERNATE_OFF. 
+This bit must be set to 1. 
+HIBERNATE_OFF must always be 
+supported if the implementation 
+supports SYSTEM_OFF2. 
+Function IDs for any function other 
+than: 
+•  CPU_SUSPEND 
+•  SYSTEM_OFF2 
+Bits[31:0]  Reserved, must be zero 
+
+5.16.1 Intended use 
+This function allows the caller to detect which PSCI functions have been implemented and their 
+properties. In addition, PSCI_FEATURES can be used to discover if SMCCC_VERSION is implemented.  
+PSCI functions generally return NOT_SUPPORTED when they are not implemented. However, it is not 
+always convenient to use that mechanism for discovery. Optional APIs such as 
+CPU_DEFAULT_SUSPEND or CPU_FREEZE can cause entry of a CPU into a low-power state. 
+Consequently, calling the functions is not an appropriate mechanism for discovering their presence. The 
+PSCI_FEATURES API identifies whether a function is present or not without needing to call the specific 
+function.  
+The caller passes the function ID in the psci_func_id parameter. The implementation returns: 
+• 
+If the function is implemented, a set of feature flag bits. In this case, bit[31] is always zero. Thus, 
+positive 32-bit integers indicate implemented functions.  
+•  NOT_SUPPORTED, if the function is not implemented. 
+Table 17 in section 6.9 lists all the compulsory and optional functions for a given PSCI version. 
+
+5.16.2 Implementation responsibilities 
+PSCI_FEATURES should report the presence of SMCCC_VERSION in privileged platform firmware 
+compliant with PSCI v1.0 and later revisions. For more details refer to SMC Calling Convention [4]. 
+If a function described by psci_func_id is not implemented, the implementation must return 
+NOT_SUPPORTED. If a AArch32 caller tries to discover an implemented SMC64 function, it is 
+IMPLEMENTATION DEFINED whether a valid set of feature flags is returned instead of 
+NOT_SUPPORTED. However, when a AArch32 caller invokes a SMC64 function, the implementation 
+must return NOT_SUPPORTED, as specified in Section 5.2.1. 
+For functions that are implemented, Table 11 lists possible return values. 
+Table 11 Return values if a function is implemented 
+psci_func_id parameter 
+Feature Flags 
+Function ID for CPU_SUSPEND  
+(0x8400 0001 SMC32 version 
+0xC400 0001 SMC 64 version) 
+Bits[31:2]  Reserved, must be zero. 
+Bit[1] 
+     Parameter Format bit 
+     0 if the implementation uses Original Format 
+        (PSCI0.2) for the power_state parameter. 
+     1 if the implementation uses the new extended 
+        StateID Format for the power_state     
+        parameter. 
+Bit[0] 
+     OS-initiated mode. 
+     0 if the platform does not support OS- 
+        initiated mode. 
+     1 if the platform supports OS-initiated mode. 
+Function ID for SYSTEM_OFF2   Bit[31]       Reserved, must be zero. 
+(0x8400 0015 SMC32 version 
+Bits[30:0]  Hibernate types supported.  
+0xC400 0015 SMC64 version) 
+     This field is a bitmap. 
+                 Bits[30:1]   Reserved for future use. Must be 0
+            for this version of the specification. 
+     Bit[0]   
+HIBERNATE_OFF. 
+This bit must be set to 1. 
+HIBERNATE_OFF must always be 
+supported if the implementation 
+supports SYSTEM_OFF2. 
+Function IDs for any function other 
+than: 
+•  CPU_SUSPEND 
+•  SYSTEM_OFF2 
+Bits[31:0]  Reserved, must be zero 
+
+6.9  Compliance with the PSCI Specification 
+The functions that must be implemented to be fully compliant with a PSCI at a specified version are 
+listed below: 
+Table 17 Mandatory and optional functions for a given version of PSCI 
+FUNCTION 
+PSCI 0.2 
+PSCI 1.0 
+PSCI 
+1.1/1.2 
+PSCI 1.3 
+PSCI_VERSION 
+CPU_SUSPEND 
+CPU_OFF 
+CPU_ON 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+AFFINITY_INFO 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+MIGRATE 
+Optional 
+Optional 
+Optional 
+Optional 
+MIGRATE_INFO_TYPE 
+Optional(a) 
+Optional(a) 
+Optional(a)  Optional(a) 
+MIGRATE_INFO_CPU 
+Optional(b) 
+Optional(b) 
+Optional(b)  Optional(b) 
+SYSTEM_OFF 
+SYSTEM_RESET 
+PSCI_FEATURES 
+CPU_FREEZE 
+CPU_DEFAULT_SUSPEND 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Mandatory 
+Mandatory  Mandatory 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+NODE_HW_STATE 
+SYSTEM_SUSPEND 
+PSCI_SET_SUSPEND_MODE 
+PSCI_STAT_RESIDENCY 
+PSCI_STAT_COUNT 
+SYSTEM_RESET2 
+MEM_PROTECT 
+MEM_PROTECT_CHECK_RANGE 
+SYSTEM_OFF2 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional 
+Optional 
+Optional(d)  Optional(d) 
+Optional(d)  Optional(d) 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional(e) 
+(a) In issue B.b of this document MIGRATE_INFO_TYPE was compulsory, and NOT_SUPPORTED was not 
+a valid return value. This was fixed in issue C of this document, which represents both a release of 
+PSCI 1.0, and errata fix release for PSCI 0.2. Therefore, this change applies to all versions of PSCI 
+from 0.2 onwards. 
+(b) Mandatory if MIGRATE is implemented. 
+(c) If present, then both PSCI_STAT_RESIDENCY and PSCI_STAT_COUNT must be implemented. 
+(d) If present, then MEM_PROTECT, MEM_PROTECT_CHECK_RANGE, must be implemented. 
+(e) PSCIv1.3 Issue F allowed the implementation to return INVALID_PARAMETERS when           
+SYSTEM_OFF2 was called with the type parameter set to 0x0. This was fixed in PSCIv1.3 Issue 
+F.b, where a value of 0x0 for the type parameter indicates the default HIBERNATE_OFF. Issue F.b 
+supersedes Issue F. 

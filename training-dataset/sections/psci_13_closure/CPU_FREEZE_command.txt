@@ -1,0 +1,447 @@
+5.1.4  CPU_ON 
+Description 
+Power up a core. This call is used to power up cores that either: 
+•  Have not yet been booted into the calling supervisory software. 
+•  Have been previously powered down with a CPU_OFF call. 
+See section 5.6 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+•  0x8400 0003 SMC32 version 
+•  0xC400 0003 SMC64 version 
+This parameter contains a copy of the affinity fields of the 
+MPIDR register (See [1,5]). 
+If the calling Exception level is using AArch32, the format 
+is: 
+•  Bits[24:31]: Must be zero. 
+•  Bits[16:23] Aff2: Match Aff2 of target core MPIDR 
+•  Bits[8:15] Aff1: Match Aff1 of target core MPIDR 
+•  Bits[0:7] Aff0: Match Aff0 of target core MPIDR 
+If the calling Exception level is using AArch64, the format 
+is: 
+•  Bits[40:63]: Must be zero 
+•  Bits[32:39] Aff3: Match Aff3 of target core MPIDR 
+•  Bits[24:31] Must be zero 
+•  Bits[16:23] Aff2: Match Aff2 of target core MPIDR 
+•  Bits[8:15] Aff1: Match Aff1 of target core MPIDR 
+•  Bits[0:7] Aff0: Match Aff0 of target core MPIDR 
+For the SMC64 version, this parameter is a 64-bit entry 
+point physical address (PA) or intermediate physical 
+address (IPA). 
+For the SMC32 version this parameter is a 32-bit entry 
+point physical address (or IPA).  
+Address at which the core must commence execution, 
+when it enters the return Non-secure Exception level. 
+For the SMC64 version this parameter is a 64-bit value. 
+When the core identified by target_cpu first enters the 
+return Non-secure Exception level, this value must be 
+present in X0. 
+For the SMC32 version this parameter is a 32-bit value. 
+When the core identified by target_cpu first enters the 
+return Non-secure Exception level, this value must be 
+present in R0. 
+SMC32 uint32 
+SMC64 uint64 
+target_cpu 
+SMC32 uint32 
+SMC64 uint64 
+entry_point_address  
+SMC32 uint32 
+SMC64 uint64 
+context_id  
+Return 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+•  SUCCESS 
+• 
+• 
+INVALID_PARAMETERS 
+INVALID_ADDRESS 
+•  ALREADY_ON 
+•  ON_PENDING 
+• 
+INTERNAL_FAILURE 
+•  DENIED 
+See section 5.6.2 for scenarios in which each return code 
+should be used. See section 5.2.2 for integer values 
+associated with each return code. 
+
+5.1.16 CPU_FREEZE 
+Description 
+Introduced in PSCI 1.0.  
+Optional.  
+Places the core into an IMPLEMENTATION DEFINED low-power state. Unlike 
+CPU_OFF, it is still valid for interrupts to be targeted to the core. However, the 
+core must remain in the low-power state until a CPU_ON command is issued for 
+it. See section 5.17 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+0x8400 000B 
+Return 
+Declaration 
+Value 
+int32 
+•  This call does not return when successful.  
+•  Otherwise, the return values are:  
+•  NOT_SUPPORTED  
+•  DENIED  
+See section 5.2.2 for integer values associated with 
+each return code. 
+
+5.2.2  Return error codes 
+Table 5 defines the values for error codes used with PSCI functions. Errors are 32-bit signed integers 
+for SMC32 functions, and 64-bit signed integers for SMC64 functions. However, any AArch32 caller of 
+an SMC64 function will get a return code of 0xFFFFFFFF (int32). 
+Table 5 Return error codes 
+SUCCESS 
+NOT_SUPPORTED 
+INVALID_PARAMETERS 
+DENIED 
+ALREADY_ON 
+ON_PENDING 
+INTERNAL_FAILURE 
+NOT_PRESENT 
+DISABLED 
+INVALID_ADDRESS 
+-1 
+-2 
+-3 
+-4 
+-5 
+-6 
+-7 
+-8 
+-9 
+
+5.6  CPU_ON 
+5.6.1  Intended use 
+CPU_ON is intended for dynamic addition of cores, for example in secondary boot or hotplug. When an 
+OS at an Exception level requires another core, it calls the CPU_ON function, providing an entry point 
+address and a context identifier. 
+The PSCI implementation provides the necessary platform-specific code to program the power 
+controller as required to turn on a core, and then restart its execution at the entry point address. The 
+context identifier value must be present in R0, W0, or X0 when the core first enters the return Exception 
+level. Section 6.4.1 describes the return Exception level, and section 6.4.3 describes the expected state 
+for a core when it accesses the entry point address. CPU_ON and CPU_OFF calls cannot originate from 
+the Secure Security state. If a Trusted OS or SP needs to manage the number of cores, it needs to use 
+a Trusted OS or SP specific IMPLEMENTATION DEFINED communication with the Normal world to 
+achieve its aims.  
+A description of the call flow can be found in section 6.1.3. 
+5.6.2  Caller responsibilities 
+Before a CPU_ON call the following must observed: 
+•  CPU_ON must be implemented asynchronously. The mechanism by which supervisory software 
+can detect that the core is finally powered up is IMPLEMENTATION DEFINED. However, the 
+provision of caller-specific entry point and context identifier parameters allows the calling 
+supervisory software to implement such a mechanism.  
+•  The entry point address provided needs to be physical from the point of view of the caller. 
+•  The context identifier is meaningful only to the caller. The value is preserved by the 
+implementation and presented to the core when it starts up at the return Exception level (section 
+6.4). 
+CPU_ON can return the following errors: 
+• 
+• 
+INVALID_PARAMETERS is returned if target_cpu describes an invalid MPIDR. 
+INVALID_ADDRESS is returned when the entry point address is known by the implementation 
+to be invalid, because it is in a range that is known not to be available to the caller. 
+Note: Versions of PSCI prior to 1.0 use INVALID_PARAMETERS where INVALID_ADDRESS 
+applies. 
+•  ALREADY_ON is returned if in the PSCI implementation the core is already in an ON state. See 
+section 6.6. 
+•  ON_PENDING is returned if a call to CPU_ON on the target core has already been made, and 
+the core is not yet ON in the PSCI implementation. See section  6.6. 
+• 
+INTERNAL_FAILURE can be returned if a core cannot be powered up for physical reasons. 
+Examples include lack of power, thermal constraints, manufacturing faults, or reliability reasons. 
+•  DENIED is returned if the target core is not available for OS usage due to firmware enforced 
+policy. 
+5.6.3  Implementation responsibilities: cache management 
+For CPU_ON, the PSCI implementation must: 
+•  Perform invalidation of caches on boot unless this invalidation is automatically performed by the 
+hardware. 
+•  Manage coherency. 
+
+5.6.2  Caller responsibilities 
+Before a CPU_ON call the following must observed: 
+•  CPU_ON must be implemented asynchronously. The mechanism by which supervisory software 
+can detect that the core is finally powered up is IMPLEMENTATION DEFINED. However, the 
+provision of caller-specific entry point and context identifier parameters allows the calling 
+supervisory software to implement such a mechanism.  
+•  The entry point address provided needs to be physical from the point of view of the caller. 
+•  The context identifier is meaningful only to the caller. The value is preserved by the 
+implementation and presented to the core when it starts up at the return Exception level (section 
+6.4). 
+CPU_ON can return the following errors: 
+• 
+• 
+INVALID_PARAMETERS is returned if target_cpu describes an invalid MPIDR. 
+INVALID_ADDRESS is returned when the entry point address is known by the implementation 
+to be invalid, because it is in a range that is known not to be available to the caller. 
+Note: Versions of PSCI prior to 1.0 use INVALID_PARAMETERS where INVALID_ADDRESS 
+applies. 
+•  ALREADY_ON is returned if in the PSCI implementation the core is already in an ON state. See 
+section 6.6. 
+•  ON_PENDING is returned if a call to CPU_ON on the target core has already been made, and 
+the core is not yet ON in the PSCI implementation. See section  6.6. 
+• 
+INTERNAL_FAILURE can be returned if a core cannot be powered up for physical reasons. 
+Examples include lack of power, thermal constraints, manufacturing faults, or reliability reasons. 
+•  DENIED is returned if the target core is not available for OS usage due to firmware enforced 
+policy. 
+5.6.3  Implementation responsibilities: cache management 
+For CPU_ON, the PSCI implementation must: 
+•  Perform invalidation of caches on boot unless this invalidation is automatically performed by the 
+hardware. 
+•  Manage coherency. 
+
+5.9.1  Intended use 
+Trusted operating systems must be rigorously audited to ensure they meet their security requirements. 
+This means that they must be kept simple. Often this leads to simple uniprocessor kernels, to avoid the 
+inherent complexities of multicore programming. This has implications for when it is possible to hot 
+unplug the core where the Trusted OS is resident. 
+The MIGRATE function provides a method to request a uniprocessor Trusted OS to move to another 
+core. However, this might not be supported by the Trusted OS vendor. The Normal world can use the 
+MIGRATE_INFO functions to determine whether it can use CPU_OFF and MIGRATE for a given Trusted 
+OS. MIGRATE_INFO_TYPE takes no parameters and returns: 
+•  Uniprocessor (UP) and migrate capable 0: This indicates a Trusted OS that can run on only 
+one core. The core it runs on can be changed dynamically through use of the MIGRATE function. 
+Calls to CPU_OFF on the core where the Trusted OS is currently residing return a DENIED error. 
+•  Uniprocessor (UP) not migrate capable 1: This indicates a Trusted OS that does not support 
+migration. Calls to hot unplug the core on which the Trusted OS is running return a DENIED 
+error. Calls to MIGRATE return the same error. 
+•  Multiprocessor (MP) capable or not present 2: This indicates that the Trusted OS is fully MP-
+aware and has no special requirements for migration, or a system that does not use a Trusted 
+OS. Any core can be hot unplugged without first asking the Trusted OS to migrate to another 
+core. In this case, calls to MIGRATE are not relevant. They return NOT_SUPPORTED and have 
+no other effect.  
+In addition, MIGRATE_INFO_UP_CPU takes no parameters and returns an MPIDR-based value to 
+indicate where the Trusted OS currently resides. The value returned uses the same format as the 
+target_cpu parameters of CPU_ON and MIGRATE, see section 5.1.4. The returned value is only valid if 
+MIGRATE_INFO_TYPE returns 0 or 1. The returned value of MIGRATE_INFO_UP_CPU is UNDEFINED if 
+MIGRATE_INFO_TYPE returns 2. 
+For each possible return value of MIGRATE_INFO_TYPE, Table 9 shows the expected return values for 
+calls to MIGRATE and CPU_OFF, when called on the CPU where the Trusted OS currently resides.  The 
+table assumes that valid parameters are passed, that is, that valid target_cpu expressions are passed. 
+The information returned by MIGRATE_INFO_TYPE must be constant and not change on subsequent 
+calls.  
+Table 9 Return values for calls to MIGRATE and CPU_OFF (on resident core)  
+MIGRATE_INFO_TYPE  
+MP or not present (2) or 
+NOT_SUPPORTED 
+UP not migrate capable (1)  
+UP migrate capable (0) 
+Return value of 
+MIGRATE  
+Return value of 
+CPU_OFF 
+NOT_SUPPORTED  
+does not return  
+DENIED 
+SUCCESS 
+DENIED  
+DENIED  
+
+5.17  CPU_FREEZE 
+Introduced in PSCI1.0, this function is optional. 
+5.17.1 Intended use 
+This API places a core in an IMPLEMENTATION DEFINED low-power state. It differs from other APIs 
+that place cores into low-power states in the following ways: 
+•  Unlike CPU_SUSPEND or CPU_DEFAULT_SUSPEND, an interrupt does not return the core back 
+into a running state. Instead, the interrupt must remain pending or active.  
+•  Unlike CPU_OFF, the calling OS is not required to migrate interrupts away from the core prior to 
+calling CPU_FREEZE. 
+The effect of interrupts on a core that is powered down with a PSCI API is described in Table  12. 
+Table 12 Effect of wake interrupts 
+PSCI Function 
+Interrupt Effect 
+CPU_SUSPEND 
+Wake up 
+CPU_DEFAULT_SUSPEND  Wake up 
+CPU_OFF 
+CPU_FREEZE 
+Error condition, effect is IMPLEMENTATION DEFINED 
+Core must remain in powerdown, and interrupt must pend 
+The function must only be implemented if the power controller or power controlling logic of the platform 
+allows wakeup interrupts for a given core to be ignored.  
+This API is meant for debug cases where an OS wants to allow powering down of any core that is not 
+running a debugger. 
+5.17.2 Implementation responsibilities 
+The power state into which the platform places the calling core is IMPLEMENTATION DEFINED. The 
+level of coordination that is performed in this power state is also IMPLEMENTATION DEFINED. For 
+example, if all cores in a cluster call CPU_FREEZE, the implementation can choose to power down the 
+cluster. Although the choice of state and coordination is up to the implementation, it must not be 
+possible for the platform to enter a thermally critical condition if all except one core has called 
+CPU_FREEZE. 
+The implementation must be able to ensure that wakeup interrupts will not bring the core back into 
+execution. If this is not possible, CPU_FREEZE must not be provided. 
+5.17.3 Caller responsibilities 
+The caller must follow a standard powerdown sequence appropriate to the core. Return to execution is 
+performed through a call to CPU_ON. Therefore, the caller must observe the following conditions: 
+•  The caller must save all state required to enable resumption of execution through the call to 
+CPU_ON.  
+•  The caller is not required to perform any cache or coherency management. This management 
+must be performed by the PSCI implementation. 
+•  As the power state entered by a CPU_FREEZE is IMPLEMENTATION DEFINED, the caller 
+cannot make assumptions about what power state the core is in. Equally the level of 
+coordination with power states in other cores in the topology is IMPLEMENTATION DEFINED 
+and therefore the calling OS cannot make any assumptions about it. For example, if all cores in 
+a cluster call CPU_FREEZE, it is not safe to assume that any core or the cluster is fully power-
+gated. For a given topology node, it is only safe to make assumptions about its power state 
+when all children cores have been resumed from CPU_FREEZE. 
+When using OS-initiated Idle, a simple scheme to prevent errors in idling when cores have called 
+CPU_FREEZE is for the OS to consider those as running cores in its last man tracking algorithm.  
+CPU_FREEZE does not return when it is successful, but might return the following error codes: 
+•  NOT_SUPPORTED, if the API is not implemented. 
+•  DENIED, in the same cases as those where CPU_OFF also returns DENIED, as described in 
+section 5.9.1. 
+
+6.1.3  CPU_ON call flow 
+As is the case with a call to CPU_SUSPEND, a call to CPU_ON can go through the various Exception 
+levels.  
+           Figure 7 Example call flow for a CPU_OFF call 
+           Figure 7 is an example of how the call flow might work when all Exception levels are 
+implemented. In the example, CPU_0 is requesting a powerup of CPU_1. The flow follows a similar 
+model to the CPU_SUSPEND flow, described above. CPU_0 requests powering up of CPU_1 and 
+supplies an entry point address and a context identifier for NS-EL1.  In the example, the hypervisor at 
+EL2 traps the call, saving the requisite entry point address and context ID, before making the same call 
+to privileged platform firmware and supplying an EL2 entry point address and context ID. The privileged 
+platform firmware then starts up CPU_1, initializes it and resumes it at EL2 using the supplied entry 
+point address and context ID. Finally, the hypervisor having initialized on CPU_1, resumes the core at 
+NS-EL1, using the originally supplied entry point address and context identifier.  
+As described in            Figure 7, the return Exception level for a CPU_ON call is the highest Non secure 
+Exception level implemented. This rule allows for the model described above, where the hypervisor 
+traps the call. 
+In systems that implement EL2 and EL3, this rule also allows bypassing of EL2, that is, it enables a call 
+to go directly from Non-secure EL1 to EL3. However, the start-up path has to go through EL2. This 
+requires IMPLEMENTATION DEFINED mechanisms for the OS at NS-EL1 to supply a valid EL2 entry 
+point address and context identifier to the privileged platform firmware, and for the NS-EL1 return 
+address and context identifier. This is discussed further in section 6.4. 
+
+6.4.1  First Non-secure Exception level 
+When returning from a CPU_SUSPEND call after a powerdown, or following a CPU_ON call, the first Non-
+secure Exception level that the privileged platform firmware must move the core to is the highest 
+implemented Non-secure Exception level. This is described here as ELNS. 
+In a system that implements EL3 and EL2, it is not possible to use any services of a hypervisor until the 
+use of the HVC instruction has been enabled. This is controlled by the Secure configuration register 
+HCE field, SCR.HCE or SCR_EL3.HCE. If the hypervisor has been enabled in this way, EL NS is EL2, 
+otherwise it is EL1. For the entry to ELNS: 
+• 
+• 
+If ELNS is using AArch32, the initialization code must set the processor mode to be entered. 
+If ELNS is using AArch64, the initialization code must set the stack pointer to be used. With PSCI, 
+the stack pointer must be the one associated with ELNS, that is, SP_ELNS, denoted as EL2h or 
+EL1h. 
+The following table shows this requirement: 
+Table 14 First Non-secure Exception level and state on entry 
+Caller using AArch32  Caller using AArch64 
+  Caller 
+Callee 
+ELNS 
+Processor 
+mode 
+Hypervisor 
+enabled 
+Hypervisor 
+not enabled 
+EL1 
+EL2 
+EL1 
+PPF 
+PPF 
+PPF 
+EL2 
+EL2 
+EL1 
+Hyp 
+Hyp 
+Svc 
+ELNS 
+EL2 
+EL2 
+Stack 
+pointer 
+EL2h 
+EL2h 
+EL1 
+EL1h 
+All cores should have the same Execution state at ELNS. 
+When control passes from EL2 to EL1, the startup state must be: 
+•  Supervisor mode, if EL1 is using AArch32. 
+•  The EL1h stack pointer state, if EL1 is using AArch64. 
+
+6.4.3  Initial core configuration 
+For an Exception level to start execution, higher Exception levels must perform appropriate initialization. 
+From Armv8, platform reset values are defined to provide the minimal functional set for the highest 
+implemented Exception level to start execution. This Exception level then must set up enough state for 
+a lower Exception level to execute.  
+This section describes the items that must be correctly initialized when a core starts up in response to a 
+powerdown state wakeup for CPU_SUSPEND, or through a call to CPU_ON. 
+6.4.3.1  Execution state on Armv8 systems 
+From Armv8, the Execution state entered when starting up a lower Exception level must match the 
+Execution state in use by that Exception level when the PSCI call is made. 
+6.4.3.2  Endianness 
+The caller endianness must be restored when starting up the core at the Exception level from which the 
+call was made. This means, for the Execution level where execution is restarting: 
+• 
+• 
+If starting in AArch32 state, CPSR.E must be set to the appropriate value. 
+If starting in AArch64 state, SCTLR_ELx.EE must be set to the appropriate value. ELx is the 
+Exception level being returned to.  
+Note that only the highest implemented Exception level has a defined reset value for SCTLR_ELx.EE.  
+6.4.3.3  Exceptions 
+The appropriate asynchronous exception masks must be set when starting up the core at the Exception 
+level from which the call was made, or at ELNS. Typically, this means that for the Exception level where 
+execution is restarting: 
+• 
+If starting in AArch32 state, the CPSR.{A,I,F} bits should be set to {1,1,1}.  
+Note: On an Armv7 implementation that includes EL3 (the Security Extensions) but does not 
+include EL2 (the Virtualization Extensions), setting mask bits to 1 in the CPSR masks the 
+interrupts for all Security states and processor modes, regardless of the values of 
+SCR.{FIQ, IRQ, EA, FW AW}. For these implementations, if privileged platform firmware, 
+or the Trusted OS, requires FIQs and asynchronous aborts to be routed to the Secure 
+world, the privileged platform firmware must start Non-secure EL1 with CPSR.{A, F} set to 
+{0, 0}. 
+• 
+If starting in AArch64 state, the SPSR_ELx.{D,A,I,F} bits must be set to {1, 1, 1, 1}. ELx is the 
+Exception level being returned from. 
+6.4.3.4  MMU, cache and branch predictor enables 
+When starting up the core at the Exception level from which the call was made, execution must start 
+with the stage 1 MMU and caches disabled. Also, if starting up in an Exception level that is using 
+AArch32, branch predictors must be disabled. This means: 
+• 
+• 
+If starting in AArch32 state, the SCTLR.{I, C, M} bits must be set to {0, 0, 0}. In addition, the Z bit 
+must be set in a way that is consistent with the reset behavior of the platform. 
+If starting in AArch64 state, the SCTLR_ELx.{ I, C, M} bits must be set to {0, 0, 0}.  ELx is the 
+Exception level being returned to. 
+On start-up, from the point of view of the caller the caches must be clean and coherent with main 
+memory.  
+6.4.3.5  T32 support 
+If the caller is using AArch32 state, and the entry point address specified in a call to CPU_ON or 
+CPU_SUSPEND has bit[0] set to 1, the core must be started in T32 state at the return Exception level. In 
+this case the entry point address specified by the caller is equivalent to the address passed in the call, 
+but with bit[0] set to 0.  
+6.4.3.6  Generic Timer 
+CNTFREQ holds the frequency of the Generic Timer. This register must be initialized by Privileged 
+platform firmware, to enable use of the Generic Timer.  
+6.4.3.7  Context ID 
+When the core first enters the return Exception level, the context ID value supplied in the 
+CPU_SUSPEND or CPU_ON call must be present in: 
+•  X0 if the caller was using AArch64. 
+•  R0 if the caller was using AArch32. 
+6.4.3.8  EL2 state when EL2 is disabled 
+In systems where EL2 is present but has been disabled by clearing SCR_EL3.HCE, it is necessary to 
+initialize EL2 state so that an NS-EL1 operating system will be able to execute. EL2 must be configured 
+to allow NS-EL1 full access to all CPU resources that are not specific to EL2. This typically involves: 
+•  Disabling traps to EL2. This affects HCR_EL2, CPTR_EL2, and CNTHCTL_EL2 among other 
+System registers. NS-EL1 must be allowed to access the physical counter and physical timer. 
+•  HCR_EL2.RW must be set to 1 to allow lower levels to use AArch64 where appropriate. 
+•  HCR_EL2.VM must be set to zero, disabling stage2 translation. 
+•  CNTVOFF_EL2 must be set to zero. 
+•  VMIDR_EL2 must be made equal to MIDR_EL1. 
+•  VMPIDIR_EL2 must be made equal to MPIDR_EL1. 
+An implementation of these requirements can be found in the Trusted Firmware-A project [8]. 

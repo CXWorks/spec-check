@@ -1,0 +1,1716 @@
+4.2  Power state system topologies and coordination 
+Multiprocessor systems can have several different power domains to power different elements of the 
+system. Each power domain might contain a combination of one or more processing elements (such as 
+cores, coprocessors, or GPUs), memories (caches, DRAMs), and fabric (for example inter-cluster and 
+intra-cluster coherency fabric).  PSCA [1] provides detailed descriptions of how power domains can be 
+constructed in systems that use Arm components. 
+Each component in a power domain has a set of power states that affect the components in the 
+domain. Although physically the power domains are not necessarily built in a hierarchical fashion, from 
+a software control point of view, they are arranged in a logical hierarchy. The hierarchy arises out of 
+ordering dependencies that are required when placing the power domains into different power states. 
+For example, consider a power domain that encompasses a shared cache, and power domains for the 
+cores that use it. In such a system, the core power domains must be powered down before the shared 
+cache domain, to guarantee correct operation.  
+Figure 4 Example power domain topology 
+The diagram above shows the power domain topology of an example system. The example shows a 
+system-level power domain that supports two power states. This power domain has two children power 
+domains, each of which includes a cluster and supports a set of cluster power states. Each cluster 
+power domain has two children core-level power domains. Each of the core-level power domains 
+includes a core and supports additional power states. 
+From a hardware perspective, a system is divided into multiple exclusive or shared power domains. 
+Each power domain can be represented as a node in a power domain topology tree. Sibling power 
+domains are mutually exclusive. Parent power domains are shared by the children. The various levels 
+in the tree (core, cluster, and system in the example) are referred to as power levels. Higher levels are 
+closer to the root of the tree (system) and lower levels are closer to the leaves (the cores). 
+4.2.1  Local power states and composite power states 
+Individual nodes in a topology have their own specific power states, which are referred to here as local 
+power states. When an OS, running on an idle core, requests a power state, it might need to express 
+not just a local power state for the core, but also for any parent nodes. For instance, taking our example 
+system from Figure 4, if Core 1 was the last to go idle in Cluster 0, it would make sense for the OS to 
+request a local power state for the cluster as well as the core. We refer to the combined power state 
+that an OS might request as a composite power state. Not every combination of local states is possible. 
+System LevelPower States:• Retention• Power-DownCluster LevelCluster 1Power States:• Retention• Power-DownCluster LevelCluster 0Power States:• Retention• Power-DownCore LevelCore 0Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 1Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 2Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 3Power States:• Standby (clock gate)• Retention• Power-Down 
+When a node at a power level is in a certain local power state, parent nodes at higher power levels 
+cannot be in a deeper local state. In other words:  
+1.   A powerdown in a higher-level node can only be combined with powerdown states in lower-
+level children. 
+2.   A retention state in a higher-level node might only be combined with retention or powerdown 
+states in lower-level children. 
+3.   A standby (clock-gated) state in a higher-level node allows lower-level children to be in standby, 
+retention, or powerdown states. 
+4.   A running state in a higher-level node allows lower-level children to be in any state. 
+Note:  The PSCI specification is only concerned with power states that require explicit software control.  
+Hardware power modes, which are not exposed to software, are not relevant to PSCI. 
+Taking these rules into account, Table 3 illustrates the valid low-power composite states for the 
+example system described in Figure 4. 
+Table 2 Valid local state combinations for composite power states in the example system 
+System Level State 
+Cluster Level State 
+Core Level State 
+Run 
+Run 
+Run 
+Run 
+Run 
+Run 
+Retention 
+Retention 
+Retention 
+Powerdown 
+Run 
+Run 
+Run 
+Retention 
+Retention 
+Powerdown 
+Retention 
+Retention 
+Powerdown 
+Powerdown 
+Standby 
+Retention 
+Powerdown 
+Retention 
+Powerdown 
+Powerdown 
+Retention 
+Powerdown 
+Powerdown 
+Powerdown 
+4.2.2  Affinity hierarchy 
+Arm systems can have multiple cores or even multiple clusters of cores. This specification uses the 
+term affinity hierarchy to describe the hierarchical arrangement of cores. This often, but not always, 
+maps directly to the processor power topology of the system.   
+This specification uses the term affinity level to describe a level in the affinity hierarchy, for example, the 
+level of cores or clusters. Finally, the term affinity instance is used to refer to an individual entry in the 
+affinity hierarchy, for example, an individual core or cluster.  
+4.2.3  Power state coordination 
+Entry into local power states for high-level nodes in a power topology (for example, clusters or system) 
+requires coordinating children nodes. For example, entry into a cluster powerdown state is only possible 
+when all cores in the cluster are powered down. To achieve this, every core but the last one must be 
+placed into a powerdown state, and the last one places itself and the cluster into a powerdown state. 
+PSCI supports two modes of power state coordination, platform-coordinated mode, and OS-initiated 
+mode. 
+4.2.3.1  Platform-coordinated mode 
+This is the default mode of coordination. In this mode, the PSCI implementation is responsible for 
+coordinating power states. When a core has no more work to do, the OSPM requests the deepest state 
+it can tolerate for that core and its parent nodes. For power state requests that affect a topology node 
+above the core level, the implementation chooses the deepest power state that can be tolerated by all 
+the cores in the node. In effect, the power state request expresses the following two constraints:  
+1.  The caller allows entry to states up to this depth, but no deeper. 
+2.  The caller cannot tolerate a higher wakeup latency than that associated with the requested 
+state. 
+The PSCI implementation then determines the deepest state that satisfies the constraints expressed by 
+each core in a given node. Table 3 builds on the example system of Figure 4, and shows how 
+composite power state requests are arbitrated for that system. In the example, the abbreviations Ret 
+and PD denote retention and powerdown, respectively. The example is not exhaustive and assumes 
+that Cluster 1 has already been powered down. The example shows requests from Core0 and Core1, 
+and the resulting power state for the clusters and the system.  
+Table 3 Example platform coordination of power state requests.  
+Composite state requested 
+Power state granted 
+Core 0 
+Core 1 
+C
+o
+r
+e
+l
+C
+u
+s
+t
+e
+r
+S
+y
+s
+t
+e
+m
+C
+o
+r
+e
+l
+C
+u
+s
+t
+e
+r
+S
+y
+s
+t
+e
+m
+Cluster 0 
+Cluster 1 
+(we assume this 
+has already 
+powered down) 
+  System 
+Ret 
+Run 
+Run 
+Ret 
+Run 
+Run  Run 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Run 
+Ret 
+Run 
+Run  Run 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Run 
+Ret 
+Ret 
+Run  Retention 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret 
+Run  Retention 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+PD 
+Ret 
+PD 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+PD 
+Ret 
+PD 
+PD 
+Ret  Powerdown 
+Powerdown 
+  Retention 
+PD 
+PD 
+PD 
+PD 
+PD 
+Ret  Powerdown 
+Powerdown 
+  Retention 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD  Powerdown 
+Powerdown 
+  Powerdown 
+As a general rule, wakeup latency increases with depth of state, so in the example above we are 
+assuming that the retention (for core, cluster, or system) has smaller wakeup latency than powerdown. 
+However, this is not necessarily the case. There might be systems where this ordering breaks. As 
+stated by the second constraint above, the state chosen by the implementation must satisfy the wakeup 
+time associated with every core’s request. Consider a dual core system that has three system-level 
+states, ordered by increasing depth, state A, state B, and state C, but where wakeup latency ordering is 
+state A < state C < state B. If Core 0 chooses State B and Core 1 chooses State C, the system will 
+need to enter state A. State C is not possible as Core 0 does not want to go that deep, and State B is 
+not possible as Core 1 cannot tolerate its longer wakeup latency.  
+Versions of PSCI prior to 1.0 support only the platform-coordinated mode. 
+4.2.3.2  OS-initiated mode 
+Introduced in PSCI 1.0, OS-initiated mode places the responsibility for coordination on the calling OS. 
+In the OS-initiated coordination scheme, OSPM only requests an idle state for a particular topology 
+node when the last underlying core goes idle.   
+When a core goes idle it always selects an idle state for itself, but idle states for higher-level nodes such 
+as clusters are only selected when the last running core in the node goes idle. In addition, the 
+implementation only considers the most recent request for a particular node when deciding on its idle 
+state.  Using the above example of a dual cluster, dual core per cluster system, the following table 
+illustrates the steps involved in taking Cluster0 into a powerdown state. In the example, abbreviations 
+R, Ret, and PD, denote run, retention and powerdown, respectively. In addition, states where OS view 
+and implementation view differ are marked in red, and states that change during a step are underlined. 
+Table 4 Example flow: Cluster powerdown entry 
+Step 
+1: OS on Core0 requests Core0 
+powerdown 
+2: PSCI Implementation observes 
+request and places Core0 into 
+powerdown 
+3: OS on Core1 requests Core1 
+powerdown and, knowing it is last in the 
+cluster, Cluster0 powerdown 
+4: PSCI Implementation observes 
+requests for Core1 and Cluster0 and 
+processes them 
+before 
+after 
+before 
+after 
+before 
+after 
+before 
+after 
+OS View 
+PSCI View 
+C
+o
+r
+e
+R 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+PD 
+l
+C
+u
+s
+t
+e
+r
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+PD 
+PD 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+R 
+R 
+R 
+R 
+l
+C
+u
+s
+t
+e
+r
+R 
+R 
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+As the table illustrates, there are periods (marked in red) where the OS view of core state and the 
+implementation view of core state do not match. This might happen after the OS requests a state, but 
+before the implementation has processed the request. This can also happen when a core powers up, as 
+the implementation sees the core before the OS. To implement OS-initiated mode, it is necessary to 
+deal with the races that arise due to the differing views of core state. Solving the races gives rise to the 
+following requirements: 
+•  The implementation must deny any requests from the calling OS that are inconsistent with its 
+view of core state. 
+•  The calling OS must indicate when the calling core is the last running core at a particular power 
+hierarchy level. It must also specify which power hierarchy level the core is last in, for example, 
+whether it is the last core in the cluster or the last core in the system. 
+A full discussion of the reasoning behind these requirements, and races that arise is described in 
+sections 6.2 and 6.3. 
+
+4.2.1  Local power states and composite power states 
+Individual nodes in a topology have their own specific power states, which are referred to here as local 
+power states. When an OS, running on an idle core, requests a power state, it might need to express 
+not just a local power state for the core, but also for any parent nodes. For instance, taking our example 
+system from Figure 4, if Core 1 was the last to go idle in Cluster 0, it would make sense for the OS to 
+request a local power state for the cluster as well as the core. We refer to the combined power state 
+that an OS might request as a composite power state. Not every combination of local states is possible. 
+System LevelPower States:• Retention• Power-DownCluster LevelCluster 1Power States:• Retention• Power-DownCluster LevelCluster 0Power States:• Retention• Power-DownCore LevelCore 0Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 1Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 2Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 3Power States:• Standby (clock gate)• Retention• Power-Down 
+When a node at a power level is in a certain local power state, parent nodes at higher power levels 
+cannot be in a deeper local state. In other words:  
+1.   A powerdown in a higher-level node can only be combined with powerdown states in lower-
+level children. 
+2.   A retention state in a higher-level node might only be combined with retention or powerdown 
+states in lower-level children. 
+3.   A standby (clock-gated) state in a higher-level node allows lower-level children to be in standby, 
+retention, or powerdown states. 
+4.   A running state in a higher-level node allows lower-level children to be in any state. 
+Note:  The PSCI specification is only concerned with power states that require explicit software control.  
+Hardware power modes, which are not exposed to software, are not relevant to PSCI. 
+Taking these rules into account, Table 3 illustrates the valid low-power composite states for the 
+example system described in Figure 4. 
+Table 2 Valid local state combinations for composite power states in the example system 
+System Level State 
+Cluster Level State 
+Core Level State 
+Run 
+Run 
+Run 
+Run 
+Run 
+Run 
+Retention 
+Retention 
+Retention 
+Powerdown 
+Run 
+Run 
+Run 
+Retention 
+Retention 
+Powerdown 
+Retention 
+Retention 
+Powerdown 
+Powerdown 
+Standby 
+Retention 
+Powerdown 
+Retention 
+Powerdown 
+Powerdown 
+Retention 
+Powerdown 
+Powerdown 
+Powerdown 
+
+4.2.2  Affinity hierarchy 
+Arm systems can have multiple cores or even multiple clusters of cores. This specification uses the 
+term affinity hierarchy to describe the hierarchical arrangement of cores. This often, but not always, 
+maps directly to the processor power topology of the system.   
+This specification uses the term affinity level to describe a level in the affinity hierarchy, for example, the 
+level of cores or clusters. Finally, the term affinity instance is used to refer to an individual entry in the 
+affinity hierarchy, for example, an individual core or cluster.  
+
+4.2.3  Power state coordination 
+Entry into local power states for high-level nodes in a power topology (for example, clusters or system) 
+requires coordinating children nodes. For example, entry into a cluster powerdown state is only possible 
+when all cores in the cluster are powered down. To achieve this, every core but the last one must be 
+placed into a powerdown state, and the last one places itself and the cluster into a powerdown state. 
+PSCI supports two modes of power state coordination, platform-coordinated mode, and OS-initiated 
+mode. 
+4.2.3.1  Platform-coordinated mode 
+This is the default mode of coordination. In this mode, the PSCI implementation is responsible for 
+coordinating power states. When a core has no more work to do, the OSPM requests the deepest state 
+it can tolerate for that core and its parent nodes. For power state requests that affect a topology node 
+above the core level, the implementation chooses the deepest power state that can be tolerated by all 
+the cores in the node. In effect, the power state request expresses the following two constraints:  
+1.  The caller allows entry to states up to this depth, but no deeper. 
+2.  The caller cannot tolerate a higher wakeup latency than that associated with the requested 
+state. 
+The PSCI implementation then determines the deepest state that satisfies the constraints expressed by 
+each core in a given node. Table 3 builds on the example system of Figure 4, and shows how 
+composite power state requests are arbitrated for that system. In the example, the abbreviations Ret 
+and PD denote retention and powerdown, respectively. The example is not exhaustive and assumes 
+that Cluster 1 has already been powered down. The example shows requests from Core0 and Core1, 
+and the resulting power state for the clusters and the system.  
+Table 3 Example platform coordination of power state requests.  
+Composite state requested 
+Power state granted 
+Core 0 
+Core 1 
+C
+o
+r
+e
+l
+C
+u
+s
+t
+e
+r
+S
+y
+s
+t
+e
+m
+C
+o
+r
+e
+l
+C
+u
+s
+t
+e
+r
+S
+y
+s
+t
+e
+m
+Cluster 0 
+Cluster 1 
+(we assume this 
+has already 
+powered down) 
+  System 
+Ret 
+Run 
+Run 
+Ret 
+Run 
+Run  Run 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Run 
+Ret 
+Run 
+Run  Run 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Run 
+Ret 
+Ret 
+Run  Retention 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret 
+Run  Retention 
+Powerdown 
+  Run 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+Ret 
+Ret 
+Ret 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+PD 
+Ret 
+PD 
+Ret 
+Ret  Retention 
+Powerdown 
+  Retention 
+PD 
+PD 
+Ret 
+PD 
+PD 
+Ret  Powerdown 
+Powerdown 
+  Retention 
+PD 
+PD 
+PD 
+PD 
+PD 
+Ret  Powerdown 
+Powerdown 
+  Retention 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD  Powerdown 
+Powerdown 
+  Powerdown 
+As a general rule, wakeup latency increases with depth of state, so in the example above we are 
+assuming that the retention (for core, cluster, or system) has smaller wakeup latency than powerdown. 
+However, this is not necessarily the case. There might be systems where this ordering breaks. As 
+stated by the second constraint above, the state chosen by the implementation must satisfy the wakeup 
+time associated with every core’s request. Consider a dual core system that has three system-level 
+states, ordered by increasing depth, state A, state B, and state C, but where wakeup latency ordering is 
+state A < state C < state B. If Core 0 chooses State B and Core 1 chooses State C, the system will 
+need to enter state A. State C is not possible as Core 0 does not want to go that deep, and State B is 
+not possible as Core 1 cannot tolerate its longer wakeup latency.  
+Versions of PSCI prior to 1.0 support only the platform-coordinated mode. 
+4.2.3.2  OS-initiated mode 
+Introduced in PSCI 1.0, OS-initiated mode places the responsibility for coordination on the calling OS. 
+In the OS-initiated coordination scheme, OSPM only requests an idle state for a particular topology 
+node when the last underlying core goes idle.   
+When a core goes idle it always selects an idle state for itself, but idle states for higher-level nodes such 
+as clusters are only selected when the last running core in the node goes idle. In addition, the 
+implementation only considers the most recent request for a particular node when deciding on its idle 
+state.  Using the above example of a dual cluster, dual core per cluster system, the following table 
+illustrates the steps involved in taking Cluster0 into a powerdown state. In the example, abbreviations 
+R, Ret, and PD, denote run, retention and powerdown, respectively. In addition, states where OS view 
+and implementation view differ are marked in red, and states that change during a step are underlined. 
+Table 4 Example flow: Cluster powerdown entry 
+Step 
+1: OS on Core0 requests Core0 
+powerdown 
+2: PSCI Implementation observes 
+request and places Core0 into 
+powerdown 
+3: OS on Core1 requests Core1 
+powerdown and, knowing it is last in the 
+cluster, Cluster0 powerdown 
+4: PSCI Implementation observes 
+requests for Core1 and Cluster0 and 
+processes them 
+before 
+after 
+before 
+after 
+before 
+after 
+before 
+after 
+OS View 
+PSCI View 
+C
+o
+r
+e
+R 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+PD 
+l
+C
+u
+s
+t
+e
+r
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+PD 
+PD 
+PD 
+PD 
+PD 
+C
+o
+r
+e
+R 
+R 
+R 
+R 
+R 
+R 
+R 
+l
+C
+u
+s
+t
+e
+r
+R 
+R 
+R 
+R 
+R 
+R 
+R 
+PD 
+PD 
+As the table illustrates, there are periods (marked in red) where the OS view of core state and the 
+implementation view of core state do not match. This might happen after the OS requests a state, but 
+before the implementation has processed the request. This can also happen when a core powers up, as 
+the implementation sees the core before the OS. To implement OS-initiated mode, it is necessary to 
+deal with the races that arise due to the differing views of core state. Solving the races gives rise to the 
+following requirements: 
+•  The implementation must deny any requests from the calling OS that are inconsistent with its 
+view of core state. 
+•  The calling OS must indicate when the calling core is the last running core at a particular power 
+hierarchy level. It must also specify which power hierarchy level the core is last in, for example, 
+whether it is the last core in the cluster or the last core in the system. 
+A full discussion of the reasoning behind these requirements, and races that arise is described in 
+sections 6.2 and 6.3. 
+
+5.1.2  CPU_SUSPEND 
+Description 
+Suspend execution on a core or higher-level topology node. This call is intended 
+for use in idle subsystems where the core is expected to return to execution 
+through a wakeup event. See section 5.4 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+uint32  
+power_state 
+•  0x8400 0001 SMC32 version 
+•  0xC400 0001 SMC64 version 
+This parameter is described in section 5.4.2 
+Address at which the core must resume execution, 
+when it enters the return Non-secure Exception level, 
+following wakeup from a powerdown state. 
+This parameter is only valid if the target power state is 
+a powerdown state. For standby states, the value 
+passed in is ignored. 
+For the SMC64 version, this parameter is a 64-bit entry 
+point Physical Address (PA) or Intermediate Physical 
+Address (IPA). 
+For the SMC32 version, this parameter is a 32-bit entry 
+point PA or IPA.  
+Note:    An Armv7 system must use the SMC32 
+version of the function. This limits the entry 
+point addresses to 32 bits, even if the 
+implementation includes the Large Physical 
+Address Extension (LPAE), as the MMU will 
+be disabled when the platform reenters at 
+this address. 
+This parameter is only valid if the target power state is 
+a powerdown state. For standby states the value is 
+ignored. 
+For the SMC64 version, this parameter is a 64-bit 
+value. Following wakeup from a powerdown state, 
+when the calling core first enters the return Non-secure 
+Exception level, this value must be present in X0. 
+For the SMC32 version, this parameter is a 32-bit 
+value. Following wakeup from a powerdown state, 
+when the calling core first enters the return Non-secure 
+Exception level, this value must be present in R0. 
+SMC32 uint32 
+SMC64 uint64 
+entry_point_address  
+SMC32 uint32 
+SMC64 uint64 
+context_id  
+Return 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+•  SUCCESS 
+• 
+• 
+INVALID_PARAMETERS 
+INVALID_ADDRESS 
+•  DENIED – Only in OS-initiated mode. See 
+sections 4.2.3.2 and 5.4.  
+See section 5.2.2 for integer values associated with each 
+return code. 
+
+5.1.4  CPU_ON 
+Description 
+Power up a core. This call is used to power up cores that either: 
+•  Have not yet been booted into the calling supervisory software. 
+•  Have been previously powered down with a CPU_OFF call. 
+See section 5.6 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+•  0x8400 0003 SMC32 version 
+•  0xC400 0003 SMC64 version 
+This parameter contains a copy of the affinity fields of the 
+MPIDR register (See [1,5]). 
+If the calling Exception level is using AArch32, the format 
+is: 
+•  Bits[24:31]: Must be zero. 
+•  Bits[16:23] Aff2: Match Aff2 of target core MPIDR 
+•  Bits[8:15] Aff1: Match Aff1 of target core MPIDR 
+•  Bits[0:7] Aff0: Match Aff0 of target core MPIDR 
+If the calling Exception level is using AArch64, the format 
+is: 
+•  Bits[40:63]: Must be zero 
+•  Bits[32:39] Aff3: Match Aff3 of target core MPIDR 
+•  Bits[24:31] Must be zero 
+•  Bits[16:23] Aff2: Match Aff2 of target core MPIDR 
+•  Bits[8:15] Aff1: Match Aff1 of target core MPIDR 
+•  Bits[0:7] Aff0: Match Aff0 of target core MPIDR 
+For the SMC64 version, this parameter is a 64-bit entry 
+point physical address (PA) or intermediate physical 
+address (IPA). 
+For the SMC32 version this parameter is a 32-bit entry 
+point physical address (or IPA).  
+Address at which the core must commence execution, 
+when it enters the return Non-secure Exception level. 
+For the SMC64 version this parameter is a 64-bit value. 
+When the core identified by target_cpu first enters the 
+return Non-secure Exception level, this value must be 
+present in X0. 
+For the SMC32 version this parameter is a 32-bit value. 
+When the core identified by target_cpu first enters the 
+return Non-secure Exception level, this value must be 
+present in R0. 
+SMC32 uint32 
+SMC64 uint64 
+target_cpu 
+SMC32 uint32 
+SMC64 uint64 
+entry_point_address  
+SMC32 uint32 
+SMC64 uint64 
+context_id  
+Return 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+•  SUCCESS 
+• 
+• 
+INVALID_PARAMETERS 
+INVALID_ADDRESS 
+•  ALREADY_ON 
+•  ON_PENDING 
+• 
+INTERNAL_FAILURE 
+•  DENIED 
+See section 5.6.2 for scenarios in which each return code 
+should be used. See section 5.2.2 for integer values 
+associated with each return code. 
+
+5.2.2  Return error codes 
+Table 5 defines the values for error codes used with PSCI functions. Errors are 32-bit signed integers 
+for SMC32 functions, and 64-bit signed integers for SMC64 functions. However, any AArch32 caller of 
+an SMC64 function will get a return code of 0xFFFFFFFF (int32). 
+Table 5 Return error codes 
+SUCCESS 
+NOT_SUPPORTED 
+INVALID_PARAMETERS 
+DENIED 
+ALREADY_ON 
+ON_PENDING 
+INTERNAL_FAILURE 
+NOT_PRESENT 
+DISABLED 
+INVALID_ADDRESS 
+-1 
+-2 
+-3 
+-4 
+-5 
+-6 
+-7 
+-8 
+-9 
+
+5.4  CPU_SUSPEND 
+5.4.1  Intended use 
+The CPU_SUSPEND API is used to move a topology node into a low-power state. The function is called 
+from a specific core in that topology node, and indicates that the caller intends to make use of the core 
+in the future, but that it has no current work for it. The CPU_SUSPEND API is called by an OSPM as part 
+of idle management. 
+The following sections describe the parameters of CPU_SUSPEND in detail as well as caller and 
+implementation responsibilities. 
+A description of the call flow can be found in section 6.1.1. 
+5.4.2  CPU_SUSPEND parameters: power_state 
+From PSCI1.0, two formats are supported for the power_state parameter. 
+5.4.2.1  Original format 
+This is the only format that is supported by versions of PSCI prior to 1.0. When this format is in use, 
+bit[1] of the flags field returned by PSCI_FEATURES with a CPU_SUSPEND function ID is set to 0.  
+In this format, the power_state parameter is broken into the following fields: 
+Table 7 power_state parameter bit fields in Original format  
+Bit field 
+Description 
+31:26 
+25:24 
+Reserved. Must be zero. 
+PowerLevel 
+23:17 
+15:0 
+Reserved. Must be zero. 
+StateType 
+StateID 
+The fields are described below. 
+PowerLevel: 
+This field describes the power level, as defined in section 4.2, to be powered down, such as core, 
+cluster, or group of clusters. Note that it is only possible to call CPU_SUSPEND from the current core, 
+that is, it is not possible to request suspension of another core. 
+Note:  Versions of PSCI prior to 1.0 called this field AffinityLevel. This name has been changed in 
+acknowledgement of the fact that MPIDR-based levels of affinity do not necessarily map to power 
+domain implementations. 
+How the power levels are numbered is IMPLEMENTATION DEFINED, however, as described in section 
+4.2, it is expected that lower numbers are closer to the core and higher numbers are closer to the 
+system. For the example system depicted in Figure 4, a logical numbering scheme is: 
+•  Level 0: for cores 
+•  Level 1: for clusters 
+•  Level 2: for system 
+StateType: 
+A value of 0 indicates a standby or retention state as defined in section 4.1. 
+A value of 1 indicates a powerdown state as defined in section 4.1. This also indicates that 
+entry_point_address and context_id fields contain valid data. 
+The state type is always considered to be powerdown if any core context is lost, even if, at power levels 
+higher than a core, there is no loss of context. For example, if the state implies powering down a core 
+but keeping a cluster in retention, the StateType field would denote powerdown. 
+StateID: 
+Field to express a platform-specific state ID. Contents are IMPLEMENTATION DEFINED. 
+This field can be used to distinguish which combination of local states is being requested. 
+Using StateID and the other fields in the power_state parameter, it must be possible to uniquely 
+describe every composite power state that the calling OS can use. In addition, in OS-initiated mode, the 
+StateID encoding must allow expressing the power level in which the calling core is the last to go idle. 
+The method by which this is done must be expressed to the OSPM through firmware tables (FDT or 
+ACPI), so that it can add this information to the StateID when requesting a power state.  
+A recommended encoding for StateID is discussed in section 6.5. 
+5.4.2.2  Extended StateID format 
+A given platform supports a fixed set of states for each core, cluster, or overall system. These states 
+give rise to a set of valid power_state values. These states are expressed through firmware tables, 
+for example, ACPI or FDT, to OSPMs. PSCI 1.0 introduces a new extended StateID format. This 
+provides higher flexibility for the implementers of PSCI and acknowledges improvements in ACPI and 
+FDT power state descriptions, which make some of the original format fields redundant.  
+When this format is in use, bit[1] of the flags field returned by PSCI_FEATURES with a CPU_SUSPEND 
+function ID is set to 1.  
+Note that it is not possible for an implementation to mix formats. It either uses the original format or the 
+extended ID format but not both. This is a static design-time decision and cannot be changed at 
+runtime.  
+Table 8 describes the bit fields in the power_state parameter, when the extended StateID format is 
+used. The fields retain the same definitions as in the original format. 
+A recommended encoding for StateID is discussed in section 6.5. 
+Table 8 power_state parameter bit fields in Extended StateID format  
+Bit field 
+Description 
+29:28 
+27:0 
+Reserved. Must be zero. 
+StateType 
+Reserved. Must be zero. 
+StateID 
+5.4.3  CPU_SUSPEND parameters: entry_point_address 
+The entry_point_address parameter is used by the caller to specify where code execution needs to 
+resume at wakeup time. The parameter must be a Physical Address (PA), or, for a guest OS in a 
+virtualized platform, an Intermediate Physical Address (IPA). In this case, the hypervisor must trap the 
+call. Further details can be found in section 6.4. 
+5.4.4  CPU_SUSPEND parameters: context_id 
+The context_id parameter is only meaningful to the caller. The PSCI implementation must preserve a 
+copy of the value passed in this parameter. Following wakeup from a powerdown state, the PSCI 
+implementation must place this value in R0, W0, or X0, when it enters the first Non-secure Exception 
+level, as defined in section 6.4. The context identifier can be used by the caller to point to the saved 
+context that must be restored on a core when it starts up at the return Exception level. The caller can 
+use other methods to implement this functionality. 
+5.4.5  Caller responsibilities 
+Before a CPU_SUSPEND call, the Normal world must observe the following: 
+•  For a powerdown request, the calling supervisory software must have saved all the state it 
+requires to enable resumption of operation on reset. The context saved must reflect all caller-
+visible state that is lost if the power level indicated by the power state parameter is powered 
+down. For more information on the required state following the application of power after a 
+CPU_SUSPEND or CPU_ON call, see section 6.4.3. 
+•  For a powerdown request, the caller is not required to perform any cache or coherency 
+management. This management must be performed by the PSCI implementation. 
+•  The caller must not assume that a powerdown request will return using the specified entry point 
+address. The powerdown request might not complete due, for example, to pending interrupts. It 
+is also possible that, because of coordination with other cores, the actual state entered is 
+shallower than the one requested. Because of this it is possible for an implementation to 
+downgrade the powerdown state request to a standby state. In the case of a downgrade to 
+standby, the implementation returns at the instruction following the PSCI call, at the Exception 
+level of the caller, instead of returning by the specified entry point address. The return code in 
+this case is SUCCESS. In the case of an early return due to a pending wakeup event, the 
+implementation can return at the next instruction, with a return code of SUCCESS, or resume at 
+the specified entry point address. 
+•  The caller must ensure that appropriate wakeup events are enabled to allow resumption from 
+that state. 
+•  The entry point address provided by the CPU_SUSPEND call must be a physical address from 
+the point of view of the caller.  
+•  The context identifier is meaningful only to the caller. The value is preserved by the 
+implementation and presented to the core when it is started up at the return Exception level. 
+The caller must be able to handle potential return error codes:  
+• 
+INVALID_PARAMETERS is returned if any of the following is true: 
+•  The power state parameter supplied is invalid. It is expected that the valid lists of power 
+states are supplied by platform firmware tables, for example, ACPI or Flattened Device Tree. 
+In OS-initiated mode, this error is also returned when the following two conditions are 
+• 
+true: 
+▪  A low-power state is requested for a higher-than-core-level topology node.  
+▪  At least one of the children in that node is in a local low-power state that is 
+incompatible with the request. 
+For example, a core makes a request to place the system level node into a powerdown 
+state, and another core in the system node is in retention. 
+INVALID_ADDRESS is returned when the entry point address is known by the implementation to 
+• 
+be invalid, because it is in a range that is known not to be available to the caller. 
+Note: Versions of PSCI prior to 1.0 use INVALID_PARAMETERS where INVALID_ADDRESS applies. 
+In OS-initiated mode, a return value of DENIED is returned if the following two conditions are 
+• 
+true: 
+•  A low-power state is requested for a higher-than-core-level topology node.  
+•  All the cores that are in an incompatible state with the request are running, as opposed 
+to being in a low-power state. 
+In OS-initiated mode, INVALID_PARAMETERS can also be returned if the system is in a state that is 
+inconsistent with the caller’s request. The differences are: 
+In the DENIED case, the inconsistent cores must be running. This can arise through 
+• 
+errors in the calling OS or races due to the different views of node state between the calling 
+OS and the implementation. See section 6.2 for more details. 
+In the INVALID_PARAMETERS case, inconsistent nodes must be in a low-power state, 
+• 
+and the inconsistency can only arise through errors in the calling OS. 
+5.4.6  Implementation responsibilities: State coordination 
+In platform-coordinated mode, the semantic expressed by the caller through the power state parameter 
+is not a mandatory requirement to enter the specific state. Instead, the power state parameter indicates 
+the deepest state the caller can tolerate. The PSCI implementation is expected to coordinate requests 
+coming from all idle cores to determine the deepest state that the cores can tolerate. For the purposes 
+of this coordination, a core that has not been powered up through a call to CPU_ON, or that has been 
+powered down through a call to CPU_OFF, is assumed to have requested the deepest platform state 
+available. More details on platform coordination can be found in section 4.2.3.1. 
+In OS-initiated mode, the caller is making an explicit request for a specific power state, as opposed to 
+expressing a vote. The implementation must comply with the request unless it is not consistent with the 
+implementation’s view of the current state of the system. In that case, the call must return immediately 
+with DENIED or INVALID_PARAMETERS, as described above. More information on OS-initiated mode 
+can be found in section 4.2.3.2. 
+5.4.7  Implementation responsibilities: Interaction with a Trusted OS or SP 
+When a caller requests a power state, the PSCI implementation in the privileged platform firmware 
+might need to communicate with a Trusted OS or SP. A method for interfacing between PPF and a 
+Trusted OS or SP is specified by Firmware Framework for Arm v8-A [10]. However, the specification 
+requires the Trusted OS or SP to always comply with CPU_SUSPEND requests. The PPF can inform the 
+Trusted OS or SP that a power state needs to be entered, and the Trusted OS or SP can use this 
+information to take any preparatory actions. For example, it might have to save its context. However, 
+this communication must not allow the Trusted OS or SP to modify or prevent the power state 
+requested. 
+The Trusted OS or SP might not be able to tolerate a particular state, for latency or other reasons. In 
+this case, Arm recommends that the Trusted OS or SP uses an IMPLEMENTATION DEFINED 
+mechanism to communicate with the Normal world to ensure its constraints are considered in the power 
+requests originating from the Normal world. 
+5.4.8  Implementation responsibilities: Cache and coherency management 
+Powerdown states generally require a cache clean. Prior to powering down a topology node, the PSCI 
+implementation must perform a cache clean operation for all the caches present in that node, and the 
+last children of that node that are being powered down. The implementation must also perform any 
+required coherency management. In addition, the PSCI implementation needs to perform invalidation of 
+caches on booting, unless this is automatically supported by the hardware, and to manage coherency. 
+Sequences to be observed when powering cores up or down can be found in the Technical Reference 
+Manuals for the relevant processors and interconnect IP. 
+5.4.9  Implementation responsibilities: State on return 
+When returning from a standby state, the caller must observe no change in core state, other than any 
+timer changes expected because of the time spent in the state, and changes in the CPU interface 
+because of the wakeup reason. To the core, a standby state is indistinguishable from the use of a WFI 
+instruction. The only exceptions are the registers used in making the SMC call that follow the SMC 
+Calling Conventions [4]. The return value expected in R0 or W0 is the return error code. For standby 
+states, SUCCESS must be returned on success. Powerdown states do not return on success because 
+restart is through the entry point address at wakeup. If not successful, the error code indicates the 
+reason.  
+The core state when it exits EL3 following wakeup from a powerdown state, or a CPU_ON call, is 
+described in described in section 6.4. 
+
+5.5  CPU_OFF 
+5.5.1  Intended use 
+CPU_OFF is designed for dynamic removal of the calling core from the system. When PPF receives a 
+CPU_OFF call, it must power down the calling core. 
+Unlike CPU_SUSPEND, the call is not expected to return. With this function the calling supervisory 
+software is explicitly stating that it will no longer use a core. This situation is only reversed when a 
+CPU_ON call is used to bring the core back online.  
+CPU_OFF calls can only originate from the Normal world. If the Secure world needs to manage the 
+number of active cores, it needs to use Trusted OS or SP specific IMPLEMENTATION DEFINED 
+communication with the Normal world to achieve its aims. It must not be possible for Secure world to 
+allow a core to be seen as powered up and available by the Trusted OS or SP, while the Normal world 
+sees the core as being powered down.  
+A description of the call flow can be found in section 6.1.2. 
+5.5.2  Caller responsibilities 
+Before a CPU_OFF call, the following must be observed: 
+•  The calling OS must have migrated all threads and interrupts away from the core that is being 
+powered down. Asynchronous wakeups on a core that has been switched off through a PSCI 
+CPU_OFF call result in an erroneous state. When this erroneous state is observed, it is 
+IMPLEMENTATION DEFINED how the PSCI implementation reacts. Possible actions are: 
+•  The PSCI implementation ignores the wakeup and keeps the core powered down. 
+•  The PSCI implementation resets the system. 
+•  The caller is not required to perform any cache or coherency management. This management 
+must be performed by the PSCI implementation. 
+•  CPU_OFF can have varying latency in the time it takes to complete, depending on the power 
+domain level that is being powered down. The caller must not make any assumptions about 
+latency. 
+•  A core can only power itself down. 
+•  CPU_OFF calls are always platform-coordinated with each other, regardless of the suspend 
+mode of operation (platform-coordinated or OS-initiated). That is, if all cores in a topology node 
+call CPU_OFF, the last core will power the node down.  
+• 
+In an OS-initiated mode, CPU_OFF calls are considered to platform-coordinate 
+between themselves. If only a subset of cores has called CPU_OFF, an OS-initiated 
+OS can assume they have powered down to the highest power level possible. 
+Referring to the example system in Figure 4, if all cores except Core 3 have called 
+CPU_OFF, the OS can assume that Cluster 0 and Core 2 are in the powerdown state 
+and that Core 3 is the last man in the system (and cluster 1). Therefore, in this mode 
+the OS could power down the system through a CPU_SUSPEND call from Core 3. 
+However, this coordination only works for calls to CPU_SUSPEND that take place 
+after calls to CPU_OFF. Coordination in the opposite order cannot be assumed. If, in 
+our example, Core 3 was the penultimate core and this called CPU_SUSPEND, and 
+Core 2 was the last one, and it called CPU_OFF, Cluster 1 (and the system) would 
+not be able to power down. This is because Core 3 would not be a last man, at either 
+the cluster or the system level, and consequently it could not request a power state at 
+that level. 
+• 
+In platform coordinate mode, a call to CPU_OFF is consistent with a call to 
+CPU_SUSPEND for powerdown at maximum power level. If only a subset of the cores 
+in a node call CPU_OFF, the node must only be powered down if the remaining cores 
+have called CPU_SUSPEND, requesting a powerdown state at that power level, or a 
+power state at a higher power level. 
+CPU_OFF can return the following errors: 
+•  DENIED, if called on a core where the Trusted OS is resident, see section 5.9.1. 
+5.5.3  Implementation responsibilities: Cache and coherency management 
+The PSCI implementation must perform a cache clean operation for all the caches present in the nodes 
+being powered down. PSCI must also perform any required coherency management. In a multicluster 
+implementation, powering down a core typically requires: 
+1.  Disabling the data cache to prevent data cache allocation. 
+2.  Cleaning and invalidating any caches that are private to the core. This prevents any new data 
+cache snoops or data cache maintenance operations from other cores being issued to the core 
+that is powering down. 
+3.  If the core is the last in a cluster, and the cluster is being powered down, cleaning and 
+invalidating any shared caches that are private to that cluster. 
+4.  Taking the core out of coherency within that cluster. This is typically controlled by an 
+IMPLEMENTATION DEFINED method, for example ACTLR.SMP. 
+5.  If the core is the last in a cluster, and the cluster is being powered down, taking the cluster out of 
+coherency. 
+The operations required depend on the specific cores and topology, as well as any cache coherent 
+interconnects that might be in use. For more information, see the Technical Reference Manuals (TRMs) 
+of the components. 
+
+5.6  CPU_ON 
+5.6.1  Intended use 
+CPU_ON is intended for dynamic addition of cores, for example in secondary boot or hotplug. When an 
+OS at an Exception level requires another core, it calls the CPU_ON function, providing an entry point 
+address and a context identifier. 
+The PSCI implementation provides the necessary platform-specific code to program the power 
+controller as required to turn on a core, and then restart its execution at the entry point address. The 
+context identifier value must be present in R0, W0, or X0 when the core first enters the return Exception 
+level. Section 6.4.1 describes the return Exception level, and section 6.4.3 describes the expected state 
+for a core when it accesses the entry point address. CPU_ON and CPU_OFF calls cannot originate from 
+the Secure Security state. If a Trusted OS or SP needs to manage the number of cores, it needs to use 
+a Trusted OS or SP specific IMPLEMENTATION DEFINED communication with the Normal world to 
+achieve its aims.  
+A description of the call flow can be found in section 6.1.3. 
+5.6.2  Caller responsibilities 
+Before a CPU_ON call the following must observed: 
+•  CPU_ON must be implemented asynchronously. The mechanism by which supervisory software 
+can detect that the core is finally powered up is IMPLEMENTATION DEFINED. However, the 
+provision of caller-specific entry point and context identifier parameters allows the calling 
+supervisory software to implement such a mechanism.  
+•  The entry point address provided needs to be physical from the point of view of the caller. 
+•  The context identifier is meaningful only to the caller. The value is preserved by the 
+implementation and presented to the core when it starts up at the return Exception level (section 
+6.4). 
+CPU_ON can return the following errors: 
+• 
+• 
+INVALID_PARAMETERS is returned if target_cpu describes an invalid MPIDR. 
+INVALID_ADDRESS is returned when the entry point address is known by the implementation 
+to be invalid, because it is in a range that is known not to be available to the caller. 
+Note: Versions of PSCI prior to 1.0 use INVALID_PARAMETERS where INVALID_ADDRESS 
+applies. 
+•  ALREADY_ON is returned if in the PSCI implementation the core is already in an ON state. See 
+section 6.6. 
+•  ON_PENDING is returned if a call to CPU_ON on the target core has already been made, and 
+the core is not yet ON in the PSCI implementation. See section  6.6. 
+• 
+INTERNAL_FAILURE can be returned if a core cannot be powered up for physical reasons. 
+Examples include lack of power, thermal constraints, manufacturing faults, or reliability reasons. 
+•  DENIED is returned if the target core is not available for OS usage due to firmware enforced 
+policy. 
+5.6.3  Implementation responsibilities: cache management 
+For CPU_ON, the PSCI implementation must: 
+•  Perform invalidation of caches on boot unless this invalidation is automatically performed by the 
+hardware. 
+•  Manage coherency. 
+
+5.6.2  Caller responsibilities 
+Before a CPU_ON call the following must observed: 
+•  CPU_ON must be implemented asynchronously. The mechanism by which supervisory software 
+can detect that the core is finally powered up is IMPLEMENTATION DEFINED. However, the 
+provision of caller-specific entry point and context identifier parameters allows the calling 
+supervisory software to implement such a mechanism.  
+•  The entry point address provided needs to be physical from the point of view of the caller. 
+•  The context identifier is meaningful only to the caller. The value is preserved by the 
+implementation and presented to the core when it starts up at the return Exception level (section 
+6.4). 
+CPU_ON can return the following errors: 
+• 
+• 
+INVALID_PARAMETERS is returned if target_cpu describes an invalid MPIDR. 
+INVALID_ADDRESS is returned when the entry point address is known by the implementation 
+to be invalid, because it is in a range that is known not to be available to the caller. 
+Note: Versions of PSCI prior to 1.0 use INVALID_PARAMETERS where INVALID_ADDRESS 
+applies. 
+•  ALREADY_ON is returned if in the PSCI implementation the core is already in an ON state. See 
+section 6.6. 
+•  ON_PENDING is returned if a call to CPU_ON on the target core has already been made, and 
+the core is not yet ON in the PSCI implementation. See section  6.6. 
+• 
+INTERNAL_FAILURE can be returned if a core cannot be powered up for physical reasons. 
+Examples include lack of power, thermal constraints, manufacturing faults, or reliability reasons. 
+•  DENIED is returned if the target core is not available for OS usage due to firmware enforced 
+policy. 
+5.6.3  Implementation responsibilities: cache management 
+For CPU_ON, the PSCI implementation must: 
+•  Perform invalidation of caches on boot unless this invalidation is automatically performed by the 
+hardware. 
+•  Manage coherency. 
+
+5.7.1  Intended use 
+The valid states that can be returned by AFFINITY_INFO are: 
+ON: At least one core in the affinity instance, as defined in section 4.2.2, meets both of the following 
+conditions: 
+•  The core has been enabled with a call to CPU_ON or is the cold boot primary core. 
+•  The core has not called CPU_OFF.  
+Idling cores that have called CPU_SUSPEND are considered to be in the ON state. Therefore, a core 
+in this state will be running or in a low-power mode. 
+OFF: All the cores in the affinity instance have called CPU_OFF and each of these calls has been 
+processed by the PSCI implementation.   
+ON_PENDING: At least one core in the affinity instance is in the ON_PENDING state, as described in 
+section 5.5. All other cores in the affinity instance are OFF. 
+It is also possible for AFFINITY_INFO to return the DISABLED code when the processing unit described 
+by the input parameters is valid, but is disabled for physical reasons, for example, because a core is 
+faulty. 
+For versions of PSCI prior to 1.0, an implementation must track the states of all the cores in an affinity 
+instance to produce the overall return value. From version 1.0 of PSCI, it is no longer required for 
+AFFINITY_INFO to support affinity levels greater than 0. If a caller requests the state of an affinity 
+instance above level 0, the implementation can respond in one of two ways: 
+•  Provide a valid return value, behaving in a compatible fashion with a version of PSCI prior to 
+1.0. 
+•  Return INVALID_PARAMETERS. 
+
+5.9.1  Intended use 
+Trusted operating systems must be rigorously audited to ensure they meet their security requirements. 
+This means that they must be kept simple. Often this leads to simple uniprocessor kernels, to avoid the 
+inherent complexities of multicore programming. This has implications for when it is possible to hot 
+unplug the core where the Trusted OS is resident. 
+The MIGRATE function provides a method to request a uniprocessor Trusted OS to move to another 
+core. However, this might not be supported by the Trusted OS vendor. The Normal world can use the 
+MIGRATE_INFO functions to determine whether it can use CPU_OFF and MIGRATE for a given Trusted 
+OS. MIGRATE_INFO_TYPE takes no parameters and returns: 
+•  Uniprocessor (UP) and migrate capable 0: This indicates a Trusted OS that can run on only 
+one core. The core it runs on can be changed dynamically through use of the MIGRATE function. 
+Calls to CPU_OFF on the core where the Trusted OS is currently residing return a DENIED error. 
+•  Uniprocessor (UP) not migrate capable 1: This indicates a Trusted OS that does not support 
+migration. Calls to hot unplug the core on which the Trusted OS is running return a DENIED 
+error. Calls to MIGRATE return the same error. 
+•  Multiprocessor (MP) capable or not present 2: This indicates that the Trusted OS is fully MP-
+aware and has no special requirements for migration, or a system that does not use a Trusted 
+OS. Any core can be hot unplugged without first asking the Trusted OS to migrate to another 
+core. In this case, calls to MIGRATE are not relevant. They return NOT_SUPPORTED and have 
+no other effect.  
+In addition, MIGRATE_INFO_UP_CPU takes no parameters and returns an MPIDR-based value to 
+indicate where the Trusted OS currently resides. The value returned uses the same format as the 
+target_cpu parameters of CPU_ON and MIGRATE, see section 5.1.4. The returned value is only valid if 
+MIGRATE_INFO_TYPE returns 0 or 1. The returned value of MIGRATE_INFO_UP_CPU is UNDEFINED if 
+MIGRATE_INFO_TYPE returns 2. 
+For each possible return value of MIGRATE_INFO_TYPE, Table 9 shows the expected return values for 
+calls to MIGRATE and CPU_OFF, when called on the CPU where the Trusted OS currently resides.  The 
+table assumes that valid parameters are passed, that is, that valid target_cpu expressions are passed. 
+The information returned by MIGRATE_INFO_TYPE must be constant and not change on subsequent 
+calls.  
+Table 9 Return values for calls to MIGRATE and CPU_OFF (on resident core)  
+MIGRATE_INFO_TYPE  
+MP or not present (2) or 
+NOT_SUPPORTED 
+UP not migrate capable (1)  
+UP migrate capable (0) 
+Return value of 
+MIGRATE  
+Return value of 
+CPU_OFF 
+NOT_SUPPORTED  
+does not return  
+DENIED 
+SUCCESS 
+DENIED  
+DENIED  
+
+5.19.1 Intended use 
+This API allows the power state of a node to be determined directly from the power controller or power 
+controlling logic. Unlike AFFINITY_INFO, which returns the view of state of the implementation, this 
+API returns the physical view of power state. 
+
+6.1.2  CPU_OFF call flow 
+Figure 6 Example call flow for a CPU_OFF call 
+Figure 6 shows how a CPU_OFF call can be propagated through the Exception levels in a system that 
+implements EL2 and EL3. Whether the call is trapped at EL2 or not is defined by the hypervisor 
+implementation. 
+
+6.1.3  CPU_ON call flow 
+As is the case with a call to CPU_SUSPEND, a call to CPU_ON can go through the various Exception 
+levels.  
+           Figure 7 Example call flow for a CPU_OFF call 
+           Figure 7 is an example of how the call flow might work when all Exception levels are 
+implemented. In the example, CPU_0 is requesting a powerup of CPU_1. The flow follows a similar 
+model to the CPU_SUSPEND flow, described above. CPU_0 requests powering up of CPU_1 and 
+supplies an entry point address and a context identifier for NS-EL1.  In the example, the hypervisor at 
+EL2 traps the call, saving the requisite entry point address and context ID, before making the same call 
+to privileged platform firmware and supplying an EL2 entry point address and context ID. The privileged 
+platform firmware then starts up CPU_1, initializes it and resumes it at EL2 using the supplied entry 
+point address and context ID. Finally, the hypervisor having initialized on CPU_1, resumes the core at 
+NS-EL1, using the originally supplied entry point address and context identifier.  
+As described in            Figure 7, the return Exception level for a CPU_ON call is the highest Non secure 
+Exception level implemented. This rule allows for the model described above, where the hypervisor 
+traps the call. 
+In systems that implement EL2 and EL3, this rule also allows bypassing of EL2, that is, it enables a call 
+to go directly from Non-secure EL1 to EL3. However, the start-up path has to go through EL2. This 
+requires IMPLEMENTATION DEFINED mechanisms for the OS at NS-EL1 to supply a valid EL2 entry 
+point address and context identifier to the privileged platform firmware, and for the NS-EL1 return 
+address and context identifier. This is discussed further in section 6.4. 
+
+6.2  OS and Implementation View of Cores State 
+One of the challenges in power state coordination is that the OS and the implementation have individual 
+views of the current state of a node. This can lead to periods where the view of current core state differs 
+between the implementation and the calling OS. This is illustrated in Figure 7. 
+Figure 8 Periods where OS view of Core state differs from implementation view 
+When an OS powers down the core, it needs to update its internal view of core state before calling into 
+the implementation to actually perform the powerdown. This gives rise to a period during which the OS 
+sees the core as being powered down, whereas the implementation sees it as running, as it has not yet 
+processed the command. This is illustrated in the upper half of Figure 7. Equally, when a core powers 
+up, it is seen by the PSCI implementation before it is seen by the calling OS. This situation results in a 
+window where the implementation sees the core as being in a running state, while the OS considers it 
+to be powered down. This is illustrated in the bottom half of Figure 7. 
+
+6.4.1  First Non-secure Exception level 
+When returning from a CPU_SUSPEND call after a powerdown, or following a CPU_ON call, the first Non-
+secure Exception level that the privileged platform firmware must move the core to is the highest 
+implemented Non-secure Exception level. This is described here as ELNS. 
+In a system that implements EL3 and EL2, it is not possible to use any services of a hypervisor until the 
+use of the HVC instruction has been enabled. This is controlled by the Secure configuration register 
+HCE field, SCR.HCE or SCR_EL3.HCE. If the hypervisor has been enabled in this way, EL NS is EL2, 
+otherwise it is EL1. For the entry to ELNS: 
+• 
+• 
+If ELNS is using AArch32, the initialization code must set the processor mode to be entered. 
+If ELNS is using AArch64, the initialization code must set the stack pointer to be used. With PSCI, 
+the stack pointer must be the one associated with ELNS, that is, SP_ELNS, denoted as EL2h or 
+EL1h. 
+The following table shows this requirement: 
+Table 14 First Non-secure Exception level and state on entry 
+Caller using AArch32  Caller using AArch64 
+  Caller 
+Callee 
+ELNS 
+Processor 
+mode 
+Hypervisor 
+enabled 
+Hypervisor 
+not enabled 
+EL1 
+EL2 
+EL1 
+PPF 
+PPF 
+PPF 
+EL2 
+EL2 
+EL1 
+Hyp 
+Hyp 
+Svc 
+ELNS 
+EL2 
+EL2 
+Stack 
+pointer 
+EL2h 
+EL2h 
+EL1 
+EL1h 
+All cores should have the same Execution state at ELNS. 
+When control passes from EL2 to EL1, the startup state must be: 
+•  Supervisor mode, if EL1 is using AArch32. 
+•  The EL1h stack pointer state, if EL1 is using AArch64. 
+
+6.4.3  Initial core configuration 
+For an Exception level to start execution, higher Exception levels must perform appropriate initialization. 
+From Armv8, platform reset values are defined to provide the minimal functional set for the highest 
+implemented Exception level to start execution. This Exception level then must set up enough state for 
+a lower Exception level to execute.  
+This section describes the items that must be correctly initialized when a core starts up in response to a 
+powerdown state wakeup for CPU_SUSPEND, or through a call to CPU_ON. 
+6.4.3.1  Execution state on Armv8 systems 
+From Armv8, the Execution state entered when starting up a lower Exception level must match the 
+Execution state in use by that Exception level when the PSCI call is made. 
+6.4.3.2  Endianness 
+The caller endianness must be restored when starting up the core at the Exception level from which the 
+call was made. This means, for the Execution level where execution is restarting: 
+• 
+• 
+If starting in AArch32 state, CPSR.E must be set to the appropriate value. 
+If starting in AArch64 state, SCTLR_ELx.EE must be set to the appropriate value. ELx is the 
+Exception level being returned to.  
+Note that only the highest implemented Exception level has a defined reset value for SCTLR_ELx.EE.  
+6.4.3.3  Exceptions 
+The appropriate asynchronous exception masks must be set when starting up the core at the Exception 
+level from which the call was made, or at ELNS. Typically, this means that for the Exception level where 
+execution is restarting: 
+• 
+If starting in AArch32 state, the CPSR.{A,I,F} bits should be set to {1,1,1}.  
+Note: On an Armv7 implementation that includes EL3 (the Security Extensions) but does not 
+include EL2 (the Virtualization Extensions), setting mask bits to 1 in the CPSR masks the 
+interrupts for all Security states and processor modes, regardless of the values of 
+SCR.{FIQ, IRQ, EA, FW AW}. For these implementations, if privileged platform firmware, 
+or the Trusted OS, requires FIQs and asynchronous aborts to be routed to the Secure 
+world, the privileged platform firmware must start Non-secure EL1 with CPSR.{A, F} set to 
+{0, 0}. 
+• 
+If starting in AArch64 state, the SPSR_ELx.{D,A,I,F} bits must be set to {1, 1, 1, 1}. ELx is the 
+Exception level being returned from. 
+6.4.3.4  MMU, cache and branch predictor enables 
+When starting up the core at the Exception level from which the call was made, execution must start 
+with the stage 1 MMU and caches disabled. Also, if starting up in an Exception level that is using 
+AArch32, branch predictors must be disabled. This means: 
+• 
+• 
+If starting in AArch32 state, the SCTLR.{I, C, M} bits must be set to {0, 0, 0}. In addition, the Z bit 
+must be set in a way that is consistent with the reset behavior of the platform. 
+If starting in AArch64 state, the SCTLR_ELx.{ I, C, M} bits must be set to {0, 0, 0}.  ELx is the 
+Exception level being returned to. 
+On start-up, from the point of view of the caller the caches must be clean and coherent with main 
+memory.  
+6.4.3.5  T32 support 
+If the caller is using AArch32 state, and the entry point address specified in a call to CPU_ON or 
+CPU_SUSPEND has bit[0] set to 1, the core must be started in T32 state at the return Exception level. In 
+this case the entry point address specified by the caller is equivalent to the address passed in the call, 
+but with bit[0] set to 0.  
+6.4.3.6  Generic Timer 
+CNTFREQ holds the frequency of the Generic Timer. This register must be initialized by Privileged 
+platform firmware, to enable use of the Generic Timer.  
+6.4.3.7  Context ID 
+When the core first enters the return Exception level, the context ID value supplied in the 
+CPU_SUSPEND or CPU_ON call must be present in: 
+•  X0 if the caller was using AArch64. 
+•  R0 if the caller was using AArch32. 
+6.4.3.8  EL2 state when EL2 is disabled 
+In systems where EL2 is present but has been disabled by clearing SCR_EL3.HCE, it is necessary to 
+initialize EL2 state so that an NS-EL1 operating system will be able to execute. EL2 must be configured 
+to allow NS-EL1 full access to all CPU resources that are not specific to EL2. This typically involves: 
+•  Disabling traps to EL2. This affects HCR_EL2, CPTR_EL2, and CNTHCTL_EL2 among other 
+System registers. NS-EL1 must be allowed to access the physical counter and physical timer. 
+•  HCR_EL2.RW must be set to 1 to allow lower levels to use AArch64 where appropriate. 
+•  HCR_EL2.VM must be set to zero, disabling stage2 translation. 
+•  CNTVOFF_EL2 must be set to zero. 
+•  VMIDR_EL2 must be made equal to MIDR_EL1. 
+•  VMPIDIR_EL2 must be made equal to MPIDR_EL1. 
+An implementation of these requirements can be found in the Trusted Firmware-A project [8]. 
+
+6.5  Recommended StateID Encoding 
+The contents of the CPU_SUSPEND power_state parameter StateID field are IMPLEMENTATION 
+DEFINED. However, it must be set so that each composite power state possible has a unique value. 
+The power_state parameter reflects a composite, as opposed to a local power state, as discussed in 
+section 4.2.1. The StateID field of the parameter can be used to describe the specific combination of 
+local power states being requested. A simple way of doing this is to reserve bit fields for the various 
+power levels in the system. This allows a simple additive mechanism to be used when constructing a 
+composite state from local state indices.  
+For OS-initiated mode, it is also necessary to pass an index for the power level where the calling core is 
+last to go idle. The format of this field matches the power_level parameter of the NODE_HW_STATE 
+function, see section 5.19.1. If a bit field is reserved, the OS can use a simple additive scheme to place 
+the information into a StateID field when it is making a request. Consider the example in Figure 4. Given 
+the number of local states at each power level, a simple encoding could use one nibble of the StateID 
+field as a local state index for each power level, and another nibble for the OS-initiated last level index. 
+This would give rise to the following encoding: 
+Table 15 StateID sample encoding 
+Bit field 
+Description 
+15:12 
+11:8 
+7:4 
+Core is last in Power Level: 
+•  0: Core Level 
+•  1: Cluster Level 
+•  2: System Level 
+System Level Local Power State 
+•  0: Run 
+•  2: Retention 
+•  3: Powerdown 
+Cluster Level Local Power State 
+•  0: Run 
+•  2: Retention 
+•  3: Powerdown 
+3:0 
+Core Level Local Power State 
+•  0: Run 
+•  1: Standby 
+•  2: Retention 
+•  3: Powerdown 
+The above method uses 1-based indices for local states in a power level. Thus, at core level, the states 
+standby, retention, and powerdown are indexed 1, 2, and 3, respectively. For consistency, cluster and 
+system states are numbered 2 and 3 for retention and powerdown, respectively. The value of 0 is 
+reserved to indicate a running state. Using a simple additive composition method, and considering only 
+the local power states, this encoding results in the possible composite power state parameters identified 
+in Table 16. 
+Table 16 StateID encodings for local and composite states in example system 
+Last in 
+Level  
+System 
+Local States 
+Cluster 
+Local States  
+Core Local 
+States 
+Bits[15:12] 
+ Bits[11:8] 
+Bits[7:4] 
+Bits[3:0] 
+Composite States 
+(Sum of Local States) 
+Run 
+0x#000 
+0x000 
+Run 
+0x#000 
+0x000 
+Run 
+0x#000 
+0x000 
+Run 
+0x000 
+Run 
+0x000 
+Run 
+0x000 
+Standby 
+Run | Run | Standby 
+0x001 
+0x#000+0x000+0x000+x001=0x#001 
+Retention 
+Run | Run | Retention 
+0x002 
+0x#000+0x000+0x000+x002=0x#002 
+Powerdown 
+Run | Run | Powerdown 
+0x003 
+0x#000+0x000+0x000+x003=0x#003 
+Run 
+Retention 
+Retention 
+Run | Retention | Retention 
+0x#000 
+0x000 
+0x020 
+0x002 
+0x#000+0x000+0x020+x002=0x#022 
+Run 
+Retention 
+Powerdown 
+Run | Retention | Powerdown 
+0x#000 
+0x000 
+0x020 
+0x003 
+0x#000+0x000+0x020+x003=0x#023 
+Run 
+Powerdown 
+Powerdown 
+Run | Powerdown | Powerdown 
+0x#000 
+0x000 
+0x030 
+0x003 
+0x#000+0x000+0x030+x003=0x#033 
+Retention 
+Retention 
+Retention 
+Retention | Retention | Retention 
+0x#000 
+0x200 
+0x020 
+0x002 
+0x#000+0x200+0x020+x002=0x#222 
+Retention 
+Retention 
+Powerdown 
+Retention | Retention | Powerdown 
+0x#000 
+0x200 
+0x020 
+0x003 
+0x#000+0x200+0x020+x003=0x#223 
+Retention 
+Powerdown 
+Powerdown 
+Retention | Powerdown | Powerdown 
+0x#000 
+0x200 
+0x030 
+0x003 
+0x#000+0x200+0x030+x003=0x#233 
+Powerdown 
+Powerdown 
+Powerdown  Powerdown | Powerdown | Powerdown 
+0x#000 
+0x300 
+0x030 
+0x003 
+0x#000+0x300+0x030+x003=0x#333 
+ The last-in-level information is encoded in the fourth nibble. In a system like this, firmware tables 
+describe the power levels as 0x0000, 0x1000, and 0x2000 for core, cluster, and system, respectively. 
+These values are used when adding the last-in-level value of the StateID portion of a power_state 
+parameter, for a CPU_SUSPEND call in OS-initiated mode.  These values are also used for the 
+power_level parameter of the NODE_HW_STATE function (see section 5.19.1). 
+This method provides the required unique composite state power_state parameters. This scheme 
+also provides the ability to uniquely refer to local states as well as composite states, which is useful, 
+though not required, for the PSCI_STAT_COUNT and RESIDENCY functions. Furthermore, the scheme 
+is additive, so composite state IDs can be obtained by simply adding the local states for each power 
+level, and in the OS-initiated case, also adding the last-in-level index. 
+Note that more compact additive schemes are also possible, by using the same approach by which 
+multidimensional arrays are flattened to single dimensional arrays.  
+6.6 
+Implementation CPU_ON/CPU_OFF races 
+Implementation of CPU_ON and CPU_OFF requires special care to avoid races. Both the calling 
+supervisory software and the PSCI implementation must use appropriate locks to maintain the correct 
+state representation of a core.  
+The AFFINITY_INFO function defines a set of valid states for a core, see section 5.7.1. As seen from the 
+PSCI implementation, a core can be in any of the following states: 
+ON: This core has at some point been enabled with a call to CPU_ON, or is the cold boot primary core, 
+and has not called CPU_OFF. In practice, the core might be running or in a low-power mode, either 
+WFI or deeper because of a call to CPU_SUSPEND. The term ON reflects the fact that the core is 
+considered to be available for computation. 
+OFF: This core has called CPU_OFF, and the call has been processed by the PSCI implementation, or 
+the core has not been booted yet. The core is not available for computation. 
+ON_PENDING: CPU_ON has been called on the target core, but it is still in the process of booting and 
+has not transitioned to an ON state. 
+The state diagram shown in Figure 9 illustrates the valid transitions that an implementation must 
+provide. Circles represent the states, and a state transition is represented as an arrow between two 
+circles. The arrow label denotes the state transition such that: 
+1.   The transition takes place while the original state is TRUE. 
+2.   A transition can include a post transition event. This is indicated by the text that follows a forward 
+slash character “/”. This event happens when the destination state is TRUE. 
+3.   After the transition, the destination state is TRUE. 
+Figure 9 CPU_ON/CPU_OFF PSCI implementation state machine 
+Figure 9 shows the following transitions: 
+CPU_OFF (1): The implementation receives a CPU_OFF call from the client running on the core in 
+question. 
+CPU_ON (2): The implementation receives a CPU_ON call for the core in question. 
+PSCI_INIT (3): The core in question initializes and starts executing PSCI implementation firmware as 
+part of the boot sequence. After this transition, when the PSCI implementation sets the core state to 
+ON, the core reenters the return Exception level at the specified entry point address. 
+The diagram also describes failures to transition when invalid calls are observed. In particular: 
+CPU_ON (4): Fails with an ALREADY_ON error because the PSCI implementation sees the core as 
+being ON. 
+CPU_ON (5): Fails with an ON_PENDING error because a valid CPU_ON  call has already been made to 
+the target core, but the core has not initialized yet, meaning it has not made transition 3 (PSCI_INIT). 
+An actual implementation can distinguish between further internal states. However, externally it must 
+guarantee the states and transitions shown in Figure 9. 
+A caller of PSCI might maintain a similar set of states, and therefore a caller might consider any cores 
+to be ON, OFF, or ON_PENDING. The following pseudocode shows an example implementation from the 
+perspective of the caller to CPU_ON and CPU_OFF.  
+void os_cpu_off()  
+{ 
+lock(psci_state[current_cpu]); 
+assert(psci_state[cpu] == ON); 
+psci_state[cpu] = OFF; 
+unlock(psci_state[cpu]); 
+/* race window starts here */ 
+CPU_OFF(); 
+assert(0); /* CPU_OFF() failed */ 
+} 
+int os_cpu_on(cpu,contexID)  
+{ 
+int r = 0; 
+lock(psci_state[cpu]); 
+if (psci_state[cpu]==ON) r = E ERROR_ALREADY_ON; 
+if (psci_state[cpu]==ON_PENDING) r = ERROR_ON_PENDING; 
+unlock(psci_state[cpu]); 
+return r; 
+if (r) { 
+} 
+do { 
+r = CPU_ON(cpu, physical_addr(os_entry_point), contextID); 
+} while (r == ERROR_ALREADY_ON); 
+assert(!r); 
+psci_state[cpu]=ON_PENDING;  
+unlock(psci_state[cpu]); 
+return r;   
+} 
+This example implementation maintains a lock for each core, and uses the states described in this 
+section, ON, OFF, ON_PENDING, but these states represent the view of the caller of the core status. 
+There is race opportunity, while a caller is transitioning a core to OFF, from the point of view of the 
+caller, but before the PSCI implementation has set the state to OFF, from the point of view of the PSCI 
+implementation. Red text signals the start of the race window. During this time, the caller might consider 
+the core to be OFF, while the PSCI implementation sees the core as being ON. The race closes when 
+the PSCI implementation performs the atomic update of the state of the core to OFF.  
+The race is solved using the ALREADY_ON error. When a CPU_ON call on the same core arrives during 
+this window, the PSCI returns an ALREADY_ON error as the implementation sees that core as still being 
+in the ON state. A caller can use this error code to identify this situation and retry the call. The time 
+spent retrying depends on the following factors: 
+1.   The time between a caller setting the core state to OFF and calling CPU_OFF. 
+2.   The time it takes the PSCI implementation to transition its representation of the core state to 
+OFF.  
+Both time windows should be as short as possible. Finally, when a core enters the calling Exception 
+level, it can transition the state to ON: 
+void os_entry_point() 
+{ 
+... 
+lock(psci_state[cpu]); 
+psci_state[cpu]=ON; 
+unlock(psci_state[cpu]); 
+... 
+} 

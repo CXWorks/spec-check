@@ -135,7 +135,18 @@ def main():
     ap.add_argument("--model", default="claude-opus-5")
     ap.add_argument("--effort", default="high")
     ap.add_argument("--out-root", default="results/confab")
+    ap.add_argument("--no-gold", action="store_true",
+                    help="Zero-shot documents (psci_13, sdei, drtm), which have "
+                         "no gold for any command. Note this also removes the "
+                         "`sig` arms' reason to exist: they exist to hand over "
+                         "gold's parameter list, and there is none, so a general "
+                         "model gets exactly the `(...)` our fine-tune gets. "
+                         "That makes the comparison cleaner here than on alp14, "
+                         "where signature convention had to be supplied.")
     args = ap.parse_args()
+    if args.no_gold and any("sig" in a for a in args.arms):
+        sys.exit("--no-gold has no gold signature to give the `sig` arms; "
+                 "run them with --arms base")
 
     from dataset_loader import load_dataset
     from prompt_engineering_v3 import PROMPT_V3_SYSTEM
@@ -158,7 +169,9 @@ def main():
 
     for version in args.versions:
         ctx = preamble_tail(version) if args.preamble_mode == "tail" else None
-        samples = {s.command: s for s in load_dataset(versions=[version], all_commands=True)
+        samples = {s.command: s for s in load_dataset(
+                       versions=[version], all_commands=True,
+                       require_gold=not args.no_gold)
                    if getattr(s, "command", None)}
         wanted = sorted(samples) if args.all else [c for c in args.commands if c in samples]
         missing = [] if args.all else [c for c in args.commands if c not in samples]

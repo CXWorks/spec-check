@@ -1,0 +1,1195 @@
+4.2.1  Local power states and composite power states 
+Individual nodes in a topology have their own specific power states, which are referred to here as local 
+power states. When an OS, running on an idle core, requests a power state, it might need to express 
+not just a local power state for the core, but also for any parent nodes. For instance, taking our example 
+system from Figure 4, if Core 1 was the last to go idle in Cluster 0, it would make sense for the OS to 
+request a local power state for the cluster as well as the core. We refer to the combined power state 
+that an OS might request as a composite power state. Not every combination of local states is possible. 
+System LevelPower States:• Retention• Power-DownCluster LevelCluster 1Power States:• Retention• Power-DownCluster LevelCluster 0Power States:• Retention• Power-DownCore LevelCore 0Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 1Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 2Power States:• Standby (clock gate)• Retention• Power-DownCore LevelCore 3Power States:• Standby (clock gate)• Retention• Power-Down 
+When a node at a power level is in a certain local power state, parent nodes at higher power levels 
+cannot be in a deeper local state. In other words:  
+1.   A powerdown in a higher-level node can only be combined with powerdown states in lower-
+level children. 
+2.   A retention state in a higher-level node might only be combined with retention or powerdown 
+states in lower-level children. 
+3.   A standby (clock-gated) state in a higher-level node allows lower-level children to be in standby, 
+retention, or powerdown states. 
+4.   A running state in a higher-level node allows lower-level children to be in any state. 
+Note:  The PSCI specification is only concerned with power states that require explicit software control.  
+Hardware power modes, which are not exposed to software, are not relevant to PSCI. 
+Taking these rules into account, Table 3 illustrates the valid low-power composite states for the 
+example system described in Figure 4. 
+Table 2 Valid local state combinations for composite power states in the example system 
+System Level State 
+Cluster Level State 
+Core Level State 
+Run 
+Run 
+Run 
+Run 
+Run 
+Run 
+Retention 
+Retention 
+Retention 
+Powerdown 
+Run 
+Run 
+Run 
+Retention 
+Retention 
+Powerdown 
+Retention 
+Retention 
+Powerdown 
+Powerdown 
+Standby 
+Retention 
+Powerdown 
+Retention 
+Powerdown 
+Powerdown 
+Retention 
+Powerdown 
+Powerdown 
+Powerdown 
+
+4.2.2  Affinity hierarchy 
+Arm systems can have multiple cores or even multiple clusters of cores. This specification uses the 
+term affinity hierarchy to describe the hierarchical arrangement of cores. This often, but not always, 
+maps directly to the processor power topology of the system.   
+This specification uses the term affinity level to describe a level in the affinity hierarchy, for example, the 
+level of cores or clusters. Finally, the term affinity instance is used to refer to an individual entry in the 
+affinity hierarchy, for example, an individual core or cluster.  
+
+5.1.4  CPU_ON 
+Description 
+Power up a core. This call is used to power up cores that either: 
+•  Have not yet been booted into the calling supervisory software. 
+•  Have been previously powered down with a CPU_OFF call. 
+See section 5.6 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+•  0x8400 0003 SMC32 version 
+•  0xC400 0003 SMC64 version 
+This parameter contains a copy of the affinity fields of the 
+MPIDR register (See [1,5]). 
+If the calling Exception level is using AArch32, the format 
+is: 
+•  Bits[24:31]: Must be zero. 
+•  Bits[16:23] Aff2: Match Aff2 of target core MPIDR 
+•  Bits[8:15] Aff1: Match Aff1 of target core MPIDR 
+•  Bits[0:7] Aff0: Match Aff0 of target core MPIDR 
+If the calling Exception level is using AArch64, the format 
+is: 
+•  Bits[40:63]: Must be zero 
+•  Bits[32:39] Aff3: Match Aff3 of target core MPIDR 
+•  Bits[24:31] Must be zero 
+•  Bits[16:23] Aff2: Match Aff2 of target core MPIDR 
+•  Bits[8:15] Aff1: Match Aff1 of target core MPIDR 
+•  Bits[0:7] Aff0: Match Aff0 of target core MPIDR 
+For the SMC64 version, this parameter is a 64-bit entry 
+point physical address (PA) or intermediate physical 
+address (IPA). 
+For the SMC32 version this parameter is a 32-bit entry 
+point physical address (or IPA).  
+Address at which the core must commence execution, 
+when it enters the return Non-secure Exception level. 
+For the SMC64 version this parameter is a 64-bit value. 
+When the core identified by target_cpu first enters the 
+return Non-secure Exception level, this value must be 
+present in X0. 
+For the SMC32 version this parameter is a 32-bit value. 
+When the core identified by target_cpu first enters the 
+return Non-secure Exception level, this value must be 
+present in R0. 
+SMC32 uint32 
+SMC64 uint64 
+target_cpu 
+SMC32 uint32 
+SMC64 uint64 
+entry_point_address  
+SMC32 uint32 
+SMC64 uint64 
+context_id  
+Return 
+Declaration 
+Value 
+SMC32 int32 
+SMC64 int64 
+•  SUCCESS 
+• 
+• 
+INVALID_PARAMETERS 
+INVALID_ADDRESS 
+•  ALREADY_ON 
+•  ON_PENDING 
+• 
+INTERNAL_FAILURE 
+•  DENIED 
+See section 5.6.2 for scenarios in which each return code 
+should be used. See section 5.2.2 for integer values 
+associated with each return code. 
+
+5.1.15 PSCI_FEATURES 
+Description 
+Introduced in PSCI 1.0.  
+Query API that allows discovering whether SMCCC_VERSION (refer SMC 
+Calling Convention [4]) or a specific PSCI function is implemented and its 
+features. See section 5.16.1 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID 
+0x8400 000A 
+Function ID of: 
+uint32 psci_func_id 
+•  PSCI Function, or 
+•  SMCCC_VERSION 
+Return 
+Declaration 
+Value 
+int32 
+•  NOT_SUPPORTED if the function identified by 
+psci_func_id is not implemented or is an 
+invalid function ID. 
+•  A set of feature flags associated with the 
+implemented function indicated by 
+psci_func_id. Feature flags are specific to 
+each function. In all cases the format is: 
+•  Bit[31] is zero 
+•  Bits[30:0] represent the feature flags. See 
+section 5.16.2 for the defined flags. 
+See section 5.2.2 for integer values associated with 
+each return code. 
+
+5.1.21 PSCI_STAT_RESIDENCY 
+Description 
+Introduced in PSCI 1.0.  
+Optional. 
+Returns the amount of time the platform has spent in the given power state since 
+cold boot. See section 5.22 for more details. 
+Parameters 
+Declaration 
+uint32 Function ID 
+SMC32 uint32 
+SMC64 uint64 
+target_cpu 
+Value 
+•  0x8400 0010 SMC32 version 
+•  0xC400 0010 SMC64 version 
+This parameter follows the same format as the 
+target_cpu parameter of a CPU_ON call (see 
+section 5.1.4). 
+uint32 power_state 
+Described in section 5.22.1. 
+Return 
+Declaration 
+SMC32 uint32 
+SMC64 uint64 
+residency 
+Value 
+Returns the amount of time, in microseconds, 
+spent in a local state, identified by 
+power_state, by the topology node 
+represented by the target_cpu and the highest 
+power level of power_state. 
+
+5.2.1  Register usage in arguments and return values 
+The SMC Calling Conventions [4] provide support for calls using only 32-bit parameters (SMC32), and 
+for calls using 32-bit and 64-bit parameters (SMC64). Some of the PSCI functions defined above use 
+only SMC32, some of the functions have both an SMC32 and an SMC64 version.  
+For PSCI functions that use only 32-bit parameters, the arguments are passed in R0 to R3 (AArch32) or 
+W0 to W3 (AArch64), with return values in R0 or W0. 
+For versions using 64-bit parameters, the arguments are passed in X0 to X3, with return values in X0. 
+In line with the SMC Calling Conventions, the immediate value used with an SMC (or HVC) instruction 
+must be 0. 
+Adherence to the SMC Calling Conventions implies that any AArch32 caller of an SMC64 function will 
+get a return code of 0xFFFFFFFF (int32). This matches the NOT_SUPPORTED error code used in PSCI. 
+As some PSCI functions have SMC32 and SMC64 versions, it is also possible for an AArch64 client to 
+call an SMC32 function. In these cases, it is assumed that the caller understands the limitations of using 
+SMC32, and limits itself to 32-bit parameters, and the implementation is not required to provide any 
+specific error returns. 
+Note:  PSCI 0.2 instead used INVALID_PARAMETERS as the return code when an AArch32 caller 
+used an SMC64 API, or when an AArch64 caller used an SMC32 API. This requirement has been 
+dropped since PSCI 1.0 to improve alignment with the SMC Calling Conventions [4]. 
+PSCI calls between a guest and hypervisor can use the HVC conduit instead of SMC. In this case, the 
+rules described above apply. Where this document uses SMC32, the reader can assume HVC32 if the 
+conduit is HVC. Equally, SMC64 maps to HVC64.  
+
+5.2.2  Return error codes 
+Table 5 defines the values for error codes used with PSCI functions. Errors are 32-bit signed integers 
+for SMC32 functions, and 64-bit signed integers for SMC64 functions. However, any AArch32 caller of 
+an SMC64 function will get a return code of 0xFFFFFFFF (int32). 
+Table 5 Return error codes 
+SUCCESS 
+NOT_SUPPORTED 
+INVALID_PARAMETERS 
+DENIED 
+ALREADY_ON 
+ON_PENDING 
+INTERNAL_FAILURE 
+NOT_PRESENT 
+DISABLED 
+INVALID_ADDRESS 
+-1 
+-2 
+-3 
+-4 
+-5 
+-6 
+-7 
+-8 
+-9 
+
+5.5  CPU_OFF 
+5.5.1  Intended use 
+CPU_OFF is designed for dynamic removal of the calling core from the system. When PPF receives a 
+CPU_OFF call, it must power down the calling core. 
+Unlike CPU_SUSPEND, the call is not expected to return. With this function the calling supervisory 
+software is explicitly stating that it will no longer use a core. This situation is only reversed when a 
+CPU_ON call is used to bring the core back online.  
+CPU_OFF calls can only originate from the Normal world. If the Secure world needs to manage the 
+number of active cores, it needs to use Trusted OS or SP specific IMPLEMENTATION DEFINED 
+communication with the Normal world to achieve its aims. It must not be possible for Secure world to 
+allow a core to be seen as powered up and available by the Trusted OS or SP, while the Normal world 
+sees the core as being powered down.  
+A description of the call flow can be found in section 6.1.2. 
+5.5.2  Caller responsibilities 
+Before a CPU_OFF call, the following must be observed: 
+•  The calling OS must have migrated all threads and interrupts away from the core that is being 
+powered down. Asynchronous wakeups on a core that has been switched off through a PSCI 
+CPU_OFF call result in an erroneous state. When this erroneous state is observed, it is 
+IMPLEMENTATION DEFINED how the PSCI implementation reacts. Possible actions are: 
+•  The PSCI implementation ignores the wakeup and keeps the core powered down. 
+•  The PSCI implementation resets the system. 
+•  The caller is not required to perform any cache or coherency management. This management 
+must be performed by the PSCI implementation. 
+•  CPU_OFF can have varying latency in the time it takes to complete, depending on the power 
+domain level that is being powered down. The caller must not make any assumptions about 
+latency. 
+•  A core can only power itself down. 
+•  CPU_OFF calls are always platform-coordinated with each other, regardless of the suspend 
+mode of operation (platform-coordinated or OS-initiated). That is, if all cores in a topology node 
+call CPU_OFF, the last core will power the node down.  
+• 
+In an OS-initiated mode, CPU_OFF calls are considered to platform-coordinate 
+between themselves. If only a subset of cores has called CPU_OFF, an OS-initiated 
+OS can assume they have powered down to the highest power level possible. 
+Referring to the example system in Figure 4, if all cores except Core 3 have called 
+CPU_OFF, the OS can assume that Cluster 0 and Core 2 are in the powerdown state 
+and that Core 3 is the last man in the system (and cluster 1). Therefore, in this mode 
+the OS could power down the system through a CPU_SUSPEND call from Core 3. 
+However, this coordination only works for calls to CPU_SUSPEND that take place 
+after calls to CPU_OFF. Coordination in the opposite order cannot be assumed. If, in 
+our example, Core 3 was the penultimate core and this called CPU_SUSPEND, and 
+Core 2 was the last one, and it called CPU_OFF, Cluster 1 (and the system) would 
+not be able to power down. This is because Core 3 would not be a last man, at either 
+the cluster or the system level, and consequently it could not request a power state at 
+that level. 
+• 
+In platform coordinate mode, a call to CPU_OFF is consistent with a call to 
+CPU_SUSPEND for powerdown at maximum power level. If only a subset of the cores 
+in a node call CPU_OFF, the node must only be powered down if the remaining cores 
+have called CPU_SUSPEND, requesting a powerdown state at that power level, or a 
+power state at a higher power level. 
+CPU_OFF can return the following errors: 
+•  DENIED, if called on a core where the Trusted OS is resident, see section 5.9.1. 
+5.5.3  Implementation responsibilities: Cache and coherency management 
+The PSCI implementation must perform a cache clean operation for all the caches present in the nodes 
+being powered down. PSCI must also perform any required coherency management. In a multicluster 
+implementation, powering down a core typically requires: 
+1.  Disabling the data cache to prevent data cache allocation. 
+2.  Cleaning and invalidating any caches that are private to the core. This prevents any new data 
+cache snoops or data cache maintenance operations from other cores being issued to the core 
+that is powering down. 
+3.  If the core is the last in a cluster, and the cluster is being powered down, cleaning and 
+invalidating any shared caches that are private to that cluster. 
+4.  Taking the core out of coherency within that cluster. This is typically controlled by an 
+IMPLEMENTATION DEFINED method, for example ACTLR.SMP. 
+5.  If the core is the last in a cluster, and the cluster is being powered down, taking the cluster out of 
+coherency. 
+The operations required depend on the specific cores and topology, as well as any cache coherent 
+interconnects that might be in use. For more information, see the Technical Reference Manuals (TRMs) 
+of the components. 
+
+5.6  CPU_ON 
+5.6.1  Intended use 
+CPU_ON is intended for dynamic addition of cores, for example in secondary boot or hotplug. When an 
+OS at an Exception level requires another core, it calls the CPU_ON function, providing an entry point 
+address and a context identifier. 
+The PSCI implementation provides the necessary platform-specific code to program the power 
+controller as required to turn on a core, and then restart its execution at the entry point address. The 
+context identifier value must be present in R0, W0, or X0 when the core first enters the return Exception 
+level. Section 6.4.1 describes the return Exception level, and section 6.4.3 describes the expected state 
+for a core when it accesses the entry point address. CPU_ON and CPU_OFF calls cannot originate from 
+the Secure Security state. If a Trusted OS or SP needs to manage the number of cores, it needs to use 
+a Trusted OS or SP specific IMPLEMENTATION DEFINED communication with the Normal world to 
+achieve its aims.  
+A description of the call flow can be found in section 6.1.3. 
+5.6.2  Caller responsibilities 
+Before a CPU_ON call the following must observed: 
+•  CPU_ON must be implemented asynchronously. The mechanism by which supervisory software 
+can detect that the core is finally powered up is IMPLEMENTATION DEFINED. However, the 
+provision of caller-specific entry point and context identifier parameters allows the calling 
+supervisory software to implement such a mechanism.  
+•  The entry point address provided needs to be physical from the point of view of the caller. 
+•  The context identifier is meaningful only to the caller. The value is preserved by the 
+implementation and presented to the core when it starts up at the return Exception level (section 
+6.4). 
+CPU_ON can return the following errors: 
+• 
+• 
+INVALID_PARAMETERS is returned if target_cpu describes an invalid MPIDR. 
+INVALID_ADDRESS is returned when the entry point address is known by the implementation 
+to be invalid, because it is in a range that is known not to be available to the caller. 
+Note: Versions of PSCI prior to 1.0 use INVALID_PARAMETERS where INVALID_ADDRESS 
+applies. 
+•  ALREADY_ON is returned if in the PSCI implementation the core is already in an ON state. See 
+section 6.6. 
+•  ON_PENDING is returned if a call to CPU_ON on the target core has already been made, and 
+the core is not yet ON in the PSCI implementation. See section  6.6. 
+• 
+INTERNAL_FAILURE can be returned if a core cannot be powered up for physical reasons. 
+Examples include lack of power, thermal constraints, manufacturing faults, or reliability reasons. 
+•  DENIED is returned if the target core is not available for OS usage due to firmware enforced 
+policy. 
+5.6.3  Implementation responsibilities: cache management 
+For CPU_ON, the PSCI implementation must: 
+•  Perform invalidation of caches on boot unless this invalidation is automatically performed by the 
+hardware. 
+•  Manage coherency. 
+
+5.6.2  Caller responsibilities 
+Before a CPU_ON call the following must observed: 
+•  CPU_ON must be implemented asynchronously. The mechanism by which supervisory software 
+can detect that the core is finally powered up is IMPLEMENTATION DEFINED. However, the 
+provision of caller-specific entry point and context identifier parameters allows the calling 
+supervisory software to implement such a mechanism.  
+•  The entry point address provided needs to be physical from the point of view of the caller. 
+•  The context identifier is meaningful only to the caller. The value is preserved by the 
+implementation and presented to the core when it starts up at the return Exception level (section 
+6.4). 
+CPU_ON can return the following errors: 
+• 
+• 
+INVALID_PARAMETERS is returned if target_cpu describes an invalid MPIDR. 
+INVALID_ADDRESS is returned when the entry point address is known by the implementation 
+to be invalid, because it is in a range that is known not to be available to the caller. 
+Note: Versions of PSCI prior to 1.0 use INVALID_PARAMETERS where INVALID_ADDRESS 
+applies. 
+•  ALREADY_ON is returned if in the PSCI implementation the core is already in an ON state. See 
+section 6.6. 
+•  ON_PENDING is returned if a call to CPU_ON on the target core has already been made, and 
+the core is not yet ON in the PSCI implementation. See section  6.6. 
+• 
+INTERNAL_FAILURE can be returned if a core cannot be powered up for physical reasons. 
+Examples include lack of power, thermal constraints, manufacturing faults, or reliability reasons. 
+•  DENIED is returned if the target core is not available for OS usage due to firmware enforced 
+policy. 
+5.6.3  Implementation responsibilities: cache management 
+For CPU_ON, the PSCI implementation must: 
+•  Perform invalidation of caches on boot unless this invalidation is automatically performed by the 
+hardware. 
+•  Manage coherency. 
+
+5.7.1  Intended use 
+The valid states that can be returned by AFFINITY_INFO are: 
+ON: At least one core in the affinity instance, as defined in section 4.2.2, meets both of the following 
+conditions: 
+•  The core has been enabled with a call to CPU_ON or is the cold boot primary core. 
+•  The core has not called CPU_OFF.  
+Idling cores that have called CPU_SUSPEND are considered to be in the ON state. Therefore, a core 
+in this state will be running or in a low-power mode. 
+OFF: All the cores in the affinity instance have called CPU_OFF and each of these calls has been 
+processed by the PSCI implementation.   
+ON_PENDING: At least one core in the affinity instance is in the ON_PENDING state, as described in 
+section 5.5. All other cores in the affinity instance are OFF. 
+It is also possible for AFFINITY_INFO to return the DISABLED code when the processing unit described 
+by the input parameters is valid, but is disabled for physical reasons, for example, because a core is 
+faulty. 
+For versions of PSCI prior to 1.0, an implementation must track the states of all the cores in an affinity 
+instance to produce the overall return value. From version 1.0 of PSCI, it is no longer required for 
+AFFINITY_INFO to support affinity levels greater than 0. If a caller requests the state of an affinity 
+instance above level 0, the implementation can respond in one of two ways: 
+•  Provide a valid return value, behaving in a compatible fashion with a version of PSCI prior to 
+1.0. 
+•  Return INVALID_PARAMETERS. 
+
+5.9.1  Intended use 
+Trusted operating systems must be rigorously audited to ensure they meet their security requirements. 
+This means that they must be kept simple. Often this leads to simple uniprocessor kernels, to avoid the 
+inherent complexities of multicore programming. This has implications for when it is possible to hot 
+unplug the core where the Trusted OS is resident. 
+The MIGRATE function provides a method to request a uniprocessor Trusted OS to move to another 
+core. However, this might not be supported by the Trusted OS vendor. The Normal world can use the 
+MIGRATE_INFO functions to determine whether it can use CPU_OFF and MIGRATE for a given Trusted 
+OS. MIGRATE_INFO_TYPE takes no parameters and returns: 
+•  Uniprocessor (UP) and migrate capable 0: This indicates a Trusted OS that can run on only 
+one core. The core it runs on can be changed dynamically through use of the MIGRATE function. 
+Calls to CPU_OFF on the core where the Trusted OS is currently residing return a DENIED error. 
+•  Uniprocessor (UP) not migrate capable 1: This indicates a Trusted OS that does not support 
+migration. Calls to hot unplug the core on which the Trusted OS is running return a DENIED 
+error. Calls to MIGRATE return the same error. 
+•  Multiprocessor (MP) capable or not present 2: This indicates that the Trusted OS is fully MP-
+aware and has no special requirements for migration, or a system that does not use a Trusted 
+OS. Any core can be hot unplugged without first asking the Trusted OS to migrate to another 
+core. In this case, calls to MIGRATE are not relevant. They return NOT_SUPPORTED and have 
+no other effect.  
+In addition, MIGRATE_INFO_UP_CPU takes no parameters and returns an MPIDR-based value to 
+indicate where the Trusted OS currently resides. The value returned uses the same format as the 
+target_cpu parameters of CPU_ON and MIGRATE, see section 5.1.4. The returned value is only valid if 
+MIGRATE_INFO_TYPE returns 0 or 1. The returned value of MIGRATE_INFO_UP_CPU is UNDEFINED if 
+MIGRATE_INFO_TYPE returns 2. 
+For each possible return value of MIGRATE_INFO_TYPE, Table 9 shows the expected return values for 
+calls to MIGRATE and CPU_OFF, when called on the CPU where the Trusted OS currently resides.  The 
+table assumes that valid parameters are passed, that is, that valid target_cpu expressions are passed. 
+The information returned by MIGRATE_INFO_TYPE must be constant and not change on subsequent 
+calls.  
+Table 9 Return values for calls to MIGRATE and CPU_OFF (on resident core)  
+MIGRATE_INFO_TYPE  
+MP or not present (2) or 
+NOT_SUPPORTED 
+UP not migrate capable (1)  
+UP migrate capable (0) 
+Return value of 
+MIGRATE  
+Return value of 
+CPU_OFF 
+NOT_SUPPORTED  
+does not return  
+DENIED 
+SUCCESS 
+DENIED  
+DENIED  
+
+5.16.1 Intended use 
+This function allows the caller to detect which PSCI functions have been implemented and their 
+properties. In addition, PSCI_FEATURES can be used to discover if SMCCC_VERSION is implemented.  
+PSCI functions generally return NOT_SUPPORTED when they are not implemented. However, it is not 
+always convenient to use that mechanism for discovery. Optional APIs such as 
+CPU_DEFAULT_SUSPEND or CPU_FREEZE can cause entry of a CPU into a low-power state. 
+Consequently, calling the functions is not an appropriate mechanism for discovering their presence. The 
+PSCI_FEATURES API identifies whether a function is present or not without needing to call the specific 
+function.  
+The caller passes the function ID in the psci_func_id parameter. The implementation returns: 
+• 
+If the function is implemented, a set of feature flag bits. In this case, bit[31] is always zero. Thus, 
+positive 32-bit integers indicate implemented functions.  
+•  NOT_SUPPORTED, if the function is not implemented. 
+Table 17 in section 6.9 lists all the compulsory and optional functions for a given PSCI version. 
+
+5.16.2 Implementation responsibilities 
+PSCI_FEATURES should report the presence of SMCCC_VERSION in privileged platform firmware 
+compliant with PSCI v1.0 and later revisions. For more details refer to SMC Calling Convention [4]. 
+If a function described by psci_func_id is not implemented, the implementation must return 
+NOT_SUPPORTED. If a AArch32 caller tries to discover an implemented SMC64 function, it is 
+IMPLEMENTATION DEFINED whether a valid set of feature flags is returned instead of 
+NOT_SUPPORTED. However, when a AArch32 caller invokes a SMC64 function, the implementation 
+must return NOT_SUPPORTED, as specified in Section 5.2.1. 
+For functions that are implemented, Table 11 lists possible return values. 
+Table 11 Return values if a function is implemented 
+psci_func_id parameter 
+Feature Flags 
+Function ID for CPU_SUSPEND  
+(0x8400 0001 SMC32 version 
+0xC400 0001 SMC 64 version) 
+Bits[31:2]  Reserved, must be zero. 
+Bit[1] 
+     Parameter Format bit 
+     0 if the implementation uses Original Format 
+        (PSCI0.2) for the power_state parameter. 
+     1 if the implementation uses the new extended 
+        StateID Format for the power_state     
+        parameter. 
+Bit[0] 
+     OS-initiated mode. 
+     0 if the platform does not support OS- 
+        initiated mode. 
+     1 if the platform supports OS-initiated mode. 
+Function ID for SYSTEM_OFF2   Bit[31]       Reserved, must be zero. 
+(0x8400 0015 SMC32 version 
+Bits[30:0]  Hibernate types supported.  
+0xC400 0015 SMC64 version) 
+     This field is a bitmap. 
+                 Bits[30:1]   Reserved for future use. Must be 0
+            for this version of the specification. 
+     Bit[0]   
+HIBERNATE_OFF. 
+This bit must be set to 1. 
+HIBERNATE_OFF must always be 
+supported if the implementation 
+supports SYSTEM_OFF2. 
+Function IDs for any function other 
+than: 
+•  CPU_SUSPEND 
+•  SYSTEM_OFF2 
+Bits[31:0]  Reserved, must be zero 
+
+5.19.1 Intended use 
+This API allows the power state of a node to be determined directly from the power controller or power 
+controlling logic. Unlike AFFINITY_INFO, which returns the view of state of the implementation, this 
+API returns the physical view of power state. 
+
+5.22  PSCI_STAT_RESIDENCY/COUNT 
+Introduced in PSCI 1.0, these functions are optional. 
+5.22.1 Intended use 
+These APIs provide residency statistics for power states that have been used by the platform. The 
+statistics must be counted regardless of the entry mechanism to state, and therefore, any of the PSCI 
+calls that can result in a power state being entered can contribute to the statistics. 
+The functions take two input parameters: 
+•  target_cpu: This parameter follows the same format as the target_cpu parameter of a 
+CPU_ON call. See section 5.1.4. 
+•  power_state: Identifier for a specific local state. Generally, this parameter takes the same  
+form as the power_state parameter described for CPU_SUSPEND in section 5.4.2. 
+Together, both parameters can be used by the platform to index a unique state affecting a unique node 
+of the processor power topology of the system, for example, a specific core or a specific cluster.  
+Only local low-power states, and not running states, are tracked by the statistic functions. However, the 
+composite power state expressed through the power_state parameter can reflect a combination of 
+local states for the various power levels in the system. The functions return the appropriate count or 
+residency time of the local state for the highest power level expressed in the composite power_state. 
+In OS-initiated mode, the implementation must disregard the section of the power_state parameter 
+that describes the power level in which the calling core is the last man. For example, consider the 
+following example of state encoding: 
+Core level state, Bits[3:0]: 0 Run, 1 Standby, 2 Retention, 3 Powerdown. 
+Cluster level state, Bits[7:4]: 0 Run, 2 Retention, 3 Powerdown. 
+System level state, Bits[11:8]: 0 Run, 2 Retention, 3 Powerdown. 
+Core is last in Level, Bits[15:12]: 0 Core, 1 Cluster, 2 System. 
+power_state parameters with StateIDs of 0x#223 and 0x#233 both return statistics for the system 
+level retention state. Encodings that permit indexing a local state directly are also allowed. In the 
+example above, the local state for system level retention carries a state ID of 0x#200. A recommended 
+encoding for the StateIDs is described in section 6.5. 
+It is strongly recommended that, for a given power state, the power_state parameter used in 
+statistics functions matches the power_state parameter used in the CPU_SUSPEND function, as 
+described above. However, it is permissible for the power_state parameter encoding scheme that is 
+used in these functions to differ from the scheme used with CPU_SUSPEND. In this case, for a given 
+power state, firmware tables must describe the value used for power state entry separately from the 
+value used for gathering statistics on state usage. 
+PSCI_STAT_COUNT returns the number of times a power_state has been used by the node 
+represented by the target_cpu and the highest power level of power_state. Note that an OS 
+internal count of state usage (by tracking calls to PSCI) and the value returned by this API might not 
+always agree. This can be for a variety of reasons, for example, the power state requested by the OS 
+and the state entered by the implementation can differ. 
+PSCI_STAT_RESIDENCY returns the amount of time spent in power_state in microseconds, by the 
+node represented by the target_cpu and the highest level of power_state. 
+Both functions return zero if the node and power_state do not represent a valid combination. This 
+can happen if the target_cpu represents a node that is not present or if the node does not support 
+the state passed in power_state. Firmware tables, FDT or ACPI, describe the valid states that the 
+calling OS can request from any given core. 
+5.22.2 Implementation responsibilities 
+The implementation needs to observe the following conditions: 
+•  The statistics count time spent in a low-power state, regardless of the entry method. This 
+includes power states entered through CPU_OFF, CPU_FREEZE, or SYSTEM_SUSPEND. 
+•  Statistics only track local power states. This does not include the time spent in a run state by a 
+node. 
+•  Statistics are set to zero at cold boot. SYSTEM_RESET and SYSTEM_SHUTDOWN have the same 
+effect, because from the perspective of the caller the next boot will be a cold boot. 
+• 
+It is IMPLEMENTATION DEFINED whether the PSCI_STAT_COUNT updates on entry to or exit 
+from a power state. 
+•  For the purposes of measuring residency time, an implementation might only update the count 
+for a given power state and node, when the node exits that power state. When a node enters a 
+given state, it is IMPLEMENTATION DEFINED whether a call to PSCI_STAT_RESIDENCY, for 
+that node and state, will include the time since it last entered the state or not. 
+•  Though these functions are optional, both must be implemented together if statistics are 
+supported. 
+5.22.3 Caller responsibilities 
+The functions use the full resolution of the returned parameters (count or residency). Therefore, the 
+functions do not support error codes for return values. If the functions are not implemented, the returned 
+value is NOT_SUPPORTED, but the OS cannot rely on this value to determine whether the functions are 
+implemented. The calling OS must discover if the functions are present by using the PSCI_FEATURES 
+API (see section 5.1.15). 
+The calling OS must be aware that the returned count or residency values wrap when they overflow the 
+available resolution. This is not a problem for the SMC64 version of the call, but for the SMC32 
+PSCI_STAT_RESIDENCY function, a wrap is possible in just over 1 hour, 11 minutes, and 34 seconds. 
+  Additional Implementation Details 
+
+5.22.1 Intended use 
+These APIs provide residency statistics for power states that have been used by the platform. The 
+statistics must be counted regardless of the entry mechanism to state, and therefore, any of the PSCI 
+calls that can result in a power state being entered can contribute to the statistics. 
+The functions take two input parameters: 
+•  target_cpu: This parameter follows the same format as the target_cpu parameter of a 
+CPU_ON call. See section 5.1.4. 
+•  power_state: Identifier for a specific local state. Generally, this parameter takes the same  
+form as the power_state parameter described for CPU_SUSPEND in section 5.4.2. 
+Together, both parameters can be used by the platform to index a unique state affecting a unique node 
+of the processor power topology of the system, for example, a specific core or a specific cluster.  
+Only local low-power states, and not running states, are tracked by the statistic functions. However, the 
+composite power state expressed through the power_state parameter can reflect a combination of 
+local states for the various power levels in the system. The functions return the appropriate count or 
+residency time of the local state for the highest power level expressed in the composite power_state. 
+In OS-initiated mode, the implementation must disregard the section of the power_state parameter 
+that describes the power level in which the calling core is the last man. For example, consider the 
+following example of state encoding: 
+Core level state, Bits[3:0]: 0 Run, 1 Standby, 2 Retention, 3 Powerdown. 
+Cluster level state, Bits[7:4]: 0 Run, 2 Retention, 3 Powerdown. 
+System level state, Bits[11:8]: 0 Run, 2 Retention, 3 Powerdown. 
+Core is last in Level, Bits[15:12]: 0 Core, 1 Cluster, 2 System. 
+power_state parameters with StateIDs of 0x#223 and 0x#233 both return statistics for the system 
+level retention state. Encodings that permit indexing a local state directly are also allowed. In the 
+example above, the local state for system level retention carries a state ID of 0x#200. A recommended 
+encoding for the StateIDs is described in section 6.5. 
+It is strongly recommended that, for a given power state, the power_state parameter used in 
+statistics functions matches the power_state parameter used in the CPU_SUSPEND function, as 
+described above. However, it is permissible for the power_state parameter encoding scheme that is 
+used in these functions to differ from the scheme used with CPU_SUSPEND. In this case, for a given 
+power state, firmware tables must describe the value used for power state entry separately from the 
+value used for gathering statistics on state usage. 
+PSCI_STAT_COUNT returns the number of times a power_state has been used by the node 
+represented by the target_cpu and the highest power level of power_state. Note that an OS 
+internal count of state usage (by tracking calls to PSCI) and the value returned by this API might not 
+always agree. This can be for a variety of reasons, for example, the power state requested by the OS 
+and the state entered by the implementation can differ. 
+PSCI_STAT_RESIDENCY returns the amount of time spent in power_state in microseconds, by the 
+node represented by the target_cpu and the highest level of power_state. 
+Both functions return zero if the node and power_state do not represent a valid combination. This 
+can happen if the target_cpu represents a node that is not present or if the node does not support 
+the state passed in power_state. Firmware tables, FDT or ACPI, describe the valid states that the 
+calling OS can request from any given core. 
+
+6.1.2  CPU_OFF call flow 
+Figure 6 Example call flow for a CPU_OFF call 
+Figure 6 shows how a CPU_OFF call can be propagated through the Exception levels in a system that 
+implements EL2 and EL3. Whether the call is trapped at EL2 or not is defined by the hypervisor 
+implementation. 
+
+6.1.3  CPU_ON call flow 
+As is the case with a call to CPU_SUSPEND, a call to CPU_ON can go through the various Exception 
+levels.  
+           Figure 7 Example call flow for a CPU_OFF call 
+           Figure 7 is an example of how the call flow might work when all Exception levels are 
+implemented. In the example, CPU_0 is requesting a powerup of CPU_1. The flow follows a similar 
+model to the CPU_SUSPEND flow, described above. CPU_0 requests powering up of CPU_1 and 
+supplies an entry point address and a context identifier for NS-EL1.  In the example, the hypervisor at 
+EL2 traps the call, saving the requisite entry point address and context ID, before making the same call 
+to privileged platform firmware and supplying an EL2 entry point address and context ID. The privileged 
+platform firmware then starts up CPU_1, initializes it and resumes it at EL2 using the supplied entry 
+point address and context ID. Finally, the hypervisor having initialized on CPU_1, resumes the core at 
+NS-EL1, using the originally supplied entry point address and context identifier.  
+As described in            Figure 7, the return Exception level for a CPU_ON call is the highest Non secure 
+Exception level implemented. This rule allows for the model described above, where the hypervisor 
+traps the call. 
+In systems that implement EL2 and EL3, this rule also allows bypassing of EL2, that is, it enables a call 
+to go directly from Non-secure EL1 to EL3. However, the start-up path has to go through EL2. This 
+requires IMPLEMENTATION DEFINED mechanisms for the OS at NS-EL1 to supply a valid EL2 entry 
+point address and context identifier to the privileged platform firmware, and for the NS-EL1 return 
+address and context identifier. This is discussed further in section 6.4. 
+
+6.4.1  First Non-secure Exception level 
+When returning from a CPU_SUSPEND call after a powerdown, or following a CPU_ON call, the first Non-
+secure Exception level that the privileged platform firmware must move the core to is the highest 
+implemented Non-secure Exception level. This is described here as ELNS. 
+In a system that implements EL3 and EL2, it is not possible to use any services of a hypervisor until the 
+use of the HVC instruction has been enabled. This is controlled by the Secure configuration register 
+HCE field, SCR.HCE or SCR_EL3.HCE. If the hypervisor has been enabled in this way, EL NS is EL2, 
+otherwise it is EL1. For the entry to ELNS: 
+• 
+• 
+If ELNS is using AArch32, the initialization code must set the processor mode to be entered. 
+If ELNS is using AArch64, the initialization code must set the stack pointer to be used. With PSCI, 
+the stack pointer must be the one associated with ELNS, that is, SP_ELNS, denoted as EL2h or 
+EL1h. 
+The following table shows this requirement: 
+Table 14 First Non-secure Exception level and state on entry 
+Caller using AArch32  Caller using AArch64 
+  Caller 
+Callee 
+ELNS 
+Processor 
+mode 
+Hypervisor 
+enabled 
+Hypervisor 
+not enabled 
+EL1 
+EL2 
+EL1 
+PPF 
+PPF 
+PPF 
+EL2 
+EL2 
+EL1 
+Hyp 
+Hyp 
+Svc 
+ELNS 
+EL2 
+EL2 
+Stack 
+pointer 
+EL2h 
+EL2h 
+EL1 
+EL1h 
+All cores should have the same Execution state at ELNS. 
+When control passes from EL2 to EL1, the startup state must be: 
+•  Supervisor mode, if EL1 is using AArch32. 
+•  The EL1h stack pointer state, if EL1 is using AArch64. 
+
+6.4.3  Initial core configuration 
+For an Exception level to start execution, higher Exception levels must perform appropriate initialization. 
+From Armv8, platform reset values are defined to provide the minimal functional set for the highest 
+implemented Exception level to start execution. This Exception level then must set up enough state for 
+a lower Exception level to execute.  
+This section describes the items that must be correctly initialized when a core starts up in response to a 
+powerdown state wakeup for CPU_SUSPEND, or through a call to CPU_ON. 
+6.4.3.1  Execution state on Armv8 systems 
+From Armv8, the Execution state entered when starting up a lower Exception level must match the 
+Execution state in use by that Exception level when the PSCI call is made. 
+6.4.3.2  Endianness 
+The caller endianness must be restored when starting up the core at the Exception level from which the 
+call was made. This means, for the Execution level where execution is restarting: 
+• 
+• 
+If starting in AArch32 state, CPSR.E must be set to the appropriate value. 
+If starting in AArch64 state, SCTLR_ELx.EE must be set to the appropriate value. ELx is the 
+Exception level being returned to.  
+Note that only the highest implemented Exception level has a defined reset value for SCTLR_ELx.EE.  
+6.4.3.3  Exceptions 
+The appropriate asynchronous exception masks must be set when starting up the core at the Exception 
+level from which the call was made, or at ELNS. Typically, this means that for the Exception level where 
+execution is restarting: 
+• 
+If starting in AArch32 state, the CPSR.{A,I,F} bits should be set to {1,1,1}.  
+Note: On an Armv7 implementation that includes EL3 (the Security Extensions) but does not 
+include EL2 (the Virtualization Extensions), setting mask bits to 1 in the CPSR masks the 
+interrupts for all Security states and processor modes, regardless of the values of 
+SCR.{FIQ, IRQ, EA, FW AW}. For these implementations, if privileged platform firmware, 
+or the Trusted OS, requires FIQs and asynchronous aborts to be routed to the Secure 
+world, the privileged platform firmware must start Non-secure EL1 with CPSR.{A, F} set to 
+{0, 0}. 
+• 
+If starting in AArch64 state, the SPSR_ELx.{D,A,I,F} bits must be set to {1, 1, 1, 1}. ELx is the 
+Exception level being returned from. 
+6.4.3.4  MMU, cache and branch predictor enables 
+When starting up the core at the Exception level from which the call was made, execution must start 
+with the stage 1 MMU and caches disabled. Also, if starting up in an Exception level that is using 
+AArch32, branch predictors must be disabled. This means: 
+• 
+• 
+If starting in AArch32 state, the SCTLR.{I, C, M} bits must be set to {0, 0, 0}. In addition, the Z bit 
+must be set in a way that is consistent with the reset behavior of the platform. 
+If starting in AArch64 state, the SCTLR_ELx.{ I, C, M} bits must be set to {0, 0, 0}.  ELx is the 
+Exception level being returned to. 
+On start-up, from the point of view of the caller the caches must be clean and coherent with main 
+memory.  
+6.4.3.5  T32 support 
+If the caller is using AArch32 state, and the entry point address specified in a call to CPU_ON or 
+CPU_SUSPEND has bit[0] set to 1, the core must be started in T32 state at the return Exception level. In 
+this case the entry point address specified by the caller is equivalent to the address passed in the call, 
+but with bit[0] set to 0.  
+6.4.3.6  Generic Timer 
+CNTFREQ holds the frequency of the Generic Timer. This register must be initialized by Privileged 
+platform firmware, to enable use of the Generic Timer.  
+6.4.3.7  Context ID 
+When the core first enters the return Exception level, the context ID value supplied in the 
+CPU_SUSPEND or CPU_ON call must be present in: 
+•  X0 if the caller was using AArch64. 
+•  R0 if the caller was using AArch32. 
+6.4.3.8  EL2 state when EL2 is disabled 
+In systems where EL2 is present but has been disabled by clearing SCR_EL3.HCE, it is necessary to 
+initialize EL2 state so that an NS-EL1 operating system will be able to execute. EL2 must be configured 
+to allow NS-EL1 full access to all CPU resources that are not specific to EL2. This typically involves: 
+•  Disabling traps to EL2. This affects HCR_EL2, CPTR_EL2, and CNTHCTL_EL2 among other 
+System registers. NS-EL1 must be allowed to access the physical counter and physical timer. 
+•  HCR_EL2.RW must be set to 1 to allow lower levels to use AArch64 where appropriate. 
+•  HCR_EL2.VM must be set to zero, disabling stage2 translation. 
+•  CNTVOFF_EL2 must be set to zero. 
+•  VMIDR_EL2 must be made equal to MIDR_EL1. 
+•  VMPIDIR_EL2 must be made equal to MPIDR_EL1. 
+An implementation of these requirements can be found in the Trusted Firmware-A project [8]. 
+
+6.5  Recommended StateID Encoding 
+The contents of the CPU_SUSPEND power_state parameter StateID field are IMPLEMENTATION 
+DEFINED. However, it must be set so that each composite power state possible has a unique value. 
+The power_state parameter reflects a composite, as opposed to a local power state, as discussed in 
+section 4.2.1. The StateID field of the parameter can be used to describe the specific combination of 
+local power states being requested. A simple way of doing this is to reserve bit fields for the various 
+power levels in the system. This allows a simple additive mechanism to be used when constructing a 
+composite state from local state indices.  
+For OS-initiated mode, it is also necessary to pass an index for the power level where the calling core is 
+last to go idle. The format of this field matches the power_level parameter of the NODE_HW_STATE 
+function, see section 5.19.1. If a bit field is reserved, the OS can use a simple additive scheme to place 
+the information into a StateID field when it is making a request. Consider the example in Figure 4. Given 
+the number of local states at each power level, a simple encoding could use one nibble of the StateID 
+field as a local state index for each power level, and another nibble for the OS-initiated last level index. 
+This would give rise to the following encoding: 
+Table 15 StateID sample encoding 
+Bit field 
+Description 
+15:12 
+11:8 
+7:4 
+Core is last in Power Level: 
+•  0: Core Level 
+•  1: Cluster Level 
+•  2: System Level 
+System Level Local Power State 
+•  0: Run 
+•  2: Retention 
+•  3: Powerdown 
+Cluster Level Local Power State 
+•  0: Run 
+•  2: Retention 
+•  3: Powerdown 
+3:0 
+Core Level Local Power State 
+•  0: Run 
+•  1: Standby 
+•  2: Retention 
+•  3: Powerdown 
+The above method uses 1-based indices for local states in a power level. Thus, at core level, the states 
+standby, retention, and powerdown are indexed 1, 2, and 3, respectively. For consistency, cluster and 
+system states are numbered 2 and 3 for retention and powerdown, respectively. The value of 0 is 
+reserved to indicate a running state. Using a simple additive composition method, and considering only 
+the local power states, this encoding results in the possible composite power state parameters identified 
+in Table 16. 
+Table 16 StateID encodings for local and composite states in example system 
+Last in 
+Level  
+System 
+Local States 
+Cluster 
+Local States  
+Core Local 
+States 
+Bits[15:12] 
+ Bits[11:8] 
+Bits[7:4] 
+Bits[3:0] 
+Composite States 
+(Sum of Local States) 
+Run 
+0x#000 
+0x000 
+Run 
+0x#000 
+0x000 
+Run 
+0x#000 
+0x000 
+Run 
+0x000 
+Run 
+0x000 
+Run 
+0x000 
+Standby 
+Run | Run | Standby 
+0x001 
+0x#000+0x000+0x000+x001=0x#001 
+Retention 
+Run | Run | Retention 
+0x002 
+0x#000+0x000+0x000+x002=0x#002 
+Powerdown 
+Run | Run | Powerdown 
+0x003 
+0x#000+0x000+0x000+x003=0x#003 
+Run 
+Retention 
+Retention 
+Run | Retention | Retention 
+0x#000 
+0x000 
+0x020 
+0x002 
+0x#000+0x000+0x020+x002=0x#022 
+Run 
+Retention 
+Powerdown 
+Run | Retention | Powerdown 
+0x#000 
+0x000 
+0x020 
+0x003 
+0x#000+0x000+0x020+x003=0x#023 
+Run 
+Powerdown 
+Powerdown 
+Run | Powerdown | Powerdown 
+0x#000 
+0x000 
+0x030 
+0x003 
+0x#000+0x000+0x030+x003=0x#033 
+Retention 
+Retention 
+Retention 
+Retention | Retention | Retention 
+0x#000 
+0x200 
+0x020 
+0x002 
+0x#000+0x200+0x020+x002=0x#222 
+Retention 
+Retention 
+Powerdown 
+Retention | Retention | Powerdown 
+0x#000 
+0x200 
+0x020 
+0x003 
+0x#000+0x200+0x020+x003=0x#223 
+Retention 
+Powerdown 
+Powerdown 
+Retention | Powerdown | Powerdown 
+0x#000 
+0x200 
+0x030 
+0x003 
+0x#000+0x200+0x030+x003=0x#233 
+Powerdown 
+Powerdown 
+Powerdown  Powerdown | Powerdown | Powerdown 
+0x#000 
+0x300 
+0x030 
+0x003 
+0x#000+0x300+0x030+x003=0x#333 
+ The last-in-level information is encoded in the fourth nibble. In a system like this, firmware tables 
+describe the power levels as 0x0000, 0x1000, and 0x2000 for core, cluster, and system, respectively. 
+These values are used when adding the last-in-level value of the StateID portion of a power_state 
+parameter, for a CPU_SUSPEND call in OS-initiated mode.  These values are also used for the 
+power_level parameter of the NODE_HW_STATE function (see section 5.19.1). 
+This method provides the required unique composite state power_state parameters. This scheme 
+also provides the ability to uniquely refer to local states as well as composite states, which is useful, 
+though not required, for the PSCI_STAT_COUNT and RESIDENCY functions. Furthermore, the scheme 
+is additive, so composite state IDs can be obtained by simply adding the local states for each power 
+level, and in the OS-initiated case, also adding the last-in-level index. 
+Note that more compact additive schemes are also possible, by using the same approach by which 
+multidimensional arrays are flattened to single dimensional arrays.  
+6.6 
+Implementation CPU_ON/CPU_OFF races 
+Implementation of CPU_ON and CPU_OFF requires special care to avoid races. Both the calling 
+supervisory software and the PSCI implementation must use appropriate locks to maintain the correct 
+state representation of a core.  
+The AFFINITY_INFO function defines a set of valid states for a core, see section 5.7.1. As seen from the 
+PSCI implementation, a core can be in any of the following states: 
+ON: This core has at some point been enabled with a call to CPU_ON, or is the cold boot primary core, 
+and has not called CPU_OFF. In practice, the core might be running or in a low-power mode, either 
+WFI or deeper because of a call to CPU_SUSPEND. The term ON reflects the fact that the core is 
+considered to be available for computation. 
+OFF: This core has called CPU_OFF, and the call has been processed by the PSCI implementation, or 
+the core has not been booted yet. The core is not available for computation. 
+ON_PENDING: CPU_ON has been called on the target core, but it is still in the process of booting and 
+has not transitioned to an ON state. 
+The state diagram shown in Figure 9 illustrates the valid transitions that an implementation must 
+provide. Circles represent the states, and a state transition is represented as an arrow between two 
+circles. The arrow label denotes the state transition such that: 
+1.   The transition takes place while the original state is TRUE. 
+2.   A transition can include a post transition event. This is indicated by the text that follows a forward 
+slash character “/”. This event happens when the destination state is TRUE. 
+3.   After the transition, the destination state is TRUE. 
+Figure 9 CPU_ON/CPU_OFF PSCI implementation state machine 
+Figure 9 shows the following transitions: 
+CPU_OFF (1): The implementation receives a CPU_OFF call from the client running on the core in 
+question. 
+CPU_ON (2): The implementation receives a CPU_ON call for the core in question. 
+PSCI_INIT (3): The core in question initializes and starts executing PSCI implementation firmware as 
+part of the boot sequence. After this transition, when the PSCI implementation sets the core state to 
+ON, the core reenters the return Exception level at the specified entry point address. 
+The diagram also describes failures to transition when invalid calls are observed. In particular: 
+CPU_ON (4): Fails with an ALREADY_ON error because the PSCI implementation sees the core as 
+being ON. 
+CPU_ON (5): Fails with an ON_PENDING error because a valid CPU_ON  call has already been made to 
+the target core, but the core has not initialized yet, meaning it has not made transition 3 (PSCI_INIT). 
+An actual implementation can distinguish between further internal states. However, externally it must 
+guarantee the states and transitions shown in Figure 9. 
+A caller of PSCI might maintain a similar set of states, and therefore a caller might consider any cores 
+to be ON, OFF, or ON_PENDING. The following pseudocode shows an example implementation from the 
+perspective of the caller to CPU_ON and CPU_OFF.  
+void os_cpu_off()  
+{ 
+lock(psci_state[current_cpu]); 
+assert(psci_state[cpu] == ON); 
+psci_state[cpu] = OFF; 
+unlock(psci_state[cpu]); 
+/* race window starts here */ 
+CPU_OFF(); 
+assert(0); /* CPU_OFF() failed */ 
+} 
+int os_cpu_on(cpu,contexID)  
+{ 
+int r = 0; 
+lock(psci_state[cpu]); 
+if (psci_state[cpu]==ON) r = E ERROR_ALREADY_ON; 
+if (psci_state[cpu]==ON_PENDING) r = ERROR_ON_PENDING; 
+unlock(psci_state[cpu]); 
+return r; 
+if (r) { 
+} 
+do { 
+r = CPU_ON(cpu, physical_addr(os_entry_point), contextID); 
+} while (r == ERROR_ALREADY_ON); 
+assert(!r); 
+psci_state[cpu]=ON_PENDING;  
+unlock(psci_state[cpu]); 
+return r;   
+} 
+This example implementation maintains a lock for each core, and uses the states described in this 
+section, ON, OFF, ON_PENDING, but these states represent the view of the caller of the core status. 
+There is race opportunity, while a caller is transitioning a core to OFF, from the point of view of the 
+caller, but before the PSCI implementation has set the state to OFF, from the point of view of the PSCI 
+implementation. Red text signals the start of the race window. During this time, the caller might consider 
+the core to be OFF, while the PSCI implementation sees the core as being ON. The race closes when 
+the PSCI implementation performs the atomic update of the state of the core to OFF.  
+The race is solved using the ALREADY_ON error. When a CPU_ON call on the same core arrives during 
+this window, the PSCI returns an ALREADY_ON error as the implementation sees that core as still being 
+in the ON state. A caller can use this error code to identify this situation and retry the call. The time 
+spent retrying depends on the following factors: 
+1.   The time between a caller setting the core state to OFF and calling CPU_OFF. 
+2.   The time it takes the PSCI implementation to transition its representation of the core state to 
+OFF.  
+Both time windows should be as short as possible. Finally, when a core enters the calling Exception 
+level, it can transition the state to ON: 
+void os_entry_point() 
+{ 
+... 
+lock(psci_state[cpu]); 
+psci_state[cpu]=ON; 
+unlock(psci_state[cpu]); 
+... 
+} 
+
+6.9  Compliance with the PSCI Specification 
+The functions that must be implemented to be fully compliant with a PSCI at a specified version are 
+listed below: 
+Table 17 Mandatory and optional functions for a given version of PSCI 
+FUNCTION 
+PSCI 0.2 
+PSCI 1.0 
+PSCI 
+1.1/1.2 
+PSCI 1.3 
+PSCI_VERSION 
+CPU_SUSPEND 
+CPU_OFF 
+CPU_ON 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+AFFINITY_INFO 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+MIGRATE 
+Optional 
+Optional 
+Optional 
+Optional 
+MIGRATE_INFO_TYPE 
+Optional(a) 
+Optional(a) 
+Optional(a)  Optional(a) 
+MIGRATE_INFO_CPU 
+Optional(b) 
+Optional(b) 
+Optional(b)  Optional(b) 
+SYSTEM_OFF 
+SYSTEM_RESET 
+PSCI_FEATURES 
+CPU_FREEZE 
+CPU_DEFAULT_SUSPEND 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Mandatory 
+Mandatory  Mandatory 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+NODE_HW_STATE 
+SYSTEM_SUSPEND 
+PSCI_SET_SUSPEND_MODE 
+PSCI_STAT_RESIDENCY 
+PSCI_STAT_COUNT 
+SYSTEM_RESET2 
+MEM_PROTECT 
+MEM_PROTECT_CHECK_RANGE 
+SYSTEM_OFF2 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional 
+Optional 
+Optional(d)  Optional(d) 
+Optional(d)  Optional(d) 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional(e) 
+(a) In issue B.b of this document MIGRATE_INFO_TYPE was compulsory, and NOT_SUPPORTED was not 
+a valid return value. This was fixed in issue C of this document, which represents both a release of 
+PSCI 1.0, and errata fix release for PSCI 0.2. Therefore, this change applies to all versions of PSCI 
+from 0.2 onwards. 
+(b) Mandatory if MIGRATE is implemented. 
+(c) If present, then both PSCI_STAT_RESIDENCY and PSCI_STAT_COUNT must be implemented. 
+(d) If present, then MEM_PROTECT, MEM_PROTECT_CHECK_RANGE, must be implemented. 
+(e) PSCIv1.3 Issue F allowed the implementation to return INVALID_PARAMETERS when           
+SYSTEM_OFF2 was called with the type parameter set to 0x0. This was fixed in PSCIv1.3 Issue 
+F.b, where a value of 0x0 for the type parameter indicates the default HIBERNATE_OFF. Issue F.b 
+supersedes Issue F. 

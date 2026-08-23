@@ -168,7 +168,12 @@ echo "==> configmap $CM"
   --from-file=verify_generated_verus.py="$REPO_ROOT/prompt_engineering/verify_generated_verus.py" \
   --from-file=prompt_engineering_v3.py="$REPO_ROOT/prompt_engineering/prompt_engineering_v3.py" \
   --from-file=prompt_engineering.py="$REPO_ROOT/prompt_engineering/prompt_engineering.py" \
-  --dry-run=client -o yaml | "$KUBECTL" apply -f - >/dev/null
+  --dry-run=client -o yaml | "$KUBECTL" apply --server-side --force-conflicts -f - >/dev/null
+# Server-side, because client-side apply stores the entire object in the
+# kubectl.kubernetes.io/last-applied-configuration annotation, and annotations
+# are capped at 256KiB. A zero-shot bundle carrying the reference closure is
+# ~196KB base64 and pushed the ConfigMap past it -- the data fits fine, the
+# bookkeeping copy of it does not. Server-side apply keeps no such copy.
 
 # A PVC still Terminating from a previous run makes `apply` a silent no-op: it
 # sees the object present and reports "unchanged", the delete then completes, and

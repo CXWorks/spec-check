@@ -250,12 +250,87 @@ def extract_prototypes(cleaned_text: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Cross-reference closure
+# ---------------------------------------------------------------------------
+
+# A heading line: a section number, then a title that starts with a capital and
+# is short. Deliberately strict -- a loose pattern picks up numeric table rows
+# and the index then reports a 4-line CPU_ON. Validated against the sections the
+# splitter above produces: 5.3/5.4/5.6/5.12 agree to within the heading line.
+_HEADING = re.compile(r'^\s*(\d+(?:\.\d+){0,2})\s+([A-Z][A-Za-z0-9_ ,/\-]{2,60})\s*$')
+_XREF = re.compile(r'section\s+(\d+(?:\.\d+){0,2})', re.I)
+
+
+def lines_of(cleaned_text: str) -> list:
+    return cleaned_text.split("\n")
+
+
+def section_index(cleaned_text: str) -> dict:
+    """{number: (start, end)} over every numbered section, by line.
+
+    The table of contents lists every number before the body does, so the LAST
+    match for a number wins. A section runs until the next heading that is not
+    one of its descendants, which is what makes 5.3 include 5.3.1 rather than
+    stopping at it.
+    """
+    lines = cleaned_text.split("\n")
+    pos = {}
+    for i, l in enumerate(lines):
+        m = _HEADING.match(l)
+        if m:
+            pos[m.group(1)] = i
+    order = sorted(pos.items(), key=lambda kv: kv[1])
+    out = {}
+    for i, (num, start) in enumerate(order):
+        end = len(lines)
+        for other, s2 in order[i + 1:]:
+            if not other.startswith(num + "."):
+                end = s2
+                break
+        out[num] = (start, end)
+    return out
+
+
+def reference_closure(cleaned_text: str, index: dict, seeds: list, max_hops: int = 9) -> list:
+    """Sections reachable from `seeds` by following "see section N", to a fixed point.
+
+    Transitive on purpose. Pasting a command's prototype in front of its
+    description does not resolve the problem, it moves it: the prototypes carry
+    their own references, and the count of unresolved ones went UP, from 52 to
+    72. Only the closure terminates.
+
+    It stays small. Across the 17 commands with a clean prototype mapping the
+    closure averages 597 lines, 14% of the document, against 53 for the
+    description alone -- so this is a bounded amount of context, not "give the
+    model the whole PDF". Three commands are the exception at ~40%, all of them
+    in the CPU_SUSPEND family, where the power-state encoding drags in chapter 6.
+    """
+    lines = cleaned_text.split("\n")
+    seen = {s for s in seeds if s in index}
+    frontier = set(seen)
+    for _ in range(max_hops):
+        nxt = set()
+        for n in frontier:
+            st, en = index[n]
+            for r in _XREF.findall("\n".join(lines[st:en])):
+                if r in index and r not in seen:
+                    nxt.add(r)
+        if not nxt:
+            break
+        seen |= nxt
+        frontier = nxt
+    return sorted(seen, key=lambda n: index[n][0])
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
-    argv = [a for a in sys.argv[1:] if a != "--with-prototypes"]
+    flags = {"--with-prototypes", "--with-closure"}
+    argv = [a for a in sys.argv[1:] if a not in flags]
     with_prototypes = "--with-prototypes" in sys.argv[1:]
+    with_closure = "--with-closure" in sys.argv[1:]
     versions = argv if argv else ["psci_13"]
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -293,6 +368,48 @@ def main():
                   f"→ sections/{version}_full/")
             if missing:
                 print(f"  [WARN] no prototype for: {', '.join(missing)}")
+
+        # `<version>_closure` = description + prototype + everything either of
+        # them references, transitively. The point of the three variants is that
+        # they are a ladder: whether more resolved context keeps helping is a
+        # measurement, not something to assume.
+        if with_closure:
+            index = section_index(cleaned)
+            protos = extract_prototypes(cleaned)
+            # command -> the section numbers it starts from
+            seeds = {}
+            for num, (st, en) in index.items():
+                if not re.match(r'^5\.\d+$', num):
+                    continue
+                title = lines_of(cleaned)[st].strip()
+                for nm in _parse_cmd_names(title.split(None, 1)[1] if " " in title else ""):
+                    if nm in cmds:
+                        seeds.setdefault(nm, []).append(num)
+            for num, (st, en) in index.items():
+                if not re.match(r'^5\.1\.\d+$', num):
+                    continue
+                title = lines_of(cleaned)[st].strip()
+                nm = _proto_name(title.split(None, 1)[1] if " " in title else "")
+                if nm in cmds:
+                    seeds.setdefault(nm, []).append(num)
+            cl_dir = os.path.join(base_dir, "sections", f"{version}_closure")
+            os.makedirs(cl_dir, exist_ok=True)
+            all_lines = lines_of(cleaned)
+            sizes = []
+            for cmd_name, raw_text in sorted(cmds.items()):
+                sec = reference_closure(cleaned, index, seeds.get(cmd_name, []))
+                if sec:
+                    text = "\n\n".join("\n".join(all_lines[index[n][0]:index[n][1]])
+                                       for n in sec)
+                else:
+                    text = raw_text
+                with open(os.path.join(cl_dir, f"{cmd_name}_command.txt"), "w") as fh:
+                    fh.write(text)
+                sizes.append(len(text.splitlines()))
+            got = sum(1 for c in cmds if seeds.get(c))
+            print(f"  {got}/{len(cmds)} commands resolved a closure "
+                  f"(mean {sum(sizes)//max(len(sizes),1)} lines, max {max(sizes)}) "
+                  f"→ sections/{version}_closure/")
 
         if not cmds:
             print("  [WARN] No commands found — check section numbering in PDF")

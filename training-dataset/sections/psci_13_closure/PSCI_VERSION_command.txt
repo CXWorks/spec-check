@@ -1,0 +1,185 @@
+5.1.1  PSCI_VERSION 
+Description 
+Return the version of PSCI implemented. See section 5.3 for more details. 
+Parameters 
+Declaration 
+Value 
+uint32 Function ID  
+0x8400 0000 
+Return 
+Declaration 
+Value 
+uint32 
+•  Bits[31:16] Major Version 
+•  Bits[15:0] Minor Version 
+
+5.3  PSCI_VERSION 
+5.3.1  Intended use 
+A caller can use the PSCI_VERSION function to ascertain the current version of the interface. The 
+version number is a 31-bit unsigned integer, with the upper 15 bits denoting the major revision, and the 
+lower 16 bits denoting the minor revision.  
+The following rules apply to the version numbering: 
+•  Different major revision values indicate possibly incompatible functions.  
+•  For two revisions, A and B, for which the major revision values are identical, if the minor revision 
+value of revision B is greater than the minor revision value of revision A, then every function in 
+revision A must work in a compatible way with revision B. However, it is possible for revision B 
+to have a higher function count than revision A.  
+Table 6 specifies the major and minor version numbers for each corresponding issue of the 
+specification. 
+Table 6 PSCI Versions 
+Issue 
+Major 
+Version 
+Minor 
+Version 
+F.b (F is superseded by F.b) 
+E 
+D or D.b 
+C 
+B.b 
+For the revision history of the PSCI specification, see Table 1. 
+5.3.2  Implementation responsibilities 
+An implementation conforming to the PSCI specification described in this document must implement 
+and support all the functions described, unless it is explicitly stated that a function is optional. This does 
+not mean that supervisory software using the implementation is required to use all the functions 
+implemented.  Any function that is not implemented must return NOT_SUPPORTED in accordance with 
+the SMC Calling Conventions [4]. In addition, PSCI_FEATURES must also return NOT_SUPPORTED for 
+any non-implemented function. Table 17 in section 6.9 lists all the compulsory and optional functions for 
+a given PSCI version. 
+
+6.9  Compliance with the PSCI Specification 
+The functions that must be implemented to be fully compliant with a PSCI at a specified version are 
+listed below: 
+Table 17 Mandatory and optional functions for a given version of PSCI 
+FUNCTION 
+PSCI 0.2 
+PSCI 1.0 
+PSCI 
+1.1/1.2 
+PSCI 1.3 
+PSCI_VERSION 
+CPU_SUSPEND 
+CPU_OFF 
+CPU_ON 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+AFFINITY_INFO 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+MIGRATE 
+Optional 
+Optional 
+Optional 
+Optional 
+MIGRATE_INFO_TYPE 
+Optional(a) 
+Optional(a) 
+Optional(a)  Optional(a) 
+MIGRATE_INFO_CPU 
+Optional(b) 
+Optional(b) 
+Optional(b)  Optional(b) 
+SYSTEM_OFF 
+SYSTEM_RESET 
+PSCI_FEATURES 
+CPU_FREEZE 
+CPU_DEFAULT_SUSPEND 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Mandatory 
+Mandatory 
+Mandatory  Mandatory 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Mandatory 
+Mandatory  Mandatory 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+NODE_HW_STATE 
+SYSTEM_SUSPEND 
+PSCI_SET_SUSPEND_MODE 
+PSCI_STAT_RESIDENCY 
+PSCI_STAT_COUNT 
+SYSTEM_RESET2 
+MEM_PROTECT 
+MEM_PROTECT_CHECK_RANGE 
+SYSTEM_OFF2 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Optional(c) 
+Not 
+Applicable 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional 
+Optional 
+Optional(d)  Optional(d) 
+Optional(d)  Optional(d) 
+Not 
+Applicable 
+Not 
+Applicable 
+Optional(e) 
+(a) In issue B.b of this document MIGRATE_INFO_TYPE was compulsory, and NOT_SUPPORTED was not 
+a valid return value. This was fixed in issue C of this document, which represents both a release of 
+PSCI 1.0, and errata fix release for PSCI 0.2. Therefore, this change applies to all versions of PSCI 
+from 0.2 onwards. 
+(b) Mandatory if MIGRATE is implemented. 
+(c) If present, then both PSCI_STAT_RESIDENCY and PSCI_STAT_COUNT must be implemented. 
+(d) If present, then MEM_PROTECT, MEM_PROTECT_CHECK_RANGE, must be implemented. 
+(e) PSCIv1.3 Issue F allowed the implementation to return INVALID_PARAMETERS when           
+SYSTEM_OFF2 was called with the type parameter set to 0x0. This was fixed in PSCIv1.3 Issue 
+F.b, where a value of 0x0 for the type parameter indicates the default HIBERNATE_OFF. Issue F.b 
+supersedes Issue F. 
