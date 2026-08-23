@@ -1,0 +1,45 @@
+pub open spec fn rmi_rtt_create_spec(rd: Address, rtt: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+    (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && ((!RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int)
+            || RttLevelIsStarting(old_s, RealmAt(old_s, rd), level as int))
+        ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsRttLevelAligned(old_s, ipa, level as int - 1) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && ((ipa as int) >= ((1u64 << (RealmAt(old_s, rd).ipa_width as u64)) as int) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, rtt) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegableDram(old_s, rtt) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rtt).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && ((RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE && (rtt as int) >= 0x1000000000000)
+        ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).level < level as int - 1
+        ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).level)))
+    && (RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.state == TABLE
+        ==> ResultEqual(result, RMI_ERROR_RTT(RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).level)))
+    && ((AddrIsGranuleAligned(old_s, rd)
+            && PaIsDelegable(old_s, rd)
+            && GranuleAt(old_s, rd).state == RD
+            && RttLevelIsValid(old_s, RealmAt(old_s, rd), level as int)
+            && !RttLevelIsStarting(old_s, RealmAt(old_s, rd), level as int)
+            && AddrIsRttLevelAligned(old_s, ipa, level as int - 1)
+            && (ipa as int) < ((1u64 << (RealmAt(old_s, rd).ipa_width as u64)) as int)
+            && AddrIsGranuleAligned(old_s, rtt)
+            && PaIsDelegableDram(old_s, rtt)
+            && GranuleAt(old_s, rtt).state == DELEGATED
+            && !(RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE && (rtt as int) >= 0x1000000000000)
+            && RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).level >= level as int - 1
+            && RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.state != TABLE)
+        ==> (result.is_Ok()
+            && GranuleAt(new_s, rtt).state == RTT
+            && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.state == TABLE
+            && RttWalk(new_s, RealmAt(new_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.addr == rtt
+            && (AddrIsProtected(old_s, ipa, RealmAt(old_s, rd))
+                ==> RttAllEntriesRipas(new_s, RttAt(new_s, rtt),
+                    RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas))
+            && RttAllEntriesState(new_s, RttAt(new_s, rtt),
+                RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.state)
+            && ((RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.state != UNASSIGNED
+                    && RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.state != UNASSIGNED_NS)
+                ==> RttAllEntriesContiguous(new_s, RttAt(new_s, rtt),
+                    RttWalk(old_s, RealmAt(old_s, rd), ipa, level as int - 1, RMM_RTT_TREE_PRIMARY).rtte.addr, level as int))))
+}

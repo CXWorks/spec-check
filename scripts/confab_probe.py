@@ -72,7 +72,20 @@ CRITICAL -- do not define outputs the specification leaves undefined: If the spe
 PREAMBLE_TAIL_LINES = 200
 
 
-def preamble_tail(version):
+def preamble_tail(version, section_text=None):
+    """Context block for the prompt.
+
+    The tail is what the published rows used. `section_text` switches to the
+    relevance-selected preamble, which matters here more than anywhere: on alp14
+    the 200-line tail hides 51% of the symbols gold uses, so a general model that
+    has never seen this DSL is being asked to call functions it cannot see. Any
+    comparison against a fine-tuned model that HAS seen them is confounded by
+    that until it is removed.
+    """
+    if section_text is not None:
+        sys.path.insert(0, str(ROOT / "prompt_engineering"))
+        from dataset_loader import load_preamble
+        return load_preamble(version, section_text=section_text)
     p = ROOT / "training-dataset" / "specs" / version / "preamble.rs"
     lines = p.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
     return "".join(lines[-PREAMBLE_TAIL_LINES:]).strip()
@@ -109,6 +122,16 @@ def main():
     ap.add_argument("--versions", nargs="+", default=["eac5", "rel0"])
     ap.add_argument("--arms", nargs="+", default=["base", "noinvent"],
                     choices=["base", "noinvent", "sig", "noinvent+sig"])
+    ap.add_argument("--preamble-mode", default="tail", choices=["tail", "selected"],
+                    help="`selected` gives the model the declarations its own "
+                         "command actually needs; the tail hides 51%% of them on "
+                         "alp14.")
+    ap.add_argument("--samples", type=int, default=1,
+                    help="Generations per command. >1 writes sample_<i>.rs "
+                         "alongside. NOTE: picking the best of N by CodeBLEU "
+                         "against gold, as the published Best@k does, selects "
+                         "using the answer -- report it separately, never as a "
+                         "single-sample number.")
     ap.add_argument("--model", default="claude-opus-5")
     ap.add_argument("--effort", default="high")
     ap.add_argument("--out-root", default="results/confab")
@@ -134,7 +157,7 @@ def main():
     log = []
 
     for version in args.versions:
-        ctx = preamble_tail(version)
+        ctx = preamble_tail(version) if args.preamble_mode == "tail" else None
         samples = {s.command: s for s in load_dataset(versions=[version], all_commands=True)
                    if getattr(s, "command", None)}
         wanted = sorted(samples) if args.all else [c for c in args.commands if c in samples]
@@ -156,7 +179,9 @@ def main():
                                 "chars": dest.stat().st_size, "cached": True})
                     continue
                 sig = signature_for(version, cmd) if "sig" in arm else "(...)"
-                user = TEMPLATE.format(context=ctx, spec=samples[cmd].section_text,
+                cctx = ctx if ctx is not None else preamble_tail(
+                    version, section_text=samples[cmd].section_text)
+                user = TEMPLATE.format(context=cctx, spec=samples[cmd].section_text,
                                        cmd_lower=cmd.lower(), signature=sig)
                 t0 = time.time()
                 try:
