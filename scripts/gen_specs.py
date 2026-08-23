@@ -157,6 +157,13 @@ def main():
                          "parity) in BENCHMARK_VERUS_RMM.md. 0 keeps the raw "
                          "generation, which stays the comparable configuration.")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--no-gold", action="store_true",
+                    help="Keep commands that have no gold spec. For the zero-shot "
+                         "documents only (psci_13, sdei, drtm ...), where no gold "
+                         "exists for any command. Nothing downstream can score "
+                         "agreement in this mode -- the axes are compilation and "
+                         "internal consistency. On an RMM version this flag would "
+                         "silently re-admit commands that were excluded on purpose.")
     args = ap.parse_args()
 
     import torch
@@ -205,7 +212,8 @@ def main():
         # restricting to the alp14 test split would silently drop most of them.
         # It is safe here only because dataset_bench holds every scored command out
         # of training -- see the module docstring.
-        samples = load_dataset(versions=[version], all_commands=True)
+        samples = load_dataset(versions=[version], all_commands=True,
+                               require_gold=not args.no_gold)
         samples = [s for s in samples if getattr(s, "command", None)]
         if args.limit:
             samples = samples[: args.limit]

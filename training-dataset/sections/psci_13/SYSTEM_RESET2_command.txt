@@ -1,0 +1,72 @@
+5.13  SYSTEM_RESET2 
+
+Introduced in PSCI 1.1. This function is optional. 
+5.13.1 Intended use 
+This function provides methods to reset the system. The function describes architectural resets, where 
+the semantics of the reset are described by this specification. The function also allows for vendor-
+specific resets. As detailed in section 4.4, the reset command applies to the machine view of the calling 
+OS. 
+Bit[31] of the reset_type parameter indicates whether a reset is architectural or vendor specific. 
+When bit[31] has a value of 0, the reset is architectural. A value of 1 indicates a vendor-specific reset. 
+5.13.2 Architectural resets 
+Bits[30:0] of the reset_type indicate which architectural reset is being requested.  
+Table 10 Architectural resets 
+Bits[30:0] of 
+reset_type 
+Description 
+0x0 
+SYSTEM_WARM_RESET 
+0x1-0x7FFFFFFF 
+Reserved for future use. 
+5.13.2.1 System Warm reset 
+This reset is selected when reset_type is 0x0 (SYSTEM_WARM_RESET). 
+The function is intended to provide a fast reboot path that guarantees not to reset system main memory. 
+This is defined as volatile memory accessible by cores when executing in the calling operating system. 
+This definition does not extend to caches or to memory-mapped IO. 
+The memory that is to be preserved and not trashed by boot firmware needs to be described by 
+firmware table technologies such as ACPI [6] and Device Tree [7] and does not need to cover all 
+available system main memory. 
+When this reset is selected, the cookie parameter is ignored by the implementation. 
+5.13.3 Vendor-specific resets 
+Values in the range 0x80000000-0xFFFFFFFF of the reset_type parameter can be used to request 
+vendor-specific resets or shutdowns. In this case, the cookie parameter can be used to pass 
+additional data to the implementation. 
+5.13.4 Caller responsibilities 
+The calling OS uses the PSCI_FEATURES API, with the SYSTEM_RESET2 function ID, to discover 
+whether the function is present:  
+• 
+• 
+If the function is implemented, PSCI_FEATURES returns a value of 0. 
+If the function is not implemented, PSCI_FEATURES returns NOT_SUPPORTED. 
+See also section 5.1.15.  
+For architectural resets where possible, cores should be placed in a known state. No specific 
+coordination is required between cores. 
+For the architectural SYSTEM_WARM_RESET all memory requesters are recommended to be quiesced, 
+so there are no active or pending memory transactions on their behalf. This is because it is unknown if 
+the implementation can safely reset all active devices in the system while there is ongoing memory 
+traffic and chooses a silent fallback to cold reset instead. 
+Regardless of the values in reset_type and cookie, a call to SYSTEM_RESET2 returns 
+NOT_SUPPORTED if SYSTEM_RESET2 is not implemented. 
+For architectural resets, the following errors can also apply: 
+• 
+INVALID_PARAMETERS, if reset_type is not a valid value for an architectural reset as 
+defined in Table 10.  
+Vendor-specific resets can also use other return values. Guidelines are provided in section 5.13.5. 
+5.13.5 Implementation responsibilities 
+The implementation must ensure that the semantics of the reset are observed. 
+For the architectural SYSTEM_WARM_RESET: 
+• 
+requesters, which can affect the contents of main memory, must be reset. 
+•  all CPUs and associated MMUs must be reset. 
+•  all interrupts need to be disabled either at the source or at the interrupt controller.  
+•  any System Memory Management Units (SMMUs) or IOMMUs need to be reset to a state 
+which is identical to that post a cold reset triggered by the SYSTEM_RESET function. 
+The implementation can also gather error syndrome information before or after the reset, and prior to 
+handing over to the Highest Privilege Exception level.  
+Vendor-specific resets might need vendor-specific error return codes. The following requirements must 
+hold for vendor-specific error return codes: 
+•  The implementation can use the other PSCI error codes that are defined in section 5.2.2, with 
+the exception of NOT_SUPPORTED. 
+• 
+If the error codes defined in section 5.2.2 are not sufficient, the implementation must return 
+error codes that are signed integers with a value less than -256. 

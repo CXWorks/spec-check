@@ -1,0 +1,50 @@
+5.11  SYSTEM_OFF2 
+
+5.11.1 Intended use 
+This function provides a method to implement hibernate or suspend-to-disk, as described by the S4 
+state in the ACPI specification [6].  Note that this specification is using the state definitions of S4 
+provided by ACPI but does not limit use of this PSCI function to ACPI-based systems. 
+The following start is a cold reboot from the point of view of the caller. If the system provides an FACS 
+ACPI table, then the Hardware Signature field in the table can be used to determine whether to restore 
+the saved system context or to perform a clean reboot as described in the ACPI specification [6]. 
+As detailed in section 4.4, the command applies to the machine view of the calling OS. The calls cannot 
+originate from the Secure Security state. 
+While suspend to disk might be considered a special case of SYSTEM_OFF, using SYSTEM_OFF in 
+some cases can lead to undesired behavior. For example, when virtualization is enabled, the hypervisor 
+management stack should not modify memory layout or virtual device properties if the virtual machine is 
+in hibernated state. Physical machines may need to provide visible feedback about the hibernated state 
+to users, such as a differently coloured LED. Meeting these requirements necessitates a dedicated 
+interface for suspend to disk to pass a hibernate hint to the implementation. 
+Calling SYSTEM_OFF2 carries with it several pre-conditions, including those which require that all 
+devices in the system are quiesced, and the caller state is saved into non-volatile storage before 
+invoking this function. The complete list of those preconditions is beyond the scope of this specification 
+and are therefore not described here. The SYSTEM_OFF2 function limits itself to providing the 
+mechanism by which the calling OS can request entry into hibernate, having met all the necessary 
+preconditions. 
+5.11.2 Caller responsibilities 
+The calling OS uses the PSCI_FEATURES API, with the SYSTEM_OFF2 function ID, to discover whether 
+the function is present:  
+• 
+• 
+If the function is implemented, PSCI_FEATURES returns the hibernate types supported. 
+If the function is not implemented, PSCI_FEATURES returns NOT_SUPPORTED. 
+See also section 5.1.15. Furthermore, if the function is not implemented, a call to SYSTEM_OFF2 returns 
+NOT_SUPPORTED. 
+The caller must perform any operations necessary for hibernate or suspend to disk entry. This includes, 
+but is not limited, to ensuring that: 
+•  Non-calling cores are in a known state, and that all devices have been quiesced. 
+•  Caller specific state and data has been saved to non-volatile storage, so that the caller can 
+restore its state on the subsequent reboot post exit from hibernate. 
+One way in which cores can be placed into a known state is to use calls to CPU_OFF on all online cores 
+except for the last one, which instead uses SYSTEM_OFF2.  
+It is recommended not to use hibernate if a firmware update is pending, since successful hibernation is 
+not guaranteed in such a scenario. 
+5.11.3 Implementation responsibilities 
+The implementation: 
+•  Must support SYSTEM_OFF2 calls from every core in the system. 
+•  Must save any necessary state and data in non-volatile storage to maintain the same base 
+hardware configuration of the system for the subsequent reboot. This implies maintaining the same 
+memory layout, static device properties, and OS visible firmware interfaces for the subsequent 
+reboot post exit from hibernate. 
+•  Powers off the system from the point of view of the caller such that the following start is a cold boot. 
+•  Returns INVALID_PARAMETERS if any of the input parameters are invalid. 

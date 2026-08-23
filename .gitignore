@@ -55,3 +55,9 @@ eval/
 
 # Verus writes these into the working directory it is invoked from.
 libtmp*.rlib
+
+# PDF -> text intermediates for the zero-shot documents. The committed copy of a
+# version's input is training-dataset/sections/<version>/, same as the RMM
+# versions; these two are the extractor's scratch space on the way there.
+training/ccaspec/
+training/sections/

@@ -16,6 +16,16 @@ MODE="${MODE:-score}"            # score | repair | gen
 # so this mode needs those versions' section text, not alp14's, and it needs no
 # Verus at all -- the dangling-output check is textual.
 GEN_VERSIONS="${GEN_VERSIONS:-eac5 rel0}"
+# Versions with no gold spec for any command: the zero-shot documents (psci_13,
+# sdei, drtm). They are shipped in the entry ConfigMap rather than fetched from
+# the data repo, which stores every version as a (sections, gold) pair and has no
+# gold to pair these with. Naming one here also passes --no-gold to gen_specs.py,
+# without which dataset_loader drops every command and the run generates nothing.
+NO_GOLD_VERSIONS="${NO_GOLD_VERSIONS:-}"
+# 1 runs scripts/psci_sweep.py over the generated specs. This is the whole
+# measurement for a no-gold document -- unsatisfiable and vacuous specs are
+# decided by Z3 alone -- so it needs verus even when REPAIR_ROUNDS=0.
+SWEEP="${SWEEP:-0}"
 # >0 makes gen mode compile each spec and feed the error back. That needs verus
 # and rustup after all, so the skips below are conditional on it being 0.
 REPAIR_ROUNDS="${REPAIR_ROUNDS:-0}"
@@ -104,10 +114,10 @@ done
 # struct -> pub struct rewrite; both are prerequisites, not optional extras.
 export RUSTUP_HOME=/work/rust/rustup CARGO_HOME=/work/rust/cargo
 export PATH=$CARGO_HOME/bin:$PATH
-if [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ]; then
+if [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ] && [ "$SWEEP" = "0" ]; then
   # rustup exists only to satisfy verus, which gen mode invokes only when
-  # repairing.
-  echo "[eval] mode=gen without repair: skipping rustup"
+  # repairing -- or when sweeping a no-gold document, where verus IS the metric.
+  echo "[eval] mode=gen without repair or sweep: skipping rustup"
 elif [ ! -x "$CARGO_HOME/bin/rustc" ]; then
   echo "[eval] installing rustup"
   mkdir -p "$RUSTUP_HOME" "$CARGO_HOME"
@@ -116,8 +126,8 @@ elif [ ! -x "$CARGO_HOME/bin/rustc" ]; then
 fi
 
 export VERUS_BIN=/work/tools/verus/verus-x86-linux/verus
-if [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ]; then
-  echo "[eval] mode=gen without repair: skipping verus (the check is textual)"
+if [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ] && [ "$SWEEP" = "0" ]; then
+  echo "[eval] mode=gen without repair or sweep: skipping verus (the check is textual)"
 elif [ ! -x "$VERUS_BIN" ]; then
   echo "[eval] installing verus $VERUS_VER"
   mkdir -p /work/tools && cd /work/tools
@@ -126,7 +136,7 @@ elif [ ! -x "$VERUS_BIN" ]; then
   command -v unzip >/dev/null || (apt-get update -qq && apt-get install -y -qq unzip) >/dev/null 2>&1
   rm -rf verus && unzip -q verus.zip -d verus
 fi
-{ [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ]; } || "$VERUS_BIN" --version | head -1
+{ [ "$MODE" = "gen" ] && [ "$REPAIR_ROUNDS" = "0" ] && [ "$SWEEP" = "0" ]; } || "$VERUS_BIN" --version | head -1
 
 # Retry the fetch in-process rather than letting the pod die on it.
 #
@@ -162,7 +172,11 @@ assert n > 0, "no section files - eval would score nothing"
 print(f"[eval] data ready ({n} alp14 sections)")
 
 # gen mode scores eac5/rel0, whose sections are separate archives in the repo.
-for v in ("${GEN_VERSIONS}".split() if "${MODE}" == "gen" else []):
+# A no-gold version is skipped here: it has no gold archive to fetch and its
+# sections arrive from the entry ConfigMap instead, unpacked after this block.
+_nogold = set("${NO_GOLD_VERSIONS}".split())
+for v in ([x for x in "${GEN_VERSIONS}".split() if x not in _nogold]
+          if "${MODE}" == "gen" else []):
     os.makedirs(f"training-dataset/specs/{v}", exist_ok=True)
     shutil.copy(os.path.join(p, f"specs/{v}/preamble.rs"), f"training-dataset/specs/{v}/")
     # Gold too, not just sections: dataset_loader.load_version SKIPS any command
@@ -182,6 +196,19 @@ for v in ("${GEN_VERSIONS}".split() if "${MODE}" == "gen" else []):
         "otherwise load 0 commands")
     print(f"[eval] {v} ready ({m} sections, {g} gold)")
 PY
+
+# Zero-shot documents ride in the entry ConfigMap as a base64 tarball.
+# Unpacked after the fetch so a retry of fetch_data cannot clobber them.
+if [ -f /entry/zeroshot.tgz.b64 ]; then
+  base64 -d /entry/zeroshot.tgz.b64 | tar xzf - -C /work/repo
+  for v in $NO_GOLD_VERSIONS; do
+    n=$(find "/work/repo/training-dataset/sections/$v" -name "*_command.txt" 2>/dev/null | wc -l)
+    [ "$n" -gt 0 ] || { echo "[eval] FATAL: $v unpacked 0 sections"; return 1; }
+    [ -f "/work/repo/training-dataset/specs/$v/preamble.rs" ] || {
+      echo "[eval] FATAL: $v has no preamble.rs"; return 1; }
+    echo "[eval] $v ready ($n sections, no gold by design)"
+  done
+fi
 }
 
 for a in 1 2 3 4 5 6; do
@@ -231,6 +258,7 @@ for RUN in $RUN_IDS; do
       rm -rf "$GDIR"
       GEN_ARGS="--versions $GEN_VERSIONS --out-dir $GDIR --repair-rounds $REPAIR_ROUNDS"
       [ "$WITH_PREAMBLE" = "1" ] && GEN_ARGS="$GEN_ARGS --with-preamble --preamble-mode $PREAMBLE_MODE"
+      [ -n "$NO_GOLD_VERSIONS" ] && GEN_ARGS="$GEN_ARGS --no-gold"
       ok=""
       for a in 1 2 3; do
         # shellcheck disable=SC2086
@@ -249,6 +277,23 @@ for RUN in $RUN_IDS; do
       for gv in $GEN_VERSIONS; do
         echo "[eval]   $gv: $(find "$GDIR/$gv" -name '*.rs' 2>/dev/null | wc -l) files"
       done
+      # The no-gold measurement. Runs BEFORE the upload so its JSON ships inside
+      # the same artifact as the specs it describes: a sweep result that has to be
+      # matched up with a separately-uploaded generation by hand is a sweep result
+      # that eventually gets matched to the wrong one.
+      if [ "$SWEEP" = "1" ]; then
+        for gv in $GEN_VERSIONS; do
+          PRE="/work/repo/training-dataset/specs/$gv/preamble.rs"
+          echo "[eval] ===== sweep $gv ====="
+          # Not `|| true`: a sweep that dies must not leave the artifact looking
+          # like a clean run. The self-test inside it gates interpretation, and
+          # its exit status is what carries that.
+          python scripts/psci_sweep.py --gen-dir "$GDIR/$gv" --preamble "$PRE" \
+            --jobs "$JOBS" --out "$GDIR/sweep-$gv.json" || {
+              echo "[eval] sweep FAILED for $gv"
+              FAILED_RUNS="$FAILED_RUNS $RUN/$CK:sweep-$gv"; }
+        done
+      fi
       tar czf "/work/eval/${NAME}.tgz" -C /work/eval "${NAME}"
       python - <<UPLOAD_EOF
 import os

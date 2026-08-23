@@ -1,0 +1,56 @@
+5.18  CPU_DEFAULT_SUSPEND 
+
+Introduced in PSCI 1.0, this function is optional. 
+5.18.1 Intended use 
+From the point of view of the caller, this API is equivalent to calling CPU_SUSPEND with a power_state 
+parameter reflecting a core powerdown state, as defined in section  4.1. Unlike CPU_SUSPEND, 
+however, the power_state parameter is omitted. The actual power state entered is IMPLEMENTATION 
+DEFINED.  
+In every other way, the semantics are like a CPU_SUSPEND and are therefore primarily described in 
+section 5.4. 
+The CPU_DEFAULT_SUSPEND function is optional. The function is meant for systems where all the 
+information required to use CPU_SUSPEND, that is the power states and their properties, is available in 
+the later phases of boot. In these systems, CPU_DEFAULT_SUSPEND provides an alternative to WFI 
+that can be used during early boot. 
+5.18.2 Implementation responsibilities 
+The power state into which the platform places the calling core is IMPLEMENTATION DEFINED. The 
+level of coordination that is performed in this power state is also IMPLEMENTATION DEFINED. For 
+example, if all cores in a cluster call CPU_DEFAULT_SUSPEND, the implementation can choose to 
+power down the cluster. Although the choice of state and coordination are up to the implementation, it 
+must not be possible for the platform to enter a thermally critical condition if all cores have entered a 
+low-power state as a result of calling CPU_DEFAULT_SUSPEND. 
+5.18.3 Caller responsibilities 
+Before a CPU_DEFAULT_SUSPEND call, the Normal world must observe the following conditions: 
+•  The calling supervisory software must have saved all the state it requires to enable resumption 
+of operation on reset. The context saved must reflect all caller-visible state that would be lost by 
+the core. For more information on the required state following the application of power after a 
+CPU_SUSPEND, CPU_DEFAULT_SUSPEND, or CPU_ON call, see section 6.4.3. 
+•  The caller is not required to perform any cache or coherency management. This management 
+must be performed by the PSCI implementation. 
+•  The caller must not assume that a powerdown state is entered. The actual state used is 
+IMPLEMENTATION DEFINED and can be a standby state. In addition, the request might not 
+complete due, for example, to pending interrupts. Therefore, the function might return at the next 
+instruction, or return at the specified entry point address. If returning at the next instruction due 
+to pending interrupts, or because the implemented state is a standby state, the return code is 
+SUCCESS. 
+•  The caller must be able to handle potential return error codes:  
+• 
+INVALID_ADDRESS is returned if the entry point address is known by the implementation to 
+be invalid because it is in a range that is known not to be available the caller. 
+•  The caller must ensure that appropriate wakeup events are enabled to allow resumption from 
+that state. 
+•  The entry point address provided by the CPU_DEFAULT_SUSPEND call must be a physical 
+address from the point of view of the caller.  
+•  The context identifier is meaningful only to the caller. The value is preserved by the 
+implementation and presented to the core when it is started up at the return Exception level 
+(section 6.4.1). 
+•  The power state entered by a CPU_DEFAULT_SUSPEND is IMPLEMENTATION DEFINED. The 
+caller cannot make assumptions about what the power state might be. Equally, the level of 
+coordination with power states in other cores in the topology is IMPLEMENTATION DEFINED 
+and therefore the calling OS cannot make any assumptions about it. For example, if all cores in 
+a cluster call CPU_DEFAULT_SUSPEND, it is not safe to assume that any core or the cluster will 
+be fully power gated. For a given topology node, it is only safe to make assumptions about its 
+power state when all children cores been resumed from CPU_DEFAULT_SUSPEND. When using 
+OS-initiated Idle, a simple scheme to prevent errors in idling when cores have called 
+CPU_DEFAULT_SUSPEND is for the OS to consider those as running cores in its last man 
+tracking algorithm.  

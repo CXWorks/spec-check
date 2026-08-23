@@ -1,0 +1,34 @@
+5.21  PSCI_SET_SUSPEND_MODE 
+
+Introduced in PSCI 1.0, this function is optional. 
+5.21.1 Intended use 
+This function is used to switch between the two different power state coordination modes described in 
+section 4.2.  
+The platform will boot in platform-coordinated mode. If the calling OS uses OS-initiated mode, the API 
+must be called once during OS boot. CPU_DEFAULT_SUSPEND can be used before the suspend mode 
+is set. 
+Some operating systems support rebooting a new kernel within their Exception level, and without 
+resetting the system as a whole. In this case, the calling OS must place the PSCI implementation back 
+into a platform-coordinated mode before rebooting. 
+5.21.2 Implementation responsibilities 
+Switching from platform-coordinated to OS-initiated modes (see section 4.2) is only allowed if the 
+following conditions are met: 
+•  All cores are in one of the following states: 
+•  Running. 
+•  OFF, through a call to CPU_OFF or not yet booted.  
+•  Suspended, through a call to CPU_DEFAULT_SUSPEND. 
+•  None of the processors has called CPU_SUSPEND since the last change of mode or boot. 
+A switch from OS-initiated mode to platform-coordinated mode is only possible if all cores other than the 
+calling one are OFF, either through a call to CPU_OFF or not yet booted. 
+If these conditions are not met, the platform must return DENIED.   
+The default coordination mode is platform-coordinated. 
+5.21.3 Caller responsibilities 
+The caller must be able to cope with the following error return codes: 
+•  NOT_SUPPORTED, in which case the calling OS can assume the platform will work in platform-
+coordinated mode. In this case, the PSCI_FEATURES feature flag 0 for CPU_SUSPEND is also 0. 
+• 
+INVALID_PARAMETERS, if the parameter mode is not a valid value (0 or 1). 
+•  DENIED:   
+• 
+If any core is not in the correct state, as detailed in the previous section.  
+•  When switching to OS-initiated mode if a core has made use of CPU_SUSPEND. 

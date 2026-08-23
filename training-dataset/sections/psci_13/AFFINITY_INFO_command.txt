@@ -1,0 +1,33 @@
+5.7  AFFINITY_INFO 
+
+5.7.1  Intended use 
+The valid states that can be returned by AFFINITY_INFO are: 
+ON: At least one core in the affinity instance, as defined in section 4.2.2, meets both of the following 
+conditions: 
+•  The core has been enabled with a call to CPU_ON or is the cold boot primary core. 
+•  The core has not called CPU_OFF.  
+Idling cores that have called CPU_SUSPEND are considered to be in the ON state. Therefore, a core 
+in this state will be running or in a low-power mode. 
+OFF: All the cores in the affinity instance have called CPU_OFF and each of these calls has been 
+processed by the PSCI implementation.   
+ON_PENDING: At least one core in the affinity instance is in the ON_PENDING state, as described in 
+section 5.5. All other cores in the affinity instance are OFF. 
+It is also possible for AFFINITY_INFO to return the DISABLED code when the processing unit described 
+by the input parameters is valid, but is disabled for physical reasons, for example, because a core is 
+faulty. 
+For versions of PSCI prior to 1.0, an implementation must track the states of all the cores in an affinity 
+instance to produce the overall return value. From version 1.0 of PSCI, it is no longer required for 
+AFFINITY_INFO to support affinity levels greater than 0. If a caller requests the state of an affinity 
+instance above level 0, the implementation can respond in one of two ways: 
+•  Provide a valid return value, behaving in a compatible fashion with a version of PSCI prior to 
+1.0. 
+•  Return INVALID_PARAMETERS. 
+5.7.2  Caller responsibilities 
+Callers must be aware that the state returned by the AFFINITY_INFO call is affected by calls to CPU_ON 
+and CPU_OFF, both of which could be in flight at the same time. 
+The caller must deal with any errors arising from the call: 
+• 
+INVALID_PARAMETERS is returned if the lowest_affinity_level and target_affinity parameters 
+describe an affinity instance that is not present in the platform.  
+•  DISABLED is returned if the parameters describe an affinity instance that is disabled for physical 
+reasons, for example, because the core is faulty. 

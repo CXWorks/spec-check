@@ -1,0 +1,64 @@
+5.16  PSCI_FEATURES 
+
+Introduced in PSCI 1.0, this function is mandatory. 
+5.16.1 Intended use 
+This function allows the caller to detect which PSCI functions have been implemented and their 
+properties. In addition, PSCI_FEATURES can be used to discover if SMCCC_VERSION is implemented.  
+PSCI functions generally return NOT_SUPPORTED when they are not implemented. However, it is not 
+always convenient to use that mechanism for discovery. Optional APIs such as 
+CPU_DEFAULT_SUSPEND or CPU_FREEZE can cause entry of a CPU into a low-power state. 
+Consequently, calling the functions is not an appropriate mechanism for discovering their presence. The 
+PSCI_FEATURES API identifies whether a function is present or not without needing to call the specific 
+function.  
+The caller passes the function ID in the psci_func_id parameter. The implementation returns: 
+• 
+If the function is implemented, a set of feature flag bits. In this case, bit[31] is always zero. Thus, 
+positive 32-bit integers indicate implemented functions.  
+•  NOT_SUPPORTED, if the function is not implemented. 
+Table 17 in section 6.9 lists all the compulsory and optional functions for a given PSCI version. 
+5.16.2 Implementation responsibilities 
+PSCI_FEATURES should report the presence of SMCCC_VERSION in privileged platform firmware 
+compliant with PSCI v1.0 and later revisions. For more details refer to SMC Calling Convention [4]. 
+If a function described by psci_func_id is not implemented, the implementation must return 
+NOT_SUPPORTED. If a AArch32 caller tries to discover an implemented SMC64 function, it is 
+IMPLEMENTATION DEFINED whether a valid set of feature flags is returned instead of 
+NOT_SUPPORTED. However, when a AArch32 caller invokes a SMC64 function, the implementation 
+must return NOT_SUPPORTED, as specified in Section 5.2.1. 
+For functions that are implemented, Table 11 lists possible return values. 
+Table 11 Return values if a function is implemented 
+psci_func_id parameter 
+Feature Flags 
+Function ID for CPU_SUSPEND  
+(0x8400 0001 SMC32 version 
+0xC400 0001 SMC 64 version) 
+Bits[31:2]  Reserved, must be zero. 
+Bit[1] 
+     Parameter Format bit 
+     0 if the implementation uses Original Format 
+        (PSCI0.2) for the power_state parameter. 
+     1 if the implementation uses the new extended 
+        StateID Format for the power_state     
+        parameter. 
+Bit[0] 
+     OS-initiated mode. 
+     0 if the platform does not support OS- 
+        initiated mode. 
+     1 if the platform supports OS-initiated mode. 
+Function ID for SYSTEM_OFF2   Bit[31]       Reserved, must be zero. 
+(0x8400 0015 SMC32 version 
+Bits[30:0]  Hibernate types supported.  
+0xC400 0015 SMC64 version) 
+     This field is a bitmap. 
+                 Bits[30:1]   Reserved for future use. Must be 0
+            for this version of the specification. 
+     Bit[0]   
+HIBERNATE_OFF. 
+This bit must be set to 1. 
+HIBERNATE_OFF must always be 
+supported if the implementation 
+supports SYSTEM_OFF2. 
+Function IDs for any function other 
+than: 
+•  CPU_SUSPEND 
+•  SYSTEM_OFF2 
+Bits[31:0]  Reserved, must be zero 

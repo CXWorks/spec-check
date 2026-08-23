@@ -1,0 +1,30 @@
+5.10  SYSTEM_OFF 
+
+5.10.1 Intended use 
+SYSTEM_OFF provides a system shutdown API.  
+As detailed in section 4.4, the shutdown command applies to the machine view of the calling OS.  
+The caller must place all cores in a known state prior to the call. Like all other APIs presented here, the 
+calls can only originate in the Normal world. On a SYSTEM_OFF call, the implementation completely 
+removes power from highest power level. 
+The following start must be a cold boot from the point of view of the caller. 
+5.10.2 Implementation responsibilities 
+•  The implementation must support SYSTEM_OFF calls from every core in the system. If a UP Trusted 
+OS is present, and the call does not come from the core on which it is resident, then the 
+implementation has two options: 
+• 
+If the Trusted OS requires it, provide an IMPLEMENTATION DEFINED mechanism to inform 
+the Trusted OS of the impending shutdown. 
+•  Use a Trusted OS that can cope with the shutdown. In mobile applications Trusted 
+Operating Systems must be able to deal with a sudden loss of power. 
+•  The implementation must ensure that any data it requires is saved to non-volatile storage. 
+5.10.3 Caller responsibilities 
+The caller must perform any necessary operations to ensure a clean shutdown in its OS: 
+•  Ensure cores are in a known state and that any necessary data has been saved to non-volatile 
+storage.  
+• 
+It is up to the calling supervisory software to store any information it requires on restart in 
+storage that will survive the shutdown.  
+One way in which cores can be placed into a known state is to use calls to CPU_OFF on all online cores 
+except for the last one, which instead uses SYSTEM_OFF. If a UP Trusted OS is present, this method 
+only works if the core that calls SYSTEM_OFF is the one where the Trusted OS is resident, as calls to 
+CPU_OFF on this core return a DENIED error.  Any core can call SYSTEM_OFF.  

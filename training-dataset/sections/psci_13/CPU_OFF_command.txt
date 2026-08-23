@@ -1,0 +1,71 @@
+5.5  CPU_OFF 
+
+5.5.1  Intended use 
+CPU_OFF is designed for dynamic removal of the calling core from the system. When PPF receives a 
+CPU_OFF call, it must power down the calling core. 
+Unlike CPU_SUSPEND, the call is not expected to return. With this function the calling supervisory 
+software is explicitly stating that it will no longer use a core. This situation is only reversed when a 
+CPU_ON call is used to bring the core back online.  
+CPU_OFF calls can only originate from the Normal world. If the Secure world needs to manage the 
+number of active cores, it needs to use Trusted OS or SP specific IMPLEMENTATION DEFINED 
+communication with the Normal world to achieve its aims. It must not be possible for Secure world to 
+allow a core to be seen as powered up and available by the Trusted OS or SP, while the Normal world 
+sees the core as being powered down.  
+A description of the call flow can be found in section 6.1.2. 
+5.5.2  Caller responsibilities 
+Before a CPU_OFF call, the following must be observed: 
+•  The calling OS must have migrated all threads and interrupts away from the core that is being 
+powered down. Asynchronous wakeups on a core that has been switched off through a PSCI 
+CPU_OFF call result in an erroneous state. When this erroneous state is observed, it is 
+IMPLEMENTATION DEFINED how the PSCI implementation reacts. Possible actions are: 
+•  The PSCI implementation ignores the wakeup and keeps the core powered down. 
+•  The PSCI implementation resets the system. 
+•  The caller is not required to perform any cache or coherency management. This management 
+must be performed by the PSCI implementation. 
+•  CPU_OFF can have varying latency in the time it takes to complete, depending on the power 
+domain level that is being powered down. The caller must not make any assumptions about 
+latency. 
+•  A core can only power itself down. 
+•  CPU_OFF calls are always platform-coordinated with each other, regardless of the suspend 
+mode of operation (platform-coordinated or OS-initiated). That is, if all cores in a topology node 
+call CPU_OFF, the last core will power the node down.  
+• 
+In an OS-initiated mode, CPU_OFF calls are considered to platform-coordinate 
+between themselves. If only a subset of cores has called CPU_OFF, an OS-initiated 
+OS can assume they have powered down to the highest power level possible. 
+Referring to the example system in Figure 4, if all cores except Core 3 have called 
+CPU_OFF, the OS can assume that Cluster 0 and Core 2 are in the powerdown state 
+and that Core 3 is the last man in the system (and cluster 1). Therefore, in this mode 
+the OS could power down the system through a CPU_SUSPEND call from Core 3. 
+However, this coordination only works for calls to CPU_SUSPEND that take place 
+after calls to CPU_OFF. Coordination in the opposite order cannot be assumed. If, in 
+our example, Core 3 was the penultimate core and this called CPU_SUSPEND, and 
+Core 2 was the last one, and it called CPU_OFF, Cluster 1 (and the system) would 
+not be able to power down. This is because Core 3 would not be a last man, at either 
+the cluster or the system level, and consequently it could not request a power state at 
+that level. 
+• 
+In platform coordinate mode, a call to CPU_OFF is consistent with a call to 
+CPU_SUSPEND for powerdown at maximum power level. If only a subset of the cores 
+in a node call CPU_OFF, the node must only be powered down if the remaining cores 
+have called CPU_SUSPEND, requesting a powerdown state at that power level, or a 
+power state at a higher power level. 
+CPU_OFF can return the following errors: 
+•  DENIED, if called on a core where the Trusted OS is resident, see section 5.9.1. 
+5.5.3  Implementation responsibilities: Cache and coherency management 
+The PSCI implementation must perform a cache clean operation for all the caches present in the nodes 
+being powered down. PSCI must also perform any required coherency management. In a multicluster 
+implementation, powering down a core typically requires: 
+1.  Disabling the data cache to prevent data cache allocation. 
+2.  Cleaning and invalidating any caches that are private to the core. This prevents any new data 
+cache snoops or data cache maintenance operations from other cores being issued to the core 
+that is powering down. 
+3.  If the core is the last in a cluster, and the cluster is being powered down, cleaning and 
+invalidating any shared caches that are private to that cluster. 
+4.  Taking the core out of coherency within that cluster. This is typically controlled by an 
+IMPLEMENTATION DEFINED method, for example ACTLR.SMP. 
+5.  If the core is the last in a cluster, and the cluster is being powered down, taking the cluster out of 
+coherency. 
+The operations required depend on the specific cores and topology, as well as any cache coherent 
+interconnects that might be in use. For more information, see the Technical Reference Manuals (TRMs) 
+of the components. 

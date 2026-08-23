@@ -112,6 +112,16 @@ def preprocess(txt_path: str) -> str:
 # Pattern: line starts with "5.<digits>" NOT followed by another ".<digits>"
 _TOP_SEC_PAT = re.compile(r'(?m)^(5\.\d+)(?!\.\d)\s+(.*?)$')
 
+# The LAST section of chapter 5 has no following "5.N" heading to stop at, so it
+# ran to end-of-document and swallowed chapters 6-7 and the appendices: 5.22 came
+# out at 1460 lines instead of 71, and both commands that section defines
+# (PSCI_STAT_RESIDENCY, PSCI_STAT_COUNT) carried all of it. Stop instead at the
+# first numbered section of a later chapter. Requiring a non-space after the
+# number is what keeps the surviving table-of-contents fragment "6.4 " -- a bare
+# number on its own line, title wrapped to the next -- from ending the section at
+# the top of the document.
+_NEXT_CHAPTER_PAT = re.compile(r'(?m)^\s*[6-9]\.\d+(?!\.\d)\s+\S')
+
 
 def extract_commands(cleaned_text: str) -> dict:
     """
@@ -131,7 +141,11 @@ def extract_commands(cleaned_text: str) -> dict:
 
         # Body: from end of this heading line to start of next same-level section
         start = m.end()
-        end   = matches[idx + 1].start() if idx + 1 < len(matches) else len(cleaned_text)
+        if idx + 1 < len(matches):
+            end = matches[idx + 1].start()
+        else:
+            nxt = _NEXT_CHAPTER_PAT.search(cleaned_text, start)
+            end = nxt.start() if nxt else len(cleaned_text)
         body  = cleaned_text[start:end]
 
         # Filter: must look like a real function description

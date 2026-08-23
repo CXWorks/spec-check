@@ -68,6 +68,8 @@ PREAMBLE_MODE="${PREAMBLE_MODE:-tail}"
 FRAME_HINT="${FRAME_HINT:-0}"
 ROUNDS="${ROUNDS:-2}"
 GEN_VERSIONS="${GEN_VERSIONS:-eac5 rel0}"   # MODE=gen only
+NO_GOLD_VERSIONS="${NO_GOLD_VERSIONS:-}"   # zero-shot docs, shipped via configmap
+SWEEP="${SWEEP:-0}"                        # run the unsat/vacuous sweep
 REPAIR_ROUNDS="${REPAIR_ROUNDS:-0}"        # MODE=gen only
 SAMPLES="${SAMPLES:-0}"
 TEMPERATURE="${TEMPERATURE:-0.8}"
@@ -118,8 +120,35 @@ $(bad_values)
 EOF
 }
 
+# A no-gold version has no (sections, gold) pair in the data repo, so its input
+# rides in this ConfigMap instead. Tar-then-base64 rather than --from-file per
+# section: 22 files would be 22 keys, and the unpack has to land them under
+# training-dataset/ with the layout dataset_loader expects anyway.
+ZS_ARG=()
+if [ -n "$NO_GOLD_VERSIONS" ]; then
+  ZS_TGZ="$(mktemp -t zeroshot).tgz"
+  ZS_B64="$(mktemp -t zeroshotb64)"
+  PATHS=()
+  for v in $NO_GOLD_VERSIONS; do
+    for d in "training-dataset/sections/$v" "training-dataset/specs/$v"; do
+      [ -d "$REPO_ROOT/$d" ] || { echo "missing $d -- stage it first" >&2; exit 1; }
+      PATHS+=("$d")
+    done
+  done
+  tar czf "$ZS_TGZ" -C "$REPO_ROOT" "${PATHS[@]}"
+  base64 < "$ZS_TGZ" > "$ZS_B64"
+  # 1MiB is the hard ConfigMap ceiling and base64 costs 33%; fail loudly rather
+  # than letting the API server reject a job that took a minute to assemble.
+  sz=$(wc -c < "$ZS_B64" | tr -d ' ')
+  [ "$sz" -lt 900000 ] || { echo "zero-shot bundle is ${sz}B, too big for a ConfigMap" >&2; exit 1; }
+  echo "==> zero-shot bundle: $NO_GOLD_VERSIONS (${sz}B base64)"
+  ZS_ARG=(--from-file=zeroshot.tgz.b64="$ZS_B64")
+fi
+
 echo "==> configmap $CM"
 "$KUBECTL" create configmap "$CM" -n "$NS" \
+  "${ZS_ARG[@]}" \
+  --from-file=psci_sweep.py="$REPO_ROOT/scripts/psci_sweep.py" \
   --from-file=de2_entrypoint.sh="$REPO_ROOT/k8s/entrypoint_eval.sh" \
   --from-file=eval_checkpoint.py="$REPO_ROOT/scripts/eval_checkpoint.py" \
   --from-file=repair_eval.py="$REPO_ROOT/scripts/repair_eval.py" \
@@ -182,7 +211,7 @@ spec:
 $(affinity_block)      containers:
       - name: main
         image: nvcr.io/nvidia/pytorch:25.01-py3
-        command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /entry/repair_eval.py /entry/gen_specs.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
+        command: ["bash", "-lc", "mkdir -p /work/code/scripts /work/code/prompt_engineering && cp /entry/eval_checkpoint.py /entry/repair_eval.py /entry/gen_specs.py /entry/psci_sweep.py /work/code/scripts/ && cp /entry/dataset_loader.py /entry/verify_generated_verus.py /entry/prompt_engineering_v3.py /entry/prompt_engineering.py /work/code/prompt_engineering/ && bash /entry/de2_entrypoint.sh"]
         securityContext: {privileged: true}
         resources:
           limits:   {cpu: "${CPU_LIM}", memory: ${MEM_LIM}, nvidia.com/gpu: 2}
@@ -198,6 +227,8 @@ $(affinity_block)      containers:
         - {name: FRAME_HINT,    value: "${FRAME_HINT}"}
         - {name: ROUNDS,      value: "${ROUNDS}"}
         - {name: GEN_VERSIONS,  value: "${GEN_VERSIONS}"}
+        - {name: NO_GOLD_VERSIONS, value: "${NO_GOLD_VERSIONS}"}
+        - {name: SWEEP,         value: "${SWEEP}"}
         - {name: REPAIR_ROUNDS, value: "${REPAIR_ROUNDS}"}
         - {name: SAMPLES,     value: "${SAMPLES}"}
         - {name: TEMPERATURE, value: "${TEMPERATURE}"}

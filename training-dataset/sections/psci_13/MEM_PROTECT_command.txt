@@ -1,0 +1,52 @@
+5.14  MEM_PROTECT 
+
+Introduced in PSCI1.1. This function is optional. 
+5.14.1 Intended use 
+This function provides protection for cold reboot attacks, which exploit the fact that DRAM retains 
+content for several seconds after the removal of power. This property allows an attacker to reboot a 
+system and then discover secrets that were left in memory.  
+When this function is called, the implementation overwrites all the volatile memory, that is accessible by 
+the caller, when booting the system following a system reset. The calling operating system can modify 
+this behavior by either disabling memory protection through a second call to MEM_PROTECT, or, where 
+implemented, by using a SYSTEM_WARM_RESET architectural reset (see 5.1.12).  
+5.14.2 Caller responsibilities 
+The calling OS uses the PSCI_FEATURES API, with the MEM_PROTECT function ID, to discover whether 
+the function is present:  
+• 
+• 
+If the function is implemented, PSCI_FEATURES returns a value of 0. 
+If the function is not implemented, PSCI_FEATURES returns NOT_SUPPORTED. 
+See also section 5.1.15. Furthermore, if the function is not implemented, a call to MEM_PROTECT returns 
+NOT_SUPPORTED. 
+Following a cold boot, and entry into the calling operating system, volatile memory will not be protected 
+until the function is called with a non-zero enable value. Therefore, the caller must not place secrets in 
+memory before this point. At boot time, memory protection is disabled by default. Therefore, to 
+guarantee that the memory is always protected, the calling OS must call this function every time the 
+system boots.  
+A successful call to MEM_PROTECT, which either enables or disables memory protection, returns the 
+previous state of the protection: 
+•  A return value of 0 indicates that, prior to the call, memory protection was disabled.  
+•  A return value of 1 indicates that, prior to the call, memory protection was enabled. 
+• 
+If the function is not implemented, a call to MEM_PROTECT returns NOT_SUPPORTED. 
+5.14.3 Implementation responsibilities 
+If this function is implemented, MEM_PROTECT_CHECK_RANGE must also be implemented.  
+When MEM_PROTECT is called, the implementation must ensure that all volatile memory that is 
+accessible by the caller is overwritten on the following boot, if this is due to: 
+•  A non-architectural reset that follows a SYSTEM_RESET2 call (see 5.13). 
+•  An architectural reset that was invoked through calling SYSTEM_RESET2 with a request other 
+than a SYSTEM_WARM_RESET. 
+•  A system reset that follows a SYSTEM_RESET call (see 5.12). 
+•  Removal of power, or any mechanism to reset or shutdown the system that is not described by 
+this specification. 
+After a SYSTEM_OFF call, it is IMPLEMENTATION DEFINED whether the memory is overwritten. 
+Overwritten memory includes all volatile memory that can be accessed by the caller. This includes: 
+•  Architectural and non-architectural caches that can be accessed by the caller.  
+•  Any volatile memory that can be accessed either directly, via CPU load, or other means such as 
+a debug interface or DMA. 
+The caller can give explicit permission for skipping the memory overwrite by calling SYSTEM_RESET2, 
+to request a SYSTEM_WARM_RESET architectural reset. In this case, the memory is not overwritten, and 
+is preserved. The caller can also disable memory protection by calling MEM_PROTECT with an enable 
+value of 0. 
+Following the memory overwrite, and prior to handing over to an OS boot loader, memory protection 
+must be disabled. This is the default state that is expected by the caller on a system boot. 

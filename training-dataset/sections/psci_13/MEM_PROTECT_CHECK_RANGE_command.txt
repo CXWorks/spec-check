@@ -1,0 +1,23 @@
+5.15  MEM_PROTECT_CHECK_RANGE 
+
+Introduced in PSCI1.1. This function is optional. 
+5.15.1 Intended use 
+Non-volatile memory and IO are not affected by MEM_PROTECT (see section 5.14). 
+MEM_PROTECT_CHECK_RAGE can be used to check whether a memory address range is protected by 
+MEM_PROTECT. The caller can pass a base address and length. The function returns SUCCESS if the 
+entire range, which is accessed through addresses base to base+length-1, is included in the memory 
+that is protected by MEM_PROTECT. 
+5.15.2 Caller responsibilities 
+The calling OS uses the PSCI_FEATURES API, with the MEM_PROTECT_CHECK_RANGE function ID, to 
+discover whether the function is present:  
+• 
+• 
+If the function is implemented, PSCI_FEATURES returns a value of 0. 
+If the function is not implemented, PSCI_FEATURES returns NOT_SUPPORTED. 
+See also section 5.1.15.  
+The caller can also discover whether the function is present by calling the function directly. If the 
+function is not implemented, the error value NOT_SUPPORTED is returned. 
+The function can return the following errors: 
+•  DENIED if the memory range is not protected. 
+5.15.3 Implementation responsibilities 
+If this function is implemented, MEM_PROTECT must also be implemented.  

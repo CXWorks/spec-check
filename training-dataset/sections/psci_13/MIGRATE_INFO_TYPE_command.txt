@@ -1,0 +1,63 @@
+5.9  MIGRATE_INFO_TYPE and MIGRATE_INFO_UP_CPU  
+
+5.9.1  Intended use 
+Trusted operating systems must be rigorously audited to ensure they meet their security requirements. 
+This means that they must be kept simple. Often this leads to simple uniprocessor kernels, to avoid the 
+inherent complexities of multicore programming. This has implications for when it is possible to hot 
+unplug the core where the Trusted OS is resident. 
+The MIGRATE function provides a method to request a uniprocessor Trusted OS to move to another 
+core. However, this might not be supported by the Trusted OS vendor. The Normal world can use the 
+MIGRATE_INFO functions to determine whether it can use CPU_OFF and MIGRATE for a given Trusted 
+OS. MIGRATE_INFO_TYPE takes no parameters and returns: 
+•  Uniprocessor (UP) and migrate capable 0: This indicates a Trusted OS that can run on only 
+one core. The core it runs on can be changed dynamically through use of the MIGRATE function. 
+Calls to CPU_OFF on the core where the Trusted OS is currently residing return a DENIED error. 
+•  Uniprocessor (UP) not migrate capable 1: This indicates a Trusted OS that does not support 
+migration. Calls to hot unplug the core on which the Trusted OS is running return a DENIED 
+error. Calls to MIGRATE return the same error. 
+•  Multiprocessor (MP) capable or not present 2: This indicates that the Trusted OS is fully MP-
+aware and has no special requirements for migration, or a system that does not use a Trusted 
+OS. Any core can be hot unplugged without first asking the Trusted OS to migrate to another 
+core. In this case, calls to MIGRATE are not relevant. They return NOT_SUPPORTED and have 
+no other effect.  
+In addition, MIGRATE_INFO_UP_CPU takes no parameters and returns an MPIDR-based value to 
+indicate where the Trusted OS currently resides. The value returned uses the same format as the 
+target_cpu parameters of CPU_ON and MIGRATE, see section 5.1.4. The returned value is only valid if 
+MIGRATE_INFO_TYPE returns 0 or 1. The returned value of MIGRATE_INFO_UP_CPU is UNDEFINED if 
+MIGRATE_INFO_TYPE returns 2. 
+For each possible return value of MIGRATE_INFO_TYPE, Table 9 shows the expected return values for 
+calls to MIGRATE and CPU_OFF, when called on the CPU where the Trusted OS currently resides.  The 
+table assumes that valid parameters are passed, that is, that valid target_cpu expressions are passed. 
+The information returned by MIGRATE_INFO_TYPE must be constant and not change on subsequent 
+calls.  
+Table 9 Return values for calls to MIGRATE and CPU_OFF (on resident core)  
+MIGRATE_INFO_TYPE  
+MP or not present (2) or 
+NOT_SUPPORTED 
+UP not migrate capable (1)  
+UP migrate capable (0) 
+Return value of 
+MIGRATE  
+Return value of 
+CPU_OFF 
+NOT_SUPPORTED  
+does not return  
+DENIED 
+SUCCESS 
+DENIED  
+DENIED  
+5.9.2  Caller responsibilities 
+The caller can target any core with the MIGRATE_INFO functions. The caller can also assume that the 
+value returned by MIGRATE_INFO_TYPE is constant and does not change from one invocation to 
+another. 
+The caller must avoid races between MIGRATE and MIGRATE_INFO_UP_CPU. Arm expects that the 
+latter function will be used once by a caller, on initial boot. From then on, a migrating OS can make use 
+of the success or failure of MIGRATE calls to track Trusted OS residency. 
+5.9.3  Implementation responsibilities 
+MIGRATE_INFO functions can be called from any core. How the Secure world obtains and tracks the 
+information provided through these functions is IMPLEMENTATION DEFINED. However, Arm expects 
+that at cold boot, as part of the installation process, an API can be defined between the privileged 
+platform firmware and the Trusted OS that in turn can be used to provide the required return values of 
+MIGRATE_INFO_TYPE. The privileged platform firmware should be aware of which core the Trusted OS 
+is being installed on. By using this information, and tracking the success or failure of MIGRATE calls, the 
+privileged platform firmware can directly respond to MIGRATE_INFO calls from any core.  

@@ -196,8 +196,20 @@ def list_commands(version: str) -> List[str]:
 # Dataset Loading
 # ============================================================================
 
-def load_version(version: str) -> List[SpecOracle]:
-    """Load all command samples for a single version from raw files."""
+def load_version(version: str, require_gold: bool = True) -> List[SpecOracle]:
+    """Load all command samples for a single version from raw files.
+
+    `require_gold=False` keeps commands that have no gold spec, with `oracle=""`.
+    That is only for the zero-shot documents (ARM PSCI, SDEI, DRTM, ...), which
+    have no gold at all: there is nothing to score against, so the measurable
+    axes are compilation and internal consistency, never agreement with gold.
+
+    It stays opt-in and off by default because the two ways gold can be absent
+    look identical here. For an RMM version, a missing `<cmd>_spec.rs` means that
+    command was excluded, and silently keeping it would quietly enlarge the
+    denominator of every rate computed against that version. Failing closed makes
+    the caller say which situation it is in.
+    """
     preamble = load_preamble(version)
     commands = list_commands(version)
     samples = []
@@ -207,14 +219,14 @@ def load_version(version: str) -> List[SpecOracle]:
         if section is None:
             continue
         gold = load_gold_spec(version, cmd)
-        if gold is None:
+        if gold is None and require_gold:
             continue
         samples.append(SpecOracle(
             command=cmd,
             version=version,
             section_text=section,
             preamble=preamble,
-            oracle=gold,
+            oracle=gold if gold is not None else "",
         ))
 
     return samples
@@ -263,6 +275,7 @@ def load_dataset(
     versions: Optional[List[str]] = None,
     split: Optional[str] = None,
     all_commands: bool = False,
+    require_gold: bool = True,
 ) -> List[SpecOracle]:
     """
     Load dataset from raw section files + gold specs.
@@ -277,6 +290,9 @@ def load_dataset(
                   True to get every alp14 command, which re-introduces the
                   train/test overlap documented in docs/data-leakage.md — only
                   valid for models that never saw the gold answers.
+        require_gold: Default True drops commands with no gold spec. Pass False
+                  only for the zero-shot documents that have no gold at all; see
+                  load_version().
 
     Returns:
         List of SpecOracle samples.
@@ -294,9 +310,11 @@ def load_dataset(
 
     dataset = []
     for v in versions:
-        samples = load_version(v)
+        samples = load_version(v, require_gold=require_gold)
         dataset.extend(samples)
-        print(f"  {v}: {len(samples)} commands loaded")
+        n_gold = sum(1 for s in samples if s.oracle)
+        note = "" if n_gold == len(samples) else f" ({n_gold} with gold)"
+        print(f"  {v}: {len(samples)} commands loaded{note}")
 
     # Default to the clean eval set. Fail closed: a caller that forgets to filter
     # gets correct behaviour, and a caller that wants the leaky set must say so.
