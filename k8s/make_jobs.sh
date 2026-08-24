@@ -39,11 +39,11 @@ echo "==> dataset: $DATASET_DIR"
 CLUSTER="${CLUSTER:-research-common}"
 case "$CLUSTER" in
   research-common)
-    # Fallback when turbox is saturated by the arc-runners CI fleet, which
-    # regularly holds 28 of its 32 GPUs. Namespace is assigned by the cluster
-    # (jisenli2), not chosen -- the naming rule constrains OBJECT names, which
-    # stay de2-rl-test-*. weka-data is a CSI-provisioned shared filesystem, so
-    # the local-path node-pinning problem does not apply here either.
+    # The primary target (and the default) since turbox was retired. ~369 H100s.
+    # Namespace is assigned by the cluster (jisenli2), not chosen -- the naming
+    # rule constrains OBJECT names, which stay de2-rl-test-*. weka-data is a
+    # CSI-provisioned shared filesystem, so the local-path node-pinning problem
+    # does not apply here.
     : "${KUBECONFIG_FILE:=$HOME/.kube/research-common-h100}"
     NS="${NS_OVERRIDE:-jisenli2}"
     STORAGE_CLASS="${STORAGE_CLASS:-weka-data}"
