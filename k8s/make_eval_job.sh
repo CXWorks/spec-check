@@ -18,12 +18,11 @@ KUBECTL="${KUBECTL:-kubectl}"
 NS=default   # overridden by the cluster profile below
 
 # Cluster profile — see the same block in make_jobs.sh. Defaults to
-# boogiebonjour so existing invocations are unchanged. turbox's GPU nodes have
-# 63.4 CPU, so boogiebonjour's 32/64 CPU request for a sampling run is near the
-# node ceiling and its 400Gi memory limit is fine, but the storage class is the
-# real difference: shared-wekafs is RWX, so an eval pod is not pinned to the node
-# its PVC was created on.
-CLUSTER="${CLUSTER:-boogiebonjour}"
+# research-common; boogiebonjour is kept only for reproducing old runs and is
+# shared with another user, and turbox is retired (2026-08-24). The storage class
+# is the difference that matters: weka-data is RWX, so an eval pod is not pinned
+# to the node its PVC was created on.
+CLUSTER="${CLUSTER:-research-common}"
 case "$CLUSTER" in
   research-common)
     # Fallback when turbox is saturated by the arc-runners CI fleet, which
@@ -38,23 +37,17 @@ case "$CLUSTER" in
     MEM_LIM="${MEM_LIM:-200Gi}"; MEM_REQ="${MEM_REQ:-64Gi}"
     BAD=() ;;
   turbox)
-    : "${KUBECONFIG_FILE:=$HOME/.kube/configs/turbox-h100.yaml}"
-    STORAGE_CLASS="${STORAGE_CLASS:-shared-wekafs}"
-    ACCESS_MODE="${ACCESS_MODE:-ReadWriteMany}"
-    # 200Gi was inherited from boogiebonjour, whose nodes are larger. On turbox
-    # (723Gi/node) it does not fit beside a 9B training job requesting 400Gi, and
-    # the eval does not need it: the biggest model here is 18GB in bf16, the rest
-    # is Verus subprocesses. Requesting what is actually used lets an eval run
-    # alongside training instead of sitting Pending until the cluster drains.
-    MEM_LIM="${MEM_LIM:-200Gi}"; MEM_REQ="${MEM_REQ:-64Gi}"
-    BAD=() ;;
+    # Retired 2026-08-24: turbox is not to be used. Its kubeconfig is archived at
+    # ~/.kube/disabled/turbox-h100.yaml.disabled, so this branch would fail later
+    # and less clearly anyway. Refuse up front instead.
+    echo "CLUSTER=turbox is retired -- use CLUSTER=research-common" >&2; exit 1 ;;
   boogiebonjour)
     : "${KUBECONFIG_FILE:=$HOME/.kube/boogiebonjour}"
     STORAGE_CLASS="${STORAGE_CLASS:-local-path}"
     ACCESS_MODE="${ACCESS_MODE:-ReadWriteOnce}"
     MEM_LIM="${MEM_LIM:-400Gi}"; MEM_REQ="${MEM_REQ:-200Gi}"
     BAD=(003 006 013 043 056 057 090 097 101 102 104 105 108) ;;
-  *) echo "unknown CLUSTER=$CLUSTER (expected boogiebonjour|turbox|research-common)" >&2; exit 1 ;;
+  *) echo "unknown CLUSTER=$CLUSTER (expected research-common|boogiebonjour; turbox is retired)" >&2; exit 1 ;;
 esac
 export KUBECONFIG="$KUBECONFIG_FILE"
 

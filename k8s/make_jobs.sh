@@ -27,16 +27,16 @@ CM=de2-rl-test-sft2-entry
 DATASET_DIR="${DATASET_DIR:-dataset_clean}"
 echo "==> dataset: $DATASET_DIR"
 
-# Cluster profile. Defaults are boogiebonjour's, so an unqualified run is
-# unchanged. `CLUSTER=turbox` targets turbox-h100, which differs in ways that
-# are not cosmetic:
-#   - shared-wekafs is a real shared filesystem (RWX), not node-local. That
-#     removes the whole local-path failure mode: PVCs no longer pin a replacement
-#     pod to the node that just failed, and rescuing a checkpoint no longer needs
-#     one helper pod per node.
-#   - its GPU nodes have 63.4 CPU / 723Gi, so boogiebonjour's 96 CPU / 900Gi
-#     limits would never schedule. This is a hard failure, not a slow one.
-CLUSTER="${CLUSTER:-boogiebonjour}"
+# Cluster profile. The default is research-common, NOT boogiebonjour: that
+# cluster was never an approved GPU target for this work and is shared with
+# another user who runs live jobs under the same de2-rl-test-* prefix, so a
+# forgotten CLUSTER= must not land there. turbox is retired (2026-08-24).
+#
+# research-common's weka-data is a real shared filesystem (RWX), not node-local,
+# which removes the local-path failure mode entirely: a PVC no longer pins a
+# replacement pod to the node that just failed. boogiebonjour is kept only for
+# reproducing old runs, and its 96 CPU / 900Gi profile is specific to it.
+CLUSTER="${CLUSTER:-research-common}"
 case "$CLUSTER" in
   research-common)
     # Fallback when turbox is saturated by the arc-runners CI fleet, which
@@ -53,14 +53,10 @@ case "$CLUSTER" in
     SHM="${SHM:-128Gi}"
     BAD=() ;;
   turbox)
-    : "${KUBECONFIG_FILE:=$HOME/.kube/configs/turbox-h100.yaml}"
-    STORAGE_CLASS="${STORAGE_CLASS:-shared-wekafs}"
-    ACCESS_MODE="${ACCESS_MODE:-ReadWriteMany}"
-    CPU_LIM="${CPU_LIM:-60}";  CPU_REQ="${CPU_REQ:-32}"
-    MEM_LIM="${MEM_LIM:-700Gi}"; MEM_REQ="${MEM_REQ:-400Gi}"
-    SHM="${SHM:-128Gi}"
-    BAD=()                     # no known-bad node list for this cluster
-    ;;
+    # Retired 2026-08-24: turbox is not to be used. Its kubeconfig is archived at
+    # ~/.kube/disabled/turbox-h100.yaml.disabled, so this branch would fail later
+    # and less clearly anyway. Refuse up front instead.
+    echo "CLUSTER=turbox is retired -- use CLUSTER=research-common" >&2; exit 1 ;;
   boogiebonjour)
     : "${KUBECONFIG_FILE:=$HOME/.kube/boogiebonjour}"
     STORAGE_CLASS="${STORAGE_CLASS:-local-path}"
@@ -69,7 +65,7 @@ case "$CLUSTER" in
     MEM_LIM="${MEM_LIM:-900Gi}"; MEM_REQ="${MEM_REQ:-512Gi}"
     SHM="${SHM:-256Gi}"
     ;;
-  *) echo "unknown CLUSTER=$CLUSTER (expected boogiebonjour|turbox|research-common)" >&2; exit 1 ;;
+  *) echo "unknown CLUSTER=$CLUSTER (expected research-common|boogiebonjour; turbox is retired)" >&2; exit 1 ;;
 esac
 export KUBECONFIG="$KUBECONFIG_FILE"
 echo "==> cluster: $CLUSTER  storage: $STORAGE_CLASS ($ACCESS_MODE)"
