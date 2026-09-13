@@ -129,15 +129,25 @@ def _obligation(fn, kind):
 def build_case(preamble, fn, kind):
     """Preamble + this one spec fn + one proof obligation, as a whole crate.
 
-    The preamble ends with `} // verus!`, so it is reopened rather than appended
-    to: a proof fn outside the `verus!` block is plain Rust and would compile
+    A preamble that closes its own `verus!` block is reopened rather than
+    appended to: a proof fn outside the block is plain Rust and would compile
     while proving nothing at all -- a silent all-clear.
+
+    Not every preamble closes it, though. psci_13 ends `} // verus!`; alp14 ends
+    on a bodyless `spec fn ...;` and leaves the block open. Cutting at the last
+    `}` unconditionally then truncated alp14 inside some enum body, and every
+    single obligation came back `compile_error` -- including gold's, which is the
+    tell that it was the harness and not the specs. Decide by brace balance
+    instead of by assuming the trailing `}`.
     """
-    # The closing brace is not the last character: the file ends `} // verus!`.
-    # Cut at the last brace rather than requiring it to be final.
-    cut = preamble.rstrip().rfind('}')
-    assert cut != -1, "preamble has no closing brace for the verus! block"
-    body = preamble.rstrip()[:cut].rstrip()
+    text = preamble.rstrip()
+    if text.count('{') == text.count('}'):
+        cut = text.rfind('}')
+        assert cut != -1, "balanced preamble but no brace found"
+        body = text[:cut].rstrip()
+    else:
+        # verus! is still open; append straight into it.
+        body = text
     fn_def = (f"pub open spec fn {fn['name']}{fn['params_str']} -> bool "
               f"{fn['body']}")
     return f"{body}\n\n{fn_def}\n\n{_obligation(fn, kind)}\n\n}} // verus!\n"
@@ -331,6 +341,15 @@ def main():
     ap.add_argument("--timeout", type=int, default=180)
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--self-test", action="store_true")
+    ap.add_argument("--self-test-preamble",
+                    default="training-dataset/specs/psci_13/preamble.rs",
+                    help="Preamble the FIXTURES are written against. Separate "
+                         "from --preamble on purpose: the fixtures call PSCI "
+                         "helpers like CpuIsValid, so running them against, "
+                         "say, the alp14 preamble fails 4/6 on missing symbols "
+                         "and reports the detector as unsound when nothing is "
+                         "wrong with it. The self-test validates the detector, "
+                         "not the document under sweep.")
     ap.add_argument("--skip-self-test", action="store_true",
                     help="Sweep without validating the detector. The count is "
                          "then uninterpretable; only for debugging.")
@@ -352,7 +371,8 @@ def main():
 
     sound, st_rows = (None, [])
     if args.self_test or not args.skip_self_test:
-        sound, st_rows = self_test(verus, preamble, args.timeout)
+        st_pre = read_preamble(Path(args.self_test_preamble))
+        sound, st_rows = self_test(verus, st_pre, args.timeout)
         print()
     if args.self_test and not args.gen_dir:
         if args.out:
