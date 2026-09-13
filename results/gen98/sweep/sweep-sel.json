@@ -1,0 +1,1089 @@
+{
+  "gen_dir": "/home/jisenli2/gen98/sel/alp14",
+  "self_test": [
+    {
+      "fixture": "bug1_conjoined_error_codes",
+      "expected": "unsat",
+      "got": "unsat",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "proved",
+          ""
+        ],
+        "vacuous": [
+          "refuted",
+          "postcondition not satisfied"
+        ]
+      }
+    },
+    {
+      "fixture": "bug2_overlapping_antecedents",
+      "expected": "unsat",
+      "got": "unsat",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "proved",
+          ""
+        ],
+        "vacuous": [
+          "refuted",
+          "postcondition not satisfied"
+        ]
+      }
+    },
+    {
+      "fixture": "bug4_free_parameter_tautology",
+      "expected": "vacuous",
+      "got": "vacuous",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "refuted",
+          "postcondition not satisfied"
+        ],
+        "vacuous": [
+          "proved",
+          ""
+        ]
+      }
+    },
+    {
+      "fixture": "vacuous_literal_true",
+      "expected": "vacuous",
+      "got": "vacuous",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "refuted",
+          "postcondition not satisfied"
+        ],
+        "vacuous": [
+          "proved",
+          ""
+        ]
+      }
+    },
+    {
+      "fixture": "ok_disjoint_error_codes",
+      "expected": "consistent",
+      "got": "consistent",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "refuted",
+          "postcondition not satisfied"
+        ],
+        "vacuous": [
+          "refuted",
+          "postcondition not satisfied"
+        ]
+      }
+    },
+    {
+      "fixture": "ok_guarded_transition",
+      "expected": "consistent",
+      "got": "consistent",
+      "pass": true,
+      "detail": {
+        "unsat": [
+          "refuted",
+          "postcondition not satisfied"
+        ],
+        "vacuous": [
+          "refuted",
+          "postcondition not satisfied"
+        ]
+      }
+    }
+  ],
+  "detector_sound": true,
+  "counts": {
+    "consistent": 66,
+    "vacuous": 3,
+    "compile_error": 29
+  },
+  "rows": [
+    {
+      "file": "psci_affinity_info.rs",
+      "fn": "psci_affinity_info_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "psci_cpu_off.rs",
+      "fn": "psci_cpu_off_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "psci_cpu_on.rs",
+      "fn": "psci_cpu_on_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "psci_cpu_suspend.rs",
+      "fn": "psci_cpu_suspend_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "psci_features.rs",
+      "fn": "psci_features_spec",
+      "trivial": true,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "proved",
+      "vacuous_detail": "",
+      "verdict": "vacuous"
+    },
+    {
+      "file": "psci_system_off.rs",
+      "fn": "psci_system_off_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "psci_system_reset.rs",
+      "fn": "psci_system_reset_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "psci_version.rs",
+      "fn": "psci_version_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_data_create.rs",
+      "fn": "rmi_data_create_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_data_create_unknown.rs",
+      "fn": "rmi_data_create_unknown_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_data_destroy.rs",
+      "fn": "rmi_data_destroy_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_features.rs",
+      "fn": "rmi_features_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_granule_delegate.rs",
+      "fn": "rmi_granule_delegate_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_granule_undelegate.rs",
+      "fn": "rmi_granule_undelegate_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_mec_set_private.rs",
+      "fn": "rmi_mec_set_private_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_mec_set_shared.rs",
+      "fn": "rmi_mec_set_shared_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_abort.rs",
+      "fn": "rmi_pdev_abort_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_aux_count.rs",
+      "fn": "rmi_pdev_aux_count_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_communicate.rs",
+      "fn": "rmi_pdev_communicate_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_create.rs",
+      "fn": "rmi_pdev_create_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_pdev_destroy.rs",
+      "fn": "rmi_pdev_destroy_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_get_state.rs",
+      "fn": "rmi_pdev_get_state_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_pdev_ide_key_refresh.rs",
+      "fn": "rmi_pdev_ide_key_refresh_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_ide_reset.rs",
+      "fn": "rmi_pdev_ide_reset_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_p2p_connect.rs",
+      "fn": "rmi_pdev_p2p_connect_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_p2p_disconnect.rs",
+      "fn": "rmi_pdev_p2p_disconnect_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_set_pubkey.rs",
+      "fn": "rmi_pdev_set_pubkey_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_pdev_stop.rs",
+      "fn": "rmi_pdev_stop_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_psci_complete.rs",
+      "fn": "rmi_psci_complete_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_psmmu_irq_notify.rs",
+      "fn": "rmi_psmmu_irq_notify_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_psmmu_msi_config.rs",
+      "fn": "rmi_psmmu_msi_config_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_realm_activate.rs",
+      "fn": "rmi_realm_activate_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_realm_create.rs",
+      "fn": "rmi_realm_create_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: mismatched types",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: mismatched types",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_realm_destroy.rs",
+      "fn": "rmi_realm_destroy_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rec_aux_count.rs",
+      "fn": "rmi_rec_aux_count_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rec_create.rs",
+      "fn": "rmi_rec_create_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rec_destroy.rs",
+      "fn": "rmi_rec_destroy_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0618]: expected function, found `RmiStatusCode`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0618]: expected function, found `RmiStatusCode`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_rec_enter.rs",
+      "fn": "rmi_rec_enter_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_aux_create.rs",
+      "fn": "rmi_rtt_aux_create_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_aux_destroy.rs",
+      "fn": "rmi_rtt_aux_destroy_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_aux_fold.rs",
+      "fn": "rmi_rtt_aux_fold_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_aux_map_protected.rs",
+      "fn": "rmi_rtt_aux_map_protected_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: unexpected closing delimiter: `)`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: unexpected closing delimiter: `)`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_rtt_aux_map_unprotected.rs",
+      "fn": "rmi_rtt_aux_map_unprotected_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0061]: this function takes 5 arguments but 4 arguments were supplied",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0061]: this function takes 5 arguments but 4 arguments were supplied",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_rtt_aux_unmap_protected.rs",
+      "fn": "rmi_rtt_aux_unmap_protected_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_aux_unmap_unprotected.rs",
+      "fn": "rmi_rtt_aux_unmap_unprotected_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_create.rs",
+      "fn": "rmi_rtt_create_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_destroy.rs",
+      "fn": "rmi_rtt_destroy_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_fold.rs",
+      "fn": "rmi_rtt_fold_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_init_ripas.rs",
+      "fn": "rmi_rtt_init_ripas_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0609]: no field `index` on type `RmmRttEntry`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0609]: no field `index` on type `RmmRttEntry`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_rtt_map_unprotected.rs",
+      "fn": "rmi_rtt_map_unprotected_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_read_entry.rs",
+      "fn": "rmi_rtt_read_entry_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_set_ripas.rs",
+      "fn": "rmi_rtt_set_ripas_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: mismatched closing delimiter: `}`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: mismatched closing delimiter: `}`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_rtt_set_s2ap.rs",
+      "fn": "rmi_rtt_set_s2ap_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_rtt_unmap_unprotected.rs",
+      "fn": "rmi_rtt_unmap_unprotected_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_abort.rs",
+      "fn": "rmi_vdev_abort_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_aux_count.rs",
+      "fn": "rmi_vdev_aux_count_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_communicate.rs",
+      "fn": "rmi_vdev_communicate_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: mismatched types",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: mismatched types",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_vdev_complete.rs",
+      "fn": "rmi_vdev_complete_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_create.rs",
+      "fn": "rmi_vdev_create_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_destroy.rs",
+      "fn": "rmi_vdev_destroy_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: mismatched types; types must be compatible to use == or !=",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: mismatched types; types must be compatible to use == or !=",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_vdev_get_interface_report.rs",
+      "fn": "rmi_vdev_get_interface_report_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_get_measurements.rs",
+      "fn": "rmi_vdev_get_measurements_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_get_state.rs",
+      "fn": "rmi_vdev_get_state_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_vdev_lock.rs",
+      "fn": "rmi_vdev_lock_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_map.rs",
+      "fn": "rmi_vdev_map_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0599]: no method named `spec_shl` found for struct `vstd::prelude::int` in the current scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0599]: no method named `spec_shl` found for struct `vstd::prelude::int` in the current scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_vdev_p2p_bind.rs",
+      "fn": "rmi_vdev_p2p_bind_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0061]: this function takes 4 arguments but 2 arguments were supplied",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0061]: this function takes 4 arguments but 2 arguments were supplied",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_vdev_p2p_unbind.rs",
+      "fn": "rmi_vdev_p2p_unbind_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_start.rs",
+      "fn": "rmi_vdev_start_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_unlock.rs",
+      "fn": "rmi_vdev_unlock_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vdev_unmap.rs",
+      "fn": "rmi_vdev_unmap_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0599]: no method named `spec_shl` found for struct `vstd::prelude::int` in the current scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0599]: no method named `spec_shl` found for struct `vstd::prelude::int` in the current scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_vdev_validate_mapping.rs",
+      "fn": "rmi_vdev_validate_mapping_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_version.rs",
+      "fn": "rmi_version_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rmi_vsmmu_create.rs",
+      "fn": "rmi_vsmmu_create_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vsmmu_destroy.rs",
+      "fn": "rmi_vsmmu_destroy_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vsmmu_map.rs",
+      "fn": "rmi_vsmmu_map_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rmi_vsmmu_unmap.rs",
+      "fn": "rmi_vsmmu_unmap_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rsi_attestation_token_continue.rs",
+      "fn": "rsi_attestation_token_continue_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: expected `,`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: expected `,`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_attestation_token_init.rs",
+      "fn": "rsi_attestation_token_init_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: expected `,`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: expected `,`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_features.rs",
+      "fn": "rsi_features_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rsi_host_call.rs",
+      "fn": "rsi_host_call_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rsi_ipa_state_get.rs",
+      "fn": "rsi_ipa_state_get_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rsi_ipa_state_set.rs",
+      "fn": "rsi_ipa_state_set_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rsi_measurement_extend.rs",
+      "fn": "rsi_measurement_extend_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: expected `,`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: expected `,`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_measurement_read.rs",
+      "fn": "rsi_measurement_read_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rsi_mem_get_perm_value.rs",
+      "fn": "rsi_mem_get_perm_value_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rsi_mem_set_perm_index.rs",
+      "fn": "rsi_mem_set_perm_index_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: mismatched types",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: mismatched types",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_mem_set_perm_value.rs",
+      "fn": "rsi_mem_set_perm_value_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: mismatched types",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: mismatched types",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_plane_enter.rs",
+      "fn": "rsi_plane_enter_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: expected `,`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: expected `,`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_plane_sysreg_read.rs",
+      "fn": "rsi_plane_sysreg_read_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: expected `,`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: expected `,`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_plane_sysreg_write.rs",
+      "fn": "rsi_plane_sysreg_write_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error: unexpected token, expected `]`",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error: unexpected token, expected `]`",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_realm_config.rs",
+      "fn": "rsi_realm_config_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_vdev_dma_enable.rs",
+      "fn": "rsi_vdev_dma_enable_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_vdev_get_info.rs",
+      "fn": "rsi_vdev_get_info_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_vdev_p2p_bind.rs",
+      "fn": "rsi_vdev_p2p_bind_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    },
+    {
+      "file": "rsi_vdev_validate_mapping.rs",
+      "fn": "rsi_vdev_validate_mapping_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_version.rs",
+      "fn": "rsi_version_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0308]: arguments to this function are incorrect",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0308]: arguments to this function are incorrect",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_vsmmu_activate.rs",
+      "fn": "rsi_vsmmu_activate_spec",
+      "trivial": false,
+      "unsat": "compile_error",
+      "unsat_detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RIPAS` in this scope",
+      "vacuous": "compile_error",
+      "vacuous_detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RIPAS` in this scope",
+      "verdict": "compile_error"
+    },
+    {
+      "file": "rsi_vsmmu_get_info.rs",
+      "fn": "rsi_vsmmu_get_info_spec",
+      "trivial": false,
+      "unsat": "refuted",
+      "unsat_detail": "postcondition not satisfied",
+      "vacuous": "refuted",
+      "vacuous_detail": "postcondition not satisfied",
+      "verdict": "consistent"
+    }
+  ]
+}

@@ -1,0 +1,392 @@
+[
+ {
+  "command": "RMI_DATA_DESTROY",
+  "output": "data",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_DATA_DESTROY",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_FEATURES",
+  "output": "value",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_PDEV_AUX_COUNT",
+  "output": "aux_count",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_PDEV_GET_STATE",
+  "output": "state",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_PSMMU_IRQ_NOTIFY",
+  "output": "action",
+  "class": "SPEC_GAP",
+  "defined_in_pdf_tables": false
+ },
+ {
+  "command": "RMI_PSMMU_IRQ_NOTIFY",
+  "output": "rd",
+  "class": "SPEC_GAP",
+  "defined_in_pdf_tables": false
+ },
+ {
+  "command": "RMI_PSMMU_IRQ_NOTIFY",
+  "output": "vsmmu",
+  "class": "SPEC_GAP",
+  "defined_in_pdf_tables": false
+ },
+ {
+  "command": "RMI_PSMMU_IRQ_NOTIFY",
+  "output": "msi_addr",
+  "class": "SPEC_GAP",
+  "defined_in_pdf_tables": false
+ },
+ {
+  "command": "RMI_PSMMU_IRQ_NOTIFY",
+  "output": "msi_data",
+  "class": "SPEC_GAP",
+  "defined_in_pdf_tables": false
+ },
+ {
+  "command": "RMI_REC_AUX_COUNT",
+  "output": "aux_count",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_AUX_DESTROY",
+  "output": "rtt",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_AUX_DESTROY",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_AUX_FOLD",
+  "output": "rtt",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_AUX_MAP_PROTECTED",
+  "output": "state",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_AUX_MAP_PROTECTED",
+  "output": "ripas",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_AUX_UNMAP_PROTECTED",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_DESTROY",
+  "output": "rtt",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_DESTROY",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_FOLD",
+  "output": "rtt",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_INIT_RIPAS",
+  "output": "out_top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_READ_ENTRY",
+  "output": "walk_level",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_READ_ENTRY",
+  "output": "state",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_READ_ENTRY",
+  "output": "desc",
+  "class": "SPEC_GAP",
+  "defined_in_pdf_tables": false
+ },
+ {
+  "command": "RMI_RTT_READ_ENTRY",
+  "output": "ripas",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_SET_RIPAS",
+  "output": "out_top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_SET_S2AP",
+  "output": "out_top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_RTT_SET_S2AP",
+  "output": "rtt_tree",
+  "class": "SPEC_GAP",
+  "defined_in_pdf_tables": false
+ },
+ {
+  "command": "RMI_RTT_UNMAP_UNPROTECTED",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_VDEV_AUX_COUNT",
+  "output": "aux_count",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_VDEV_GET_STATE",
+  "output": "state",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_VDEV_UNMAP",
+  "output": "pa",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_VDEV_UNMAP",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_VDEV_VALIDATE_MAPPING",
+  "output": "out_top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_VERSION",
+  "output": "lower",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_VERSION",
+  "output": "higher",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RMI_VSMMU_UNMAP",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_ATTESTATION_TOKEN_CONTINUE",
+  "output": "len",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_ATTESTATION_TOKEN_INIT",
+  "output": "size",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_FEATURES",
+  "output": "value",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_IPA_STATE_GET",
+  "output": "out_top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_IPA_STATE_GET",
+  "output": "ripas",
+  "class": "generation_defect",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_IPA_STATE_SET",
+  "output": "new_base",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_IPA_STATE_SET",
+  "output": "response",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEASUREMENT_READ",
+  "output": "value_0",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEASUREMENT_READ",
+  "output": "value_1",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEASUREMENT_READ",
+  "output": "value_2",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEASUREMENT_READ",
+  "output": "value_3",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEASUREMENT_READ",
+  "output": "value_4",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEASUREMENT_READ",
+  "output": "value_5",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEASUREMENT_READ",
+  "output": "value_6",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEASUREMENT_READ",
+  "output": "value_7",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEM_GET_PERM_VALUE",
+  "output": "value",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEM_SET_PERM_INDEX",
+  "output": "new_base",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEM_SET_PERM_INDEX",
+  "output": "response",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_MEM_SET_PERM_INDEX",
+  "output": "new_cookie",
+  "class": "generation_defect",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_PLANE_SYSREG_READ",
+  "output": "value_low",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_PLANE_SYSREG_READ",
+  "output": "value_high",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_VDEV_VALIDATE_MAPPING",
+  "output": "new_ipa_base",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_VDEV_VALIDATE_MAPPING",
+  "output": "response",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_VERSION",
+  "output": "lower",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_VERSION",
+  "output": "higher",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_VSMMU_ACTIVATE",
+  "output": "new_base",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ },
+ {
+  "command": "RSI_VSMMU_GET_INFO",
+  "output": "top",
+  "class": "ok",
+  "defined_in_pdf_tables": true
+ }
+]
