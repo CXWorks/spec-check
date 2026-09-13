@@ -290,8 +290,13 @@ def self_test(verus, preamble, timeout):
         assert len(fns) == 1, f"fixture {name} did not parse to one fn"
         with tempfile.TemporaryDirectory() as td:
             got = {}
+            # The stem is built outside the f-string: a backslash inside an
+            # f-string expression is a syntax error before Python 3.12, and this
+            # script has to run on the 3.9/3.10 interpreters on this laptop and
+            # on the GPU box, not only in the 3.12 container it was written in.
+            stem = re.sub(r'\W', '_', name)
             for kind in ('unsat', 'vacuous'):
-                p = Path(td) / f"{re.sub(r'\W', '_', name)}_{kind}.rs"
+                p = Path(td) / f"{stem}_{kind}.rs"
                 p.write_text(build_case(preamble, fns[0], kind))
                 rc, out = run_verus(verus, p, timeout)
                 got[kind] = classify(rc, out)
