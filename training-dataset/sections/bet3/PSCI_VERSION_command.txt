@@ -1,0 +1,3555 @@
+B6.3.8 PSCI_VERSION command
+                  Query the version of PSCI implemented.
+
+                  B6.3.8.1 Interface
+                  B6.3.8.1.1   Input values
+
+            Name                                 Register     Bits        Type                 Description
+
+            fid                                  X0           63:0        UInt64               FID, value 0xC4000000
+
+                  B6.3.8.1.2   Output values
+
+            Name                                 Register     Bits        Type                 Description
+
+            result                               X0           63:0        PsciInterfaceVersion
+                                                                                             Interface version
+
+                  See also:
+                     • B6.2 PSCI version
+                  B6.3.8.2 Failure conditions                          T
+                                                         AF
+                  The PSCI_VERSION command does not have any failure conditions.
+                  B6.3.8.3 Success conditions
+
+  ID                             Condition        R
+  version
+                                          D
+                                 post: VersionEqual(result, PsciVersion())
+
+Chapter B6. Power State Control Interface
+
+B6.4 PSCI types
+                This section defines types which are used in the PSCI interface.
+
+B6.4.1 PsciInterfaceVersion type
+                The PsciInterfaceVersion fieldset contains an PSCI interface version.
+                The PsciInterfaceVersion fieldset is a concrete type.
+                The width of the PsciInterfaceVersion fieldset is 64 bits.
+                The fields of the PsciInterfaceVersion fieldset are shown in the following diagram.
+
+                The fields of the PsciInterfaceVersion fieldset are shown in the following table.
+
+ Name                                 Bits     Description                                           Value
+
+ minor                                15:0     Interface minor version number (the value y in        UInt16
+                                               interface version x.y) T
+ major                                30:16
+
+                                      63:31
+                                                        AF
+                                               Interface major version number (the value x in
+                                               interface version x.y)
+                                               Reserved
+                                                                                                     UInt15
+
+                                                                                                     MBZ
+
+B6.4.2 PsciReturnCode type
+                                                 R
+                                         D
+                The PsciReturnCode enumeration represents the return code of a PSCI command.
+                The PsciReturnCode enumeration is a concrete type.
+                The width of the PsciReturnCode enumeration is 64 bits.
+                The values of the PsciReturnCode enumeration are shown in the following table.
+
+           Encoding        Name                                     Description
+
+           -9              PSCI_INVALID_ADDRESS                     Refer to PSCI specification
+           -8              PSCI_DISABLED                            Refer to PSCI specification
+           -7              PSCI_NOT_PRESENT                         Refer to PSCI specification
+           -6              PSCI_INTERNAL_FAILURE                    Refer to PSCI specification
+           -5              PSCI_ON_PENDING                          Refer to PSCI specification
+           -4              PSCI_ALREADY_ON                          Refer to PSCI specification
+           -3              PSCI_DENIED                              Refer to PSCI specification
+           -2              PSCI_INVALID_PARAMETERS                  Refer to PSCI specification
+           -1              PSCI_NOT_SUPPORTED                       Refer to PSCI specification
+
+Chapter B6. Power State Control Interface
+
+           Encoding      Name                                      Description
+
+           0             PSCI_SUCCESS                              Refer to PSCI specification
+           1             PSCI_OFF                                  Refer to PSCI specification
+
+               Unused encodings for the PsciReturnCode enumeration are reserved for use by future versions of this specification.
+
+                                                                     T
+                                                       AF
+                                                R
+                                        D
+
+     T               Part C
+    AF   Constants and types
+
+R
+D
+Chapter C1
+RMM constants
+
+                                                                T
+                                                  AF
+                                           R
+           This section describes constants which are used in the definition of RMM commands or RMM abstract state.
+
+C1.1 RMM_NUM_PERM_OVERLAY_INDICES  D
+           Number of permission overlay indices.
+           The value of RMM_NUM_PERM_OVERLAY_INDICES is 15.
+
+C1.2 RMM_RTT_PAGE_LEVEL
+           RTT level of a page entry.
+           The value of RMM_RTT_PAGE_LEVEL is 3.
+
+C1.3 RMM_RTT_TREE_PRIMARY
+           Index of primary RTT tree.
+           The value of RMM_RTT_TREE_PRIMARY is 0.
+
+C1.4 RSI_GRANULE_SIZE
+           Size of an RSI Granule in bytes.
+           The value of RSI_GRANULE_SIZE is 0x1000.
+
+Chapter C1. RMM constants
+C1.5. UINT64_MAX
+
+C1.5 UINT64_MAX
+            Maximum value of an unsigned 64-bit integer.
+            The value of UINT64_MAX is 0xffffffffffffffff.
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter C2
+RMM types
+
+                                                                T
+                                                  AF
+                                           R
+           This section describes types which are used to model the abstract state of the RMM.
+
+C2.1 RmmAddrRange type             D
+           The RmmAddrRange structure contains address range.
+           The RmmAddrRange structure is an abstract type.
+           The members of the RmmAddrRange structure are shown in the following table.
+
+           Name                Type                                    Description
+
+           base                Address                                 Base of address range (inclusive)
+           top                 Address                                 Top of address range (exclusive)
+
+           The RmmAddrRange structure is used in the following types:
+              • RmmPdevStream
+              • RmmVdev
+
+C2.2 RmmBoolean type
+           The RmmBoolean enumeration represents whether a feature is enabled.
+
+Chapter C2. RMM types
+C2.3. RmmDataFlags type
+
+            The RmmBoolean enumeration is an abstract type.
+            The values of the RmmBoolean enumeration are shown in the following table.
+
+                    Name                               Description
+
+                    RMM_FALSE                          False
+                    RMM_TRUE                           True
+
+            The RmmBoolean enumeration is used in the following types:
+               • RmmPdevStreamResult
+               • RmmVdev
+               • RmmPsmmu
+               • RmmRttS2APDirect
+               • RmmVdevAddrResult
+               • RmmGlobalDynamic
+               • RmmRttWalkNotAligned
+
+C2.3 RmmDataFlags type
+
+                                                                 T
+            The RmmDataFlags fieldset contains flags provided by the Host during DATA Granule creation.
+
+                                                   AF
+            The RmmDataFlags fieldset is a concrete type.
+            The width of the RmmDataFlags fieldset is 64 bits.
+            The fields of the RmmDataFlags fieldset are shown in the following diagram.
+
+                                            R
+                                     D
+
+            The fields of the RmmDataFlags fieldset are shown in the following table.
+
+ Name                            Bits     Description                                           Value
+
+ measure                         0        Whether to measure DATA Granule contents              RmmDataMeasureContent
+                                 63:1     Reserved                                              SBZ
+
+            The RmmDataFlags fieldset is used in the following types:
+               • RmmMeasurementDescriptorData
+
+Chapter C2. RMM types
+C2.4. RmmDataMeasureContent type
+
+C2.4 RmmDataMeasureContent type
+               The RmmDataMeasureContent enumeration represents whether to measure DATA Granule contents.
+               The RmmDataMeasureContent enumeration is a concrete type.
+               The width of the RmmDataMeasureContent enumeration is 1 bits.
+               The values of the RmmDataMeasureContent enumeration are shown in the following table.
+
+           Encoding      Name                                  Description
+
+           0             NO_MEASURE_CONTENT                    Do not measure DATA Granule contents.
+           1             MEASURE_CONTENT                       Measure DATA Granule contents.
+
+               The RmmDataMeasureContent enumeration is used in the following types:
+                  • RmmDataFlags
+
+C2.5 RmmDevCommState type
+               The RmmDevCommState enumeration represents the state of communication between an RMM device object and
+               a device.                                           T
+                                                     AF
+               The RmmDevCommState enumeration is an abstract type.
+               The values of the RmmDevCommState enumeration are shown in the following table.
+
+                      Name
+                                              R          Description
+
+                      DEV_COMM_ACTIVE
+                                      D                  The RMM has initiated a device transaction. One or more device
+                                                         requests associated with this device transaction have been sent from the
+                                                         RMM to the device. The RMM has not received all the expected device
+                                                         responses associated with this device transaction.
+                      DEV_COMM_ERROR                     The RMM encountered an error during communication with the device.
+                      DEV_COMM_IDLE                      The RMM is not communicating with the device.
+                      DEV_COMM_PENDING                   The RMM has a device request which is ready to be sent to the device.
+
+               The RmmDevCommState enumeration is used in the following types:
+                  • RmmVdev
+                  • RmmPdev
+
+C2.6 RmmDevMemCoherent type
+               The RmmDevMemCoherent enumeration represents whether a device memory location is within the system
+               coherent memory space.
+               The RmmDevMemCoherent enumeration is an abstract type.
+               The values of the RmmDevMemCoherent enumeration are shown in the following table.
+
+Chapter C2. RMM types
+C2.7. RmmDevMemFlags type
+
+                    Name                                Description
+
+                    DEV_MEM_COHERENT                    A device memory location is within the system coherent memory space
+                    DEV_MEM_NON_COHERENT A device memory location is not within the system coherent memory
+                                         space
+
+           The RmmDevMemCoherent enumeration is used in the following types:
+              • RmmDevMemFlags
+
+C2.7 RmmDevMemFlags type
+           The RmmDevMemFlags structure contains flags which describe properties of a device memory mapping.
+           The RmmDevMemFlags structure is an abstract type.
+           The members of the RmmDevMemFlags structure are shown in the following table.
+
+            Name                Type                                     Description
+
+            coh                 RmmDevMemCoherent                        Whether the output address of the device memory
+                                                                  T      mapping is within the system coherent memory space.
+            order               RmmDevMemOrdering
+                                                    AF
+           The RmmDevMemFlags structure is used in the following types:
+                                                                         Ordering properties of the device memory location.
+
+              • RmmRec
+                                             R
+C2.8 RmmDevMemOrdering type          D
+           The RmmDevMemOrdering enumeration represents ordering properties of a device memory location.
+           The RmmDevMemOrdering enumeration is an abstract type.
+           The values of the RmmDevMemOrdering enumeration are shown in the following table.
+
+                    Name                                      Description
+
+                    DEV_MEM_LIMITED_ORDER                     A device memory location is within a Limited Order Region
+                                                              (LOR)
+                    DEV_MEM_NOT_LIMITED_ORDERA device memory location is not within a Limited Order Region
+                                             (LOR)
+
+           The RmmDevMemOrdering enumeration is used in the following types:
+              • RmmDevMemFlags
+
+C2.9 RmmDptL0 type
+           The RmmDptL0 structure contains attributes of the Level 0 DPT.
+
+Chapter C2. RMM types
+C2.10. RmmDptL0Entry type
+
+            The RmmDptL0 structure is an abstract type.
+            The members of the RmmDptL0 structure are shown in the following table.
+
+             Name               Type                                     Description
+
+             state              RmmDptL0State                            State of the table
+
+C2.10 RmmDptL0Entry type
+            The RmmDptL0Entry structure contains attributes of a Level 0 DPT entry.
+            The RmmDptL0Entry structure is an abstract type.
+            The members of the RmmDptL0Entry structure are shown in the following table.
+
+             Name               Type                                     Description
+
+             state              RmmDptL0EntryState                       State of the entry
+
+C2.11 RmmDptL0EntryState type
+                                                                  T
+                                                    AF
+            The RmmDptL0EntryState enumeration represents state of a Level 0 DPT entry.
+            The RmmDptL0EntryState enumeration is an abstract type.
+            The values of the RmmDptL0EntryState enumeration are shown in the following table.
+
+                     Name                    R          Description
+
+                                     D
+                     DPT_L0_ENTRY_BLOCK
+                     DPT_L0_ENTRY_TABLE
+                                                        Level 0 DPT entry is a block entry.
+                                                        Level 0 DPT entry is a table entry.
+
+            The RmmDptL0EntryState enumeration is used in the following types:
+                • RmmDptL0Entry
+
+C2.12 RmmDptL0State type
+            The RmmDptL0State enumeration represents state of the Level 0 DPT.
+            The RmmDptL0State enumeration is an abstract type.
+            The values of the RmmDptL0State enumeration are shown in the following table.
+
+                     Name                               Description
+
+                     DPT_L0_INVALID                     Level 0 DPT is invalid.
+                     DPT_L0_VALID                       Level 0 DPT is valid.
+
+            The RmmDptL0State enumeration is used in the following types:
+
+Chapter C2. RMM types
+C2.13. RmmFeature type
+
+                • RmmDptL0
+
+C2.13 RmmFeature type
+            The RmmFeature enumeration represents whether a feature is enabled.
+            The RmmFeature enumeration is an abstract type.
+            See also:
+                • Chapter A3 Feature discovery and configuration
+            The values of the RmmFeature enumeration are shown in the following table.
+
+                      Name                               Description
+
+                      FEATURE_FALSE                          • During discovery: Feature is not supported.
+                                                             • During selection: Feature is not enabled.
+                      FEATURE_TRUE                           • During discovery: Feature is supported.
+                                                             • During selection: Feature is enabled.
+
+            The RmmFeature enumeration is used in the following types:
+                • RmmRealm
+                • RmmVdev
+                                                                   T
+                • RmmPdev
+                • RmmPsmmu
+                • RmmGlobalStatic
+                                                     AF
+C2.14 RmmGlobal type                          R
+                                      D
+            The RmmGlobal structure contains global attributes of the RMM implementation.
+            The RmmGlobal structure is an abstract type.
+            The members of the RmmGlobal structure are shown in the following table.
+
+             Name                Type                                     Description
+
+             static              RmmGlobalStatic                          Static attributes
+             dynamic             RmmGlobalDynamic                         Dynamic attributes
+
+C2.15 RmmGlobalDynamic type
+            The RmmGlobalDynamic structure contains global dynamic attributes of the RMM implementation.
+            The RmmGlobalDynamic structure is an abstract type.
+            The members of the RmmGlobalDynamic structure are shown in the following table.
+
+             Name                Type                                     Description
+
+             state               RmmState                                 Lifecycle state
+
+Chapter C2. RMM types
+C2.16. RmmGlobalStatic type
+
+             Name                 Type                                     Description
+
+             rmi_granule_size     UInt64                                   Current RMI Granule size
+             tracking_region_sizeUInt64                                    Current tracking region size
+             num_tracked          UInt64                                   Number of tracking regions which have been
+                                                                           transitioned from untracked to tracked
+             num_realms           UInt64                                   Number of Realms which have been created
+             pat_valid            RmmBoolean                               Whether the Platform Attestation Token reflects the
+                                                                           current set of comprehensive trust devices attached to
+                                                                           the platform
+
+             The RmmGlobalDynamic structure is used in the following types:
+                • RmmGlobal
+
+C2.16 RmmGlobalStatic type
+             The RmmGlobalStatic structure contains global static attributes of the RMM implementation.
+             The RmmGlobalStatic structure is an abstract type.
+             See also:
+                                                                    T
+                                                      AF
+                • Chapter A3 Feature discovery and configuration
+             The members of the RmmGlobalStatic structure are shown in the following table.
+
+             Name                 Type         R                           Description
+
+             pasz
+             dptps
+                                       D
+                                  UInt64
+                                  UInt64
+                                                                           Physical address size in bytes
+                                                                           Size of the address space covered by the DPT in bytes
+             l0dptsz              UInt64                                   Level 0 DPT size in bytes
+             l0gptsz              UInt64                                   Level 0 GPT size in bytes
+             max_ipa_width        UInt64                                   Maximum IPA width
+             max_oaddr_width UInt64                                        Maximum output address width
+             feat_lpa2            RmmFeature                               Whether LPA2 is supported
+             feat_sve             RmmFeature                               Whether SVE is supported
+             max_sve_vl           UInt64                                   Maximum SVE vector length
+             num_bps              UInt64                                   Number of breakpoints available
+             num_wps              UInt64                                   Number of watchpoints available
+             feat_pmu             RmmFeature                               Number of watchpoints available
+             pmu_num_ctrs         UInt64                                   Number of PMU counters available
+             feat_sha_256         RmmFeature                               Whether SHA-256 is supported
+             feat_sha_384         RmmFeature                               Whether SHA-384 is supported
+             feat_sha_512         RmmFeature                               Whether SHA-512 is supported
+
+Chapter C2. RMM types
+C2.17. RmmGptParState type
+
+             Name                 Type                                     Description
+
+             feat_da              RmmFeature                               Whether Realm device assignment is supported
+             feat_da_coh          RmmFeature                               Whether coherent device assignment is supported
+             feat_vsmmu           RmmFeature                               Whether virtual SMMU is supported
+             feat_ats             RmmFeature                               Whether ATS is supported
+             max_num_aux_planes
+                             UInt64                                        Maximum number of auxiliary Planes
+             rtt_plane            RmmRttPlaneFeature                       RTT usage models supported for multi-Plane Realms
+             rtt_s2ap_indirect    RmmFeature                               Whether S2AP indirect encoding is supported for
+                                                                           multi-Plane Realms
+             mec_count            UInt64                                   Number of MECs
+             max_recs_order       UInt64                                   Order of the maximum number of RECs which can be
+                                                                           created per Realm
+             pdev_max_vdevs_order
+                             UInt64                                        Order of the maximum number of VDEVs which can be
+                                                                           created per PDEV
+             realm_max_vdevs_orde
+                              UInt64                                       Order of the maximum number of VDEVs which can be
+             r                                                             created per Realm
+             rmi_granule_size_4kb
+                               RmmFeature                           T      Whether 4KB RMI Granule size is supported
+             rmi_granule_size_16k
+             b
+                               RmmFeature
+
+             rmi_granule_size_64k
+                               RmmFeature
+                                                      AF                   Whether 16KB RMI Granule size is supported
+
+                                                                           Whether 64KB RMI Granule size is supported
+             b
+             feat_non_tee_streamRmmFeature     R                           Whether NON_TEE PDEV stream type is supported
+             feat_vdev_krou
+                                       D
+                                  RmmFeature                               Whether stream key refresh is required on VDEV
+                                                                           unlock
+
+            The RmmGlobalStatic structure is used in the following types:
+               • RmmGlobal
+
+C2.17 RmmGptParState type
+            The RmmGptParState enumeration represents state of a GPT Protected Address Range.
+            The RmmGptParState enumeration is an abstract type.
+            The values of the RmmGptParState enumeration are shown in the following table.
+
+                       Name                                   Description
+
+                       GPT_PAR_HOST_CREATED                   PAR is host-allocated. The L1GPT has been created.
+                       GPT_PAR_HOST_NOT_CREATED PAR is host-allocated. The L1GPT has not been created.
+                       GPT_PAR_PLAT                           PAR is platform-allocated.
+                       GPT_PAR_RESERVED                       PAR is platform-reserved.
+
+Chapter C2. RMM types
+C2.18. RmmGranule type
+
+C2.18 RmmGranule type
+            The RmmGranule structure contains attributes of a Granule.
+            The RmmGranule structure is an abstract type.
+            The members of the RmmGranule structure are shown in the following table.
+
+             Name               Type                                     Description
+
+             state              RmmGranuleState                          Lifecycle state
+
+C2.19 RmmGranuleState type
+            The RmmGranuleState enumeration represents the state of a granule.
+            The RmmGranuleState enumeration is an abstract type.
+            The values of the RmmGranuleState enumeration are shown in the following table.
+
+                     Name                               Description
+
+                     GRAN_DATA                                    T
+                                                        Realm code or data.
+                     GRAN_DELEGATED
+                     GRAN_DEV
+                     GRAN_INTERNAL
+                                                    AF  Delegated for use by the RMM.
+                                                        Device memory, mapped into a Realm.
+                                                        Used for IMPLEMENTATION DEFINED purposes.
+                     GRAN_PDEV               R          Physical device object.
+                     GRAN_RD
+                     GRAN_REC
+                     GRAN_RTT
+                                     D                  Realm Descriptor object
+                                                        Realm Execution Context object.
+                                                        Realm Translation Table.
+                     GRAN_UNDELEGATED                   Not delegated for use by the RMM.
+                     GRAN_VDEV                          Virtual device object.
+                     GRAN_VSMMU                         Virtual SMMU object.
+
+            The RmmGranuleState enumeration is used in the following types:
+                • RmmGranule
+
+C2.20 RmmHashAlgorithm type
+            The RmmHashAlgorithm enumeration represents hash algorithm.
+            The RmmHashAlgorithm enumeration is an abstract type.
+            The values of the RmmHashAlgorithm enumeration are shown in the following table.
+
+Chapter C2. RMM types
+C2.21. RmmHipas type
+
+                   Name                                Description
+
+                   HASH_SHA_256                        SHA-256 (Secure Hash Standard (SHS) [27])
+                   HASH_SHA_384                        SHA-384 (Secure Hash Standard (SHS) [27])
+                   HASH_SHA_512                        SHA-512 (Secure Hash Standard (SHS) [27])
+
+            The RmmHashAlgorithm enumeration is used in the following types:
+               • RmmRealm
+               • RmmPdev
+
+C2.21 RmmHipas type
+            The RmmHipas enumeration represents host IPA state.
+            The RmmHipas enumeration is an abstract type.
+            The values of the RmmHipas enumeration are shown in the following table.
+
+                   Name                                Description
+
+                   HIPAS_ARCH_DEV                                T
+                                                       Protected IPA which is associated with an architectural device.
+                   HIPAS_DATA
+                   HIPAS_MAPPED_NS
+                   HIPAS_NARCH_DEV
+                                                   AF  Protected IPA which is associated with a DATA Granule.
+                                                       Unprotected IPA which is associated with a physical Granule.
+                                                       Protected IPA which is associated with a GRAN_DEV Granule.
+                   HIPAS_UNMAPPED_NS        R          Unprotected IPA which is not associated with any Granule.
+                   HIPAS_VOID
+                                    D                  Protected IPA which is not associated with any Granule.
+
+C2.22 RmmIrqCfg type
+            The RmmIrqCfg enumeration represents whether IRQ is disabled, wired type or MSI type.
+            The RmmIrqCfg enumeration is an abstract type.
+            The values of the RmmIrqCfg enumeration are shown in the following table.
+
+                   Name                                Description
+
+                   IRQ_DISABLED                            • IRQ is disabled.
+                   IRQ_MSI                                 • Interrupt is of MSI type
+                   IRQ_WIRED                               • Interrupt is of Wired type
+
+            The RmmIrqCfg enumeration is used in the following types:
+               • RmmPsmmu
+
+Chapter C2. RMM types
+C2.23. RmmLfaPolicy type
+
+C2.23 RmmLfaPolicy type
+                The RmmLfaPolicy enumeration represents a Live Firmware Activation policy.
+                The RmmLfaPolicy enumeration is an abstract type.
+                The values of the RmmLfaPolicy enumeration are shown in the following table.
+
+                        Name                               Description
+
+                        LFA_ALLOW                          LFA is permitted.
+                        LFA_DISALLOW                       LFA is not permitted.
+
+                The RmmLfaPolicy enumeration is used in the following types:
+                   • RmmRealm
+
+C2.24 RmmMeasurementDescriptorData type
+                The RmmMeasurementDescriptorData structure contains data structure used to calculate the contribution to the
+                RIM of a DATA Granule.
+                                                                     T
+                The RmmMeasurementDescriptorData structure is a concrete type.
+
+                                                        AF
+                The width of the RmmMeasurementDescriptorData structure is 256 (0x100) bytes.
+                See also:
+                   • B4.5.62.4 RMI_RTT_DATA_MAP_INIT extension of RIM
+
+                                                R
+                The members of the RmmMeasurementDescriptorData structure are shown in the following table.
+
+        Name
+
+        desc_type
+                             Byte offset
+
+                             0x0
+                                        D      Type
+
+                                               Bits8
+                                                                                        Description
+
+                                                                                        Measurement descriptor type, value 0x0
+        len                  0x8               UInt64                                   Length of this data structure in bytes
+        rim                  0x10              RmmRealmMeasurement                      Current RIM value
+        ipa                  0x50              Address                                  IPA at which the DATA Granule is mapped
+                                                                                        in the Realm
+        flags                0x58              RmmDataFlags                             Flags provided by Host
+        content              0x60              RmmRealmMeasurement                      Hash of contents of DATA Granule, or zero
+                                                                                        if flags indicate DATA Granule contents are
+                                                                                        unmeasured
+
+                Unused bits of the RmmMeasurementDescriptorData structure MBZ.
+
+C2.25 RmmMeasurementDescriptorRec type
+                The RmmMeasurementDescriptorRec structure contains data structure used to calculate the contribution to the
+                RIM of a REC.
+                The RmmMeasurementDescriptorRec structure is a concrete type.
+
+Chapter C2. RMM types
+C2.26. RmmMeasurementDescriptorRipas type
+
+               The width of the RmmMeasurementDescriptorRec structure is 256 (0x100) bytes.
+               See also:
+                  • B4.5.43.4 RMI_REC_CREATE extension of RIM
+               The members of the RmmMeasurementDescriptorRec structure are shown in the following table.
+
+        Name                Byte offset       Type                                     Description
+
+        desc_type           0x0               Bits8                                    Measurement descriptor type, value 0x1
+        len                 0x8               UInt64                                   Length of this data structure in bytes
+        rim                 0x10              RmmRealmMeasurement                      Current RIM value
+        content             0x50              RmmRealmMeasurement                      Hash of an RMI Granule which contains
+                                                                                       REC parameters data structure.
+                                                                                       Unused bytes are zero-filled.
+
+               Unused bits of the RmmMeasurementDescriptorRec structure MBZ.
+
+C2.26 RmmMeasurementDescriptorRipas type
+                                                                    T
+               The RmmMeasurementDescriptorRipas structure contains data structure used to calculate the contribution to the
+               RIM of a RIPAS change.
+                                                       AF
+               The RmmMeasurementDescriptorRipas structure is a concrete type.
+               The width of the RmmMeasurementDescriptorRipas structure is 256 (0x100) bytes.
+               See also:
+                                               R
+                  • B4.5.69.4 RMI_RTT_INIT_RIPAS extension of RIM
+                                       D
+               The members of the RmmMeasurementDescriptorRipas structure are shown in the following table.
+
+        Name                Byte offset       Type                                     Description
+
+        desc_type           0x0               Bits8                                    Measurement descriptor type, value 0x2
+        len                 0x8               UInt64                                   Length of this data structure in bytes
+        rim                 0x10              RmmRealmMeasurement                      Current RIM value
+        base                0x50              Address                                  Base IPA of the RIPAS change
+        top                 0x58              Address                                  Top IPA of the RIPAS change
+
+               Unused bits of the RmmMeasurementDescriptorRipas structure MBZ.
+
+C2.27 RmmMecPolicy type
+               The RmmMecPolicy enumeration represents a MEC policy.
+               The RmmMecPolicy enumeration is an abstract type.
+               The values of the RmmMecPolicy enumeration are shown in the following table.
+
+Chapter C2. RMM types
+C2.28. RmmMemCategory type
+
+                  Name                               Description
+
+                  MEC_POLICY_PRIVATE                 The MEC protects memory owned by a single Realm. A MEC with this
+                                                     policy may be referred to as a Private MEC.
+                  MEC_POLICY_SHARED                  The MEC protects memory owned by multiple Realms. A MEC with
+                                                     this policy may be referred to as a Shared MEC.
+
+           The RmmMecPolicy enumeration is used in the following types:
+              • RmmRealm
+
+C2.28 RmmMemCategory type
+           The RmmMemCategory enumeration represents memory category.
+           The RmmMemCategory enumeration is an abstract type.
+           The values of the RmmMemCategory enumeration are shown in the following table.
+
+                  Name                                     Description
+
+                  MEM_CATEGORY_CONVENTIONALConventional memory.
+                  MEM_CATEGORY_DEV_COH
+                                                               T
+                                                           Device coherent memory.
+                  MEM_CATEGORY_DEV_NCOH
+                  MEM_CATEGORY_NONE
+                                                 AF        Device non-coherent memory.
+                                                           No memory.
+
+                                          R
+           The RmmMemCategory enumeration is used in the following types:
+              • RmmTrackingRegion D
+C2.29 RmmMemPermLocked type
+           The RmmMemPermLocked enumeration represents whether a memory permission value is locked.
+           The RmmMemPermLocked enumeration is an abstract type.
+           The values of the RmmMemPermLocked enumeration are shown in the following table.
+
+                  Name                               Description
+
+                  MEM_PERM_LOCKED                    Memory permission value is locked
+                  MEM_PERM_UNLOCKED                  Memory permission value is unlocked
+
+           The RmmMemPermLocked enumeration is used in the following types:
+              • RmmRealm
+
+C2.30 RmmMemPerms type
+           The RmmMemPerms structure contains memory permissions.
+
+Chapter C2. RMM types
+C2.31. RmmOpCanCancel type
+
+           The RmmMemPerms structure is an abstract type.
+           The members of the RmmMemPerms structure are shown in the following table.
+
+            Name                 Type                                     Description
+
+            values               Bits64[16]                              Mapping from memory permission index to memory
+                                                                         permission label
+                                                                         Values use architectural encodings.
+
+           The RmmMemPerms structure is used in the following types:
+              • RmmRealm
+
+C2.31 RmmOpCanCancel type
+           The RmmOpCanCancel enumeration represents whether a stateful operation can be cancelled.
+           The RmmOpCanCancel enumeration is an abstract type.
+           The values of the RmmOpCanCancel enumeration are shown in the following table.
+
+                      Name                                         T
+                                                         Description
+
+                                                     AF
+                      RMM_OP_CANNOT_CANCEL Operation cannot be cancelled.
+                      RMM_OP_CAN_CANCEL                  Operation can be cancelled.
+
+C2.32 RmmPdev type                            R
+                                      D
+           The RmmPdev structure contains attributes of a PDEV.
+           The RmmPdev structure is an abstract type.
+           The members of the RmmPdev structure are shown in the following table.
+
+            Name                 Type                                     Description
+
+            category             RmmPdevCategory                          Device category
+            hb_base              Bits64                                   Host bridge base address
+            pdev_id              Bits64                                   Device identifier
+            routing_id           Bits64                                   Routing identifier
+            rid_base             UInt32                                   Base of requester ID range (inclusive).
+                                                                          For PCIe category of devices, the value is in BDF
+                                                                          format.
+            rid_top              UInt32                                   Top of requester ID range (exclusive).
+                                                                          For PCIe category of devices, the value is in BDF
+                                                                          format.
+            spdm                 RmmPdevSpdm                              Whether communication with the device uses SPDM
+            signed_meas          RmmFeature                               Whether device supports signed measurements
+
+Chapter C2. RMM types
+C2.33. RmmPdevCategory type
+
+            Name               Type                                     Description
+
+            id_index           UInt64                                   Device identity index
+            hash_algo          RmmHashAlgorithm                         Algorithm used to generate device digests
+            state              RmmPdevState                             Lifecycle state
+            op                 RmmPdevOperation                         Operation performed on this PDEV
+            comm_state         RmmDevCommState                          Device communication state
+            max_num_vdevs      UInt64                                  Maximum number of VDEVs which can be associated
+                                                                       with this PDEV
+            num_vdevs          UInt64                                   Number of VDEVs associated with this PDEV
+            protocol_data_digestBits512                                 Protocol data digest
+            feat_tse           RmmFeature                               Whether this device supports Target-Side Encryption
+
+C2.33 RmmPdevCategory type
+            The RmmPdevCategory enumeration represents PDEV category.
+            The RmmPdevCategory enumeration is an abstract type. T
+                                                   AF
+            The values of the RmmPdevCategory enumeration are shown in the following table.
+
+                    Name                                           Description
+
+                                            R
+                    PDEV_ENDPOINT_ACCEL_OFF_CHIP
+                    PDEV_ENDPOINT_ACCEL_ON_CHIP
+                                                                   Off-chip accelerator endpoint device
+                                                                   On-chip accelerator endpoint device
+                    PDEV_ROOT_PORT  D                              Root Port
+
+            The RmmPdevCategory enumeration is used in the following types:
+                 • RmmPdev
+
+C2.34 RmmPdevOperation type
+            The RmmPdevOperation enumeration represents operation performed on a PDEV.
+            The RmmPdevOperation enumeration is an abstract type.
+            The values of the RmmPdevOperation enumeration are shown in the following table.
+
+                    Name                                 Description
+
+                    PDEV_OP_CONNECT                      Request connection of a PDEV stream.
+                    PDEV_OP_DISCONNECT                   Request connection of a PDEV stream.
+                    PDEV_OP_KEY_PURGE                    Request key flush of a PDEV stream.
+                    PDEV_OP_KEY_REFRESH                  Request key refresh of a PDEV stream.
+
+Chapter C2. RMM types
+C2.35. RmmPdevSpdm type
+
+                   Name                                 Description
+
+                   PDEV_OP_NONE                         No operation.
+                   PDEV_OP_STOP                         Change state to STOPPED.
+                   PDEV_OP_STREAM_ABORTED PDEV stream operation was aborted.
+                   PDEV_OP_STREAM_COMPLETEAwaiting completion of a PDEV stream operation.
+
+           The RmmPdevOperation enumeration is used in the following types:
+              • RmmPdev
+
+C2.35 RmmPdevSpdm type
+           The RmmPdevSpdm enumeration represents whether communication with the device uses SPDM.
+           The RmmPdevSpdm enumeration is an abstract type.
+           See also:
+              • A9.1.2 Device properties
+
+                                                                T
+           The values of the RmmPdevSpdm enumeration are shown in the following table.
+
+                   Name
+
+                   SPDM_FALSE
+                                                  AF  Description
+
+                                                      Communication with the device does not use SPDM.
+                   SPDM_TRUE                          Communication with the device uses SPDM.
+                                           R
+                                   D
+           The RmmPdevSpdm enumeration is used in the following types:
+              • RmmPdev
+
+C2.36 RmmPdevState type
+           The RmmPdevState enumeration represents the state of a PDEV.
+           The RmmPdevState enumeration is an abstract type.
+           The values of the RmmPdevState enumeration are shown in the following table.
+
+                   Name                               Description
+
+                   PDEV_ERROR                         Device has reported a fatal error.
+                   PDEV_HAS_KEY                       RMM has device public key.
+                   PDEV_NEEDS_KEY                     RMM needs device public key.
+                   PDEV_NEW                           Initial state of the device.
+                   PDEV_READY                         Secure connection between the RMM and the device has been
+                                                      established.
+
+Chapter C2. RMM types
+C2.37. RmmPdevStream type
+
+                      Name                               Description
+
+                      PDEV_STOPPED                       Secure connection between the RMM and the device has been
+                                                         terminated.
+
+            The RmmPdevState enumeration is used in the following types:
+               • RmmPdev
+
+C2.37 RmmPdevStream type
+            The RmmPdevStream structure contains attributes of a PDEV stream.
+            The RmmPdevStream structure is an abstract type.
+            The members of the RmmPdevStream structure are shown in the following table.
+
+            Name                 Type                                     Description
+
+            handle               Bits64                                   Stream handle
+            state                RmmPdevStreamState                       Stream state
+            stream_type          RmmPdevStreamType                 T      Stream type
+            ide_sid
+            refresh_count
+                                 UInt64
+                                 UInt64
+                                                     AF                   IDE stream identifier
+                                                                          Count of successful key refresh operations for IDE
+                                                                          streams
+            purge_count          UInt64
+                                              R                           Count of successful key purge operations for IDE
+                                                                          streams
+            num_addr_range
+            addr_range
+                                      D
+                                 UInt64
+                                 RmmAddrRange[16]
+                                                                          Number of device address ranges
+                                                                          CPU physical address range used to access the device in
+                                                                          the system memory map
+
+            The RmmPdevStream structure is used in the following types:
+               • RmmPdevStreamResult
+
+C2.38 RmmPdevStreamResult type
+            The RmmPdevStreamResult structure contains result of looking up a PDEV stream.
+            The RmmPdevStreamResult structure is an abstract type.
+            The members of the RmmPdevStreamResult structure are shown in the following table.
+
+            Name                 Type                                     Description
+
+            valid                RmmBoolean                               Whether the lookup succeeded
+            stream               RmmPdevStream                            Stream
+
+Chapter C2. RMM types
+C2.39. RmmPdevStreamState type
+
+C2.39 RmmPdevStreamState type
+            The RmmPdevStreamState enumeration represents the state of a PDEV stream.
+            The RmmPdevStreamState enumeration is an abstract type.
+            The values of the RmmPdevStreamState enumeration are shown in the following table.
+
+                   Name                                        Description
+
+                   PDEV_STREAM_CONNECTED
+
+                                                               Stream is connected.
+                   PDEV_STREAM_CONNECTING
+
+                                                               Stream is connecting.
+                   PDEV_STREAM_DISCONNECTED
+
+                                                               Stream is not connected.
+                   PDEV_STREAM_DISCONNECTING
+
+                                                               Stream is disconnecting.
+                   PDEV_STREAM_KEY_PURGING                       T
+                   PDEV_STREAM_KEY_REFRESHING
+                                                   AF          Stream keys are being purged.
+
+                                            R                  Stream keys are being refreshed.
+
+                                    D
+            The RmmPdevStreamState enumeration is used in the following types:
+               • RmmPdevStream
+
+C2.40 RmmPdevStreamType type
+            The RmmPdevStreamType enumeration represents type of a PDEV stream.
+            The RmmPdevStreamType enumeration is an abstract type.
+            The values of the RmmPdevStreamType enumeration are shown in the following table.
+
+                   Name                                Description
+
+                   PDEV_STREAM_COH                     Coherent traffic between an upstream port and an accelerator endpoint
+                                                       device.
+                   PDEV_STREAM_COH_SYS                 Coherent traffic to an endpoint device which is protected by system
+                                                       construction.
+                   PDEV_STREAM_NCOH                    Non-coherent traffic between an upstream port and an endpoint device.
+                   PDEV_STREAM_NCOH_SYS Non-coherent traffic to an endpoint device which is protected by system
+                                        construction.
+                   PDEV_STREAM_NON_TEE                 Non-TEE traffic.
+
+Chapter C2. RMM types
+C2.41. RmmPsmmu type
+
+                      Name                               Description
+
+            The RmmPdevStreamType enumeration is used in the following types:
+               • RmmPdevStream
+
+C2.41 RmmPsmmu type
+            The RmmPsmmu structure contains attributes of a PSMMU.
+            The RmmPsmmu structure is an abstract type.
+            The members of the RmmPsmmu structure are shown in the following table.
+
+            Name                 Type                                     Description
+
+            state                RmmPsmmuState                            State of the PSMMU
+            sid_size             UInt64                                  StreamID size in bits.
+                                                                         This is read from the SMMU_IDR1.SIDSIZE register
+                                                                         field.
+            irq_cfg              RmmIrqCfg
+                                                                   T      Interrupt configuration for Gerror, EventQ and PRIQ
+                                                                          interrupts
+            cmdq_sync_irq_wired
+            gerror_intr_num
+                             RmmFeature
+                                 UInt32
+                                                     AF                   Whether the cmdq_sync interrupt is wired
+                                                                          Gerror wired interrupt number
+            eventq_intr_num      UInt32                                   EventQ wired interrupt number
+            priq_intr_num        UInt32       R                           PRIQ wired interrupt number
+            cmdq_sync_intr_num
+            feat_ats
+                             UInt32
+                                      D
+                                 RmmFeature
+                                                                          CMD sync wired interrupt number
+                                                                          Whether the PSMMU supports ATS
+            feat_pri             RmmFeature                               Whether the PSMMU supports PRI
+            msi_config           RmmSmmuMsiConfig                         MSI configuration
+            ppr_pending          RmmBoolean                               Whether a PRI Page Request is pending on this
+                                                                          PSMMU
+
+C2.42 RmmPsmmuState type
+            The RmmPsmmuState enumeration represents the state of a PSMMU.
+            The RmmPsmmuState enumeration is an abstract type.
+UWJWQP      While the state of a PSMMU is not ACTIVE, incoming transactions from Realm security state are aborted.
+            See also:
+               • Arm System Memory Management Unit Architecture Specification [24]
+            The values of the RmmPsmmuState enumeration are shown in the following table.
+
+Chapter C2. RMM types
+C2.43. RmmPsmmuStEntry type
+
+                    Name                               Description
+
+                    PSMMU_ACTIVE                       PSMMU has been activated.
+                    PSMMU_INACTIVE                     PSMMU has not been activated.
+
+            The RmmPsmmuState enumeration is used in the following types:
+               • RmmPsmmu
+
+C2.43 RmmPsmmuStEntry type
+            The RmmPsmmuStEntry structure contains attributes of a PSMMU Level 1 Stream Table entry.
+            The RmmPsmmuStEntry structure is an abstract type.
+            The members of the RmmPsmmuStEntry structure are shown in the following table.
+
+            Name               Type                                     Description
+
+            state              RmmPsmmuStEntryState                     State of the entry
+
+                                                                 T
+            The RmmPsmmuStEntry structure is used in the following types:
+               • RmmPsmmuStWalkResult
+
+C2.44 RmmPsmmuStEntryState type
+                                                   AF
+                                            R
+            The RmmPsmmuStEntryState enumeration represents state of a PSMMU Stream Table entry.
+
+                                    D
+            The RmmPsmmuStEntryState enumeration is an abstract type.
+            The values of the RmmPsmmuStEntryState enumeration are shown in the following table.
+
+                    Name                               Description
+
+                    PSMMU_ST_ENTRY_INVALID PSMMU Level 1 Stream Table entry is invalid.
+                    PSMMU_ST_ENTRY_TABLE               PSMMU Level 1 Stream Table entry is a table entry.
+                    PSMMU_ST_ENTRY_VALID               PSMMU Level 1 Stream Table entry is valid.
+
+            The RmmPsmmuStEntryState enumeration is used in the following types:
+               • RmmPsmmuStEntry
+
+C2.45 RmmPsmmuStWalkResult type
+            The RmmPsmmuStWalkResult structure contains result of a PSMMU Stream Table walk.
+            The RmmPsmmuStWalkResult structure is an abstract type.
+            The members of the RmmPsmmuStWalkResult structure are shown in the following table.
+
+Chapter C2. RMM types
+C2.46. RmmReadWriteOp type
+
+            Name                  Type                                     Description
+
+            level                 Int8                                     ST level reached by the walk
+            ste                   RmmPsmmuStEntry                          STE reached by the walk
+
+C2.46 RmmReadWriteOp type
+            The RmmReadWriteOp enumeration represents a read or write operation.
+            The RmmReadWriteOp enumeration is an abstract type.
+            The values of the RmmReadWriteOp enumeration are shown in the following table.
+
+                      Name                                Description
+
+                      RMM_READ                            Read operation
+                      RMM_WRITE                           Write operation
+
+C2.47 RmmRealm type
+                                                                    T
+                                                      AF
+            The RmmRealm structure contains attributes of a Realm.
+            The RmmRealm structure is an abstract type.
+            See also:
+                  • A2.2 Realm
+                                               R
+            The members of the RmmRealm structure are shown in the following table.
+
+            Name                  Type
+                                         D                                 Description
+
+            ipa_width             UInt8                                    IPA width in bits
+            rim                   RmmRealmMeasurement                      Realm Initial Measurement
+            rem                   RmmRealmMeasurement[4]                   Realm Extensible Measurement
+            hash_algo             RmmHashAlgorithm                         Algorithm used to compute Realm measurements
+            rtt_base              Address[4]                               Realm Translation Table base addresses
+                                                                           If rtt_tree_per_plane is FEATURE_FALSE then only
+                                                                           the first entry is valid.
+                                                                           If rtt_tree_per_plane is FEATURE_TRUE then only the
+                                                                           first (num_aux_planes + 1) entries are valid.
+            rtt_level_start       Int64                                    RTT starting level
+            rtt_num_start         UInt64                                   Number of physically contiguous starting level RTTs
+            state                 RmmRealmState                            Lifecycle state
+            rpv                   Bits512                                  Realm Personalization Value
+            feat_da               RmmFeature                               Whether Realm device assignment is enabled for this
+                                                                           Realm
+
+Chapter C2. RMM types
+C2.48. RmmRealmMeasurement type
+
+            Name                Type                                     Description
+
+            feat_ats            RmmFeature                               Whether Address Translation Service is supported for
+                                                                         devices assigned to the Realm
+            ats_plane           UInt64                                   Index of Plane whose stage 2 permissions are observed
+                                                                         by ATS requests from devices assigned to the Realm
+            rtt_tree_per_plane RmmFeature                                Whether this Realm has an RTT tree per Plane
+            num_aux_planes      UInt64                                   Number of auxiliary Planes
+            rtt_s2ap_encoding RmmRttS2APEncoding                         S2AP encoding
+            overlay_perms       RmmMemPerms[4]                           Memory overlay permissions
+            overlay_locked      RmmMemPermLocked[16]                     Whether memory overlay value is locked
+            lfa_policy          RmmLfaPolicy                             Live Firmware Activation policy for components within
+                                                                         the Realm’s TCB
+            mec_policy          RmmMecPolicy                             MEC policy
+            num_recs            UInt64                                   Number of RECs owned by this Realm
+            max_num_vdevs       UInt64                                   Maximum number of VDEVs which can be owned by
+                                                                         this Realm
+            num_vdevs           UInt64                            T      Number of VDEVs owned by this Realm
+            num_vsmmus          UInt64
+                                                    AF                   Number of VSMMUs owned by this Realm
+
+C2.48 RmmRealmMeasurement type
+                                             R
+           The RmmRealmMeasurement type is realm measurement.
+                                     D
+           The RmmRealmMeasurement type is a concrete type.
+           The width of the RmmRealmMeasurement type is 512 bits.
+
+C2.49 RmmRealmState type
+           The RmmRealmState enumeration represents the state of a Realm.
+           The RmmRealmState enumeration is an abstract type.
+           The values of the RmmRealmState enumeration are shown in the following table.
+
+                   Name                                 Description
+
+                   REALM_ACTIVE                         Eligible for execution.
+                   REALM_NEW                            Under construction. Not eligible for execution.
+                   REALM_SYSTEM_OFF                     System has been turned off. Not eligible for execution.
+                   REALM_ZOMBIE                         Ready for destruction. Not eligible for execution.
+
+           The RmmRealmState enumeration is used in the following types:
+              • RmmRealm
+
+Chapter C2. RMM types
+C2.50. RmmRec type
+
+C2.50 RmmRec type
+            The RmmRec structure contains attributes of a REC.
+            The RmmRec structure is an abstract type.
+            See also:
+                  • A2.4 Realm Execution Context
+            The members of the RmmRec structure are shown in the following table.
+
+             Name                 Type                                     Description
+
+             owner                Address                                  PA of RD of Realm which owns this REC
+             flags                RmmRecFlags                              Flags which control REC behavior
+             mpidr                Bits64                                   MPIDR value
+             gic_owner            UInt64                                   Index of Plane which is the GIC owner
+             state                RmmRecState                              Lifecycle state
+             pending              RmmRecPending                            Whether a REC operation is pending
+             emulatable_abort     RmmRecEmulatableAbort                    Whether the most recent exit from this REC was due to
+                                                                    T      an Emulatable Data Abort
+             gprs
+             pc
+             sysregs
+                                  Bits64[32]
+                                  Bits64
+                                  RmmSystemRegisters
+                                                      AF                   General-purpose register values
+                                                                           Program counter value
+                                                                           EL1 and EL0 system register values
+             attest_state
+             attest_challenge
+                                               R
+                                  RmmRecAttestState
+                                  Bits512
+                                                                           Attestation token generation state
+                                                                           Challenge for under-construction attestation token
+             ripas_addr
+             ripas_top
+                                       D
+                                  Address
+                                  Address
+                                                                           Next IPA to be processed in RIPAS change
+                                                                           Top IPA of pending RIPAS change
+             ripas_value          RmmRipas                                 RIPAS value of pending RIPAS change
+             ripas_destroyed      RmmRipasChangeDestroyed                  Whether a RIPAS change from RIPAS_DESTROYED
+                                                                           to RIPAS_RAM should be permitted
+             ripas_response       RmmRecResponse                           Host response to RIPAS change request
+             dev_mem_addr         Address                                  Next IPA to be processed in VDEV mapping validation
+             dev_mem_top          Address                                  Top IPA of pending VDEV mapping validation
+             dev_mem_pa           Address                                  PA of device memory
+             dev_mem_flags        RmmDevMemFlags                           VDEV mapping validation flags
+             dev_mem_response RmmRecResponse                               Host response to VDEV mapping validation request
+             s2ap_addr            Address                                  Next IPA to be processed in S2AP change
+             s2ap_top             Address                                  Top IPA of pending S2AP change
+             s2ap_overlay_indexUInt4                                       Overlay index of pending S2AP change
+             s2ap_response        RmmRecResponse                           Host response to S2AP change request
+             vdev_id_1            Bits64                                   Virtual device ID 1
+
+Chapter C2. RMM types
+C2.51. RmmRecAttestState type
+
+             Name               Type                                    Description
+
+             vdev_id_2          Bits64                                  Virtual device ID 2
+             vdev_freshness_1 RmmVdevFreshness                          Attestation information for first VDEV
+             vdev_freshness_2 RmmVdevFreshness                          Attestation information for second VDEV
+             vsmmu_vsid         Bits64                                  Virtual SMMU Stream ID
+             vsmmu_resp         Bits64                                  PRI response
+             vsmmu_pasid        Bits64                                  PASID
+
+C2.51 RmmRecAttestState type
+            The RmmRecAttestState enumeration represents whether an attestation token generation operation is ongoing on
+            this REC.
+            The RmmRecAttestState enumeration is an abstract type.
+            The values of the RmmRecAttestState enumeration are shown in the following table.
+
+                    Name                               Description
+
+                    ATTEST_IN_PROGRESS
+                                                                 T
+                                                       An attestation token generation operation is in progress.
+                    NO_ATTEST_IN_PROGRESS          AF  No attestation token generation operation is in progress.
+
+                                            R
+            The RmmRecAttestState enumeration is used in the following types:
+                • RmmRec
+
+C2.52 RmmRecEmulatableAbort type    D
+            The RmmRecEmulatableAbort enumeration represents whether the most recent exit from a REC was due to an
+            Emulatable Data Abort.
+            The RmmRecEmulatableAbort enumeration is an abstract type.
+            The values of the RmmRecEmulatableAbort enumeration are shown in the following table.
+
+                    Name                               Description
+
+                    EMULATABLE_ABORT                   The most recent exit from a REC was due to an Emulatable Data Abort.
+                    NOT_EMULATABLE_ABORT The most recent exit from a REC was not due to an Emulatable Data
+                                         Abort.
+
+            The RmmRecEmulatableAbort enumeration is used in the following types:
+                • RmmRec
+
+C2.53 RmmRecFlags type
+            The RmmRecFlags structure contains REC flags.
+
+Chapter C2. RMM types
+C2.54. RmmRecPending type
+
+            The RmmRecFlags structure is an abstract type.
+            The members of the RmmRecFlags structure are shown in the following table.
+
+            Name                Type                                     Description
+
+            runnable            RmmRecRunnable                           Whether the REC is elgible to run
+
+            The RmmRecFlags structure is used in the following types:
+               • RmmRec
+
+C2.54 RmmRecPending type
+            The RmmRecPending enumeration represents whether a REC operation is pending.
+            The RmmRecPending enumeration is an abstract type.
+            The values of the RmmRecPending enumeration are shown in the following table.
+
+                   Name                                         Description
+
+                   REC_PENDING_HOST_CALL                          T
+                                                                A Host call is pending.
+                   REC_PENDING_NONE
+                   REC_PENDING_PSCI                 AF          No operation is pending.
+                                                                A PSCI operation is pending.
+                   REC_PENDING_VSMMU_COMMANDA VSMMU command is pending.
+
+                                             R
+                   REC_PENDING_VSMMU_COMPLETEA VSMMU command has been completed.
+
+                                     D
+            The RmmRecPending enumeration is used in the following types:
+               • RmmRec
+
+C2.55 RmmRecResponse type
+            The RmmRecResponse enumeration represents whether the Host accepted or rejected a Realm request.
+            The RmmRecResponse enumeration is an abstract type.
+            The values of the RmmRecResponse enumeration are shown in the following table.
+
+                   Name                                 Description
+
+                   RESPONSE_ACCEPT                      Host accepted the Realm request.
+                   RESPONSE_REJECT                      Host rejected the Realm request.
+
+            The RmmRecResponse enumeration is used in the following types:
+               • RmmRec
+
+Chapter C2. RMM types
+C2.56. RmmRecRunnable type
+
+C2.56 RmmRecRunnable type
+            The RmmRecRunnable enumeration represents whether a REC is eligible for execution.
+            The RmmRecRunnable enumeration is an abstract type.
+            The values of the RmmRecRunnable enumeration are shown in the following table.
+
+                   Name                                Description
+
+                   NOT_RUNNABLE                        Not eligible for execution.
+                   RUNNABLE                            Eligible for execution.
+
+            The RmmRecRunnable enumeration is used in the following types:
+               • RmmRecFlags
+
+C2.57 RmmRecState type
+            The RmmRecState enumeration represents the state of a REC.
+            The RmmRecState enumeration is an abstract type.
+                                                                 T
+            The values of the RmmRecState enumeration are shown in the following table.
+
+                   Name
+
+                   REC_READY
+                                                   AF  Description
+
+                                                       REC is not currently running.
+                   REC_RUNNING              R          REC is currently running.
+
+                                    D
+            The RmmRecState enumeration is used in the following types:
+               • RmmRec
+
+C2.58 RmmRipas type
+            The RmmRipas enumeration represents realm IPA state.
+            The RmmRipas enumeration is an abstract type.
+            The values of the RmmRipas enumeration are shown in the following table.
+
+                   Name                                Description
+
+                   RIPAS_DESTROYED                     Address which is inaccessible to the Realm due to an action taken by
+                                                       the Host.
+                   RIPAS_DEV                           Address where memory of an assigned Realm device is mapped.
+                   RIPAS_EMPTY                         Address where no Realm resources are mapped.
+                   RIPAS_RAM                           Address where private code or data owned by the Realm is mapped.
+
+            The RmmRipas enumeration is used in the following types:
+
+Chapter C2. RMM types
+C2.59. RmmRipasChangeDestroyed type
+
+               • RmmRec
+               • RmmRttEntry
+
+C2.59 RmmRipasChangeDestroyed type
+            The RmmRipasChangeDestroyed enumeration represents whether a RIPAS change from RIPAS_DESTROYED to
+            RIPAS_RAM should be permitted.
+            The RmmRipasChangeDestroyed enumeration is an abstract type.
+            The values of the RmmRipasChangeDestroyed enumeration are shown in the following table.
+
+                    Name                                Description
+
+                    CHANGE_DESTROYED                    A RIPAS change from RIPAS_DESTROYED to RIPAS_RAM should
+                                                        be permitted.
+                    NO_CHANGE_DESTROYED                 A RIPAS change from RIPAS_DESTROYED to RIPAS_RAM should
+                                                        not be permitted.
+
+            The RmmRipasChangeDestroyed enumeration is used in the following types:
+               • RmmRec
+                                                                 T
+C2.60 RmmRtt type
+            The RmmRtt structure contains an RTT.
+                                                   AF
+                                            R
+            The RmmRtt structure is an abstract type.
+
+C2.61 RmmRttEntry type
+                                    D
+            The RmmRttEntry structure contains attributes of an RTT Entry.
+            The RmmRttEntry structure is an abstract type.
+            See also:
+               • A5.6 Realm Translation Table
+            The members of the RmmRttEntry structure are shown in the following table.
+
+            Name                Type                                    Description
+
+            addr                Address                                 Output address
+            ripas               RmmRipas                                RIPAS
+            state               RmmRttEntryState                        State
+
+Chapter C2. RMM types
+C2.62. RmmRttEntryState type
+
+             Name                Type                                     Description
+
+             attr_prot           RmmRttMemAttr                           Memory type and cacheability attributes for a Protected
+                                                                         IPA
+                                                                         This attribute and attr_unprot are aliased views of the
+                                                                         underlying MemAttr field in the RTT descriptor. This
+                                                                         view is valid if the RTT entry describes an address in
+                                                                         Protected IPA space.
+                                                                         The RMM uses stage 2 memory attributes to constrain
+                                                                         the resultant memory type and cacheability attributes,
+                                                                         based on the type of physical location identified by the
+                                                                         output address.
+             attr_unprot         Bits3                                   Memory type and cacheability attributes for an
+                                                                         Unprotected IPA
+                                                                         This attribute and attr_prot are aliased views of the
+                                                                         underlying MemAttr field in the RTT descriptor. This
+                                                                         view is valid if the RTT entry describes an address in
+                                                                         Unprotected IPA space.
+                                                                         The Host controls memory type and cacheability
+                                                                         attributes by setting the value of the MemAttr[2:0] field
+                                                                         in the RTT descriptor.
+             sh
+             s2ap_direct
+                                 RmmRttShareability
+                                 RmmRttS2APDirect
+                                                                   T      Shareability attributes.
+                                                                         Directly-encoded S2AP
+
+                                                     AF                  This attribute is valid if the RTT entry describes an
+                                                                         address in Unprotected IPA space and the Realm uses
+                                                                         direct S2AP encoding.
+             s2ap_indirect
+                                              R
+                                 RmmRttS2APIndirect                      Indirectly-encoded S2AP
+                                                                         This attribute is valid if either of the following is true:
+                                                                             • The RTT entry describes an address in Protected
+                                      D                                        IPA space.
+                                                                             • The RTT entry describes an address in
+                                                                               Unprotected IPA space and the Realm uses
+                                                                               indirect S2AP encoding.
+
+             The RmmRttEntry structure is used in the following types:
+                  • RmmRttWalkResult
+
+C2.62 RmmRttEntryState type
+             The RmmRttEntryState enumeration represents the state of an RTTE.
+             The RmmRttEntryState enumeration is an abstract type.
+             The values of the RmmRttEntryState enumeration are shown in the following table.
+
+                     Name                                Description
+
+                     RTTE_ARCH_DEV                       This RTTE is identified by a Protected IPA.
+                                                         The output address of this RTTE points to an RMM object which is
+                                                         used to emulate an architectural device.
+
+Chapter C2. RMM types
+C2.63. RmmRttMemAttr type
+
+                    Name                                Description
+
+                    RTTE_AUX_DESTROYED                  An auxiliary RTT was destroyed while a corresponding primary RTT
+                                                        entry was live.
+                    RTTE_DATA                           This RTTE is identified by a Protected IPA.
+                                                        The output address of this RTTE points to a DATA Granule.
+                    RTTE_MAPPED_NS                      This RTTE is identified by an Unprotected IPA.
+                                                        The output address of this RTTE points to a Granule-aligned address
+                                                        within NS PAS.
+                    RTTE_NARCH_DEV                      This RTTE is identified by a Protected IPA.
+                                                        The output address of this RTTE points to a GRAN_DEV Granule.
+                    RTTE_TABLE                          The output address of this RTTE points to the next-level RTT.
+                    RTTE_UNMAPPED_NS                    This RTTE is identified by an Unprotected IPA.
+                                                        This RTTE is not associated with any Granule.
+                    RTTE_VOID                           This RTTE is identified by a Protected IPA.
+                                                        This RTTE is not associated with any Granule.
+
+            The RmmRttEntryState enumeration is used in the following types:
+               • RmmRttEntry                                      T
+C2.63 RmmRttMemAttr type                            AF
+            The RmmRttMemAttr enumeration represents memory type and cacheability attributes.
+
+                                             R
+            The RmmRttMemAttr enumeration is an abstract type.
+            The values of the RmmRttMemAttr enumeration are shown in the following table.
+
+                    Name
+                                     D                  Description
+
+                    MEMATTR_CACHEABLE                   Memory type and cacheability attributes for a mapping to a cacheable
+                                                        location.
+                    MEMATTR_NON_CACHEABLEMemory type and cacheability attributes for a mapping to a
+                                         non-cacheable location.
+                    MEMATTR_PASSTHROUGH                 Pass through memory type and cacheability attributes from stage 1
+                                                        translation.
+
+            The RmmRttMemAttr enumeration is used in the following types:
+               • RmmRttEntry
+
+C2.64 RmmRttPlaneFeature type
+            The RmmRttPlaneFeature enumeration represents RTT usage models supported for multi-Plane Realms.
+            The RmmRttPlaneFeature enumeration is an abstract type.
+            See also:
+               • A3.11 Support for auxiliary Planes
+
+Chapter C2. RMM types
+C2.65. RmmRttProtected type
+
+             The values of the RmmRttPlaneFeature enumeration are shown in the following table.
+
+                    Name                                  Description
+
+                    RTT_PLANE_AUX                         A multi-Plane Realm uses auxiliary RTTs
+                    RTT_PLANE_AUX_SINGLE                  A multi-Plane Realm can be configured to either use auxiliary RTTs, or
+                                                          a single RTT
+                    RTT_PLANE_SINGLE                      A multi-Plane Realm uses a single RTT
+
+             The RmmRttPlaneFeature enumeration is used in the following types:
+                • RmmGlobalStatic
+
+C2.65 RmmRttProtected type
+             The RmmRttProtected enumeration represents specifies whether an RTT entry is in Protected IPA space or
+             Unprotected IPA space.
+             The RmmRttProtected enumeration is an abstract type.
+             The values of the RmmRttProtected enumeration are shown in the following table.
+                                                                    T
+                    Name
+
+                    RTT_PROTECTED
+                    RTT_UNPROTECTED
+                                                      AF  Description
+
+                                                          Protected IPA space.
+                                                          Unprotected IPA space.
+
+                                               R
+C2.66 RmmRttS2APBase type              D
+             The RmmRttS2APBase enumeration represents S2AP base value.
+             The RmmRttS2APBase enumeration is an abstract type.
+             The values of the RmmRttS2APBase enumeration are shown in the following table.
+
+                    Name                                  Description
+
+                    S2AP_NO_ACCESS                        NoAccess
+                    S2AP_RO                               RO
+                    S2AP_RW                               RW
+                    S2AP_RW_PUX                           RW+puX
+                    S2AP_WO                               WO
+
+             The RmmRttS2APBase enumeration is used in the following types:
+                • RmmRttS2APIndirect
+
+Chapter C2. RMM types
+C2.67. RmmRttS2APDirect type
+
+C2.67 RmmRttS2APDirect type
+            The RmmRttS2APDirect structure contains directly-encoded S2AP.
+            The RmmRttS2APDirect structure is an abstract type.
+            The members of the RmmRttS2APDirect structure are shown in the following table.
+
+             Name                Type                                     Description
+
+             read                RmmBoolean                               Read permission
+             write               RmmBoolean                               Write permission
+
+            The RmmRttS2APDirect structure is used in the following types:
+               • RmmRttEntry
+
+C2.68 RmmRttS2APEncoding type
+            The RmmRttS2APEncoding enumeration represents encoding used for S2AP.
+            The RmmRttS2APEncoding enumeration is an abstract type.
+            See also:
+                                                                   T
+                                                     AF
+               • A3.12 Support for Stage 2 Access Permissions indirect encoding
+            The values of the RmmRttS2APEncoding enumeration are shown in the following table.
+
+                     Name                     R          Description
+
+                     S2AP_DIRECT
+                     S2AP_INDIRECT
+                                      D                  S2AP is encoded directly in the RTT entry.
+                                                         RTT entry includes indices which indirectly specify the S2AP.
+
+            The RmmRttS2APEncoding enumeration is used in the following types:
+               • RmmRealm
+
+C2.69 RmmRttS2APIndirect type
+            The RmmRttS2APIndirect structure contains indirectly-encoded S2AP.
+            The RmmRttS2APIndirect structure is an abstract type.
+            The members of the RmmRttS2APIndirect structure are shown in the following table.
+
+             Name                Type                                     Description
+
+             base_index          RmmRttS2APBase                           Base permission index
+             overlay_index       UInt4                                    Overlay permission index
+
+            The RmmRttS2APIndirect structure is used in the following types:
+
+Chapter C2. RMM types
+C2.70. RmmRttShareability type
+
+                • RmmRttEntry
+
+C2.70 RmmRttShareability type
+             The RmmRttShareability enumeration represents shareability attributes.
+             The RmmRttShareability enumeration is an abstract type.
+             The values of the RmmRttShareability enumeration are shown in the following table.
+
+                      Name                               Description
+
+                      SHAREABILITY_INNER                 Inner Shareable.
+                      SHAREABILITY_OUTER                 Outer Shareable.
+
+             The RmmRttShareability enumeration is used in the following types:
+                • RmmRttEntry
+
+C2.71 RmmRttWalkNotAligned type
+
+                                                                   T
+             The RmmRttWalkNotAligned structure contains result of an RTT walk which is not aligned to the requested level.
+
+                                                     AF
+             The RmmRttWalkNotAligned structure is an abstract type.
+             The members of the RmmRttWalkNotAligned structure are shown in the following table.
+
+              Name
+
+              valid
+                                 Type
+
+                                 RmmBoolean
+                                              R                           Description
+
+                                                                          TRUE if an RTT walk was performed whose result is
+
+              index              UInt64
+                                        D                                 not aligned to the requested level
+                                                                          RTT index
+              addr               Address                                  Address
+              walk               RmmRttWalkResult                         Walk result
+
+C2.72 RmmRttWalkResult type
+             The RmmRttWalkResult structure contains result of an RTT walk.
+             The RmmRttWalkResult structure is an abstract type.
+             See also:
+                • A5.6.10 RTT walk
+             The members of the RmmRttWalkResult structure are shown in the following table.
+
+              Name               Type                                     Description
+
+              level              Int8                                     RTT level reached by the walk
+              rtt_addr           Address                                  Address of RTT reached by the walk
+
+Chapter C2. RMM types
+C2.73. RmmSmmuMsiConfig type
+
+            Name               Type                                    Description
+
+            rtte               RmmRttEntry                             RTTE reached by the walk
+
+           The RmmRttWalkResult structure is used in the following types:
+               • RmmRttWalkNotAligned
+
+C2.73 RmmSmmuMsiConfig type
+           The RmmSmmuMsiConfig structure contains MSI configuration of an SMMU.
+           The RmmSmmuMsiConfig structure is an abstract type.
+           The members of the RmmSmmuMsiConfig structure are shown in the following table.
+
+            Name               Type                                    Description
+
+            gerr_addr          Address                                 MSI address of the GERROR interrupt (programmed to
+                                                                       SMMU_R_GERROR_IRQ_CFG0)
+            gerr_data          Bits64                                  MSI data of the GERROR interrupt (programmed to
+
+            eventq_addr        Address
+                                                                T      SMMU_R_GERROR_IRQ_CFG1)
+                                                                       MSI address of the EVENTQ interrupt (programmed to
+
+            eventq_data        Bits64
+                                                  AF                   SMMU_R_EVENTQ_IRQ_CFG0)
+                                                                       MSI data of the EVENTQ interrupt (programmed to
+                                                                       SMMU_R_EVENTQ_IRQ_CFG1)
+            priq_addr          Address
+                                           R                           MSI address of the PRIQ interrupt (programmed to
+                                                                       SMMU_R_PRIQ_IRQ_CFG0)
+            priq_data              D
+                               Bits64                                  MSI data of the PRIQ interrupt (programmed to
+                                                                       SMMU_R_PRIQ_IRQ_CFG1)
+
+           The RmmSmmuMsiConfig structure is used in the following types:
+               • RmmPsmmu
+               • RmmVsmmu
+
+C2.74 RmmState type
+           The RmmState enumeration represents lifecycle state of the RMM.
+           The RmmState enumeration is an abstract type.
+           The values of the RmmState enumeration are shown in the following table.
+
+                   Name                               Description
+
+                   RMM_STATE_ACTIVE                   RMM is active.
+                   RMM_STATE_INIT                     Initial state of the RMM.
+
+           The RmmState enumeration is used in the following types:
+
+Chapter C2. RMM types
+C2.75. RmmSystemRegisters type
+
+                • RmmGlobalDynamic
+
+C2.75 RmmSystemRegisters type
+            The RmmSystemRegisters structure contains EL0 and EL1 system registers.
+            The RmmSystemRegisters structure is an abstract type.
+            The RmmSystemRegisters structure is used in the following types:
+                • RmmRec
+
+C2.76 RmmTrackingRegion type
+            The RmmTrackingRegion structure contains attributes of a Granule tracking region.
+            The RmmTrackingRegion structure is an abstract type.
+            The members of the RmmTrackingRegion structure are shown in the following table.
+
+             Name                Type                                    Description
+
+             state               RmmTrackingRegionState                  Tracking region state.
+             category            RmmMemCategory
+                                                                  T      Memory category.
+
+C2.77 RmmTrackingRegionState type
+                                                    AF
+                                             R
+            The RmmTrackingRegionState enumeration represents tracking region state.
+            The RmmTrackingRegionState enumeration is an abstract type.
+
+                                     D
+            The values of the RmmTrackingRegionState enumeration are shown in the following table.
+
+                     Name                               Description
+
+                     TRACKING_COARSE                    Region is tracked at the granularity of the Tracking Region size.
+                     TRACKING_FINE                      Region is tracked at the granularity of the RMI Granule size.
+                     TRACKING_INTERMEDIATE Region is tracked at the intermediate granularity.
+                     TRACKING_NONE                      Region is not tracked.
+                     TRACKING_RESERVED                  Region is reserved for use by the platform.
+
+            The RmmTrackingRegionState enumeration is used in the following types:
+                • RmmTrackingRegion
+
+C2.78 RmmVdev type
+            The RmmVdev structure contains attributes of a VDEV.
+            The RmmVdev structure is an abstract type.
+            The members of the RmmVdev structure are shown in the following table.
+
+Chapter C2. RMM types
+C2.79. RmmVdevAddrResult type
+
+             Name                Type                                     Description
+
+             vdev_id             Bits64                                   Virtual device identifier
+             tdi_id              Bits64                                   TDI identifier
+             pdev                Address                                  PA of parent PDEV
+             pdev_index          UInt64                                   Index of this VDEV in the parent PDEV address range
+                                                                          store
+             realm               Address                                  PA of RD of Realm which owns this VDEV
+             vdev_state          RmmVdevState                             VDEV lifecycle state
+             dma_state           RmmVdevDmaState                          DMA state
+             started_once        RmmBoolean                              Whether the VDEV has successfully entered
+                                                                         VDEV_STARTED since the last lock
+             non_ats_plane       UInt64                                   Index of Plane whose stage 2 permissions are observed
+                                                                          by non-ATS requests from the device
+             op                  RmmVdevOperation                         Operation performed on this VDEV
+             comm_state          RmmDevCommState                          Device communication state
+             stream_refresh_cnt UInt64                                    A snapshot of the key refresh counters for all live IDE
+                                                                   T      streams of the VDEV.
+             stream_purge_cnt UInt64
+
+             vsmmu               RmmFeature
+                                                     AF                   A snapshot of the key purge counters for all live IDE
+                                                                          streams of the VDEV.
+                                                                          Whether device uses a VSMMU
+             vsmmu_addr          Address
+                                              R                          PA of VSMMU.
+                                                                         This field is valid if vsmmu is FEATURE_TRUE.
+             vsmmu_reg_base
+
+             vsid
+                                      D
+                                 Address
+
+                                 Bits64
+                                                                         Base IPA of the associated VSMMU.
+                                                                         This field is valid if vsmmu is FEATURE_TRUE.
+                                                                         Virtual Stream Identifier.
+                                                                         This field is valid if vsmmu is FEATURE_TRUE.
+             freshness           RmmVdevFreshness                         Attestation information
+             meas_digest         Bits512                                  Measurement digest
+             report_digest       Bits512                                  Interface report digest
+             num_addr_range      UInt64                                   Number of device address ranges
+             addr_range          RmmAddrRange[8]                         CPU physical address range used to access the device in
+                                                                         the system memory map
+                                                                         These ranges include both coherent and non- coherent
+                                                                         device memory.
+
+C2.79 RmmVdevAddrResult type
+            The RmmVdevAddrResult structure contains result of scanning VDEV address ranges.
+            The RmmVdevAddrResult structure is an abstract type.
+            The members of the RmmVdevAddrResult structure are shown in the following table.
+
+Chapter C2. RMM types
+C2.80. RmmVdevDmaState type
+
+            Name               Type                                     Description
+
+            valid              RmmBoolean                               Whether a mapped Granule was found
+            addr               Address                                  PA of mapped Granule
+
+C2.80 RmmVdevDmaState type
+            The RmmVdevDmaState enumeration represents the state of DMA for a VDEV.
+            The RmmVdevDmaState enumeration is an abstract type.
+            The values of the RmmVdevDmaState enumeration are shown in the following table.
+
+                    Name                               Description
+
+                    VDEV_DMA_DISABLED                  DMA is disabled.
+                    VDEV_DMA_ENABLED                   DMA is enabled.
+
+            The RmmVdevDmaState enumeration is used in the following types:
+               • RmmVdev                                         T
+C2.81 RmmVdevFreshness type                        AF
+            The RmmVdevFreshness structure contains attestation freshness for a VDEV.
+
+                                            R
+            The RmmVdevFreshness structure is an abstract type.
+
+                                    D
+            The members of the RmmVdevFreshness structure are shown in the following table.
+
+            Name               Type                                     Description
+
+            lock_seq           UInt64                                   Lock sequence counter which is incremented on
+                                                                        successful transition to VDEV_LOCKED state
+            meas_seq           UInt64                                   Measurement sequence counter which is incremented
+                                                                        on every successful GET_MEASUREMENT request
+            report_seq         UInt64                                   Report sequence counter which is incremented on every
+                                                                        successful GET_INTERFACE_REPORT request
+
+            The RmmVdevFreshness structure is used in the following types:
+               • RmmRec
+               • RmmVdev
+
+C2.82 RmmVdevOperation type
+            The RmmVdevOperation enumeration represents operation performed on a VDEV.
+            The RmmVdevOperation enumeration is an abstract type.
+            The values of the RmmVdevOperation enumeration are shown in the following table.
+
+Chapter C2. RMM types
+C2.83. RmmVdevState type
+
+                   Name                                Description
+
+                   VDEV_OP_GET_MEAS                    Request a measurement report.
+                   VDEV_OP_GET_REPORT                  Request an interface report.
+                   VDEV_OP_INIT                        Initialize the VDEV.
+                   VDEV_OP_LOCK                        Change state to LOCKED.
+                   VDEV_OP_NONE                        No operation.
+                   VDEV_OP_START                       Change state to STARTED.
+                   VDEV_OP_UNLOCK                      Change state to UNLOCKED.
+
+            The RmmVdevOperation enumeration is used in the following types:
+               • RmmVdev
+
+C2.83 RmmVdevState type
+            The RmmVdevState enumeration represents the state of a VDEV.
+            The RmmVdevState enumeration is an abstract type.
+                                                                 T
+            The values of the RmmVdevState enumeration are shown in the following table.
+
+                   Name
+                                                   AF  Description
+
+                   VDEV_ERROR                          Device interface has reported a fatal error.
+                   VDEV_KEY_PURGE           R          Waiting for purge of inactive keys to be performed on all streams
+
+                   VDEV_KEY_REFRESH
+                                    D                  associated with the device interface.
+                                                       Waiting for key refresh to be performed on all streams associated with
+                                                       the device interface.
+                   VDEV_LOCKED                         Device interface is locked.
+                   VDEV_NEW                            Initial state of the device interface.
+                   VDEV_STARTED                        Device interface is started.
+                   VDEV_UNLOCKED                       Device interface is unlocked.
+
+            The RmmVdevState enumeration is used in the following types:
+               • RmmVdev
+
+C2.84 RmmVsmmu type
+            The RmmVsmmu structure contains attributes of a VSMMU.
+            The RmmVsmmu structure is an abstract type.
+            The members of the RmmVsmmu structure are shown in the following table.
+
+Chapter C2. RMM types
+C2.85. RmmVsmmuState type
+
+            Name                Type                                     Description
+
+            state               RmmVsmmuState                            State of the VSMMU
+            realm               Address                                  PA of RD of Realm which owns this VSMMU
+            reg_base            Address                                  Base IPA of register base in Realm’s Protected IPA
+                                                                         space
+            reg_top             Address                                  Top IPA of register base in Realm’s Protected IPA space
+            aidr                Bits64                                   SMMU_AIDR register value
+            idr                 Bits64[6]                                SMMU_IDR0 to SMMU_IDR5 register values
+            iidr                Bits64                                   SMMU_IIDR register value
+            msi_config          RmmSmmuMsiConfig                         MSI configuration
+
+C2.85 RmmVsmmuState type
+           The RmmVsmmuState enumeration represents the state of a VSMMU.
+           The RmmVsmmuState enumeration is an abstract type.
+
+                                                                  T
+           The values of the RmmVsmmuState enumeration are shown in the following table.
+
+                    Name
+
+                    VSMMU_ACTIVE
+                                                    AF  Description
+
+                                                        VSMMU has been activated by the Realm.
+                    VSMMU_INACTIVE
+                                             R          VSMMU has not been activated by the Realm.
+
+                                     D
+           The RmmVsmmuState enumeration is used in the following types:
+                  • RmmVsmmu
+
+Chapter C3
+Generic types
+
+                                                                 T
+                                                    AF
+                                             R
+           This section defines types which are shared between RMM interfaces and descriptions of RMM abstract state.
+           See also:
+              •
+              •
+              •
+                  B4.6 RMI types
+                  B5.5 RSI types
+                  B6.4 PSCI types
+                                    D
+              •   Chapter C2 RMM types
+
+C3.1 Address type
+           The Address type is an address.
+           The Address type is a concrete type.
+           The width of the Address type is 64 bits.
+
+C3.2 BitsN type
+           The BitsN type is an N-bit field.
+           The BitsN type is a concrete type.
+           The width of the BitsN type is N bits.
+
+C3.3 IntN type
+           The IntN type is an signed N-bit integer.
+
+Chapter C3. Generic types
+C3.4. UIntN type
+
+             The IntN type is a concrete type.
+             The width of the IntN type is N bits.
+
+C3.4 UIntN type
+             The UIntN type is an unsigned N-bit integer.
+             The UIntN type is a concrete type.
+             The width of the UIntN type is N bits.
+
+                                                                   T
+                                                      AF
+                                              R
+                                      D
+
+     T   Part D
+    AF   Usage
+
+R
+D
+Chapter D1
+Flows
+
+                                                                T
+                                                  AF
+                                           R
+           This section presents flows which explain how the RMM architecture can be used by the Host, and by Realm
+           software.
+
+                                   D
+           Note that parts of the sequences below are for illustration only. For example, in the Realm creation flows, the
+           RMI_GRANULE_RANGE_DELEGATE and RMI_GRANULE_RANGE_UNDELEGATE commands are called
+           immediately before or after the RMI_X_CREATE and RMI_X_DESTROY commands respectively. An alternative
+           flow would be for the Host to maintain a pool of Granules in the GRAN_DELEGATED state, from which RMM
+           data structures and Realm data can be allocated on demand.
+
+Chapter D1. Flows
+D1.1. Granule delegation flows
+
+D1.1 Granule delegation flows
+
+D1.1.1 Granule delegation flow
+              The following diagram shows how the GPT entry of a Granule is changed to GPT_REALM.
+              See Arm Architecture Reference Manual Supplement, The Realm Management Extension (RME), for Armv9-A [2]
+              for example software flows for the operations performed by the Monitor in this flow.
+              It is anticipated that the Monitor software will be required to use synchronization mechanisms to serialize access
+              to the GPT.
+
+                                               Host     Monitor                                              RMM
+
+                                                      RMI_GRANULE_RANGE_DELEGATE(base, top)
+
+                                            loop         [For addr in range [base, out_top) where out_top <= top]
+                                                                                                                    check_state_and_lock(addr, Undelegated)
+
+                                                                FIRME_GM_GPI_SET(addr, count, GPT_REALM)
+
+                                            Update GPT entry; TLBI; SYNC
+
+                                                              result
+
+                                                alt        [result == RETRY]
+
+                                                                                        IMPDEF whether to retry, or return RMI_BUSY
+                                               [result == SUCCESS]
+                                                                               T                                    set_state_and_unlock(addr, Delegated)
+
+                                                             AF
+                                                       RMI_ERROR_INPUT
+
+                                                       (RMI_SUCCESS, out_top)
+
+                                                   R                                       Before the granule is used (either
+                                                                                           by the RMM, or mapped into a Realm),
+                                                                                           it will be wiped by the RMM.
+
+                                          D                                                              Figure D1.1: Granule delegation flow
+
+              See also:
+                 • A2.3.6 Granule state
+                 • B4.5.10 RMI_GRANULE_RANGE_DELEGATE command
+                 • D1.1.2 Granule undelegation flow
+
+D1.1.2 Granule undelegation flow
+              The following diagram shows how the GPT entry of a Granule is changed from GPT_REALM.
+              See Arm Architecture Reference Manual Supplement, The Realm Management Extension (RME), for Armv9-A [2]
+              for example software flows for the operations performed by the Monitor in this flow.
+              It is anticipated that the Monitor software will be required to use synchronization mechanisms to serialize access
+              to the GPT.
+
+Chapter D1. Flows
+D1.1. Granule delegation flows
+
+                                                Host    Monitor                                          RMM
+
+                                                   RMI_GRANULE_RANGE_UNDELEGATE(base, top)
+
+                                            loop         [For addr in range [base, out_top) where out_top <= top]
+                                                                                                              check_state_and_lock(addr, Delegated)
+
+                                                                FIRME_GM_GPI_SET(addr, count, GPT_NS)
+
+                                            Perform cache maintenance
+
+                                            Update GPT entry; TLBI; SYNC
+
+                                                              result
+
+                                                                                    alt       [result == RETRY]
+
+                                                                                    IMPDEF whether to retry, or return RMI_BUSY
+                                                                                  [result == SUCCESS]
+                                                                                                              set_state_and_unlock(addr, Undelegated)
+
+                                                                                                              panic()
+                                                                                                                        GPT update should never fail.
+
+                                                       (RMI_SUCCESS, out_top)
+
+                                                                                                    Figure D1.2: Granule undelegation flow
+
+              See also:                                                      T
+                 • A2.3.6 Granule state
+                                                            AF
+                 • B4.5.11 RMI_GRANULE_RANGE_UNDELEGATE command
+                 • D1.1.1 Granule delegation flow
+
+                                                   R
+                                          D
+
+Chapter D1. Flows
+D1.2. Realm lifecycle flows
+
+D1.2 Realm lifecycle flows
+              This section contains flows which relate to the Realm lifecycle.
+              See also:
+                  • A2.2.5 Realm lifecycle
+
+D1.2.1 Realm creation flow
+              The following diagram shows the flow for creating a Realm.
+              To create a Realm, the Host must allocate and delegate two Granules:
+                  • rd to store the Realm Descriptor
+                  • rtt which will be the starting level Realm Translation Table (RTT)
+              The Host also provides an NS Granule (params) containing Realm creation parameters.
+
+                                                                Host                                                             RMM
+
+                                                                       RMI_FEATURES(index=0)
+
+                                                                         RMI_SUCCESS
+
+                                                                       Select hash algorithm
+
+                                                                         T
+                                                                       (rd, rtt, params) = alloc_granules()
+
+                                                      AF
+                                        Parameters are passed
+                                                                       Use RMI_GRANULE_RANGE_DELEGATE to delegate rd and rtt
+
+                                                                       params.rtt_base = rtt
+                                        in an NS granule.
+
+                                               R                       params.hash_algo = <value>
+
+                                       D                         alt
+                                                                       RMI_REALM_CREATE(rd, params)
+
+                                                                             [If additional memory is required]
+                                                                         RMI_INCOMPLETE
+
+                                                                         Follow "donate memory to stateful RMI operation" flow
+                                                                [No additional memory is required]
+                                                                         RMI_SUCCESS
+
+                                                                                                                        Realm is ready to use.
+
+                                                                       free_granule(params)
+
+                                                                                                        Figure D1.3: Realm creation flow
+
+              See also:
+                  •   B4.3.4 Object creation and destruction
+                  •   B4.5.10 RMI_GRANULE_RANGE_DELEGATE command
+                  •   B4.5.40 RMI_REALM_CREATE command
+                  •   D1.2.5 Realm destruction flow
+
+D1.2.2 Realm Translation Table creation flow
+              The following diagram shows the flow for populating the Realm Translation Tables (RTTs).
+
+Chapter D1. Flows
+D1.2. Realm lifecycle flows
+
+              The starting level Realm Translation Tables (RTTs) are provided at Realm creation time.
+              Subsequent levels of RTT are added using the RMI_RTT_CREATE command.
+
+                                                                    Host                                                   RMM
+
+                                                                                           Create Realm (rd)
+
+                                                                        (rtt1, rtt2, rtt3) = alloc_granules()
+
+                                                                        Use RMI_GRANULE_RANGE_DELEGATE to delegate rtt1
+
+                                                                        RMI_RTT_CREATE(rd, rtt1, ipa, level=1)
+
+                                                                           RMI_SUCCESS
+
+                                                                        Use RMI_GRANULE_RANGE_DELEGATE to delegate rtt2
+
+                                                                        RMI_RTT_CREATE(rd, rtt2, ipa, level=2)
+
+                                                                           RMI_SUCCESS
+
+                                                                        Use RMI_GRANULE_RANGE_DELEGATE to delegate rtt3
+
+                                                                        RMI_RTT_CREATE(rd, rtt3, ipa, level=3)
+                                                                     T     RMI_SUCCESS
+
+                                                       AF                                          Figure D1.4: RTT creation flow
+
+              See also:                         R
+                  •
+                  •
+                  •
+                  •
+                                        D
+                      Chapter A5 Realm memory management
+                      B4.5.60 RMI_RTT_CREATE command
+                      D1.2.1 Realm creation flow
+                      D1.2.3 Initialize memory of New Realm flow
+
+D1.2.3 Initialize memory of New Realm flow
+              Immediately following Realm creation, every page in the Protected IPA space has its RIPAS set to RIPAS_EMPTY.
+              There are two ways in which the Host can set the RIPAS of a given page of Protected IPA space to RIPAS_RAM:
+                 1. Change the RIPAS by executing RMI_RTT_INIT_RIPAS, but do not populate the contents of the page.
+                 2. Both change the RIPAS and populate the page with contents provided by the Host, by executing
+                    RMI_RTT_DATA_MAP_INIT. The RIM is extended to reflect the contents added by the Host.
+              Once the Host has performed either of these actions for a given page of Protected IPA space, that page cannot be
+              further modified prior to Realm activation.
+              The following diagram shows the flow for initializing the RIPAS without providing contents.
+
+Chapter D1. Flows
+D1.2. Realm lifecycle flows
+
+                                                                   Host                                    RMM
+
+                                                                           Create Realm (rd) and RTTs
+
+                                                                       RMI_RTT_INIT_RIPAS(rd, base, top)
+
+                                                                          RMI_SUCCESS
+
+                                                                                              RIPAS of RTTE identified by ipa
+                                                                                              has been updated to RIPAS_RAM.
+
+                                                                       RMI_REALM_ACTIVATE(rd)
+
+                                                                                          Figure D1.5: RIPAS initialization flow
+
+              The following diagram shows the flow for populating the page with contents provided by the Host.
+              To do this, the Host must:
+                  • Delegate a destination Granule (dst).           T
+                  • Provide an NS Granule (src), whose contents will be copied into the destination Granule.
+
+                                                      AF
+                  • Specify the Protected IPA ipa at which the dst Granule should be mapped in the Realm’s IPA space.
+                  • Ensure that the level 3 RTT which contains the RTTE identified by the Protected IPA has been created.
+              Once the Data Granule has been created, the src Granule can be reallocated by the Host.
+
+                                               R
+                                       D
+
+Chapter D1. Flows
+D1.2. Realm lifecycle flows
+
+                                                     Host                                                            RMM
+
+                                                                       Create Realm (rd) and RTTs
+                                                                       and initialize RIPAS to RIPAS_RAM
+
+                                                        (src, dst) = alloc_granules()
+
+                                                        Use RMI_GRANULE_RANGE_DELEGATE to delegate dst
+
+                                                        Copy initial Realm image into src
+
+                                                        Use RMI_RTT_DATA_MAP_INIT to map data into Realm IPA space
+
+                                                                                                       Contents of NS Granule have been
+                                                                                                       copied to DATA Granule.
+
+                                                                                                      Realm Initial Measurement has been
+                                                                                                      updated with the IPA and contents
+                                                                                                      of the DATA Granule.
+
+                                                                                                       HIPAS of RTTE identified by ipa
+                                                                                                       has been updated to HIPAS_DATA.
+
+                                                        free_granule(src)
+
+                                                        RMI_REALM_ACTIVATE(rd)
+
+                                                                     T                                 Once the Realm state has changed
+                                                                                                       to Active, further Data granules
+
+                                                      AF                                               with Host-controlled contents can
+                                                                                                       no longer be added to the Realm
+
+                                                                                            Figure D1.6: Realm data creation flow
+                                               R
+              See also:
+                  •
+                  •
+                                       D
+                      A2.3.6 Granule state
+                      A5.2.2 Realm IPA state
+                  •   A7.1.1 Realm Initial Measurement
+                  •   B4.5.10 RMI_GRANULE_RANGE_DELEGATE command
+                  •   B4.5.62 RMI_RTT_DATA_MAP_INIT command
+                  •   B4.5.69 RMI_RTT_INIT_RIPAS command
+                  •   D1.2.1 Realm creation flow
+                  •   D1.2.2 Realm Translation Table creation flow
+                  •   D1.2.5 Realm destruction flow
+
+D1.2.4 REC creation flow
+              The following diagram shows the flow for creating a REC during Realm creation.
+              Once the REC has been created, the params Granule can be reallocated by the Host.
+
+Chapter D1. Flows
+D1.2. Realm lifecycle flows
+
+                                         Host                                                                    RMM
+
+                                                                        Create Realm (rd)
+
+                                                RMI_GRANULE_RANGE_DELEGATE(rec, rec + RMI_GRANULE_SIZE)
+
+                                                  RMI_SUCCESS
+
+ Only runnable RECs can be scheduled            params.flags.runnable = <bool>
+ by the Host. Software in the Realm
+ can activate other RECs via PSCI.
+
+  The Host provides (in an NS Granule)          params.gprs = <value>
+  the initial value of the registers
+  stored in the REC.
+
+                                                params.mpidr = <value>
+
+                                                RMI_REC_CREATE(rd, rec, params)
+
+                                          alt         [If additional memory is required]
+                                                  RMI_INCOMPLETE
+
+                                                     Follow "donate memory to stateful RMI operation" flow
+                                         [No additional memory is required]
+                                                  RMI_SUCCESS
+                                                                           T
+                                                             AF                                  Realm Initial Measurement has been
+                                                                                                 updated with the contents of the REC
+                                                                                                 and its runnable status.
+
+                                                                                            Multiple RECs can be created per Realm.
+
+                                                     R                                      All contribute to the Realm Initial Measurement.
+
+                                                                                                 mpidr value can be used by software
+
+                                            D   free_granule(params)
+                                                                                                 to identify this REC.
+
+                                                RMI_REALM_ACTIVATE(rd)
+
+                                                                                                  Once the Realm state has changed
+                                                                                                  to Active, further RECs can
+                                                                                                  no longer be added to the Realm
+
+                                                                                                        Figure D1.7: REC creation flow
+
+               See also:
+                  •   B4.3.4 Object creation and destruction
+                  •   B4.5.10 RMI_GRANULE_RANGE_DELEGATE command
+                  •   B4.5.43 RMI_REC_CREATE command
+                  •   D1.2.1 Realm creation flow
+                  •   D1.2.5 Realm destruction flow
+
+D1.2.5 Realm destruction flow
+              The following diagram shows the flow for destroying a Realm.
+
+Chapter D1. Flows
+D1.2. Realm lifecycle flows
+
+              To destroy a Realm, the Host must perform the following actions:
+              1a. Ensure that no REC owned by the Realm is running.
+              1b. Terminate the Realm, which causes it to enter REALM_ZOMBIE state. Realm termination can result in an
+              intermediate state, therefore requiring multiple calls to complete the destruction. On entry to REALM_ZOMBIE
+              state, the RMM ensures that all DMA initiated by the Realm has stopped.
+                 2. Make the Realm non-live. This is done by destroying (in any order) the objects which are associated with the
+                    Realm:
+                  • Data Granules
+                  • REC
+                  • RTT
+                  • VDEV
+                  • VSMMU
+                 3. Destroy the Realm. This is an operation which can result in an intermediate state, therefore requiring multiple
+                    calls to complete the destruction.
+              Steps 1 and 2 above can be performed in either order.
+              Once each object (DATA, REC, RTT and RD) has been destroyed, the corresponding Granules can be undelegated
+              and reallocated by the Host.
+
+                                    Host
+                                                                              T                                RMM
+
+                                     loop
+                                                           AF
+                                                  [For each REC]
+                                                                              1a. Ensure no REC is running
+                                                                                                                    Realm state is REALM_ACTIVE
+
+                                                  R
+                                          Ensure that RMI_REC_ENTER has returned, so the REC is no longer running
+
+                                    alt
+                                          D
+                                          RMI_REALM_TERMINATE(rd)
+                                                                               1b. Terminate the Realm
+
+                                              [Operation results in no intermediate state]
+                                           RMI_SUCCESS
+                                  [Operation results in intermediate state]
+                                           (RMI_INCOMPLETE, handle)
+
+                                     loop         [Until return value is RMI_SUCCESS]
+                                          RMI_OP_CONTINUE(handle, flags)
+
+                                           RMI_INCOMPLETE or RMI_SUCCESS
+
+                                                                                                                    Realm state is REALM_ZOMBIE
+
+                                                                                        Figure D1.8: Realm destruction flow (part 1 of 2)
+
+Chapter D1. Flows
+D1.2. Realm lifecycle flows
+
+                                   Host                                                                                 RMM
+
+                                                                                                                            Realm state is REALM_ZOMBIE
+
+                                                                                        2. Make the Realm non-live
+
+                                                                     This can happen before or after step 1
+
+                                    loop        [For all memory assigned to the Realm]
+                                        Use RMI_RTT_{ARCH_DEV,DATA,RIPAS_DEV}_UNMAP to unmap memory from Realm IPA space
+                                        (Details, including intermediate state and calls to RMI_OP_CONTINUE, elided here)
+
+                                        Use RMI_RTT{_AUX}_DESTROY to destroy RTTs
+
+                                    loop        [For each REC owned by the Realm]
+                                        RMI_REC_DESTROY(rec)
+
+                                          RMI_SUCCESS
+
+                                    loop        [For each VDEV owned by the Realm]
+                                        RMI_VDEV_DESTROY(vdev)
+
+                                          RMI_SUCCESS
+
+                                    loop        [For each VSMMU owned by the Realm]
+                                        RMI_VSMMU_DESTROY(vsmmu)
+
+                                          RMI_SUCCESS
+
+                                                          Memory for all the above objects can now be undelegated
+
+                                                                                            3. Destroy the Realm
+
+                                        RMI_REALM_DESTROY(rd)
+
+                                  alt
+                                                                                  T
+                                             [Operation results in no intermediate state]
+                                          RMI_SUCCESS
+                                 [If memory must be reclaimed]
+
+                                                               AF
+                                                          Follow "reclaim memory from stateful RMI operation" flow
+                                 [Operation results in intermediate state]
+
+                                    loop
+                                          (RMI_INCOMPLETE, handle)
+
+                                                [Until return value is RMI_SUCCESS]
+
+                                                    R
+                                        RMI_OP_CONTINUE(handle, flags)
+
+                                          RMI_INCOMPLETE or RMI_SUCCESS
+
+                                           D                      Memory for the RD can now be undelegated
+
+                                                                                              Figure D1.9: Realm destruction flow (part 2 of 2)
+
+              See also:
+                  •   A2.2.4 Realm liveness
+                  •   B4.3.2 Stateful RMI operations
+                  •   B4.3.4 Object creation and destruction
+                  •   B4.5.11 RMI_GRANULE_RANGE_UNDELEGATE command
+                  •   B4.5.41 RMI_REALM_DESTROY command
+                  •   B4.5.42 RMI_REALM_TERMINATE command
+                  •   B4.5.44 RMI_REC_DESTROY command
+                  •   B4.5.63 RMI_RTT_DATA_UNMAP command
+                  •   B4.5.64 RMI_RTT_DESTROY command
+                  •   B4.5.78 RMI_VDEV_DESTROY command
+                  •   B4.5.89 RMI_VSMMU_DESTROY command
+                  •   D1.2.1 Realm creation flow
+
+Chapter D1. Flows
+D1.3. Realm exception model flows
+
+D1.3 Realm exception model flows
+                     This section contains flows which relate to the Realm exception model.
+                     See also:
+                          • Chapter A4 Realm exception model
+
+D1.3.1 Realm entry and exit flow
+                     The following diagram shows how a Realm is executed, and illustrates the different reasons for exiting the Realm
+                     and returning control to the Host.
+                     A REC is entered using the RMI_REC_ENTER command. The parameters to this command include:
+                          • an RmiRecEnter object, which is a data structure used to pass values from the Host to the RMM on REC
+                            entry
+                          • an RmiRecExit object, which is a data structure used to pass values from the RMM to the Host on REC exit
+
+                                  Host                       RMM                                                           Realm
+
+ REC exit information is
+ returned in an NS Granule.          run = alloc_granule()
+ For REC exit due to Host call,
+ this includes the GPR values.
+
+                                     RMI_REC_ENTER(rec, run)
+
+                                                                     Restore EL1/EL0 context from rec
+                                                                                                             T
+                                                               alt
+                                                                     ERET
+
+                                                                                      AF                                        Load into RsiHostCall structure values to be returned to Host
+
+                                                                            R
+                                                                      RSI_HOST_CALL
+
+                                                                      Interrupt
+
+                                                             D        stage 2 fault
+
+                                                                      ...
+
+                                                                     Store EL1/EL0 context to rec
+
+                                                                     Update exit with exit reason and associated information
+
+                                                               alt          [If REC exit due to Host call]
+                                                                     Store GPR values in run.exit
+
+                                         RMI_SUCCESS
+
+                                     free_granule(run)
+
+                                                                                                                               Figure D1.10: Realm entry and exit flow
+
+                     See also:
+                          •   Chapter A4 Realm exception model
+                          •   D1.3.2 Host call flow
+                          •   D1.3.3 REC exit due to Data Abort fault flow
+                          •   D1.3.4 MMIO emulation flow
+
+D1.3.2 Host call flow
+                     The following diagram shows how software executing inside the Realm can voluntarily yield control back to the
+                     Host by making a Host call.
+
+Chapter D1. Flows
+D1.3. Realm exception model flows
+
+                A REC is entered using the RMI_REC_ENTER command. The parameters to this command include:
+                     • an RmiRecEnter object, which is a data structure used to pass values from the Host to the RMM on REC
+                       entry
+                     • an RmiRecExit object, which is a data structure used to pass values from the RMM to the Host on REC exit
+                On execution of RSI_HOST_CALL, arguments are copied from the RsiHostCall object in Realm memory into
+                the RmiRecExit object in NS memory. On the subsequent RMI_REC_ENTER, return values are copied from the
+                RmiRecEnter object in NS memory into the RsiHostCall object in Realm memory.
+
+Host                                                   RMM                                          Realm
+
+   RMI_REC_ENTER(rec, run)
+
+                                                            Restore EL1/EL0 context from rec
+
+                                                            ERET
+
+                                                                                                        Write Host call arguments into RsiHostCall object
+
+                                                             RSI_HOST_CALL
+
+                                                            Store EL1/EL0 context to rec
+
+                                                            Copy Host call arguments to run.exit
+
+       RMI_SUCCESS
+                                                                             T
+   Determine from exit that REC exit was due to Host call
+
+   Read Host call arguments from run.exit
+                                                             AF
+   Write Host call results to run.entry
+
+   RMI_REC_ENTER(rec, run)
+                                                     R
+                                             D              Restore EL1/EL0 context from rec
+
+                                                            Copy Host call results to RsiHostCall
+
+                                                            ERET
+
+                                                                                                        Read Host call results from RsiHostCall object
+
+                                                                                                                    Figure D1.11: Host call flow
+
+                See also:
+                     • A4.5 Host call
+
+D1.3.3 REC exit due to Data Abort fault flow
+                The following diagram shows how a Data Abort due to a Realm access is taken to the Host.
+                A REC is entered using the RMI_REC_ENTER command. The parameters to this command include:
+                     • an RmiRecEnter object, which is a data structure used to pass values from the Host to the RMM on REC
+                       entry
+                     • an RmiRecExit object, which is a data structure used to pass values from the RMM to the Host on REC exit
+
+Chapter D1. Flows
+D1.3. Realm exception model flows
+
+                         Host                                                            RMM                                    Realm
+
+                            RMI_REC_ENTER(rec, run)
+
+                                                                                             Restore EL1/EL0 context from rec
+
+                                                                                             ERET
+
+                                                                                               Stage 2 fault
+
+                                                                                             Store EL1/EL0 context to rec
+
+                                                                                             Store fault syndrome to run.exit
+
+                                RMI_SUCCESS
+
+                            Determine from run.exit that a stage 2 fault occurred
+
+                            Read fault syndrome from run.exit and take appropriate action
+
+                                                                              Figure D1.12: REC exit due to Data Abort flow
+
+             See also:
+                                                                   T
+                 • Chapter A4 Realm exception model
+
+D1.3.4 MMIO emulation flow
+                                                     AF
+                                              R
+             The following diagram shows how an MMIO access by a Realm can be emulated by the Host.
+
+                                      D
+
+Chapter D1. Flows
+D1.3. Realm exception model flows
+
+                            Host                                          RMM                                                     Realm
+
+                                  RMI_REC_ENTER(rec, run)
+
+                                                                               ERET
+
+                                                                                Stage 2 fault
+
+                                   RMI_SUCCESS
+
+                                  Determine from fault syndrome
+                                  that MMIO emulation is required
+
+                            alt         [If emulating read]
+                                  run.entry.gprs[0] = <value>
+
+                            alt         [If emulating write]
+                                  <value> = run.exit.gprs[0]
+
+                                  run.entry.is_emul_mmio = RMI_EMULATED_MMIO
+
+                                  RMI_REC_ENTER(rec, run)
+
+                           Because run.entry.is_emul_mmio == RMI_EMULATED_MMIO
+                                                                               Check that rec.ESR_EL2 indicates an emulatable abort
+
+                            alt         [If emulating read]         T
+                                                           AF
+                                  rec.<reg> = run.entry.gprs[0]
+
+                                                                               Restore EL1/EL0 context from rec
+
+                                                  R                            ERET
+
+                                         D                                                  Figure D1.13: MMIO emulation flow
+
+             See also:
+                 • Chapter A4 Realm exception model
+
+Chapter D1. Flows
+D1.4. PSCI flows
+
+D1.4 PSCI flows
+
+D1.4.1 PSCI_CPU_ON flow
+             The following diagram shows how one Realm VPE can set the “runnable” flag in another Realm VPE by executing
+             PSCI_CPU_ON.
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter D1. Flows
+D1.4. PSCI flows
+
+                      Host                                        RMM                                                    VPE_A   VPE_B
+
+                                                                                                                      Create two VPEs, with
+                                                                                                                      VPE_A runnable and
+                                                                                                                      VPE_B not runnable.
+
+                         RMI_REC_ENTER(rec_a, run)
+
+                                                                         Check rec_a.flags.runnable == RUNNABLE
+
+                                                                         ERET
+
+                                                                          PSCI_CPU_ON(mpidr_b, entry_point_address)
+
+                                                                         Check that mpidr_b is valid
+
+                                                                         Check that entry_point_address is a Protected IPA
+
+                             Exit due to PSCI
+
+                         fid = run.exit.gprs[0]
+
+                         Determine that Realm called PSCI_CPU_ON
+
+                         mpidr_b = run.exit.gprs.x1
+
+                         RMI_PSCI_COMPLETE(rec_a, status)
+
+                                                                         mpidr_b = rec_a.gprs[1]
+
+                                                               T
+                                                  mpidr_b is still held in rec_a.gprs[1]
+
+                                                  AF
+                                                  per the specification of PSCI_CPU_ON,
+                                                  so there is no need for a dedicated
+                                                  "pending MPIDR" REC attribute.
+
+                                                                         rec_a.gprs[0] = status
+
+                                        R                          alt          [status == PSCI_SUCCESS]
+                                                                         rec_b = find_rec(mpidr_b)
+
+                                D                                        rec_b.flags.runnable = RUNNABLE
+
+                                                                         rec_b.pc = rec_a.gprs[2]
+
+                             RMI_SUCCESS
+
+                         RMI_REC_ENTER(rec_b, run)
+
+                                                                         Check rec_b.flags.runnable == RUNNABLE
+
+                                                                         ERET
+
+                                                                          REC exit
+
+                             RMI_SUCCESS
+
+                         RMI_REC_ENTER(rec_a, run)
+
+                                                                         Check rec_a.flags.runnable == RUNNABLE
+
+                                                                         ERET
+
+                                                                                                                 VPE_A observes return
+                                                                                                                 from PSCI_CPU_ON call
+
+                                                                                                  Figure D1.14: PSCI_CPU_ON flow
+
+Chapter D1. Flows
+D1.4. PSCI flows
+
+             See also:
+                • B4.5.31 RMI_PSCI_COMPLETE command
+                • B6.3.3 PSCI_CPU_ON command
+
+                                                               T
+                                                 AF
+                                          R
+                                  D
+
+Chapter D1. Flows
+D1.5. Realm memory management flows
+
+D1.5 Realm memory management flows
+            This section contains flows which relate to management of Realm memory.
+            See also:
+               • Chapter A5 Realm memory management
+
+D1.5.1 Add memory to Active Realm flow
+            The following diagram shows the flow for adding memory to a Realm whose state is REALM_ACTIVE.
+            To add memory to a Realm whose state is REALM_ACTIVE, the Host must:
+               • Delegate a destination Granule (dst).
+               • Specify the Protected IPA at which the dst Granule will be mapped in the Realm’s IPA space.
+               • Ensure that the level 3 RTT which contains the RTTE identified by the Protected IPA has been created.
+            Once a given Protected IPA has been populated with unknown content, it cannot be repopulated.
+
+                                                  Host                                                         RMM
+
+                                                      data = alloc_granule()
+
+                                                                 T
+                                                      Use RMI_GRANULE_RANGE_DELEGATE to delegate data
+
+                                                      Use RMI_RTT_DATA_MAP to map data into Realm IPA space
+
+                                                   AF                                          data contents have been initialized
+                                                                                               to an unknown value.
+
+                                                                                                  State of RTTE identified by ipa
+                                                                                                  has been updated.
+
+                                            R
+            See also:
+                                    D                                     Figure D1.15: Add memory to active Realm flow
+
+               •   A2.2.5 Realm lifecycle
+               •   Chapter A5 Realm memory management
+               •   B4.5.10 RMI_GRANULE_RANGE_DELEGATE command
+               •   B4.5.61 RMI_RTT_DATA_MAP command
+
+D1.5.2 NS memory flow
+            The following diagram describes how NS memory can be mapped into a Realm.
+
+                                                                Host                                                 RMM      Realm
+
+                                                                    Use RMI_RTT_UNPROT_MAP to create mappings
+
+                                                                                   Figure D1.16: NS memory mapping flow
+
+            See also:
+               • Chapter A5 Realm memory management
+
+Chapter D1. Flows
+D1.5. Realm memory management flows
+
+                       • B4.5.73 RMI_RTT_UNPROT_MAP command
+                       • B4.5.74 RMI_RTT_UNPROT_UNMAP command
+
+D1.5.3 RIPAS change flow
+                  The following diagram describes how a Realm requests a RIPAS change, and how that request is handled by the
+                  Host.
+                       • The Realm calls RSI_IPA_STATE_SET to request a RIPAS change for IPA range [base, top).
+                       • This causes a REC exit due to RIPAS change pending.
+                  On taking a REC exit due to RIPAS change pending, the Host does the following:
+                       • Reads the region base and top addresses from the RmiRecExit object.
+                       • Applies the requested RIPAS change to an IPA range starting from the base of the target region, and extending
+                         no further than the top of the target region.
+                       • Calls RMI_REC_ENTER to re-enter the REC.
+                  The Realm observes in X1 the top of the region for which the RIPAS change was applied.
+
+                           Host                                          RMM                                                                Realm
+
+ Starting state:                                                                                                    Starting state:
+ HIPAS = HIPAS_VOID for Protected IPA range [base, top)                                                             RIPAS = RIPAS_EMPTY for Protected IPA range [base, top)
+
+                                 RMI_REC_ENTER(rec, run)
+
+                                                                            ERET
+                                                                                          T
+                                                                               RSI_IPA_STATE_SET(base, top, ripas=RIPAS_RAM)
+
+                                                                         AF rec.ripas_addr = base
+                                                                            rec.ripas_top = top
+                                                                            rec.ripas_value = RIPAS_RAM
+
+                                                                            run.exit.exit_reason = RIPAS
+                                                                            run.exit.ripas_base = base
+
+                                  RMI_SUCCESS
+                                                                    R       run.exit.ripas_top = top
+                                                                            run.exit.ripas_value = RIPAS_RAM
+
+                           alt
+                                                         D
+                                       [Host accepts the request]
+                                 RMI_RTT_SET_RIPAS(rd, rec, base, top)
+
+                                                                            Check target IPA range against values in REC
+
+                                                                            Update REC and RTTEs
+
+                                  RMI_SUCCESS
+
+                                 RMI_REC_ENTER(rec, run)
+
+                                                                            X0=RSI_SUCCESS, X1=base+progress, X2=RSI_RESPONSE_ACCEPT
+
+                           alt         [Host rejects the request]
+                                 run.flags.response = RMI_RESPONSE_REJECT
+
+                                 RMI_REC_ENTER(rec, run)
+
+                                                                            X0=RSI_SUCCESS, X1=base, X2=RSI_RESPONSE_REJECT
+
+                                                                                                                           Figure D1.17: RIPAS change flow
+
+                  See also:
+                       •    A5.4 RIPAS change
+                       •    B4.5.45 RMI_REC_ENTER command
+                       •    B4.5.71 RMI_RTT_SET_RIPAS command
+                       •    B5.4.7 RSI_IPA_STATE_SET command
+                       •    D2.2 Realm shared memory protocol flow
+
+Chapter D1. Flows
+D1.5. Realm memory management flows
+
+D1.5.4 S2AP change flow
+            The following diagram describes how a Realm requests a S2AP change, and how that request is handled by the
+            Host.
+               • The Realm calls RSI_MEM_SET_PERM_INDEX to request an S2AP change for IPA range [base, top).
+               • This causes a REC exit due to S2AP change pending.
+            On taking a REC exit due to S2AP change pending, the Host does the following:
+               • Reads the region base and top addresses from the RmiRecExit object.
+               • Applies the requested S2AP change to an IPA range starting from the base of the target region, and extending
+                 no further than the top of the target region.
+               • Calls RMI_REC_ENTER to re-enter the REC.
+            The Realm observes in X1 the top of the region for which the S2AP change was applied.
+
+             Host                                           RMM                                                           Realm
+
+                    RMI_REC_ENTER(rec, run)
+
+                                                                ERET
+
+                                                                  RSI_MEM_SET_PERM_INDEX(base, top, index, handle)
+
+                                                                rec.exit_reason = S2AP
+                                                                rec.s2ap_addr = base
+
+                                                                       T
+                                                                rec.s2ap_top = top
+                                                                rec.s2ap_value = index
+
+                                                           AF   run.exit.exit_reason = S2AP
+                                                                run.exit.s2ap_base = base
+                                                                run.exit.s2ap_top = top
+
+              alt
+                     RMI_SUCCESS
+
+                          [Host accepts the request]   R
+                                           D
+                    RMI_RTT_SET_S2AP(rd, rec, base, top)
+
+                                                                Check target IPA range against values in REC
+
+                                                                Update REC and RTTEs
+
+                     RMI_SUCCESS
+
+                    RMI_REC_ENTER(rec, run)
+
+                                                               X0=RSI_SUCCESS, X1=base+progress, X2=RSI_RESPONSE_ACCEPT
+
+              alt         [Host rejects the request]
+                    run.flags.response = RMI_RESPONSE_REJECT
+
+                    RMI_REC_ENTER(rec, run)
+
+                                                               X0=RSI_SUCCESS, X1=base, X2=RSI_RESPONSE_REJECT
+
+                                                                                                  Figure D1.18: S2AP change flow
+
+            See also:
+               •     A10.3.2.3 Stage 2 Access Permissions change within a multi-Plane Realm
+               •     B4.5.45 RMI_REC_ENTER command
+               •     B4.5.72 RMI_RTT_SET_S2AP command
+               •     B5.4.11 RSI_MEM_SET_PERM_INDEX command
+
+Chapter D1. Flows
+D1.6. Realm interrupts and timers flows
+
+D1.6 Realm interrupts and timers flows
+
+D1.6.1 Interrupt flow
+              The following diagram shows how a virtual interrupt is injected into a Realm by the Host.
+
+                                                     Host                                  RMM     Realm VPE                      GIC
+
+                                                         Save virtual GIC CPU interface state
+
+                                                         Set virtual interrupt pending
+                                                         by writing to ICH_LR<n>_EL2
+
+                                                         RMI_REC_ENTER(rec, run)
+
+                                                                                                ERET
+
+                                                                                                           Virtual interrupt
+
+                                                                                                          Acknowledge interrupt
+
+                                                                                                          Handle interrupt
+
+                                                                    T                    REC exit for whatever reason
+
+                                                      AF                                  Figure D1.19: Interrupt injection flow
+
+              See also:                        R
+                 • A6.1 Realm interrupts
+
+D1.6.2 Timer interrupt delivery flow
+                                          D
+              The following diagram shows how a timer interrupt is delivered to and handled by a Realm.
+
+Chapter D1. Flows
+D1.6. Realm interrupts and timers flows
+
+Host                                           RMM                                     Realm VPE                  GIC           EL1 Generic Timer
+
+    RMI_REC_ENTER(rec, run)
+
+                                                    If timer output is asserted,
+                                                    mask its interrupt signal at EL2
+
+                                                    If timer output is not asserted,
+                                                    unmask its interrupt signal it at EL2
+
+                                                    Restore EL1 timer state from rec
+
+                                                    ERET
+
+                                                                                             Set timer
+
+                                                                                                                        TimerConditionMet
+
+                                                                                              Physical interrupt
+
+                                                     IRQ exception taken to EL2
+
+                                                    Save EL1 timer state to rec
+
+                                                    Save EL1 timer state to run.exit.cnt*
+
+       RMI_EXIT_IRQ
+
+    Read run.exit.cnt* values                                               T
+    Determine that Realm timer condition is met
+
+    Set virtual interrupt pending
+    by writing to ICH_LR<n>_EL2
+                                                             AF
+    RMI_REC_ENTER(rec, run)                          R
+                                             D      If timer output is asserted,
+                                                    mask its interrupt signal at EL2
+
+                                                    If timer output is not asserted,
+                                                    unmask its interrupt signal it at EL2
+
+                                                    Restore EL1 timer state from rec
+
+                                                    ERET
+
+                                                                                              Virtual interrupt
+
+                                                                                            Figure D1.20: Timer interrupt delivery flow
+
+                See also:
+                      • A6.2 Realm timers
+
+Chapter D1. Flows
+D1.7. Realm attestation flows
+
+D1.7 Realm attestation flows
+
+D1.7.1 Attestation token generation flow
+              The following diagram shows the flow for a Realm to obtain an attestation token.
+              The Realm first calls RSI_ATTESTATION_TOKEN_INIT, providing a challenge value. The output values include
+              an upper bound on the attestation token size.
+              The Realm then calls RSI_ATTESTATION_TOKEN_CONTINUE, providing the address of a buffer where
+              the next part of the attestation token will be written. This command is called in a loop, until the result is not
+              RSI_INCOMPLETE.
+
+                          RMM                                                                            Realm
+
+                                   size = RSI_ATTESTATION_TOKEN_INIT(challenge)
+
+                                 rec.attest_state = ATTEST_IN_PROGRESS
+
+                                 rec.attest_challenge = challenge
+
+                                 (RSI_SUCCESS, size)
+
+                                                                         T                                    buf = alloc(size)
+                                                                                                              addr = buf
+
+                       loop                               AF
+                                      [until result != RSI_INCOMPLETE]
+                                                                                                              offset = 0
+
+                          loop
+                                                   R
+                                        [until result != RSI_INCOMPLETE or offset >= GRANULE_SIZE]
+                                   size = GRANULE_SIZE - offset
+                                   (result, len) = RSI_ATTESTATION_TOKEN_CONTINUE(addr, offset, size)
+                                           D
+                                 Check that rec.attest_state == ATTEST_IN_PROGRESS
+
+                                 Proceed with token generation
+
+                           alt         [Token generation complete]
+                                 (RSI_SUCCESS, len)
+
+                                 (RSI_INCOMPLETE, len)
+
+                                                                                                              offset += len
+
+                                                                                                              addr += GRANULE_SIZE
+
+                                                                                 Figure D1.21: Attestation token generation flow
+
+              See also:
+                 • A7.2.2 Attestation token generation
+                 • B5.4.2 RSI_ATTESTATION_TOKEN_CONTINUE command
+                 • B5.4.3 RSI_ATTESTATION_TOKEN_INIT command
+
+Chapter D1. Flows
+D1.7. Realm attestation flows
+
+D1.7.2 Handling interrupts during attestation token generation flow
+              The following diagram shows how interrupts are handled during generation of an attestation token.
+              If the RMM detects that a physical interrupt is pending during execution of RSI_ATTESTATION_TOKEN_CONTINUE,
+              it saves the execution context to the REC object, and performs a REC exit due to IRQ.
+              During handling of the IRQ, the Host may signal a virtual interrupt to the REC.
+              On the next entry to the REC, if a virtual interrupt is pending, it is taken to the REC’s exception vector.
+              Whether or not a virtual interrupt was taken, on return to the original thread, the REC determines that X0 is
+              RSI_INCOMPLETE, and therefore calls RSI_ATTESTATION_TOKEN_CONTINUE again.
+
+                                                                      T
+                                                        AF
+                                                 R
+                                         D
+
+Chapter D1. Flows
+D1.7. Realm attestation flows
+
+              Host                           RMM                                                        Realm thread   Realm exception vector
+
+                  RMI_REC_ENTER(rec, run)
+
+                                                    Restore execution context from rec
+
+                                                    ERET
+
+                                                      RSI_ATTESTATION_TOKEN_INIT(challenge)
+
+                                                    RSI_SUCCESS
+
+                                                      RSI_ATTESTATION_TOKEN_CONTINUE(addr, offset, size)
+
+                                              loop          [While no physical interrupt pending]
+                                                     Proceed with token generation
+
+                                   Physical interrupt pending
+
+                                                     Save execution context to rec
+
+                                                     rec.gprs[0] = RSI_INCOMPLETE
+
+                                                     run.exit.reason = IRQ
+
+                     RMI_SUCCESS
+
+ During handling of the physical
+ interrupt, the Host may signal
+                                                                                         T
+ a virtual interrupt to the REC.
+
+                  RMI_REC_ENTER(rec, run)
+                                                                       AF
+                                                    Restore execution context from rec
+
+                                              alt             R
+                                                           [Virtual interrupt pending]
+
+                                                    D
+                                                    ERET
+
+                                                                                                                                   Push registers to stack
+
+                                                                                                                                   Handle interrupt
+
+                                                                                                                                   Pop registers from stack
+
+                                                    ERET
+
+                                                                                                    X0 == RSI_INCOMPLETE
+
+                                                      RSI_ATTESTATION_TOKEN_CONTINUE(addr, offset, size)
+
+                                                                Figure D1.22: Attestation token generation with interrupt handling flow
+
+                 See also:
+                      •   A4.3.5 REC exit due to IRQ
+                      •   A6.1 Realm interrupts
+                      •   A7.2.2 Attestation token generation
+                      •   B5.4.2 RSI_ATTESTATION_TOKEN_CONTINUE command
+                      •   B5.4.3 RSI_ATTESTATION_TOKEN_INIT command
+                      •   D1.3.1 Realm entry and exit flow
+
+Chapter D1. Flows
+D1.8. Realm device assignment flows
+
+D1.8 Realm device assignment flows
+             See Chapter A9 Realm device assignment.
+
+                                                                   T
+                                                     AF
+                                              R
+                                      D
+
+Chapter D2
+Realm shared memory protocol
+
+                                                                 T
+                                                   AF
+                                            R
+           This section describes a protocol for management of memory which is shared between a Realm and the Host. This
+           protocol makes use of the primitives described in this specification. However, the protocol itself is not part of the
+
+                                    D
+           RMM architecture. Use of this protocol is subject to a contract between the Realm and Host software agents.
+           See also:
+              • Chapter A5 Realm memory management
+
+Chapter D2. Realm shared memory protocol
+D2.1. Realm shared memory protocol description
+
+D2.1 Realm shared memory protocol description
+             The Host agrees to provide the Realm with a certain amount of memory. This memory is referred to below as the
+             Realm’s “memory footprint”.
+             The memory footprint is described to the Realm, for example via firmware tables. The Realm can choose, at any
+             point during its execution, how much of its memory footprint is protected (accessible only to the Realm) and how
+             much is shared with the Host.
+             Realm software treats the most significant IPA bit as a “protection attribute” bit. This means that for every
+             Protected IPA (in which the most significant bit is '0'), there exists a corresponding Unprotected IPA alias, which
+             is generated by setting the most significant bit to '1'.
+             The choice of whether a given page is private or shared at a given time is expressed by setting the RIPAS of the
+             Protected IPA:
+                 • If the RIPAS of the Protected IPA is RIPAS_RAM, the page is private.
+                 • If the RIPAS of the Protected IPA is RIPAS_EMPTY, the page is shared.
+             The initial RIPAS for every page in the Realm’s memory footprint is described to the Realm, for example via
+             firmware tables. The Host agrees that during Realm execution, it will accept a RIPAS change request on any page
+             within the Realm’s memory footprint.
+             Based on the private / shared status of the page, the Host agrees to the following behaviour regarding the
+             Unprotected IPA alias:
+
+                                                                   T
+                 • If the page is private, the Host does not create a valid mapping at the Unprotected IPA alias. Realm access to
+                   the Unprotected IPA alias causes a REC exit due to Data Abort. In response, the Host sets the “inject_sea”
+
+                                                     AF
+                   flag on the next REC entry, which causes a Synchronous External Abort to be taken to the Realm.
+                 • If the page is shared, the Host creates (either eagerly, or in response to a REC exit due to Data Abort) a
+                   valid mapping at the Unprotected IPA alias. Realm access to the Unprotected IPA alias does not cause a
+
+SZBPXF                                        R
+                   Synchronous External Abort taken to the Realm.
+             For device access to shared memory which is mapped in a Realm’s IPA space, an Unprotected IPA should be used
+             as the DMA address.
+             See also:
+                                      D
+                 • A5.2.1 Realm IPA space
+                 • A5.2.2 Realm IPA state
+                 • A5.4 RIPAS change
+
+D2.2 Realm shared memory protocol flow
+             The following diagram illustrates how the protocol is used to set up and tear down a shared memory buffer.
+
+Chapter D2. Realm shared memory protocol
+D2.2. Realm shared memory protocol flow
+
+                                            Protected IPA space                                         Unprotected IPA space
+
+                      Memory footprint (Protected IPA alias)                       Memory footprint (Unprotected IPA alias)
+
+                                                                                                                                                         RIPAS = RIPAS_EMPTY
+
+ Initial state
+                                                                                                                                                         RIPAS = RIPAS_RAM
+
+                                                                                                                                                         Unprotected page
+
+                                                                         Set all pages in Protected memory footprint to RIPAS = RIPAS_RAM
+
+                                                                         Access to any page within Protected memory footprint does not generate an SEA
+                                                                         Access to any page within Unprotected memory footprint generates an SEA
+
+                 OK   OK     OK     OK    OK     OK     OK     OK            SEA    SEA    SEA   SEA    SEA   SEA    SEA      SEA
+
+                                                                         Create shared buffer by setting RIPAS of Protected alias to RIPAS_EMPTY
+
+                                   SEA    SEA                                                     OK    OK
+
+                                                                         Tear down shared buffer by setting RIPAS of Protected alias to RIPAS_RAM
+
+                                    OK    OK                                                     SEA    SEA
+
+                                                                                                              T
+                                                                                    AF                                     Figure D2.1: Realm shared memory protocol flow
+
+                      See also:                                        R
+                             • D1.5.3 RIPAS change flow
+                                                                    D
+
+Glossary
+
+ Glossary
+ASL
+           Arm Specification Language
+           Language used to express pseudocode implementations. Formal language definition can be found in Arm Specifica-
+           tion Language Reference Manual [26].
+ATC
+           Address Translation Cache
+ATS
+           Address Translation Service
+CBOR
+           Concise Binary Object Representation
+CCA
+           Confidential Compute Architecture
+CCA platform                                                    T
+CDDL
+                                                  AF
+           All hardware and firmware components which are involved in delivering the CCA security guarantee. See Arm
+           CCA Security model [4].
+
+COSE
+           Concise Data Definition Language
+                                           R
+CPAK
+                                      D
+           CBOR Object Signing and Encryption
+
+           CCA Platform Attestation Key Key used to sign the CCA platform attestation token.
+CXL
+           Compute eXpress Link
+CXL TSP
+           CXL Trusted Execution Environment Security Protocol
+DOE
+           Data Object Exchange See PCI Express 6.0 specification [18]
+DPT
+           Device Permission Table
+DSM
+           Device Security Manager See PCI Express 6.0 specification [18]
+EAT
+           Entity Attestation Token
+ECAM
+
+Glossary
+
+           Enhanced Configuration Access Mechanism See PCI Express 6.0 specification [18]
+FAL
+           Firmware Activity Log
+FID
+           Function Identifier
+GIC
+           Generic Interrupt Controller
+           See Arm Generic Interrupt Controller (GIC) Architecture Specification version 3 and version 4 [6]
+GPF
+           Granule Protection Fault
+GPT
+           Granule Protection Table
+           Table which determines the Physical Address Space of each Granule.
+HDM
+           Host-managed Device memory
+HDM-H
+           Host-managed Device memory (Host-coherent)             T
+HIPAS
+
+Host
+           Host IPA state                           AF
+IDE
+                                             R
+           Software executing in Non-secure Security state which manages resources used by Realms
+
+                                       D
+           Integrity and Data Encryption
+           See PCI Express 6.0 specification [18]
+IPA
+           Intermediate Physical Address
+           Address space visible to software executing at EL1 in the Realm.
+IPI
+           Inter-processor interrupt
+IRI
+           Interrupt Routing Infrastructure
+           A subset of the components which make up the GIC.
+ITS
+           Interrupt Translation Service
+           A service provided by the GIC.
+LFA
+           Live Firmware Activation
+LOR
+
+Glossary
+
+           Limited Order Region
+           See Arm Architecture Reference Manual for A-Profile architecture [3]
+MBZ
+           Must Be Zero
+MEC
+           Memory Encryption Context
+MECID
+           Memory Encryption Context Identifier
+MMIO
+           Memory-mapped I/O
+MPIDR
+           Multiprocessor Affinity Register
+NS
+           Non-secure
+PAS
+           Physical Address Space
+PDEV                                                            T
+           Physical Device
+                                                  AF
+           Object which represents a communication channel between the RMM and a physical device, for example a PCIe
+           device.
+PE
+           Processing Element
+                                           R
+PMU
+           Performance Monitor Unit
+                                    D
+PPR
+           PRI Page Request
+PRG
+           Page Request Group
+PRI
+           Page Request Interface
+PSCI
+           Power State Control Interface
+           See Arm Power State Coordination Interface (PSCI) [28]
+PSMMU
+           Physical System Memory Management Unit
+           See Arm System Memory Management Unit Architecture Specification [24]
+RAK
+           Realm Attestation Key Key used to sign the Realm attestation token.
+
+Glossary
+
+RD
+           Realm Descriptor
+           Object which stores attributes of a Realm.
+Realm
+           A protected execution environment
+REC
+           Realm Execution Context
+           Object which stores PE state associated with a thread of execution within a Realm.
+REM
+           Realm Extensible Measurement Measurement value which can be extended during the lifetime of a Realm.
+RHA
+           Realm Hash Algorithm
+RHI
+           Realm Host Interface
+RIM
+           Realm Initial Measurement Measurement of the state of a Realm at the time of activation.
+RIPAS                                                           T
+RME
+           Realm IPA state
+
+           Realm Management Extension
+                                                  AF
+RMI
+                                           R
+           Realm Management Interface The ABI exposed by the RMM for use by the Host.
+RMM
+           Realm Management Monitor
+                                   D
+RMSD
+           Realm Management Security Domain
+RNVS
+           Root Non-volatile Storage
+RPV
+           Realm Personalization Value
+RSI
+           Realm Services Interface The ABI exposed by the RMM for use by the Realm.
+RTT
+           Realm Translation Table
+           Object which describes the IPA space of a Realm.
+RTTE
+           Realm Translation Table Entry
+SBZ
+
+Glossary
+
+           Should Be Zero
+SEA
+           Synchronous External Abort
+SGI
+           Software Generated Interrupt
+SMCCC
+           SMC Calling Convention
+           See Arm SMC Calling Convention [25]
+SMMU
+           System Memory Management Unit
+           See Arm System Memory Management Unit Architecture Specification [24]
+SPDM
+           Security Protocol and Data Model
+           See Security Protocol and Data Model (SPDM) [23] and Secured Messages using SPDM Specification version
+           1.1.0 [19]
+SPM
+           Secure Partition Manager
+TA                                                                T
+TOS
+           Trusted Application
+                                                    AF
+           Trusted OS
+TSE                                          R
+TSM
+           Target-Side Encryption
+                                     D
+           Trusted Security Manager
+           See Chapter A9 Realm device assignment
+VDEV
+           Virtual Device
+           Object which represents the binding between a device function and a Realm.
+VMM
+           Virtual Machine Monitor
+VMSA
+           Virtual Memory System Architecture
+VPE
+           Virtual Processing Element
+VSMMU
+           Virtual System Memory Management Unit
+           See Arm System Memory Management Unit Architecture Specification [24]
+Wiping
+
+Glossary
+
+           An operation which changes the value of a memory location from X to Y, such that the value X cannot be determined
+           from the value Y
+
+                                                                T
+                                                  AF
+                                           R
+                                   D
+
+

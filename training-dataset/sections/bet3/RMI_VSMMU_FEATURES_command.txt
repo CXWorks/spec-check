@@ -1,0 +1,3276 @@
+B4.5.91 RMI_VSMMU_FEATURES command
+                 Returns VSMMU features supporte by the RMM.
+                 B4.5.91.1 Interface
+                 B4.5.91.1.1   Input values
+
+           Name                Register     Bits       Type                                  Description
+
+           fid                 X0           63:0       UInt64                                FID, value 0xC400020B
+           features_ptr        X1           63:0       Address                               PA of the VSMMU features structure
+
+                 B4.5.91.1.2   Context
+                 The RMI_VSMMU_FEATURES command operates on the following context.
+
+           Name                Type                       Value                                      Before   Description
+
+           features            RmiVsmmuFeatures           VsmmuFeaturesAt(                           false    VSMMU features
+                                                              features_ptr)
+
+                 B4.5.91.1.3   Output values
+                                                                     T
+           Name                Register     Bits
+                                                       AF
+                                                       Type                                  Description
+
+           result              X0           63:0
+                                                   R   RmiResult                             Command result
+
+                                          D
+                 B4.5.91.2 Failure conditions
+
+  ID                            Condition
+
+  features_align                pre: !AddrIsAligned(features_ptr, 0x100)
+                                post: result.status == RMI_ERROR_INPUT
+  features_pas                  pre: !NonSecureAccessPermitted(features_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+
+                 B4.5.91.2.1   Failure condition ordering
+                 The RMI_VSMMU_FEATURES command does not have any failure condition orderings.
+                 B4.5.91.3 Success conditions
+
+  ID                            Condition
+
+  features                      post: features is populated with VSMMU features supported by the RMM.
+
+Chapter B4. Realm Management Interface
+
+B4.6 RMI types
+               This section defines types which are used in the RMI interface.
+
+B4.6.1 RmiAddrBlockSize type
+               The RmiAddrBlockSize enumeration represents size of a block of contiguous address space.
+               The RmiAddrBlockSize enumeration is a concrete type.
+               The width of the RmiAddrBlockSize enumeration is 2 bits.
+               The values of the RmiAddrBlockSize enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_PAGE_L3                            Level 3 page size.
+           1             RMI_BLOCK_L2                           Level 2 block size.
+           2             RMI_BLOCK_L1                           Level 1 block size.
+           3             RMI_BLOCK_L0                           Level 0 block size.
+
+                                                                    T
+               The RmiAddrBlockSize enumeration is used in the following types:
+                  • RmiOpMemDonateReq
+                  • RmiAddrRangeDesc
+                  • RmiAddrSetDesc
+                  • RmiAddrRangeDesc4KB
+                                                      AF
+                  • RmiAddrRangeDesc64KB
+                  • RmiAddrRangeDesc16KB       R
+B4.6.2 RmiAddrRange type               D
+               The RmiAddrRange structure contains address range.
+               The RmiAddrRange structure is a concrete type.
+               The width of the RmiAddrRange structure is 16 (0x10) bytes.
+               The members of the RmiAddrRange structure are shown in the following table.
+
+        Name                 Byte offset      Type                                     Description
+
+        base                 0x0              Address                                  Base of address range (inclusive)
+        top                  0x8              Address                                  Top of address range (exclusive)
+
+               The RmiAddrRange structure is used in the following types:
+                  • RmiPdevStreamParams
+                  • RmiVdevParams
+
+B4.6.3 RmiAddrRangeDesc type
+               The RmiAddrRangeDesc fieldset contains a descriptor which identifies a contiguous address range.
+               The RmiAddrRangeDesc fieldset is a concrete type.
+
+Chapter B4. Realm Management Interface
+
+             The width of the RmiAddrRangeDesc fieldset is 64 bits.
+             See also:
+                • B4.4.1 RMI Address Range Descriptor
+             The fields of the RmiAddrRangeDesc fieldset are shown in the following diagram.
+
+             The fields of the RmiAddrRangeDesc fieldset are shown in the following table.
+
+ Name                              Bits     Description                                           Value
+
+ data                              63:0     Conditional                                           See below
+
+             Encodings for field data:
+
+             Name            Condition                                                    Fieldset
+
+             granule_4kb     RmmGlobal().dynamic.rmm_granule_size
+                                                                   T                      RmiAddrRangeDesc4KB
+
+                                                     AF
+                                 == RMI_GRANULE_SIZE_4KB
+             granule_16kb RmmGlobal().dynamic.rmm_granule_size
+                                  == RMI_GRANULE_SIZE_16KB
+                                                                                          RmiAddrRangeDesc16KB
+
+             granule_64kb RmmGlobal().dynamic.rmm_granule_size                            RmiAddrRangeDesc64KB
+                                              R
+                                  == RMI_GRANULE_SIZE_64KB
+
+                                         D
+             The RmiAddrRangeDesc fieldset is used in the following types:
+                • RmiAddrSetDesc
+
+B4.6.4 RmiAddrRangeDesc16KB type
+             The RmiAddrRangeDesc16KB fieldset contains a descriptor which identifies a contiguous address range, when
+             RMI Granule Size is 16KB.
+             The RmiAddrRangeDesc16KB fieldset is a concrete type.
+             The width of the RmiAddrRangeDesc16KB fieldset is 64 bits.
+             The fields of the RmiAddrRangeDesc16KB fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiAddrRangeDesc16KB fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ size                             1:0      Size of each block in the range                       RmiAddrBlockSize
+ count                            13:2     Number of blocks in the range                         UInt12
+ addr                             51:14
+                                                                  T
+                                           Base address of the range
+                                           Contains base-address bits[51:14]; bits[13:0]
+                                                                                                 Bits38
+
+ state
+                                  61:52
+                                  63:62
+                                           are zero.
+                                           Reserved AF
+                                           State of memory within the range
+                                                                                                 SBZ
+                                                                                                 RmiOpMemState
+
+                                             R
+             The RmiAddrRangeDesc16KB fieldset is used in the following types:
+                • RmiAddrSetDesc
+                • RmiAddrRangeDesc
+                                     D
+B4.6.5 RmiAddrRangeDesc4KB type
+             The RmiAddrRangeDesc4KB fieldset contains a descriptor which identifies a contiguous address range, when
+             RMI Granule Size is 4KB.
+             The RmiAddrRangeDesc4KB fieldset is a concrete type.
+             The width of the RmiAddrRangeDesc4KB fieldset is 64 bits.
+             The fields of the RmiAddrRangeDesc4KB fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiAddrRangeDesc4KB fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ size                             1:0      Size of each block in the range                       RmiAddrBlockSize
+ count                            11:2     Number of blocks in the range                         UInt10
+ addr                             51:12
+                                                                  T
+                                           Base address of the range
+                                           Contains base-address bits[51:12]; bits[11:0]
+                                                                                                 Bits40
+
+ state
+                                  61:52
+                                  63:62
+                                           are zero.
+                                           Reserved AF
+                                           State of memory within the range
+                                                                                                 SBZ
+                                                                                                 RmiOpMemState
+
+                                             R
+             The RmiAddrRangeDesc4KB fieldset is used in the following types:
+                • RmiAddrSetDesc
+                • RmiAddrRangeDesc
+                                     D
+B4.6.6 RmiAddrRangeDesc64KB type
+             The RmiAddrRangeDesc64KB fieldset contains a descriptor which identifies a contiguous address range, when
+             RMI Granule Size is 64KB.
+             The RmiAddrRangeDesc64KB fieldset is a concrete type.
+             The width of the RmiAddrRangeDesc64KB fieldset is 64 bits.
+             The fields of the RmiAddrRangeDesc64KB fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiAddrRangeDesc64KB fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ size                             1:0      Size of each block in the range                       RmiAddrBlockSize
+ count                            15:2     Number of blocks in the range                         UInt14
+ addr                             51:16
+                                                                  T
+                                           Base address of the range
+                                           Contains base-address bits[51:16]; bits[15:0]
+                                                                                                 Bits36
+
+ state
+                                  61:52
+                                  63:62
+                                           are zero.
+                                           Reserved AF
+                                           State of memory within the range
+                                                                                                 SBZ
+                                                                                                 RmiOpMemState
+
+                                             R
+             The RmiAddrRangeDesc64KB fieldset is used in the following types:
+                • RmiAddrSetDesc
+                • RmiAddrRangeDesc
+                                     D
+B4.6.7 RmiAddrSetDesc type
+             The RmiAddrSetDesc fieldset contains a descriptor which identifies an address set.
+             The RmiAddrSetDesc fieldset is a concrete type.
+             The width of the RmiAddrSetDesc fieldset is 64 bits.
+             The fields of the RmiAddrSetDesc fieldset are shown in the following diagram.
+
+             The fields of the RmiAddrSetDesc fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ data                             63:0     Conditional                                           See below
+
+Chapter B4. Realm Management Interface
+
+               Encodings for field data:
+
+               Name            Condition                                                    Fieldset
+
+               single          flags.oaddr_type ==                                          RmiAddrRangeDesc
+                                   RMI_ADDR_TYPE_SINGLE
+               list_addr       flags.oaddr_type == RMI_ADDR_TYPE_LIST                       RmiAddrSetList
+
+B4.6.8 RmiAddrSetList type
+               The RmiAddrSetList fieldset contains address of a list of RMI Address Range Descriptors.
+               The RmiAddrSetList fieldset is a concrete type.
+               The width of the RmiAddrSetList fieldset is 64 bits.
+               The fields of the RmiAddrSetList fieldset are shown in the following diagram.
+
+                                                                     T
+               The fields of the RmiAddrSetList fieldset are shown in the following table.
+
+ Name
+
+ addr
+                                     Bits
+
+                                     63:0
+                                                       AF
+                                              Description
+
+                                              Address of first RMI Address Range Descriptor
+                                                                                                    Value
+
+                                                                                                    Address
+
+                                                R
+               The RmiAddrSetList fieldset is used in the following types:
+                  • RmiAddrSetDesc
+
+B4.6.9 RmiBoolean type
+                                           D
+               The RmiBoolean enumeration represents a boolean value.
+               The RmiBoolean enumeration is a concrete type.
+               The width of the RmiBoolean enumeration is 1 bits.
+               The values of the RmiBoolean enumeration are shown in the following table.
+
+           Encoding        Name                                  Description
+
+           0               RMI_FALSE                             False
+           1               RMI_TRUE                              True
+
+               The RmiBoolean enumeration is used in the following types:
+                  • RmiPsmmuIrqResult
+                  • RmiVsmmuEventFlags
+                  • RmiVsmmuCmdFlags
+                  • RmiPsmmuIrqSet
+                  • RmiDevCommExitFlags
+
+Chapter B4. Realm Management Interface
+
+B4.6.10 RmiContinueBeyond type
+               The RmiContinueBeyond enumeration represents how RMI_OP_CONTINUE should behave once it has
+               transitioned all objects in the target set from the intermediate state to the destination state.
+               The RmiContinueBeyond enumeration is a concrete type.
+               The width of the RmiContinueBeyond enumeration is 1 bits.
+               The values of the RmiContinueBeyond enumeration are shown in the following table.
+
+           Encoding      Name                                     Description
+
+           0             RMI_CONTINUE_KEEP_GOING                  Continue processing the target set.
+           1             RMI_CONTINUE_STOP                        Return to the Host.
+
+               The RmiContinueBeyond enumeration is used in the following types:
+                  • RmiContinueFlags
+
+B4.6.11 RmiContinueFlags type
+               The RmiContinueFlags fieldset contains flags provided by the Host when continuing an incomplete operation.
+               The RmiContinueFlags fieldset is a concrete type.    T
+                                                      AF
+               The width of the RmiContinueFlags fieldset is 64 bits.
+               The fields of the RmiContinueFlags fieldset are shown in the following diagram.
+
+                                               R
+                                        D
+
+               The fields of the RmiContinueFlags fieldset are shown in the following table.
+
+ Name                               Bits     Description                                           Value
+
+ beyond                             0        How RMI_OP_CONTINUE should behave                     RmiContinueBeyond
+                                             once it has transitioned all objects in the target
+                                             set from the intermediate state to the
+                                             destination state
+                                    63:1     Reserved                                              SBZ
+
+Chapter B4. Realm Management Interface
+
+B4.6.12 RmiDataFlags type
+               The RmiDataFlags fieldset contains flags provided by the Host during DATA Granule creation.
+               The RmiDataFlags fieldset is a concrete type.
+               The width of the RmiDataFlags fieldset is 64 bits.
+               The fields of the RmiDataFlags fieldset are shown in the following diagram.
+
+                                                                     T
+               The fields of the RmiDataFlags fieldset are shown in the following table.
+
+ Name
+
+ measure
+                                     Bits
+
+                                     0
+                                                       AF
+                                              Description
+
+                                              Whether to measure DATA Granule contents
+                                                                                                    Value
+
+                                                                                                    RmiDataMeasureContent
+                                     63:1
+                                                R
+                                              Reserved                                              SBZ
+
+B4.6.13 RmiDataMeasureContent type       D
+               The RmiDataMeasureContent enumeration represents whether to measure DATA Granule contents.
+               The RmiDataMeasureContent enumeration is a concrete type.
+               The width of the RmiDataMeasureContent enumeration is 1 bits.
+               The values of the RmiDataMeasureContent enumeration are shown in the following table.
+
+           Encoding      Name                                    Description
+
+           0             RMI_NO_MEASURE_CONTENT Do not measure DATA Granule contents.
+           1             RMI_MEASURE_CONTENT                     Measure DATA Granule contents.
+
+               The RmiDataMeasureContent enumeration is used in the following types:
+                  • RmiDataFlags
+
+B4.6.14 RmiDevCommData type
+               The RmiDevCommData structure contains data structure shared between Host and RMM for device
+               communication.
+
+Chapter B4. Realm Management Interface
+
+                The RmiDevCommData structure is a concrete type.
+                The width of the RmiDevCommData structure is 4096 (0x1000) bytes.
+                The members of the RmiDevCommData structure are shown in the following table.
+
+        Name                 Byte offset      Type                                     Description
+
+        enter                0x0              RmiDevCommEnter                          Entry information
+        exit                 0x800            RmiDevCommExit                           Exit information
+
+                Unused bits of the RmiDevCommData structure SBZ.
+
+B4.6.15 RmiDevCommEnter type
+                The RmiDevCommEnter structure contains data passed from the Host to the RMM during device communication.
+                The RmiDevCommEnter structure is a concrete type.
+                The width of the RmiDevCommEnter structure is 256 (0x100) bytes.
+                See also:
+                   • A9.5.2.2 Device communication enter data structure
+                                                                    T
+                The members of the RmiDevCommEnter structure are shown in the following table.
+
+        Name
+
+        status
+                             Byte offset
+
+                             0x0
+                                              Type     AF
+                                              RmiDevCommStatus
+                                                                                       Description
+
+                                                                                       Status of device transaction
+        req_addr             0x8               R
+                                              Address                                  Address of request buffer
+        rsp_addr
+        rsp_len
+                             0x10
+
+                             0x18
+                                       D      Address
+                                              UInt64
+                                                                                       Address of response buffer
+                                                                                       Amount of valid data in response buffer in
+                                                                                       bytes
+
+                Unused bits of the RmiDevCommEnter structure SBZ.
+                The RmiDevCommEnter structure is used in the following types:
+                   • RmiDevCommData
+
+B4.6.16 RmiDevCommExit type
+                The RmiDevCommExit structure contains data passed from the RMM to the Host during device communication.
+                The RmiDevCommExit structure is a concrete type.
+                The width of the RmiDevCommExit structure is 256 (0x100) bytes.
+                See also:
+                   • A9.5.2.1 Device communication exit data structure
+                The members of the RmiDevCommExit structure are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+        Name                 Byte offset       Type                                     Description
+
+        flags                0x0               RmiDevCommExitFlags                      Flags indicating action(s) which the Host is
+                                                                                        requested to perform
+        req_cache_offset     0x8               UInt64                                   If flags.req_cache is true, offset in the device
+                                                                                        request buffer to the start of data to be
+                                                                                        cached, in bytes
+        req_cache_len        0x10              UInt64                                   If flags.req_cache is true, amount of device
+                                                                                        request data to be cached, in bytes
+        rsp_cache_offset     0x18              UInt64                                   If flags.rsp_cache is true, offset in the device
+                                                                                        response buffer to the start of data to be
+                                                                                        cached, in bytes
+        rsp_cache_len        0x20              UInt64                                   If flags.rsp_cache is true, amount of device
+                                                                                        response data to be cached, in bytes
+        cache_object_id      0x28              RmiDevCommObject                         If flags.req_cache is true and / or
+                                                                                        flags.rsp_cache is true, identifier for the
+                                                                                        object to be cached
+        protocol             0x30              RmiDevCommProtocol                       If flags.req_send is true, protocol to use
+        req_delay            0x38              UInt64                                  If flags.req_send is true, amount of time to
+                                                                     T                 wait before sending the request, in
+                                                                                       microseconds.
+        req_len              0x40              UInt64   AF                              If flags.req_send is true, amount of valid data
+                                                                                        in request buffer in bytes
+        rsp_timeout          0x48              UInt64                                   Amount of time to wait (measured from the
+                                                R                                       most recent exit which had flags.rsp_reset =
+                                                                                        true) for device response in microseconds.
+
+                                        D
+                Unused bits of the RmiDevCommExit structure MBZ.
+                The RmiDevCommExit structure is used in the following types:
+                   • RmiDevCommData
+
+B4.6.17 RmiDevCommExitFlags type
+                The RmiDevCommExitFlags fieldset contains flags provided by the RMM during a device transaction.
+                The RmiDevCommExitFlags fieldset is a concrete type.
+                The width of the RmiDevCommExitFlags fieldset is 64 bits.
+                The fields of the RmiDevCommExitFlags fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+               The fields of the RmiDevCommExitFlags fieldset are shown in the following table.
+
+ Name                               Bits     Description                                           Value
+
+ req_cache                          0        Whether the Host is requested to cache data           RmiBoolean
+                                             from the device request buffer
+ rsp_cache                          1        Whether the Host is requested to cache data           RmiBoolean
+                                                                    T
+                                             from the device response buffer
+ req_send
+
+ rsp_wait
+                                    2
+
+                                    3
+                                                      AF
+                                             Whether the Host is requested to send data
+                                             from the device request buffer to the device
+                                             Whether the RMM is waiting for a response
+                                             from the device
+                                                                                                   RmiBoolean
+
+                                                                                                   RmiBoolean
+
+ rsp_reset                          4          R
+                                             Whether to reset the response timer                   RmiBoolean
+ multi                              5
+                                        D    Whether the device transaction contains more
+                                             than one (device request, device response)
+                                             tuple
+                                                                                                   RmiBoolean
+
+ stream_wait                        6        Whether a transaction associated with another         RmiBoolean
+                                             device, to which this device is connected via a
+                                             PDEV stream, must proceed before this
+                                             transaction can proceed
+                                    63:7     Reserved                                              MBZ
+
+               The RmiDevCommExitFlags fieldset is used in the following types:
+                  • RmiDevCommExit
+
+B4.6.18 RmiDevCommObject type
+               The RmiDevCommObject enumeration represents identifier of a device communication object which the Host is
+               requested to cache.
+               The RmiDevCommObject enumeration is a concrete type.
+               The width of the RmiDevCommObject enumeration is 8 bits.
+               The values of the RmiDevCommObject enumeration are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+           Encoding      Name                                      Description
+
+           0             RMI_DEV_PROTOCOL_DATA                     Protocol data associated with a PDEV
+           1             RMI_DEV_IDENTITY                          Device identity associated with a PDEV
+           2             RMI_DEV_MEASUREMENTS                      Device measurements associated with a VDEV
+           3             RMI_DEV_INTERFACE_REPORT                  Device interface report associated with a VDEV
+
+               Unused encodings for the RmiDevCommObject enumeration are reserved for use by future versions of this
+               specification.
+               The RmiDevCommObject enumeration is used in the following types:
+                  • RmiDevCommExit
+
+B4.6.19 RmiDevCommProtocol type
+               The RmiDevCommProtocol enumeration represents protocol used for device communication.
+               The RmiDevCommProtocol enumeration is a concrete type.
+               The width of the RmiDevCommProtocol enumeration is 8 bits.
+
+                                                                   T
+               The values of the RmiDevCommProtocol enumeration are shown in the following table.
+
+           Encoding
+
+           0
+                         Name
+
+                         RMI_PROTOCOL_SPDM
+                                                     AF            Description
+
+                                                                   SPDM
+                                                                   See Security Protocol and Data Model (SPDM) [23]
+           1                                  R
+                         RMI_PROTOCOL_SECURE_SPDM                  Secure SPDM
+                                                                   See Secured Messages using SPDM Specification version
+                                      D                            1.1.0 [19]
+
+               Unused encodings for the RmiDevCommProtocol enumeration are reserved for use by future versions of this
+               specification.
+               The RmiDevCommProtocol enumeration is used in the following types:
+                  • RmiDevCommExit
+
+B4.6.20 RmiDevCommStatus type
+               The RmiDevCommStatus enumeration represents status passed from the Host to the RMM during device
+               communication.
+               The RmiDevCommStatus enumeration is a concrete type.
+               The width of the RmiDevCommStatus enumeration is 8 bits.
+               The values of the RmiDevCommStatus enumeration are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+           Encoding      Name                                   Description
+
+           0             RMI_DEV_COMM_NONE                      No device response has been received from the device. Either:
+                                                                    • The device transaction is PENDING, or
+                                                                    • The device transaction is ACTIVE and no device response
+                                                                      has been received from the device.
+           1             RMI_DEV_COMM_RESPONSE                  The device transaction is ACTIVE and a device response has been
+                                                                received from the device.
+           2             RMI_DEV_COMM_ERROR                     Either:
+                                                                    • The device did not provide a device response within the
+                                                                      expected time period, or
+                                                                    • The device indicated an error.
+
+               Unused encodings for the RmiDevCommStatus enumeration are reserved for use by future versions of this
+               specification.
+               The RmiDevCommStatus enumeration is used in the following types:
+                  • RmiDevCommEnter
+
+B4.6.21 RmiEmulatedMmio type
+
+                                                                    T
+               The RmiEmulatedMmio enumeration represents whether the host has completed emulation for an Emulatable
+               Abort.
+
+                                                      AF
+               The RmiEmulatedMmio enumeration is a concrete type.
+               The width of the RmiEmulatedMmio enumeration is 1 bits.
+               The values of the RmiEmulatedMmio enumeration are shown in the following table.
+
+           Encoding      Name
+                                               R                Description
+
+           0
+           1
+                                       D
+                         RMI_NOT_EMULATED_MMIO
+                         RMI_EMULATED_MMIO
+                                                                Host has not completed emulation for an Emulatable Abort.
+                                                                Host has completed emulation for an Emulatable Abort.
+
+               The RmiEmulatedMmio enumeration is used in the following types:
+                  • RmiRecEnterFlags
+
+B4.6.22 RmiFeature type
+               The RmiFeature enumeration represents whether a feature is supported or enabled.
+               The RmiFeature enumeration is a concrete type.
+               The width of the RmiFeature enumeration is 1 bits.
+               The values of the RmiFeature enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_FEATURE_FALSE                           • During discovery: Feature is not supported.
+                                                                     • During selection: Feature is not enabled.
+
+Chapter B4. Realm Management Interface
+
+           Encoding        Name                                  Description
+
+           1               RMI_FEATURE_TRUE                           • During discovery: Feature is supported.
+                                                                      • During selection: Feature is enabled.
+
+               The RmiFeature enumeration is used in the following types:
+                  • RmiVdevFlags
+                  • RmiRealmFlags0
+                  • RmiPsmmuFlags
+                  • RmiPsmmuInfoFlags
+                  • RmiFeatureRegister3
+                  • RmiFeatureRegister1
+                  • RmiFeatureRegister2
+                  • RmiRealmFlags1
+                  • RmiFeatureRegister0
+
+B4.6.23 RmiFeatureRegister0 type
+               The RmiFeatureRegister0 fieldset contains RMI feature register 0.
+               The RmiFeatureRegister0 fieldset is a concrete type.
+
+                                                                     T
+               The width of the RmiFeatureRegister0 fieldset is 64 bits.
+               See also:
+                                                       AF
+                  • Chapter A3 Feature discovery and configuration
+                  • B4.5.6 RMI_FEATURES command
+               The fields of the RmiFeatureRegister0 fieldset are shown in the following diagram.
+                                                R
+                                        D
+
+               The fields of the RmiFeatureRegister0 fieldset are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+ Name                              Bits     Description                                           Value
+
+ S2SZ                              7:0      Maximum Realm IPA width supported by the              UInt8
+                                            RMM.
+                                            Specifies the input address size for stage 2
+                                            translation to be 2 ^ S2SZ. Note this format
+                                            expresses the IPA width directly and is
+                                            therefore different from the VTCR_EL2.T0SZ
+                                            encoding.
+ LPA2                              8        Whether LPA2 is supported.                            RmiFeature
+ SVE                               9        Whether SVE is supported.                             RmiFeature
+ SVE_VL                            13:10    Maximum SVE vector length supported by the            UInt4
+                                            RMM.
+                                            The effective vector length supported by the
+                                            RMM is (SVE_VL + 1)*128, similar to the
+                                            value of ZCR_ELx.LEN.
+ NUM_BPS                           19:14    Number of breakpoints available, minus one.           UInt6
+                                            The value 0 is reserved.
+ NUM_WPS                           25:20    Number of watchpoints available, minus one.           UInt6
+                                            The value 0 is reserved.
+ PMU                               26                              T
+                                            Whether PMU is supported                              RmiFeature
+ PMU_NUM_CTRS
+ L0GPT_BLOCK_DELEGATE
+                                   31:27
+                                   32
+                                                     AF
+                                            Number of PMU counters available
+                                            Whether delegation and undelegation of
+                                            memory region with no L1GPT is supported
+                                                                                                  UInt5
+                                                                                                  RmiFeature
+
+ S2OASZ                            40:33
+                                              R
+                                            Output address size.
+                                            Specifies the output address size for stage 2
+                                                                                                  UInt8
+
+                                        D   translation to be 2 ^ S2OASZ. Note this
+                                            format expresses the output address size
+                                            directly and is therefore different from the
+                                            VTCR_EL2.PS encoding.
+                                   63:41    Reserved                                              MBZ
+
+B4.6.24 RmiFeatureRegister1 type
+             The RmiFeatureRegister1 fieldset contains RMI feature register 1.
+             The RmiFeatureRegister1 fieldset is a concrete type.
+             The width of the RmiFeatureRegister1 fieldset is 64 bits.
+             See also:
+                • Chapter A3 Feature discovery and configuration
+                • Chapter A11 Realm memory encryption
+                • B4.5.6 RMI_FEATURES command
+             The fields of the RmiFeatureRegister1 fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiFeatureRegister1 fieldset are shown in the following table.
+
+ Name                              Bits     Description                                           Value
+
+ RMI_GRAN_SZ_4KB                   0        Whether an RMI Granule size of 4KB is                 RmiFeature
+                                            supported
+ RMI_GRAN_SZ_16KB                  1        Whether an RMI Granule size of 16KB is                RmiFeature
+                                            supported              T
+ RMI_GRAN_SZ_64KB
+
+ HASH_SHA_256
+                                   2
+
+                                   3
+                                                     AF
+                                            Whether an RMI Granule size of 64KB is
+                                            supported
+                                            Whether SHA-256 is supported
+                                                                                                  RmiFeature
+
+                                                                                                  RmiFeature
+ HASH_SHA_384
+ HASH_SHA_512
+                                   4
+                                   5          R
+                                            Whether SHA-384 is supported
+                                            Whether SHA-512 is supported
+                                                                                                  RmiFeature
+                                                                                                  RmiFeature
+ MAX_RECS_ORDER                    9:6
+                                       D    Order of the maximum number of RECs which
+                                            can be created per Realm.
+                                            The maximum number of RECs is computed as
+                                                                                                  UInt4
+
+                                            follows:
+                                            MAX_RECS = (2 ^ MAX_RECS_ORDER)- 1
+
+ L0GPTSZ                           13:10    Value of Level 0 GPT entry size as encoded in         Bits4
+                                            GPCCR_EL3.L0GPTSZ.
+ PPS                               16:14    Value of Protected Physical Address Size as           Bits3
+                                            encoded in GPCCR_EL3.PPS.
+                                   63:17    Reserved                                              MBZ
+
+B4.6.25 RmiFeatureRegister2 type
+             The RmiFeatureRegister2 fieldset contains RMI feature register 2.
+             The RmiFeatureRegister2 fieldset is a concrete type.
+             The width of the RmiFeatureRegister2 fieldset is 64 bits.
+             See also:
+                • Chapter A3 Feature discovery and configuration
+                • B4.5.6 RMI_FEATURES command
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiFeatureRegister2 fieldset are shown in the following diagram.
+
+             The fields of the RmiFeatureRegister2 fieldset are shown in the following table.
+
+ Name                              Bits     Description                                           Value
+
+ DA                                0        Whether Realm device assignment is supported          RmiFeature
+ DA_COH                            1
+                                                                   T
+                                            Whether coherent device assignment is
+                                            supported.
+                                                                                                  RmiFeature
+
+ VSMMU                             2
+                                                     AF
+                                            If DA == RMI_FEATURE_FALSE, this flag
+                                            should also be RMI_FEATURE_FALSE.
+                                            Whether virtual SMMU is supported.
+                                            If DA == RMI_FEATURE_FALSE, this flag
+                                                                                                  RmiFeature
+
+ ATS                               3
+                                              R
+                                            should also be RMI_FEATURE_FALSE.
+                                            Whether ATS is supported.                             RmiFeature
+
+ PDEV_MAX_VDEVS_ORDER 7:4
+                                       D    If DA == RMI_FEATURE_FALSE, this flag
+                                            should also be RMI_FEATURE_FALSE.
+                                            Order of the maximum number of VDEVs                  UInt4
+                                            which can be created per PDEV.
+                                            The maximum number of VDEVs is computed
+                                            as follows:
+                                            PDEV_MAX_VDEVS =
+                                                (2^PDEV_MAX_VDEVS_ORDER) - 1
+
+ VDEV_KROU                         8        Whether VDEV key refresh on unlock is                 RmiFeature
+                                            required
+ NON_TEE_STREAM                    9        Whether NON_TEE PDEV stream type is                   RmiFeature
+                                            supported
+
+Chapter B4. Realm Management Interface
+
+ Name                              Bits     Description                                           Value
+
+ REALM_MAX_VDEVS_ORDE 14:10                 Order of the maximum number of VDEVs                  UInt5
+ R                                          which can be created per Realm.
+                                            If DA == RMI_FEATURE_FALSE, this field
+                                            is 0.
+                                            The value 0 is reserved. For values 1 to 31, the
+                                            maximum number of VDEVs is computed as
+                                            follows:
+                                            REALM_MAX_VDEVS =
+                                                2^REALM_MAX_VDEVS_ORDER
+
+                                   63:15    Reserved                                              MBZ
+
+B4.6.26 RmiFeatureRegister3 type
+             The RmiFeatureRegister3 fieldset contains RMI feature register 3.
+             The RmiFeatureRegister3 fieldset is a concrete type.
+             The width of the RmiFeatureRegister3 fieldset is 64 bits.
+             See also:
+                • Chapter A3 Feature discovery and configuration
+                                                                   T
+                • B4.5.6 RMI_FEATURES command
+                                                     AF
+             The fields of the RmiFeatureRegister3 fieldset are shown in the following diagram.
+
+                                              R
+                                      D
+
+             The fields of the RmiFeatureRegister3 fieldset are shown in the following table.
+
+ Name                              Bits     Description                                           Value
+
+ MAX_NUM_AUX_PLANES                3:0      Maximum number of auxiliary Planes                    UInt4
+ RTT_PLANE                         5:4      RTT usage models supported for multi-Plane            RmiRttPlaneFeature
+                                            Realms.
+                                            If only a single Plane is supported (that is,
+                                            MAX_NUM_AUX_PLANES is 0), this field is
+                                            RES 0.
+
+Chapter B4. Realm Management Interface
+
+ Name                                Bits     Description                                           Value
+
+ RTT_S2AP_INDIRECT                   6        Whether S2AP indirect encoding is supported           RmiFeature
+                                     63:7     Reserved                                              MBZ
+
+B4.6.27 RmiFeatureRegister4 type
+               The RmiFeatureRegister4 fieldset contains RMI feature register 4.
+               The RmiFeatureRegister4 fieldset is a concrete type.
+               The width of the RmiFeatureRegister4 fieldset is 64 bits.
+               See also:
+                  • Chapter A3 Feature discovery and configuration
+                  • B4.5.6 RMI_FEATURES command
+               The fields of the RmiFeatureRegister4 fieldset are shown in the following diagram.
+
+                                                                     T
+ Name
+                                                       AF
+               The fields of the RmiFeatureRegister4 fieldset are shown in the following table.
+
+                                     Bits     Description                                           Value
+
+ MEC_COUNT                           63:0
+                                                R
+                                              Number of MECs.                                       UInt64
+
+B4.6.28 RmiForceP0 type                  D
+               The RmiForceP0 enumeration represents whether to force control to return Plane 0.
+               The RmiForceP0 enumeration is a concrete type.
+               The width of the RmiForceP0 enumeration is 1 bits.
+               The values of the RmiForceP0 enumeration are shown in the following table.
+
+           Encoding        Name                                  Description
+
+           0               RMI_NO_FORCE_P0                       Do not affect the Plane to which control is returned.
+           1               RMI_FORCE_P0                          Force control to return to Plane 0.
+
+               The RmiForceP0 enumeration is used in the following types:
+                  • RmiRecEnterFlags
+
+Chapter B4. Realm Management Interface
+
+B4.6.29 RmiGptParState type
+               The RmiGptParState enumeration represents GPT Protected Address Range state.
+               The RmiGptParState enumeration is a concrete type.
+               The width of the RmiGptParState enumeration is 8 bits.
+               The values of the RmiGptParState enumeration are shown in the following table.
+
+           Encoding      Name                                                Description
+
+           0             RMI_GPT_PAR_RESERVED                                PAR is platform-reserved.
+           1             RMI_GPT_PAR_PLAT                                    PAR is platform-allocated.
+           2             RMI_GPT_PAR_HOST_NOT_CREATED                        PAR is host-allocated. The L1GPT has not been
+                                                                             created.
+           3             RMI_GPT_PAR_HOST_CREATED                            PAR is host-allocated. The L1GPT has been created.
+
+               Unused encodings for the RmiGptParState enumeration are reserved for use by future versions of this specification.
+
+B4.6.30 RmiGranuleSize type
+                                                                     T
+               The RmiGranuleSize enumeration represents a Granule size.
+
+                                                       AF
+               The RmiGranuleSize enumeration is a concrete type.
+               The width of the RmiGranuleSize enumeration is 8 bits.
+               The values of the RmiGranuleSize enumeration are shown in the following table.
+
+           Encoding      Name
+                                                R                Description
+
+           0
+           1
+                                        D
+                         RMI_GRANULE_SIZE_4KB
+                         RMI_GRANULE_SIZE_16KB
+                                                                 4KB.
+                                                                 16KB.
+           2             RMI_GRANULE_SIZE_64KB                   64KB.
+
+               Unused encodings for the RmiGranuleSize enumeration are reserved for use by future versions of this specification.
+               The RmiGranuleSize enumeration is used in the following types:
+                  • RmiRmmConfig
+
+B4.6.31 RmiHashAlgorithm type
+               The RmiHashAlgorithm enumeration represents hash algorithm.
+               The RmiHashAlgorithm enumeration is a concrete type.
+               The width of the RmiHashAlgorithm enumeration is 8 bits.
+               The values of the RmiHashAlgorithm enumeration are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+           Encoding        Name                                  Description
+
+           0               RMI_HASH_SHA_256                      SHA-256 (Secure Hash Standard (SHS) [27])
+           1               RMI_HASH_SHA_512                      SHA-512 (Secure Hash Standard (SHS) [27])
+           2               RMI_HASH_SHA_384                      SHA-384 (Secure Hash Standard (SHS) [27])
+
+               Unused encodings for the RmiHashAlgorithm enumeration are reserved for use by future versions of this
+               specification.
+               The RmiHashAlgorithm enumeration is used in the following types:
+                  • RmiPdevParams
+                  • RmiRealmParams
+
+B4.6.32 RmiInjectSea type
+               The RmiInjectSea enumeration represents whether to inject a Synchronous External Abort into the Realm.
+               The RmiInjectSea enumeration is a concrete type.
+               The width of the RmiInjectSea enumeration is 1 bits.
+               The values of the RmiInjectSea enumeration are shown in the following table.
+                                                                     T
+           Encoding
+
+           0
+           1
+                           Name
+
+                           RMI_NO_INJECT_SEA
+                           RMI_INJECT_SEA
+                                                       AF        Description
+
+                                                                 Do not inject an SEA into the Realm.
+                                                                 Inject an SEA into the Realm.
+                                                R
+                                        D
+               The RmiInjectSea enumeration is used in the following types:
+                  • RmiRecEnterFlags
+
+B4.6.33 RmiInterfaceVersion type
+               The RmiInterfaceVersion fieldset contains an RMI interface version.
+               The RmiInterfaceVersion fieldset is a concrete type.
+               The width of the RmiInterfaceVersion fieldset is 64 bits.
+               See also:
+                  • B4.1 RMI version
+                  • B4.5.85 RMI_VERSION command
+               The fields of the RmiInterfaceVersion fieldset are shown in the following diagram.
+
+               The fields of the RmiInterfaceVersion fieldset are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+ Name                               Bits     Description                                            Value
+
+ minor                              15:0     Interface minor version number (the value y in         UInt16
+                                             interface version x.y)
+ major                              30:16    Interface major version number (the value x in         UInt15
+                                             interface version x.y)
+                                    63:31    Reserved                                               MBZ
+
+B4.6.34 RmiIrqCfg type
+               The RmiIrqCfg enumeration represents whether an IRQ is disabled, wired or MSI.
+               The RmiIrqCfg enumeration is a concrete type.
+               The width of the RmiIrqCfg enumeration is 2 bits.
+               The values of the RmiIrqCfg enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_IRQ_DISABLED                            • Interrupt is disabled
+           1             RMI_IRQ_WIRED                              T• Interrupt is of Wired type
+           2             RMI_IRQ_MSI
+                                                      AF             • Interrupt is of MSI type
+
+               Unused encodings for the RmiIrqCfg enumeration are reserved for use by future versions of this specification.
+
+                                               R
+               The RmiIrqCfg enumeration is used in the following types:
+                  • RmiPsmmuFlags
+                  • RmiPsmmuInfoFlags
+
+B4.6.35 RmiL0DptSize type
+                                       D
+               The RmiL0DptSize enumeration represents level 0 DPT block size setting.
+               The RmiL0DptSize enumeration is a concrete type.
+               The width of the RmiL0DptSize enumeration is 8 bits.
+               The values of the RmiL0DptSize enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_L0DPTSZ_1GB                        Level 0 DPT size is 1GB.
+           1             RMI_L0DPTSZ_16GB                       Level 0 DPT size is 16GB.
+           2             RMI_L0DPTSZ_64GB                       Level 0 DPT size is 64GB.
+           3             RMI_L0DPTSZ_512GB                      Level 0 DPT size is 512GB.
+
+               Unused encodings for the RmiL0DptSize enumeration are reserved for use by future versions of this specification.
+
+Chapter B4. Realm Management Interface
+
+B4.6.36 RmiLfaPolicy type
+               The RmiLfaPolicy enumeration represents a Live Firmware Activation policy.
+               The RmiLfaPolicy enumeration is a concrete type.
+               The width of the RmiLfaPolicy enumeration is 2 bits.
+               See also:
+                  • A3.13 Live Firmware Activation
+               The values of the RmiLfaPolicy enumeration are shown in the following table.
+
+           Encoding        Name                                 Description
+
+           0               RMI_LFA_DISALLOW                     LFA is not permitted.
+           1               RMI_LFA_ALLOW                        LFA is permitted.
+
+               Unused encodings for the RmiLfaPolicy enumeration are reserved for use by future versions of this specification.
+               The RmiLfaPolicy enumeration is used in the following types:
+                  • RmiRealmFlags0
+
+B4.6.37 RmiMecPolicy type                                           T
+                                                      AF
+               The RmiMecPolicy enumeration represents a MEC policy.
+               The RmiMecPolicy enumeration is a concrete type.
+               The width of the RmiMecPolicy enumeration is 2 bits.
+                                               R
+               The values of the RmiMecPolicy enumeration are shown in the following table.
+
+           Encoding
+
+           0
+                           Name        D
+                           RMI_MEC_POLICY_SHARED
+                                                                Description
+
+                                                                The MEC protects memory owned by multiple Realms. A MEC
+                                                                with this policy may be referred to as a Shared MEC.
+           1               RMI_MEC_POLICY_PRIVATE               The MEC protects memory owned by a single Realm. A MEC
+                                                                with this policy may be referred to as a Private MEC.
+
+               Unused encodings for the RmiMecPolicy enumeration are reserved for use by future versions of this specification.
+               The RmiMecPolicy enumeration is used in the following types:
+                  • RmiRealmFlags0
+
+B4.6.38 RmiMemCategory type
+               The RmiMemCategory enumeration represents memory category.
+               The RmiMemCategory enumeration is a concrete type.
+               The width of the RmiMemCategory enumeration is 2 bits.
+               The values of the RmiMemCategory enumeration are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+           Encoding        Name                                               Description
+
+           0               RMI_MEM_CATEGORY_CONVENTIONAL                      Conventional memory.
+           1               RMI_MEM_CATEGORY_DEV_NCOH                          Device non-coherent memory.
+           2               RMI_MEM_CATEGORY_DEV_COH                           Device coherent memory.
+           3               RMI_MEM_CATEGORY_NONE                              No memory is present.
+
+B4.6.39 RmiOpCanCancel type
+               The RmiOpCanCancel enumeration represents whether RMI operation can be cancelled.
+               The RmiOpCanCancel enumeration is a concrete type.
+               The width of the RmiOpCanCancel enumeration is 1 bits.
+               The values of the RmiOpCanCancel enumeration are shown in the following table.
+
+           Encoding        Name                                 Description
+
+           0               RMI_OP_CANNOT_CANCEL                 Operation cannot be cancelled.
+           1               RMI_OP_CAN_CANCEL
+                                                                    T
+                                                                Operation can be cancelled.
+
+                                                      AF
+               The RmiOpCanCancel enumeration is used in the following types:
+                  • RmiResult
+                  • RmiResultDataIncomplete
+
+B4.6.40 RmiOpMemContig type
+                                               R
+                                       D
+               The RmiOpMemContig enumeration represents RMI operation memory contiguity property.
+               The RmiOpMemContig enumeration is a concrete type.
+               The width of the RmiOpMemContig enumeration is 1 bits.
+               See also:
+                  • B4.3.2 Stateful RMI operations
+               The values of the RmiOpMemContig enumeration are shown in the following table.
+
+           Encoding        Name                                 Description
+
+           0               RMI_OP_MEM_NON_CONTIG                Base of each block is aligned to the block size.
+                                                                Blocks are not required to be contiguous.
+           1               RMI_OP_MEM_CONTIG                    A single contiguous region of memory, with the base aligned to
+                                                                the total size.
+
+               The RmiOpMemContig enumeration is used in the following types:
+                  • RmiOpMemDonateReq
+
+Chapter B4. Realm Management Interface
+
+B4.6.41 RmiOpMemDonateReq type
+             The RmiOpMemDonateReq fieldset contains RMI operation memory donation requirements.
+             The RmiOpMemDonateReq fieldset is a concrete type.
+             The width of the RmiOpMemDonateReq fieldset is 64 bits.
+             See also:
+                • B4.3.2 Stateful RMI operations
+             The fields of the RmiOpMemDonateReq fieldset are shown in the following diagram.
+
+                                                                  T
+                                                    AF
+             The fields of the RmiOpMemDonateReq fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ size                             1:0
+                                             R
+                                           Size of each block                                    RmiAddrBlockSize
+ count
+ contig
+                                  15:2
+                                  16
+                                       D   Number of blocks required
+                                           Whether blocks are required to be contiguous
+                                                                                                 UInt14
+                                                                                                 RmiOpMemContig
+ state                            18:17    Required initial state of memory                      RmiOpMemState
+                                  63:22    Reserved                                              SBZ
+
+B4.6.42 RmiOpMemReq type
+             The RmiOpMemReq enumeration represents RMI operation memory transfer requirements.
+             The RmiOpMemReq enumeration is a concrete type.
+             The width of the RmiOpMemReq enumeration is 2 bits.
+             See also:
+                • B4.3.2 Stateful RMI operations
+             The values of the RmiOpMemReq enumeration are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+           Encoding        Name                                  Description
+
+           0               RMI_OP_MEM_REQ_NONE                   The RMI operation does not require memory to be donated or
+                                                                 reclaimed.
+           1               RMI_OP_MEM_REQ_DONATE                 The RMI operation requires memory to be donated.
+           2               RMI_OP_MEM_REQ_RECLAIM The RMI operation requires memory to be reclaimed.
+
+               Unused encodings for the RmiOpMemReq enumeration are reserved for use by future versions of this specification.
+               The RmiOpMemReq enumeration is used in the following types:
+                  • RmiResult
+                  • RmiResultDataIncomplete
+
+B4.6.43 RmiOpMemState type
+               The RmiOpMemState enumeration represents RMI operation memory state.
+               The RmiOpMemState enumeration is a concrete type.
+               The width of the RmiOpMemState enumeration is 2 bits.
+               See also:
+                  • A2.3.4 Granule tracking region                   T
+                  • B4.3.2 Stateful RMI operations
+                                                       AF
+               The values of the RmiOpMemState enumeration are shown in the following table.
+
+           Encoding
+
+           0
+                           Name
+
+                           RMI_OP_MEM_DELEGATED
+                                                R                Description
+
+                                                                 During memory donation, the granule is provided to the RMM in
+                                        D                        the GRAN_DELEGATED state.
+                                                                 During memory reclamnation, the granule is returned to the Host
+                                                                 in the GRAN_DELEGATED state.
+           1               RMI_OP_MEM_UNDELEGATED During memory donation, the granule is provided to the RMM in
+                                                  the GRAN_UNDELEGATED state.
+                                                  During memory reclamnation, the granule is returned to the Host
+                                                  in the GRAN_UNDELEGATED state.
+           2               RMI_OP_MEM_CONDITIONAL                In a request for memory donation, this value indicates that the
+                                                                 required granule state is dependent on its address:
+                                                                     • If the granule is self-describing then the granule is
+                                                                        permitted to be provided to the RMM in either
+                                                                        GRAN_DELEGATED or GRAN_UNDELEGATED state.
+                                                                     • Otherwise the granule is required to be provided to the
+                                                                        RMM in the GRAN_DELEGATED state.
+
+               Unused encodings for the RmiOpMemState enumeration are reserved for use by future versions of this specification.
+               The RmiOpMemState enumeration is used in the following types:
+                  • RmiOpMemDonateReq
+                  • RmiAddrRangeDesc
+                  • RmiAddrSetDesc
+                  • RmiAddrRangeDesc4KB
+
+Chapter B4. Realm Management Interface
+
+                  • RmiAddrRangeDesc64KB
+                  • RmiAddrRangeDesc16KB
+
+B4.6.44 RmiPdevCategory type
+               The RmiPdevCategory enumeration represents PDEV category.
+               The RmiPdevCategory enumeration is a concrete type.
+               The width of the RmiPdevCategory enumeration is 2 bits.
+               The values of the RmiPdevCategory enumeration are shown in the following table.
+
+           Encoding        Name                                                      Description
+
+           0               RMI_PDEV_ROOT_PORT                                        Root Port
+           1               RMI_PDEV_ENDPOINT_ACCEL_OFF_CHIP                          Off-chip accelerator endpoint device
+           2               RMI_PDEV_ENDPOINT_ACCEL_ON_CHIP                           On-chip accelerator endpoint device
+
+               Unused encodings for the RmiPdevCategory enumeration are reserved for use by future versions of this
+               specification.
+
+                                                                     T
+               The RmiPdevCategory enumeration is used in the following types:
+                  • RmiPdevFlags
+
+B4.6.45 RmiPdevFlags type                              AF
+               The RmiPdevFlags fieldset contains flags provided by the Host during PDEV creation.
+
+                                                R
+               The RmiPdevFlags fieldset is a concrete type.
+
+                                        D
+               The width of the RmiPdevFlags fieldset is 64 bits.
+               See also:
+                  • A9.2.1 Physical device attributes
+                  • B3.138 RmiPdevFlagsSupported function
+               The fields of the RmiPdevFlags fieldset are shown in the following diagram.
+
+               The fields of the RmiPdevFlags fieldset are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+ Name                                Bits     Description                                           Value
+
+ spdm                                0        Whether communication with the device uses            RmiPdevSpdm
+                                              SPDM
+ category                            2:1      Device category                                       RmiPdevCategory
+                                     63:3     Reserved                                              SBZ
+
+                The RmiPdevFlags fieldset is used in the following types:
+                   • RmiPdevParams
+
+B4.6.46 RmiPdevParams type
+                The RmiPdevParams structure contains parameters provided by the Host during PDEV creation.
+                The RmiPdevParams structure is a concrete type.
+                The width of the RmiPdevParams structure is 4096 (0x1000) bytes.
+                The members of the RmiPdevParams structure are shown in the following table.
+
+        Name                  Byte offset      Type                                     Description
+
+        flags                 0x0              RmiPdevFlags
+                                                                     T                  Flags
+        hb_base               0x8              Bits64   AF                              Host bridge base
+                                                                                        For PCIe category of devices, the value is the
+                                                                                        ECAM base address.
+        pdev_id               0x10
+                                                R
+                                               Bits64                                   Physical device identifier
+                                                                                        For PCIe category of devices, the value is in
+
+        routing_id
+        id_index
+                              0x18
+
+                              0x20
+                                         D     Bits64
+                                               UInt64
+                                                                                        BDF format.
+                                                                                        Routing identifier
+                                                                                        Device identity index
+        rid_base              0x28             UInt32                                   Base of requester ID range (inclusive).
+                                                                                        For PCIe category of devices, the value is in
+                                                                                        BDF format.
+        rid_top               0x30             UInt32                                   Top of requester ID range (exclusive).
+                                                                                        For PCIe category of devices, the value is in
+                                                                                        BDF format.
+        hash_algo             0x38             RmiHashAlgorithm                         Algorithm used to generate device digests
+
+                Unused bits of the RmiPdevParams structure SBZ.
+
+B4.6.47 RmiPdevSpdm type
+                The RmiPdevSpdm enumeration represents whether communication with the device uses SPDM.
+                The RmiPdevSpdm enumeration is a concrete type.
+                The width of the RmiPdevSpdm enumeration is 1 bits.
+                See also:
+
+Chapter B4. Realm Management Interface
+
+                  • A9.1.2 Device properties
+               The values of the RmiPdevSpdm enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_SPDM_FALSE                         Communication with the device does not use SPDM.
+           1             RMI_SPDM_TRUE                          Communication with the device uses SPDM.
+
+               The RmiPdevSpdm enumeration is used in the following types:
+                  • RmiPdevFlags
+
+B4.6.48 RmiPdevState type
+               The RmiPdevState enumeration represents the state of a PDEV.
+               The RmiPdevState enumeration is a concrete type.
+               The width of the RmiPdevState enumeration is 8 bits.
+               The values of the RmiPdevState enumeration are shown in the following table.
+
+           Encoding      Name                                       T
+                                                                Description
+
+           0
+           1
+           2
+                         RMI_PDEV_NEW
+                         RMI_PDEV_NEEDS_KEY
+                         RMI_PDEV_HAS_KEY
+                                                      AF        Initial state of the device.
+                                                                RMM needs device public key.
+                                                                RMM has device public key.
+           3             RMI_PDEV_READY        R                Secure connection between the RMM and the device has been
+                                                                established.
+           4                           D
+                         RMI_PDEV_STOPPED                       Secure connection between the RMM and the device has been
+                                                                terminated.
+           5             RMI_PDEV_ERROR                         Device has reported a fatal error.
+
+               Unused encodings for the RmiPdevState enumeration are reserved for use by future versions of this specification.
+
+B4.6.49 RmiPdevStreamFlags type
+               The RmiPdevStreamFlags fieldset contains flags provided by the Host during PDEV stream creation.
+               The RmiPdevStreamFlags fieldset is a concrete type.
+               The width of the RmiPdevStreamFlags fieldset is 64 bits.
+               The fields of the RmiPdevStreamFlags fieldset are shown in the following diagram.
+
+               The fields of the RmiPdevStreamFlags fieldset are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+ Name                                Bits     Description                                           Value
+
+                                     63:0     Reserved                                              SBZ
+
+                The RmiPdevStreamFlags fieldset is used in the following types:
+                   • RmiPdevStreamParams
+
+B4.6.50 RmiPdevStreamParams type
+                The RmiPdevStreamParams structure contains parameters provided by the Host during PDEV stream creation.
+                The RmiPdevStreamParams structure is a concrete type.
+                The width of the RmiPdevStreamParams structure is 4096 (0x1000) bytes.
+                The members of the RmiPdevStreamParams structure are shown in the following table.
+
+        Name                 Byte offset       Type                                     Description
+
+        flags                0x0               RmiPdevStreamFlags                       Flags
+        stream_type          0x8               RmiPdevStreamType                        Stream type
+        pdev_1               0x10              Address               T                  Address of first PDEV.
+        pdev_2
+        ide_sid
+        num_addr_range
+                             0x18
+
+                             0x20
+
+                             0x28
+                                               Address
+                                               UInt64
+                                               UInt64
+                                                        AF                              Address of second PDEV
+                                                                                        IDE stream ID
+                                                                                        Number of device address ranges
+        addr_range[16]       0x100
+                                                R
+                                               RmiAddrRange                             CPU physical address range used to access
+                                                                                        the device in the system memory map
+
+                                        D
+                Unused bits of the RmiPdevStreamParams structure SBZ.
+
+B4.6.51 RmiPdevStreamState type
+                The RmiPdevStreamState enumeration represents the state of a PDEV stream.
+                The RmiPdevStreamState enumeration is a concrete type.
+                The width of the RmiPdevStreamState enumeration is 8 bits.
+                The values of the RmiPdevStreamState enumeration are shown in the following table.
+
+           Encoding       Name                                                   Description
+
+           0              RMI_PDEV_STREAM_DISCONNECTED                           Stream is not connected.
+           1              RMI_PDEV_STREAM_CONNECTING                             Stream is connecting.
+           2              RMI_PDEV_STREAM_CONNECTED                              Stream is connected.
+           3              RMI_PDEV_STREAM_DISCONNECTING                          Stream is disconnecting.
+           4              RMI_PDEV_STREAM_KEY_REFRESHING                         Stream keys are being refreshed.
+           5              RMI_PDEV_STREAM_KEY_PURGING                            Stream keys are being purged.
+
+Chapter B4. Realm Management Interface
+
+               Unused encodings for the RmiPdevStreamState enumeration are reserved for use by future versions of this
+               specification.
+
+B4.6.52 RmiPdevStreamType type
+               The RmiPdevStreamType enumeration represents type of a PDEV stream.
+               The RmiPdevStreamType enumeration is a concrete type.
+               The width of the RmiPdevStreamType enumeration is 8 bits.
+               The values of the RmiPdevStreamType enumeration are shown in the following table.
+
+           Encoding      Name                                       Description
+
+           0             RMI_PDEV_STREAM_NON_TEE                    Non-TEE traffic.
+           1             RMI_PDEV_STREAM_NCOH                       Non-coherent traffic between an upstream port and an
+                                                                    endpoint device.
+           2             RMI_PDEV_STREAM_COH                        Coherent traffic between an upstream port and an accelerator
+                                                                    endpoint device.
+           3             RMI_PDEV_STREAM_NCOH_SYS                   Non-coherent traffic to an endpoint device which is protected
+                                                                    by system construction.
+           4             RMI_PDEV_STREAM_COH_SYS
+                                                                    T
+                                                                    Coherent traffic to an endpoint device which is protected by
+                                                                    system construction.
+
+                                                      AF
+               Unused encodings for the RmiPdevStreamType enumeration are reserved for use by future versions of this
+               specification.
+                                               R
+               The RmiPdevStreamType enumeration is used in the following types:
+                  • RmiPdevStreamParams
+
+B4.6.53 RmiPmuOverflowStatus type
+                                       D
+               The RmiPmuOverflowStatus enumeration represents PMU overflow status.
+               The RmiPmuOverflowStatus enumeration is a concrete type.
+               The width of the RmiPmuOverflowStatus enumeration is 8 bits.
+               The values of the RmiPmuOverflowStatus enumeration are shown in the following table.
+
+           Encoding      Name                                             Description
+
+           0             RMI_PMU_OVERFLOW_NOT_ACTIVE                      PMU overflow is not active.
+           1             RMI_PMU_OVERFLOW_ACTIVE                          PMU overflow is active.
+
+               Unused encodings for the RmiPmuOverflowStatus enumeration are reserved for use by future versions of this
+               specification.
+               The RmiPmuOverflowStatus enumeration is used in the following types:
+                  • RmiRecExit
+
+Chapter B4. Realm Management Interface
+
+B4.6.54 RmiPsmmuFlags type
+                The RmiPsmmuFlags fieldset contains flags provided by the Host during PSMMU activation.
+                The RmiPsmmuFlags fieldset is a concrete type.
+                The width of the RmiPsmmuFlags fieldset is 64 bits.
+                The fields of the RmiPsmmuFlags fieldset are shown in the following diagram.
+
+                                                                     T
+                The fields of the RmiPsmmuFlags fieldset are shown in the following table.
+
+ Name
+
+ irq_cfg
+                                     Bits
+
+                                     1:0
+                                                        AF
+                                              Description
+
+                                              IRQ configuration for GError, EventQ and
+                                              PRIQ interrupts.
+                                                                                                    Value
+
+                                                                                                    RmiIrqCfg
+
+ cmdq_sync_irq_wired                 2          R
+                                              Whether command queue sync IRQ is wired               RmiFeature
+ ats
+ pri
+                                     3
+                                     4
+                                     63:5
+                                         D    Whether to enable ATS
+                                              Whether to enable PRI
+                                              Reserved
+                                                                                                    RmiFeature
+                                                                                                    RmiFeature
+                                                                                                    SBZ
+
+                The RmiPsmmuFlags fieldset is used in the following types:
+                   • RmiPsmmuParams
+
+B4.6.55 RmiPsmmuInfo type
+                The RmiPsmmuInfo structure contains PSMMU info.
+                The RmiPsmmuInfo structure is a concrete type.
+                The width of the RmiPsmmuInfo structure is 4096 (0x1000) bytes.
+                The members of the RmiPsmmuInfo structure are shown in the following table.
+
+        Name                 Byte offset       Type                                     Description
+
+        flags                0x0               RmiPsmmuInfoFlags                        Flags
+        gerror_intr_num      0x8               UInt32                                   Gerror interrupt number for wired interrupt
+                                                                                        configuration.
+
+Chapter B4. Realm Management Interface
+
+        Name              Byte offset       Type                                     Description
+
+        eventq_intr_num   0x10              UInt32                                   EventQ interrupt number for wired interrupt
+                                                                                     configuration.
+        priq_intr_num     0x18              UInt32                                   PRIQ interrupt number for wired interrupt
+                                                                                     configuration.
+        cmdq_sync_intr_num
+                         0x20               UInt32                                   CMD sync interrupt number for wired
+                                                                                     interrupt configuration.
+
+             Unused bits of the RmiPsmmuInfo structure SBZ.
+
+B4.6.56 RmiPsmmuInfoFlags type
+             The RmiPsmmuInfoFlags fieldset contains flags which describe the PSMMU configuration.
+             The RmiPsmmuInfoFlags fieldset is a concrete type.
+             The width of the RmiPsmmuInfoFlags fieldset is 64 bits.
+             The fields of the RmiPsmmuInfoFlags fieldset are shown in the following diagram.
+
+                                                                  T
+                                                     AF
+                                             R
+                                      D
+             The fields of the RmiPsmmuInfoFlags fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ irq_cfg                          1:0      IRQ configuration for GError, EventQ and              RmiIrqCfg
+                                           PRIQ interrupts.
+ cmdq_sync_irq_wired              2        Whether command queue sync IRQ is wired               RmiFeature
+ ats                              3        Whether ATS and DPT is supported by this              RmiFeature
+                                           PSMMU.
+                                  63:4     Reserved                                              SBZ
+
+             The RmiPsmmuInfoFlags fieldset is used in the following types:
+                • RmiPsmmuInfo
+
+Chapter B4. Realm Management Interface
+
+B4.6.57 RmiPsmmuIrq type
+               The RmiPsmmuIrq enumeration represents identifies a single PSMMU IRQ.
+               The RmiPsmmuIrq enumeration is a concrete type.
+               The width of the RmiPsmmuIrq enumeration is 2 bits.
+               The values of the RmiPsmmuIrq enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_PSMMU_IRQ_GERROR                   GERROR interrupt.
+           1             RMI_PSMMU_IRQ_EVENTQ                   EVENTQ interrupt.
+           2             RMI_PSMMU_IRQ_PRIQ                     PRIQ interrupt.
+           3             RMI_PSMMU_IRQ_CMDQ                     CMDQ interrupt.
+
+B4.6.58 RmiPsmmuIrqEvent type
+               The RmiPsmmuIrqEvent enumeration represents PSMMU irq event reported back to Host as part of the IRQ
+               notification.
+               The RmiPsmmuIrqEvent enumeration is a concrete type.
+                                                                    T
+               The width of the RmiPsmmuIrqEvent enumeration is 2 bits.
+
+                                                      AF
+               The values of the RmiPsmmuIrqEvent enumeration are shown in the following table.
+
+           Encoding      Name                                         Description
+
+           0
+                                               R
+                         RMI_PSMMU_IRQ_EVENT_NONE                     No host action.
+           1
+           2
+                                       D
+                         RMI_PSMMU_IRQ_EVENT_ERROR
+                         RMI_PSMMU_IRQ_EVENT_PSMMU
+                                                                      SMMU fatal error.
+                                                                      SMMU event.
+           3             RMI_PSMMU_IRQ_EVENT_VSMMU VSMMU event.
+
+               The RmiPsmmuIrqEvent enumeration is used in the following types:
+                  • RmiPsmmuIrqResult
+
+B4.6.59 RmiPsmmuIrqResult type
+               The RmiPsmmuIrqResult fieldset contains flags which describe the result of triaging a PSMMU IRQ.
+               The RmiPsmmuIrqResult fieldset is a concrete type.
+               The width of the RmiPsmmuIrqResult fieldset is 64 bits.
+               The fields of the RmiPsmmuIrqResult fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiPsmmuIrqResult fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ pending                          0        Whether there are further PSMMU IRQs                  RmiBoolean
+                                           pending for processing
+ irq_event                        2:1      PSMMU irq event reported back to the Host             RmiPsmmuIrqEvent
+                                  63:3     Reserved               T                              SBZ
+
+B4.6.60 RmiPsmmuIrqSet type
+                                                    AF
+             The RmiPsmmuIrqSet fieldset contains identifies a set of pending PSMMU IRQs.
+                                             R
+             The RmiPsmmuIrqSet fieldset is a concrete type.
+
+                                      D
+             The width of the RmiPsmmuIrqSet fieldset is 64 bits.
+             The fields of the RmiPsmmuIrqSet fieldset are shown in the following diagram.
+
+             The fields of the RmiPsmmuIrqSet fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ gerror                           0        Whether GERROR interrupt is pending                   RmiBoolean
+
+Chapter B4. Realm Management Interface
+
+ Name                                  Bits     Description                                           Value
+
+ eventq                                1        Whether EVENTQ interrupt is pending                   RmiBoolean
+ priq                                  2        Whether PRIQ interrupt is pending                     RmiBoolean
+ cmdq_sync                             3        Whether CMDQ-SYNC interrupt is pending                RmiBoolean
+                                       63:4     Reserved                                              SBZ
+
+B4.6.61 RmiPsmmuParams type
+                  The RmiPsmmuParams structure contains PSMMU parameters.
+                  The RmiPsmmuParams structure is a concrete type.
+                  The width of the RmiPsmmuParams structure is 4096 (0x1000) bytes.
+                  The members of the RmiPsmmuParams structure are shown in the following table.
+
+          Name                 Byte offset       Type                                     Description
+
+          flags                0x0               RmiPsmmuFlags                            Flags
+          gerr_addr            0x8               Address                                  Physical MSI address of the GERROR
+                                                                       T                  interrupt
+          gerr_data
+          eventq_addr
+                               0x10
+
+                               0x18
+                                                 Bits64
+                                                 Address  AF                              Physical MSI data of the GERROR interrupt
+                                                                                          Physical MSI address of the EVENTQ
+                                                                                          interrupt
+          eventq_data
+          priq_addr
+                               0x20
+
+                               0x28
+                                                  R
+                                                 Bits64
+                                                 Address
+                                                                                          Physical MSI data of the EVENTQ interrupt
+                                                                                          Physical MSI address of the PRIQ interrupt
+          priq_data            0x30        D     Bits64                                   Physical MSI data of the PRIQ interrupt
+
+                  Unused bits of the RmiPsmmuParams structure SBZ.
+
+B4.6.62 RmiPublicKeyParams type
+                  The RmiPublicKeyParams structure contains public key parameters.
+                  The RmiPublicKeyParams structure is a concrete type.
+                  The width of the RmiPublicKeyParams structure is 4096 (0x1000) bytes.
+                  The members of the RmiPublicKeyParams structure are shown in the following table.
+
+          Name                 Byte offset       Type                                     Description
+
+          key_addr             0x0               Address                                  Address of public key data
+          metadata_addr        0x400             Address                                  Address of key metadata
+          key_len              0x800             UInt64                                   Length of key data in bytes
+          metadata_len         0x808             UInt64                                   Length of key metadata in bytes
+
+                  Unused bits of the RmiPublicKeyParams structure SBZ.
+
+Chapter B4. Realm Management Interface
+
+B4.6.63 RmiRealmFlags0 type
+              The RmiRealmFlags0 fieldset contains flags provided by the Host during Realm creation, which are reflected in
+              Realm Initial Measurement.
+              The RmiRealmFlags0 fieldset is a concrete type.
+              The width of the RmiRealmFlags0 fieldset is 64 bits.
+              The fields of the RmiRealmFlags0 fieldset are shown in the following diagram.
+
+                                                                   T
+              The fields of the RmiRealmFlags0 fieldset are shown in the following table.
+
+ Name                              Bits
+
+                                   0
+                                                     AF
+                                            Description
+
+                                            Reserved
+                                                                                                  Value
+
+                                                                                                  SBZ
+ sve                               1          R
+                                            Whether SVE is enabled                                RmiFeature
+ pmu
+ da
+                                   2
+                                   3
+                                   4
+                                       D    Whether PMU is enabled
+                                            Whether Realm device assignment is enabled
+                                            Reserved
+                                                                                                  RmiFeature
+                                                                                                  RmiFeature
+                                                                                                  SBZ
+ lfa_policy                        6:5      Live Firmware Activation policy for                   RmiLfaPolicy
+                                            components within the Realm’s TCB
+ mec_policy                        8:7      MEC policy                                            RmiMecPolicy
+                                   63:9     Reserved                                              SBZ
+
+              The RmiRealmFlags0 fieldset is used in the following types:
+                 • RmiRealmParams
+
+B4.6.64 RmiRealmFlags1 type
+              The RmiRealmFlags1 fieldset contains flags provided by the Host during Realm creation, which are not reflected
+              in Realm Initial Measurement.
+              The RmiRealmFlags1 fieldset is a concrete type.
+              The width of the RmiRealmFlags1 fieldset is 64 bits.
+              The fields of the RmiRealmFlags1 fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiRealmFlags1 fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ rtt_tree_per_plane               0        RMI_FEATURE_FALSE: all Planes share a                 RmiFeature
+                                           single RTT tree
+                                           RMI_FEATURE_TRUE: each Plane has a
+                                           separate RTT tree
+                                                                  T
+                                           If the Realm has no auxiliary Planes then this
+
+ rtt_s2ap_encoding
+ ats
+                                  1
+                                  2
+                                                    AF
+                                           field is ignored.
+                                           S2AP encoding
+                                           Whether Address Translation Service is
+                                                                                                 RmiRttS2APEncoding
+                                                                                                 RmiFeature
+
+                                  63:3       R
+                                           supported for devices assigned to the Realm
+                                           Reserved                                              SBZ
+
+                                      D
+             The RmiRealmFlags1 fieldset is used in the following types:
+                 • RmiRealmParams
+
+B4.6.65 RmiRealmParams type
+             The RmiRealmParams structure contains parameters provided by the Host during Realm creation.
+             The RmiRealmParams structure is a concrete type.
+             The width of the RmiRealmParams structure is 4096 (0x1000) bytes.
+             See also:
+                 • A2.2.6 Realm parameters
+                 • B4.5.40 RMI_REALM_CREATE command
+             The members of the RmiRealmParams structure are shown in the following table.
+
+        Name               Byte offset      Type                                     Description
+
+        flags0             0x0              RmiRealmFlags0                           Flags
+
+Chapter B4. Realm Management Interface
+
+        Name                 Byte offset      Type                                     Description
+
+        s2sz                 0x8              UInt8                                    IPA width.
+                                                                                       Specifies the input address size for stage 2
+                                                                                       translation to be 2 ^ S2SZ. Note this
+                                                                                       format expresses the IPA width directly and
+                                                                                       is therefore different from the
+                                                                                       VTCR_EL2.T0SZ encoding.
+        sve_vl               0x10             UInt8                                   SVE vector length.
+                                                                                      The effective vector length requested is
+                                                                                      (sve_vl + 1)*128, similar to the value of
+                                                                                      ZCR_ELx.LEN.
+
+        num_bps              0x18             UInt8                                   Number of breakpoints, minus one.
+                                                                                      The value 0 is reserved.
+        num_wps              0x20             UInt8                                   Number of watchpoints, minus one.
+                                                                                      The value 0 is reserved.
+        pmu_num_ctrs         0x28             UInt8                                    Number of PMU counters
+        hash_algo            0x30             RmiHashAlgorithm                         Algorithm used to measure the initial state of
+                                                                                       the Realm
+        num_aux_planes
+        rpv
+                             0x38
+
+                             0x400
+                                              UInt64
+                                              Bits512
+                                                                    T                  Number of auxiliary Planes
+                                                                                       Realm Personalization Value
+        ats_plane            0x440            UInt64   AF                              Index of Plane whose stage 2 permissions are
+                                                                                       observed by ATS requests from devices
+                                                                                       assigned to the Realm
+        rtt_base
+        rtt_level_start
+                             0x808
+                                               R
+                                              Address
+                                              Int64
+                                                                                       Base address of primary RTT
+                                                                                       RTT starting level
+        rtt_num_start
+        flags1
+                             0x810
+                             0x818
+
+                             0x820
+                                       D      UInt32
+                                              RmiRealmFlags1
+                                                                                       Number of starting level RTTs
+                                                                                       Flags
+        max_num_vdevs        0x828            UInt64                                   Maximum number of VDEVs which can be
+                                                                                       associated with the Realm.
+        aux_rtt_base[3]      0xf80            Address                                  Base address of auxiliary RTTs
+
+               Unused bits of the RmiRealmParams structure SBZ.
+
+B4.6.66 RmiRecCreateFlags type
+               The RmiRecCreateFlags fieldset contains flags provided by the Host during REC creation.
+               The RmiRecCreateFlags fieldset is a concrete type.
+               The width of the RmiRecCreateFlags fieldset is 64 bits.
+               The fields of the RmiRecCreateFlags fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+                The fields of the RmiRecCreateFlags fieldset are shown in the following table.
+
+ Name                                 Bits    Description                                           Value
+
+ runnable                             0       Whether REC is eligible for execution                 RmiRecRunnable
+                                      63:1    Reserved                                              SBZ
+
+                                                                     T
+                The RmiRecCreateFlags fieldset is used in the following types:
+                   • RmiRecParams
+
+B4.6.67 RmiRecEnter type
+                                                        AF
+                                                R
+                The RmiRecEnter structure contains data passed from the Host to the RMM on REC entry.
+
+                                          D
+                The RmiRecEnter structure is a concrete type.
+                The width of the RmiRecEnter structure is 2048 (0x800) bytes.
+                See also:
+                   • A4.2.1 RmiRecEnter object
+                   • B4.5.45 RMI_REC_ENTER command
+                   • B4.6.69 RmiRecExit type
+                The members of the RmiRecEnter structure are shown in the following table.
+
+        Name                  Byte offset      Type                                     Description
+
+        flags                 0x0              RmiRecEnterFlags                         Flags
+        gprs[31]              0x200            Bits64                                   Registers
+
+                Unused bits of the RmiRecEnter structure SBZ.
+                The RmiRecEnter structure is used in the following types:
+                   • RmiRecRun
+
+Chapter B4. Realm Management Interface
+
+B4.6.68 RmiRecEnterFlags type
+              The RmiRecEnterFlags fieldset contains flags provided by the Host during REC entry.
+              The RmiRecEnterFlags fieldset is a concrete type.
+              The width of the RmiRecEnterFlags fieldset is 64 bits.
+              The fields of the RmiRecEnterFlags fieldset are shown in the following diagram.
+
+                                                                   T
+              The fields of the RmiRecEnterFlags fieldset are shown in the following table.
+
+ Name
+
+ emul_mmio
+                                   Bits
+
+                                   0
+                                                     AF
+                                            Description
+
+                                            Whether the host has completed emulation for
+                                            an Emulatable Data Abort
+                                                                                                  Value
+
+                                                                                                  RmiEmulatedMmio
+
+ inject_sea                        1          R
+                                            Whether to inject a Synchronous External
+                                            Abort into the Realm.
+                                                                                                  RmiInjectSea
+
+ trap_wfi
+ trap_wfe
+                                   2
+                                   3
+                                       D    Whether to trap WFI execution by the Realm.
+                                            Whether to trap WFE execution by the Realm.
+                                                                                                  RmiTrap
+                                                                                                  RmiTrap
+ ripas_response                    4        Host response to RIPAS change request.                RmiResponse
+ s2ap_response                     5        Host response to S2AP change request.                 RmiResponse
+ dev_mem_response                  6        Host response to VDEV mapping validation              RmiResponse
+                                            request.
+ force_p0                          7        Whether to force control to return Plane 0            RmiForceP0
+                                   63:8     Reserved                                              SBZ
+
+              The RmiRecEnterFlags fieldset is used in the following types:
+                  • RmiRecEnter
+
+B4.6.69 RmiRecExit type
+              The RmiRecExit structure contains data passed from the RMM to the Host on REC exit.
+              The RmiRecExit structure is a concrete type.
+              The width of the RmiRecExit structure is 2048 (0x800) bytes.
+              See also:
+
+Chapter B4. Realm Management Interface
+
+                   • A4.3.1 RmiRecExit object
+                   • B4.5.45 RMI_REC_ENTER command
+                   • B4.6.67 RmiRecEnter type
+              The members of the RmiRecExit structure are shown in the following table.
+
+        Name               Byte offset       Type                                     Description
+
+        exit_reason        0x0               RmiRecExitReason                         Exit reason
+        esr                0x100             Bits64                                   Exception Syndrome Register
+        far                0x108             Bits64                                   Fault Address Register
+        hpfar              0x110             Bits64                                   Hypervisor IPA Fault Address register
+        rtt_tree           0x118             UInt64                                   Index of RTT tree active at time of the exit
+        gprs[31]           0x200             Bits64                                   Registers
+        cntp_ctl           0x400             Bits64                                   Counter-timer Physical Timer Control
+                                                                                      Register value
+        cntp_cval          0x408             Bits64                                   Counter-timer Physical Timer CompareValue
+                                                                                      Register value
+        cntv_ctl           0x410             Bits64                                   Counter-timer Virtual Timer Control
+                                                                   T                  Register value
+        cntv_cval
+
+        ripas_base
+                           0x418
+
+                           0x500
+                                             Bits64
+
+                                             Bits64
+                                                      AF                              Counter-timer Virtual Timer CompareValue
+                                                                                      Register value
+                                                                                      Base IPA of target region for pending RIPAS
+                                                                                      change
+        ripas_top          0x508              R
+                                             Bits64                                   Top IPA of target region for pending RIPAS
+                                                                                      change
+        ripas_value
+        s2ap_base
+                           0x510
+                           0x520
+                                      D      RmiRipas
+                                             Bits64
+                                                                                      RIPAS value of pending RIPAS change
+                                                                                      Base IPA of target region for pending S2AP
+                                                                                      change
+        s2ap_top           0x528             Bits64                                   Top IPA of target region for pending S2AP
+                                                                                      change
+        vdev_id_1          0x530             Bits64                                   Virtual device ID 1
+        vdev_id_2          0x538             Bits64                                   Virtual device ID 2
+        dev_mem_base       0x540             Bits64                                   Base IPA of target region for VDEV
+                                                                                      mapping validation
+        dev_mem_top        0x548             Bits64                                  Top IPA of target region for VDEV mapping
+                                                                                     validation
+        dev_mem_pa         0x550             Address                                  Base PA of device memory region
+        imm                0x600             Bits16                                   Host call immediate value
+        plane              0x608             UInt64                                   Plane index
+        pmu_ovf_status     0x700             RmiPmuOverflowStatus                     PMU overflow status
+        vsmmu              0x710             Address                                  Virtual SMMU base IPA
+
+Chapter B4. Realm Management Interface
+
+                Unused bits of the RmiRecExit structure MBZ.
+                The RmiRecExit structure is used in the following types:
+                   • RmiRecRun
+
+B4.6.70 RmiRecExitReason type
+                The RmiRecExitReason enumeration represents the reason for a REC exit.
+                The RmiRecExitReason enumeration is a concrete type.
+                The width of the RmiRecExitReason enumeration is 8 bits.
+                The values of the RmiRecExitReason enumeration are shown in the following table.
+
+           Encoding         Name                                                 Description
+
+           0                RMI_EXIT_SYNC                                        REC exit due to synchronous exception
+           1                RMI_EXIT_IRQ                                         REC exit due to IRQ
+           2                RMI_EXIT_FIQ                                         REC exit due to FIQ
+           3                RMI_EXIT_PSCI                                        REC exit due to PSCI
+           4                RMI_EXIT_RIPAS_CHANGE                                REC exit due to RIPAS change pending
+           5                RMI_EXIT_HOST_CALL                       T           REC exit due to Host call
+           6
+           7
+           8
+                            RMI_EXIT_SERROR
+                            RMI_EXIT_S2AP_CHANGE
+                                                       AF
+                            RMI_EXIT_VDEV_VALIDATE_MAPPING
+                                                                                 REC exit due to SError
+                                                                                 REC exit due to S2AP change pending
+                                                                                 REC exit due to VDEV mapping validation
+           10                                   R
+                            RMI_EXIT_VSMMU_COMMAND                               REC exit due to VSMMU command
+
+                                        D
+                Unused encodings for the RmiRecExitReason enumeration are reserved for use by future versions of this
+                specification.
+                The RmiRecExitReason enumeration is used in the following types:
+                   • RmiRecExit
+
+B4.6.71 RmiRecMpidr type
+                The RmiRecMpidr fieldset contains MPIDR value which identifies a REC.
+                The RmiRecMpidr fieldset is a concrete type.
+                The width of the RmiRecMpidr fieldset is 64 bits.
+                See also:
+                   • B4.5.43 RMI_REC_CREATE command
+                The fields of the RmiRecMpidr fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+                The fields of the RmiRecMpidr fieldset are shown in the following table.
+
+ Name                                 Bits    Description                                           Value
+
+ aff0                                 3:0     Affinity level 0                                      Bits4
+                                      7:4     Reserved                                              SBZ
+ aff1                                 15:8    Affinity level 1                                      Bits8
+ aff2                                 23:16   Affinity level 2                                      Bits8
+ aff3                                 31:24   Affinity level 3                                      Bits8
+                                      63:32   Reserved                                              SBZ
+
+                The RmiRecMpidr fieldset is used in the following types:
+                   • RmiRecParams
+
+B4.6.72 RmiRecParams type
+                The RmiRecParams structure contains parameters provided by the Host during REC creation.
+                The RmiRecParams structure is a concrete type.
+                                                                     T
+                The width of the RmiRecParams structure is 4096 (0x1000) bytes.
+
+        Name
+                                                        AF
+                The members of the RmiRecParams structure are shown in the following table.
+
+                              Byte offset      Type                                     Description
+
+        flags                 0x0               R
+                                               RmiRecCreateFlags                        Flags
+        mpidr
+        pc
+        gprs[8]
+                              0x100
+
+                              0x200
+                              0x300
+                                         D     RmiRecMpidr
+                                               Bits64
+                                               Bits64
+                                                                                        MPIDR of the REC
+                                                                                        Program counter
+                                                                                        General-purpose registers
+
+                Unused bits of the RmiRecParams structure SBZ.
+
+B4.6.73 RmiRecRun type
+                The RmiRecRun structure contains fields used to share information between RMM and Host during REC entry
+                and REC exit.
+                The RmiRecRun structure is a concrete type.
+                The width of the RmiRecRun structure is 4096 (0x1000) bytes.
+                See also:
+                   • A4.2.1 RmiRecEnter object
+                   • A4.3.1 RmiRecExit object
+                   • B4.5.45 RMI_REC_ENTER command
+                The members of the RmiRecRun structure are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+        Name                  Byte offset       Type                                     Description
+
+        enter                 0x0               RmiRecEnter                              Entry information
+        exit                  0x800             RmiRecExit                               Exit information
+
+B4.6.74 RmiRecRunnable type
+                The RmiRecRunnable enumeration represents whether a REC is eligible for execution.
+                The RmiRecRunnable enumeration is a concrete type.
+                The width of the RmiRecRunnable enumeration is 1 bits.
+                The values of the RmiRecRunnable enumeration are shown in the following table.
+
+           Encoding         Name                                  Description
+
+           0                RMI_NOT_RUNNABLE                      Not eligible for execution.
+           1                RMI_RUNNABLE                          Eligible for execution.
+
+                                                                      T
+                The RmiRecRunnable enumeration is used in the following types:
+                   • RmiRecCreateFlags
+
+B4.6.75 RmiResponse type
+                                                        AF
+                The RmiResponse enumeration represents whether the Host accepted or rejected a Realm request.
+
+                                                 R
+                The RmiResponse enumeration is a concrete type.
+
+                                         D
+                The width of the RmiResponse enumeration is 1 bits.
+                The values of the RmiResponse enumeration are shown in the following table.
+
+           Encoding         Name                                  Description
+
+           0                RMI_RESPONSE_ACCEPT                   Host accepted the Realm request.
+           1                RMI_RESPONSE_REJECT                   Host rejected the Realm request.
+
+                The RmiResponse enumeration is used in the following types:
+                   • RmiRecEnterFlags
+
+B4.6.76 RmiResult type
+                The RmiResult fieldset contains a return code from an RMI command.
+                The RmiResult fieldset is a concrete type.
+                The width of the RmiResult fieldset is 64 bits.
+                See also:
+                   • Chapter B1 Commands
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiResult fieldset are shown in the following diagram.
+
+             The fields of the RmiResult fieldset are shown in the following table.
+
+ Name                              Bits     Description                                           Value
+
+ status                            7:0      Status of the command                                 RmiStatusCode
+ data                              63:8     Conditional                                           See below
+
+             Encodings for field data:
+
+             Name            Condition                                                    Fieldset
+
+             incomplete      status == RMI_INCOMPLETE                                     RmiResultDataIncomplete
+             level           status IN {                                                  RmiResultDataLevel
+                                 RMI_ERROR_RTT,
+                                 RMI_ERROR_RTT_AUX,
+                                                                   T
+             level_addr
+                             }
+                                 RMI_ERROR_PSMMU_ST
+
+                             status IN {
+                                                     AF                                   RmiResultDataLevelAddr
+                                 RMI_ERROR_TRACKING,
+                                              R
+                                 RMI_ERROR_GPT,
+                                 RMI_ERROR_DPT
+
+             null
+                             }
+                             !status IN {D
+                                 RMI_ERROR_DPT,
+                                 RMI_ERROR_GPT,
+                                                                                          RmiResultDataNull
+
+                                 RMI_ERROR_TRACKING,
+                                 RMI_ERROR_RTT,
+                                 RMI_ERROR_RTT_AUX,
+                                 RMI_ERROR_PSMMU_ST,
+                                 RMI_INCOMPLETE
+                             }
+
+B4.6.77 RmiResultDataIncomplete type
+             The RmiResultDataIncomplete fieldset contains encoding for additional data from an RMI command which
+             returned RMI_INCOMPLETE.
+             The RmiResultDataIncomplete fieldset is a concrete type.
+             The width of the RmiResultDataIncomplete fieldset is 56 bits.
+             The fields of the RmiResultDataIncomplete fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiResultDataIncomplete fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ mem                              1:0      Memory transfer requirements                          RmiOpMemReq
+ cancel                           2        Whether operation can be cancelled                    RmiOpCanCancel
+                                  55:3     Reserved                                              MBZ
+
+             The RmiResultDataIncomplete fieldset is used in the following types:
+                • RmiResult
+
+B4.6.78 RmiResultDataLevel type
+                                                                  T
+             The RmiResultDataLevel fieldset contains encoding for additional data from an RMI command which indicates a
+             level.
+                                                    AF
+             The RmiResultDataLevel fieldset is a concrete type.
+             The width of the RmiResultDataLevel fieldset is 56 bits.
+
+                                             R
+             The fields of the RmiResultDataLevel fieldset are shown in the following diagram.
+
+                                      D
+             The fields of the RmiResultDataLevel fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ level                            7:0      Level at which access to a table or other data        UInt8
+                                           structure terminated
+                                  55:8     Reserved                                              MBZ
+
+             The RmiResultDataLevel fieldset is used in the following types:
+                • RmiResult
+
+B4.6.79 RmiResultDataLevelAddr type
+             The RmiResultDataLevelAddr fieldset contains encoding for additional data from an RMI command which
+             indicates a level and physical address.
+             The RmiResultDataLevelAddr fieldset is a concrete type.
+             The width of the RmiResultDataLevelAddr fieldset is 56 bits.
+             The fields of the RmiResultDataLevelAddr fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+               The fields of the RmiResultDataLevelAddr fieldset are shown in the following table.
+
+ Name                               Bits     Description                                           Value
+
+ level                              7:0      Level at which access to a table or other data        UInt8
+                                             structure terminated
+ addr                               47:8     Address at which access to a table terminated,        Bits40
+                                             shifted right by the alignment of RMI granule
+                                             size
+                                    55:48    Reserved                                              MBZ
+
+               The RmiResultDataLevelAddr fieldset is used in the following types:
+                  • RmiResult
+
+B4.6.80 RmiResultDataNull type
+               The RmiResultDataNull fieldset contains encoding for null additional data from an RMI command.
+               The RmiResultDataNull fieldset is a concrete type.   T
+                                                      AF
+               The width of the RmiResultDataNull fieldset is 56 bits.
+               The fields of the RmiResultDataNull fieldset are shown in the following diagram.
+
+                                               R
+ Name
+                                       D
+               The fields of the RmiResultDataNull fieldset are shown in the following table.
+
+                                    Bits     Description                                           Value
+
+                                    55:0     Reserved                                              MBZ
+
+               The RmiResultDataNull fieldset is used in the following types:
+                  • RmiResult
+
+B4.6.81 RmiRipas type
+               The RmiRipas enumeration represents realm IPA state.
+               The RmiRipas enumeration is a concrete type.
+               The width of the RmiRipas enumeration is 8 bits.
+               The values of the RmiRipas enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_RIPAS_EMPTY                        Address where no Realm resources are mapped.
+
+Chapter B4. Realm Management Interface
+
+           Encoding      Name                                   Description
+
+           1             RMI_RIPAS_RAM                          Address where private code or data owned by the Realm is
+                                                                mapped.
+           2             RMI_RIPAS_DESTROYED                    Address which is inaccessible to the Realm due to an action taken
+                                                                by the Host.
+           3             RMI_RIPAS_DEV                          Address where memory of an assigned Realm device is mapped.
+
+               Unused encodings for the RmiRipas enumeration are reserved for use by future versions of this specification.
+               The RmiRipas enumeration is used in the following types:
+                  • RmiRecExit
+
+B4.6.82 RmiRmmConfig type
+               The RmiRmmConfig structure contains global configuration of the RMM.
+               The RmiRmmConfig structure is a concrete type.
+               The width of the RmiRmmConfig structure is 4096 (0x1000) bytes.
+               The members of the RmiRmmConfig structure are shown in the following table.
+                                                                    T
+        Name                Byte offset
+
+        tracking_region_size0x0
+                                              Type
+
+                                              UInt8
+                                                      AF                               Description
+
+                                                                                      Tracking region size
+                                                                                      The encoding of this value depends on the
+
+                                               R                                      RMI Granule size, as follows:
+                                                                                      RMI Granule size = 4KB
+                                                                                          • 0: Tracking region size = 1GB
+                                       D                                              RMI Granule size = 16KB
+                                                                                          • 0: Tracking region size = 32MB
+                                                                                          • 1: Tracking region size = 64GB
+                                                                                      RMI Granule size = 64KB
+                                                                                          • 0: Tracking region size = 512MB
+                                                                                          • 1: Tracking region size = 4TB
+                                                                                      All other values are reserved.
+        rmi_granule_size 0x8                  RmiGranuleSize                          RMI Granule size
+
+               Unused bits of the RmiRmmConfig structure SBZ.
+
+B4.6.83 RmiRmmState type
+               The RmiRmmState enumeration represents RMM state.
+               The RmiRmmState enumeration is a concrete type.
+               The width of the RmiRmmState enumeration is 8 bits.
+               The values of the RmiRmmState enumeration are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+           Encoding      Name                                    Description
+
+           0             RMI_RMM_STATE_INIT                      Initial state of the RMM.
+           1             RMI_RMM_STATE_ACTIVE                    RMM is active.
+
+               Unused encodings for the RmiRmmState enumeration are reserved for use by future versions of this specification.
+
+B4.6.84 RmiRttAddrType type
+               The RmiRttAddrType enumeration represents meaning of an address value which is the input or output of an RTT
+               command.
+               The RmiRttAddrType enumeration is a concrete type.
+               The width of the RmiRttAddrType enumeration is 2 bits.
+               The values of the RmiRttAddrType enumeration are shown in the following table.
+
+           Encoding      Name                                    Description
+
+           0             RMI_ADDR_TYPE_NONE                      Address value is ignored
+           1
+           2
+                         RMI_ADDR_TYPE_SINGLE
+                         RMI_ADDR_TYPE_LIST
+                                                                     T
+                                                                 Address value is a single RMI Address Range Descriptor
+                                                                 Address value is the address of a Granule that holds a list of RMI
+
+                                                       AF        Address Range Descriptors
+
+               Unused encodings for the RmiRttAddrType enumeration are reserved for use by future versions of this specification.
+                                                R
+               The RmiRttAddrType enumeration is used in the following types:
+                  • RmiRttUnmapFlags
+                  • RmiRttUnprotMapFlags
+                  • RmiRttProtMapFlags
+                                        D
+B4.6.85 RmiRttAuxBlock type
+               The RmiRttAuxBlock enumeration represents control behaviour of auxiliary RTT mapping operation when target
+               IPA range is a subset of a block mapping in the auxiliary RTT tree.
+               The RmiRttAuxBlock enumeration is a concrete type.
+               The width of the RmiRttAuxBlock enumeration is 1 bits.
+               The values of the RmiRttAuxBlock enumeration are shown in the following table.
+
+           Encoding      Name                                              Description
+
+           0             RMI_RTT_AUX_BLOCK_NO_CREATE                       Do not create a block mapping in the auxiliary RTT tree
+           1             RMI_RTT_AUX_BLOCK_CREATE                          Create a block mapping in the auxiliary RTT tree
+
+               The RmiRttAuxBlock enumeration is used in the following types:
+                  • RmiRttAuxMapFlags
+
+Chapter B4. Realm Management Interface
+
+B4.6.86 RmiRttAuxInvalidPri type
+               The RmiRttAuxInvalidPri enumeration represents control behaviour of auxiliary RTT mapping operation when
+               primary RTTE is invalid.
+               The RmiRttAuxInvalidPri enumeration is a concrete type.
+               The width of the RmiRttAuxInvalidPri enumeration is 1 bits.
+               The values of the RmiRttAuxInvalidPri enumeration are shown in the following table.
+
+           Encoding      Name                                                       Description
+
+           0             RMI_RTT_AUX_INVALID_PRI_STOP                               Stop the operation and return an error to the
+                                                                                    caller
+           1             RMI_RTT_AUX_INVALID_PRI_CONTINUE                           Set auxiliary RTTE to invalid and continue the
+                                                                                    operation
+
+               The RmiRttAuxInvalidPri enumeration is used in the following types:
+                  • RmiRttAuxMapFlags
+
+B4.6.87 RmiRttAuxMapFlags type
+                                                                    T
+               The RmiRttAuxMapFlags fieldset contains flags provided by the Host to commands which create mappings in an
+               auxiliary RTT tree.
+                                                      AF
+               The RmiRttAuxMapFlags fieldset is a concrete type.
+               The width of the RmiRttAuxMapFlags fieldset is 64 bits.
+
+                                               R
+               The fields of the RmiRttAuxMapFlags fieldset are shown in the following diagram.
+
+                                        D
+
+               The fields of the RmiRttAuxMapFlags fieldset are shown in the following table.
+
+ Name                               Bits     Description                                           Value
+
+ tree_index                         1:0      Index of auxiliary RTT tree                           UInt2
+ block                              2        Control behaviour when target IPA range is a          RmiRttAuxBlock
+                                             subset of a block mapping in the auxiliary RTT
+                                             tree
+
+Chapter B4. Realm Management Interface
+
+ Name                               Bits     Description                                           Value
+
+ invalid_pri                        3        Control behaviour when primary RTTE is                RmiRttAuxInvalidPri
+                                             invalid
+                                    63:4     Reserved                                              SBZ
+
+B4.6.88 RmiRttAuxUnmapFlags type
+               The RmiRttAuxUnmapFlags fieldset contains flags provided by the Host to commands which remove mappings in
+               an auxiliary RTT tree.
+               The RmiRttAuxUnmapFlags fieldset is a concrete type.
+               The width of the RmiRttAuxUnmapFlags fieldset is 64 bits.
+               The fields of the RmiRttAuxUnmapFlags fieldset are shown in the following diagram.
+
+                                                                    T
+                                                      AF
+                                               R
+                                        D
+               The fields of the RmiRttAuxUnmapFlags fieldset are shown in the following table.
+
+ Name                               Bits     Description                                           Value
+
+ tree_index                         1:0      Index of auxiliary RTT tree                           UInt2
+                                    63:2     Reserved                                              SBZ
+
+B4.6.89 RmiRttEntryState type
+               The RmiRttEntryState enumeration represents the state of an RTTE.
+               The RmiRttEntryState enumeration is a concrete type.
+               The width of the RmiRttEntryState enumeration is 8 bits.
+               The values of the RmiRttEntryState enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_RTTE_VOID                          This RTTE is not associated with any Granule.
+
+Chapter B4. Realm Management Interface
+
+           Encoding        Name                                 Description
+
+           1               RMI_RTTE_DATA                        The output address of this RTTE points to:
+                                                                    • a DATA Granule, if the input address is a Protected IPA, or
+                                                                    • any Granule-aligned address within NS PAS, if the input
+                                                                      address is an Unprotected IPA.
+           2               RMI_RTTE_TABLE                       The output address of this RTTE points to the next-level RTT.
+           3               RMI_RTTE_NARCH_DEV                   The output address of this RTTE points to an GRAN_DEV
+                                                                Granule.
+           4               RMI_RTTE_AUX_DESTROYED               An auxiliary RTT was destroyed.
+           5               RMI_RTTE_ARCH_DEV                    The output address of this RTTE points to a VSMMU Granule.
+
+               Unused encodings for the RmiRttEntryState enumeration are reserved for use by future versions of this
+               specification.
+
+B4.6.90 RmiRttPlaneFeature type
+               The RmiRttPlaneFeature enumeration represents RTT usage models supported for multi-Plane Realms.
+               The RmiRttPlaneFeature enumeration is a concrete type.
+                                                                    T
+               The width of the RmiRttPlaneFeature enumeration is 2 bits.
+               See also:
+                  • A3.11 Support for auxiliary Planes
+                                                      AF
+               The values of the RmiRttPlaneFeature enumeration are shown in the following table.
+
+           Encoding        Name
+                                               R                    Description
+
+           0
+           1
+                                       D
+                           RMI_RTT_PLANE_AUX
+                           RMI_RTT_PLANE_AUX_SINGLE
+                                                                    A multi-Plane Realm uses auxiliary RTTs
+                                                                    A multi-Plane Realm can be configured to either use auxiliary
+                                                                    RTTs, or a single RTT
+           2               RMI_RTT_PLANE_SINGLE                     A multi-Plane Realm uses a single RTT
+
+               Unused encodings for the RmiRttPlaneFeature enumeration are reserved for use by future versions of this
+               specification.
+               The RmiRttPlaneFeature enumeration is used in the following types:
+                  • RmiFeatureRegister3
+
+B4.6.91 RmiRttProtMapFlags type
+               The RmiRttProtMapFlags fieldset contains flags provided by the Host to commands which create mappings in
+               Protected IPA space.
+               The RmiRttProtMapFlags fieldset is a concrete type.
+               The width of the RmiRttProtMapFlags fieldset is 64 bits.
+               The fields of the RmiRttProtMapFlags fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+               The fields of the RmiRttProtMapFlags fieldset are shown in the following table.
+
+ Name                               Bits     Description                                           Value
+
+ oaddr_type                         1:0      Type of oaddr input value                             RmiRttAddrType
+ list_count                         15:2     Number of valid entries in the oaddr list.            UInt14
+                                             If oaddr_type != RMI_ADDR_TYPE_LIST
+                                                                    T
+                                             then this field is ignored.
+
+B4.6.92 RmiRttS2APBase type
+                                    63:16    Reserved
+                                                      AF                                           SBZ
+
+                                               R
+               The RmiRttS2APBase enumeration represents S2AP base value.
+
+                                       D
+               The RmiRttS2APBase enumeration is a concrete type.
+               The width of the RmiRttS2APBase enumeration is 4 bits.
+               The values of the RmiRttS2APBase enumeration are shown in the following table.
+
+           Encoding      Name                                   Description
+
+           0             RMI_S2AP_NO_ACCESS                     NoAccess
+           1             RMI_S2AP_RO                            RO
+           2             RMI_S2AP_WO                            WO
+           3             RMI_S2AP_RW                            RW
+           4             RMI_S2AP_RW_PUX                        RW+puX
+
+               Unused encodings for the RmiRttS2APBase enumeration are reserved for use by future versions of this
+               specification.
+
+B4.6.93 RmiRttS2APEncoding type
+               The RmiRttS2APEncoding enumeration represents S2AP encoding.
+               The RmiRttS2APEncoding enumeration is a concrete type.
+
+Chapter B4. Realm Management Interface
+
+               The width of the RmiRttS2APEncoding enumeration is 1 bits.
+               See also:
+                  • A3.12 Support for Stage 2 Access Permissions indirect encoding
+               The values of the RmiRttS2APEncoding enumeration are shown in the following table.
+
+           Encoding        Name                                 Description
+
+           0               RMI_S2AP_DIRECT                      S2AP is encoded directly in the RTT entry.
+           1               RMI_S2AP_INDIRECT                    RTT entry includes indices which indirectly specify the S2AP.
+
+               The RmiRttS2APEncoding enumeration is used in the following types:
+                  • RmiRealmFlags1
+
+B4.6.94 RmiRttUnmapFlags type
+               The RmiRttUnmapFlags fieldset contains flags provided by the Host to commands which remove mappings from
+               IPA space.
+               The RmiRttUnmapFlags fieldset is a concrete type.
+
+                                                                    T
+               The width of the RmiRttUnmapFlags fieldset is 64 bits.
+
+                                                      AF
+               The fields of the RmiRttUnmapFlags fieldset are shown in the following diagram.
+
+                                               R
+                                       D
+               The fields of the RmiRttUnmapFlags fieldset are shown in the following table.
+
+ Name                               Bits     Description                                           Value
+
+ oaddr_type                         1:0      Type of oaddr input value                             RmiRttAddrType
+ list_count                         15:2     Number of valid entries in the oaddr list.            UInt14
+                                             If oaddr_type != RMI_ADDR_TYPE_LIST
+                                             then this field is ignored.
+                                    63:16    Reserved                                              SBZ
+
+Chapter B4. Realm Management Interface
+
+B4.6.95 RmiRttUnprotMapFlags type
+              The RmiRttUnprotMapFlags fieldset contains flags provided by the Host to commands which create mappings in
+              Unprotected IPA space.
+              The RmiRttUnprotMapFlags fieldset is a concrete type.
+              The width of the RmiRttUnprotMapFlags fieldset is 64 bits.
+              The fields of the RmiRttUnprotMapFlags fieldset are shown in the following diagram.
+
+                                                                   T
+              The fields of the RmiRttUnprotMapFlags fieldset are shown in the following table.
+
+ Name
+
+ oaddr_type
+                                   Bits
+
+                                   1:0
+                                                     AF
+                                            Description
+
+                                            Type of oaddr input value
+                                                                                                  Value
+
+                                                                                                  RmiRttAddrType
+ list_count                        15:2       R
+                                            Number of valid entries in the oaddr list.
+                                            If oaddr_type != RMI_ADDR_TYPE_LIST
+                                                                                                  UInt14
+
+ memattr
+                                      D
+                                   18:16
+                                            then this field is ignored.
+                                            Memory attributes.
+                                            This field is encoded as for MemAttr[2:0] in
+                                                                                                  Bits3
+
+                                            a translation table page or block descriptor.
+ s2ap                              22:19    Stage 2 access permissions.                           Bits4
+                                            If the Realm uses S2AP direct encoding, this is
+                                            encoded as for AP in a translation table page or
+                                            block descriptor.
+                                            If the Realm uses S2AP indirect encoding, this
+                                            is encoded as for PIIndex in a translation
+                                            table page or block descriptor.
+                                   61:23    Reserved                                              SBZ
+
+B4.6.96 RmiStatusCode type
+              The RmiStatusCode enumeration represents the status of an RMI command.
+              The RmiStatusCode enumeration is a concrete type.
+              The width of the RmiStatusCode enumeration is 8 bits.
+              See also:
+
+Chapter B4. Realm Management Interface
+
+                   • B1.3 Command registers
+                   • B1.5 Command context values
+                The values of the RmiStatusCode enumeration are shown in the following table.
+
+           Encoding       Name                                     Description
+
+           0              RMI_SUCCESS                              Command completed successfully, leaving no intermediate state
+           1              RMI_ERROR_INPUT                          The value of a command input value caused the command to fail
+           2              RMI_ERROR_REALM                          An attribute of a Realm does not match the expected value
+           3              RMI_ERROR_REC                            An attribute of a REC does not match the expected value
+           4              RMI_ERROR_RTT                            An RTT walk terminated before reaching the target RTT level,
+                                                                   or reached an RTTE with an unexpected value
+           5              RMI_ERROR_NOT_SUPPORTED                  The command is not supported
+           6              RMI_ERROR_DEVICE                         An attribute of a device does not match the expected value
+           7              RMI_ERROR_RTT_AUX                        RTTE in an auxiliary RTT contained an unexpected value
+           8              RMI_ERROR_PSMMU_ST                       An PSMMU Stream Table walk terminated before reaching the
+                                                                   target level, or reached an entry with an unexpected value
+           9              RMI_ERROR_DPT
+                                                                     T
+                                                                   A DPT walk terminated before reaching the target level, or
+                                                                   reached an entry with an unexpected value
+           10             RMI_BUSY
+                                                       AF          The command failed to make progress, for an
+                                                                   IMPLEMENTATION DEFINED reason.
+                                                                   The reason for the lack of progress may be temporary, and may
+                                                                   be resolved without requiring any action to be taken by the Host.
+
+           11             RMI_ERROR_GLOBAL
+                                                R                  The command did not result in any changes of system state.
+                                                                   An attribute of RMM global state does not match the expected
+
+           12
+                                        D
+                          RMI_ERROR_TRACKING
+                                                                   value
+                                                                   The state of a tracking region does not match the expected value
+           13             RMI_INCOMPLETE                           The command initiated a state transition but did not complete,
+                                                                   leaving an object in an intermediate state. The target object
+                                                                   cannot be the subject of any other RMI command, until this one
+                                                                   has been completed.
+           14             RMI_BLOCKED                              The command failed to make progress due to a target object
+                                                                   being in an intermediate state, or due to the platform having
+                                                                   insufficient resources to initiate a Stateful RMI Operation. An
+                                                                   incomplete operation must be completed before this one can
+                                                                   proceed.
+                                                                   The command did not result in any changes of system state.
+           15             RMI_ERROR_GPT                            A GPT walk terminated before reaching the target level, or
+                                                                   reached an entry with an unexpected value
+           16             RMI_ERROR_GRANULE                        An attribute of a Granule does not match the expected value
+
+                Unused encodings for the RmiStatusCode enumeration are reserved for use by future versions of this specification.
+                The RmiStatusCode enumeration is used in the following types:
+                   • RmiResult
+
+Chapter B4. Realm Management Interface
+
+B4.6.97 RmiTrackingRegionState type
+               The RmiTrackingRegionState enumeration represents tracking region state.
+               The RmiTrackingRegionState enumeration is a concrete type.
+               The width of the RmiTrackingRegionState enumeration is 3 bits.
+               The values of the RmiTrackingRegionState enumeration are shown in the following table.
+
+           Encoding      Name                                         Description
+
+           0             RMI_TRACKING_RESERVED                        Region is reserved for use by the platform.
+           1             RMI_TRACKING_NONE                            Region is not tracked.
+           2             RMI_TRACKING_FINE                            Region is tracked at the granularity of the RMI Granule size.
+           3             RMI_TRACKING_COARSE                          Region is tracked at the granularity of the Tracking Region
+                                                                      size.
+           4             RMI_TRACKING_INTERMEDIATE                    Region is tracked at the intermediate granularity.
+
+               Unused encodings for the RmiTrackingRegionState enumeration are reserved for use by future versions of this
+               specification.
+
+B4.6.98 RmiTrap type
+                                                                    T
+                                                      AF
+               The RmiTrap enumeration represents whether a trap is enabled.
+               The RmiTrap enumeration is a concrete type.
+
+                                               R
+               The width of the RmiTrap enumeration is 1 bits.
+               The values of the RmiTrap enumeration are shown in the following table.
+
+           Encoding      Name
+                                       D                        Description
+
+           0             RMI_NO_TRAP                            Trap is disabled.
+           1             RMI_TRAP                               Trap is enabled.
+
+               The RmiTrap enumeration is used in the following types:
+                  • RmiRecEnterFlags
+
+B4.6.99 RmiVdevFlags type
+               The RmiVdevFlags fieldset contains flags provided by the Host during VDEV creation.
+               The RmiVdevFlags fieldset is a concrete type.
+               The width of the RmiVdevFlags fieldset is 64 bits.
+               The fields of the RmiVdevFlags fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+             The fields of the RmiVdevFlags fieldset are shown in the following table.
+
+ Name                             Bits     Description                                           Value
+
+ VSMMU                            0        Whether device uses a VSMMU                           RmiFeature
+                                  63:1     Reserved                                              SBZ
+
+                                                                  T
+             The RmiVdevFlags fieldset is used in the following types:
+                • RmiVdevParams
+
+B4.6.100 RmiVdevMeasureFlags type
+                                                    AF
+                                             R
+             The RmiVdevMeasureFlags fieldset contains flags which describe properties of device measurements.
+
+                                      D
+             The RmiVdevMeasureFlags fieldset is a concrete type.
+             The width of the RmiVdevMeasureFlags fieldset is 64 bits.
+             See also:
+                • A9.5.5 Device measurement retrieval
+             The fields of the RmiVdevMeasureFlags fieldset are shown in the following diagram.
+
+             The fields of the RmiVdevMeasureFlags fieldset are shown in the following table.
+
+Chapter B4. Realm Management Interface
+
+ Name                                 Bits    Description                                           Value
+
+ raw                                  0       Whether the return value is a raw bitstream.          RmiVdevMeasureRaw
+                                      63:1    Reserved                                              SBZ
+
+                The RmiVdevMeasureFlags fieldset is used in the following types:
+                   • RmiVdevMeasureParams
+
+B4.6.101 RmiVdevMeasureParams type
+                The RmiVdevMeasureParams structure contains device measurement parameters.
+                The RmiVdevMeasureParams structure is a concrete type.
+                The width of the RmiVdevMeasureParams structure is 4096 (0x1000) bytes.
+                See also:
+                   • A9.5.5 Device measurement retrieval
+                The members of the RmiVdevMeasureParams structure are shown in the following table.
+
+        Name                  Byte offset      Type
+                                                                     T                  Description
+
+        flags
+        nonce
+                              0x0
+
+                              0x100                    AF
+                                               RmiVdevMeasureFlags
+                                               Bits256
+                                                                                        Attestation type
+                                                                                        Nonce value used in requests for signed
+                                                                                        measurements.
+
+                                                R
+                Unused bits of the RmiVdevMeasureParams structure MBZ.
+
+B4.6.102 RmiVdevMeasureRaw type           D
+                The RmiVdevMeasureRaw enumeration represents whether a device measurement is a raw bitstream.
+                The RmiVdevMeasureRaw enumeration is a concrete type.
+                The width of the RmiVdevMeasureRaw enumeration is 1 bits.
+                See also:
+                   • A9.5.5 Device measurement retrieval
+                The values of the RmiVdevMeasureRaw enumeration are shown in the following table.
+
+           Encoding         Name                                     Description
+
+           0                RMI_VDEV_MEASURE_NOT_RAW Returned value is measurement hash
+           1                RMI_VDEV_MEASURE_RAW                     Returned value is a raw bitstream
+
+                The RmiVdevMeasureRaw enumeration is used in the following types:
+                   • RmiVdevMeasureFlags
+
+Chapter B4. Realm Management Interface
+
+B4.6.103 RmiVdevParams type
+                The RmiVdevParams structure contains parameters provided by the Host during VDEV creation.
+                The RmiVdevParams structure is a concrete type.
+                The width of the RmiVdevParams structure is 4096 (0x1000) bytes.
+                The members of the RmiVdevParams structure are shown in the following table.
+
+        Name                 Byte offset       Type                                     Description
+
+        flags                0x0               RmiVdevFlags                             Flags
+        vdev_id              0x8               Bits64                                   Virtual device identifier
+                                                                                        For a PCIe device this is the PCIe routing
+                                                                                        identifier of the virtual endpoint.
+        tdi_id               0x10              Bits64                                   TDI identifier
+        vsmmu_addr           0x20              Address                                 PA of VSMMU.
+                                                                                       This field is ignored unless flags.VSMMU is
+                                                                                       RMI_TRUE.
+        vsid                 0x28              Bits64                                  Virtual Stream Identifier.
+                                                                                       This field is ignored unless flags.VSMMU is
+
+        num_addr_range       0x30              UInt64
+                                                                     T                 RMI_TRUE.
+                                                                                        Number of device address ranges.
+        addr_range[8]        0x200                      AF
+                                               RmiAddrRange                            CPU physical address range used to access
+                                                                                       the device in the system memory map
+                                                                                       These ranges include both coherent and non-
+
+                                                R                                      coherent device memory.
+
+                                        D
+                Unused bits of the RmiVdevParams structure SBZ.
+
+B4.6.104 RmiVdevState type
+                The RmiVdevState enumeration represents the state of a VDEV.
+                The RmiVdevState enumeration is a concrete type.
+                The width of the RmiVdevState enumeration is 8 bits.
+                The values of the RmiVdevState enumeration are shown in the following table.
+
+           Encoding       Name                                   Description
+
+           0              RMI_VDEV_NEW                           Initial state of the device interface.
+           1              RMI_VDEV_UNLOCKED                      Device interface is unlocked.
+           2              RMI_VDEV_LOCKED                        Device interface is locked.
+           3              RMI_VDEV_STARTED                       Device interface is started.
+           4              RMI_VDEV_ERROR                         Device interface has reported a fatal error.
+           5              RMI_VDEV_KEY_REFRESH                   Waiting for key refresh to be performed on all streams associated
+                                                                 with the device interface.
+
+Chapter B4. Realm Management Interface
+
+           Encoding      Name                                   Description
+
+           6             RMI_VDEV_KEY_PURGE                     Waiting for purge of inactive keys to be performed on all streams
+                                                                associated with the device interface.
+
+               Unused encodings for the RmiVdevState enumeration are reserved for use by future versions of this specification.
+
+B4.6.105 RmiVsmmuCmdFlags type
+               The RmiVsmmuCmdFlags fieldset contains flags which describe the result of triaging a VSMMU command.
+               The RmiVsmmuCmdFlags fieldset is a concrete type.
+               The width of the RmiVsmmuCmdFlags fieldset is 64 bits.
+               The fields of the RmiVsmmuCmdFlags fieldset are shown in the following diagram.
+
+                                                                    T
+                                                      AF
+                                               R
+ Name
+                                        D
+               The fields of the RmiVsmmuCmdFlags fieldset are shown in the following table.
+
+                                    Bits     Description                                           Value
+
+ pending                            0        Whether a further VSMMU command is                    RmiBoolean
+                                             pending
+ cmd_complete                       1        Whether VSMMU command requires further                RmiBoolean
+                                             processing by the RMM
+ irq                                2        Whether VSMMU event requires an IRQ to be             RmiBoolean
+                                             injected into the Realm
+                                    63:3     Reserved                                              SBZ
+
+B4.6.106 RmiVsmmuEventFlags type
+               The RmiVsmmuEventFlags fieldset contains flags which describe the result of triaging a VSMMU event.
+               The RmiVsmmuEventFlags fieldset is a concrete type.
+               The width of the RmiVsmmuEventFlags fieldset is 64 bits.
+               The fields of the RmiVsmmuEventFlags fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+                The fields of the RmiVsmmuEventFlags fieldset are shown in the following table.
+
+ Name                                Bits     Description                                           Value
+
+ irq                                 0        Whether VSMMU event requires an IRQ to be             RmiBoolean
+                                              injected into the Realm
+ abort                               1        Whether RMM access to VSMMU queue                     RmiBoolean
+                                                                     T
+                                              failed due to Data Abort
+
+B4.6.107 RmiVsmmuFeatures type
+                                     63:2     Reserved
+                                                        AF                                          SBZ
+
+                                                R
+                The RmiVsmmuFeatures structure contains VSMMU features supported by the RMM.
+
+                                         D
+                The RmiVsmmuFeatures structure is a concrete type.
+                The width of the RmiVsmmuFeatures structure is 256 (0x100) bytes.
+                The members of the RmiVsmmuFeatures structure are shown in the following table.
+
+         Name                Byte offset       Type                                     Description
+
+         aidr                0x0               Bits64                                   SMMU_AIDR register value
+         idr[6]              0x8               Bits64                                  SMMU_IDR0 to SMMU_IDR5 register
+                                                                                       values
+         iidr                0x38              Bits64                                   SMMU_IIDR register value
+
+                Unused bits of the RmiVsmmuFeatures structure SBZ.
+
+B4.6.108 RmiVsmmuFlags type
+                The RmiVsmmuFlags fieldset contains flags provided by the Host during PDEV creation.
+                The RmiVsmmuFlags fieldset is a concrete type.
+                The width of the RmiVsmmuFlags fieldset is 64 bits.
+                The fields of the RmiVsmmuFlags fieldset are shown in the following diagram.
+
+Chapter B4. Realm Management Interface
+
+                The fields of the RmiVsmmuFlags fieldset are shown in the following table.
+
+ Name                                Bits     Description                                           Value
+
+                                     63:0     Reserved                                              SBZ
+
+                The RmiVsmmuFlags fieldset is used in the following types:
+                   • RmiVsmmuParams
+
+B4.6.109 RmiVsmmuParams type
+                The RmiVsmmuParams structure contains parameters provided by the Host during VSMMU creation.
+                The RmiVsmmuParams structure is a concrete type.
+                The width of the RmiVsmmuParams structure is 4096 (0x1000) bytes.
+
+                                                                     T
+                The members of the RmiVsmmuParams structure are shown in the following table.
+
+        Name
+
+        flags
+                             Byte offset
+
+                             0x0
+                                               Type     AF
+                                               RmiVsmmuFlags
+                                                                                        Description
+
+                                                                                        Flags
+        reg_base             0x8
+                                                R
+                                               Address                                  Base IPA of register base in Realm’s
+                                                                                        Protected IPA space
+        reg_top
+
+        aidr
+                             0x10
+
+                             0x18
+                                        D      Address
+
+                                               Bits64
+                                                                                        Top IPA of register base in Realm’s
+                                                                                        Protected IPA space
+                                                                                        SMMU_AIDR register value
+        idr[6]               0x20              Bits64                                  SMMU_IDR0 to SMMU_IDR5 register
+                                                                                       values
+        iidr                 0x50              Bits64                                   SMMU_IIDR register value
+
+                Unused bits of the RmiVsmmuParams structure SBZ.
+
+Chapter B5
+Realm Services Interface
+
+                                                                T
+                                                  AF
+                                           R
+           This chapter defines the interface used by Realm software to request services from the RMM.
+
+                                   D
+
+Chapter B5. Realm Services Interface
+
+B5.1 RSI version
+RQKLGZ       This specification defines version 1.1 of the Realm Services Interface.
+             See also:
+                 • Chapter B2 Interface versioning
+                 • B5.4.21 RSI_VERSION command
+
+B5.2 Programming models for RSI operations
+DMQDGF       An RSI operation is an operation which is performed by execution of RSI commands.
+             See also:
+                 • B5.2 Programming models for RSI operations
+
+B5.2.1 Properties of RSI operations
+DFFJRY       A range RSI operation is an operation which modifies the state of a set of objects, which are identified by a
+             contiguous range of addresses.
+DGFMHC       A non-range RSI operation is an operation which modifies a single object or a set of objects, each of which is
+             identified separately.
+DTVFKK                                                             T
+             A long-running RSI operation is an operation which may require multiple RSI calls in order to complete the
+             operation.
+                                                     AF
+             Specifying that an RSI operation is long-running allows the implementation to guarantee that execution of the
+             command will not cause delivery of interrupts to be delayed by more than an IMPLEMENTATION DEFINED upper
+             bound.
+DTDQKB                                        R
+             A non-long-running RSI operation is an operation which does not require multiple RSI calls in order to complete
+             the operation.
+IDZTZF
+IQSBZN
+                                       D
+             A range RSI operation is a long-running RSI operation.
+             A non-range RSI operation can be either long-running or non-long-running.
+
+B5.2.2 Progress of long-running RSI operations
+             The information returned to the caller regarding the amount of progress which has been made differs between
+             long-running RSI operations. This section describes the patterns which are used for reporting this progress.
+             B5.2.2.1 Long-running non-range RSI operation without separate initialization com-
+             mand
+IMVFZB       This pattern has the following characteristics:
+                 • The operation is a non-range operation.
+                 • The caller initiates the operation by calling an RSI command. The input values to this command fully describe
+                   the requested operation.
+                 • While the result of this command is RSI_INCOMPLETE, the caller continues the operation by calling the
+                   command again.
+                 • While the operation is incomplete, no changes in state are observable by the caller.
+             The following pseudocode illustrate the programming model for this pattern.
+             int rsi_long_running_non_range_wihout_init(
+                 uint64_t in_value_1,
+                 uint64_t in_value_2,
+
+Chapter B5. Realm Services Interface
+
+                   ...
+                   uint64_t *out_value_1,
+                   uint64_t *out_value_2,
+                   ...)
+             {
+                   int result = RSI_INCOMPLETE;
+
+                   while (result == RSI_INCOMPLETE) {
+                       result = RSI_OPERATION(
+                           in_value_1, in_value_2, ...,
+                           out_value_1, out_value_2, ...);
+                   }
+
+                   return result;
+             }
+
+             See also:
+                 • B5.4.17 RSI_VDEV_DMA_DISABLE command
+                 • B5.4.18 RSI_VDEV_DMA_ENABLE command
+             B5.2.2.2 Long-running non-range RSI operation with separate initialization com-
+             mand
+IBWRWH       This pattern has the following characteristics:
+                 • The operation is a non-range operation.         T
+                                                     AF
+                 • The caller initiates the operation by calling an RSI “init” command. The input values to this command fully
+                   describe the requested operation.
+                 • The caller continues the operation by calling an RSI “continue” command. The input values to this command
+                   include a handle which the implementation uses to retrieve a description of the operation.
+
+                                              R
+                 • While the result of the “continue” command is RSI_INCOMPLETE, the caller calls the command again.
+                 • While the operation is incomplete, no changes in state are observable by the caller.
+
+                                      D
+             The following pseudocode illustrate the programming model for this pattern.
+             int rsi_long_running_non_range_with_init(
+                 uint64_t in_value_1,
+                 uint64_t in_value_2,
+                 ...
+                 uint64_t *out_value_1,
+                 uint64_t *out_value_2,
+                 ...)
+             {
+                 int result;
+
+                   result = RSI_OPERATION_INIT(
+                       in_value_1, in_value_2, ...,
+                       out_value_1, out_value_2, ...);
+                   if (result == RSI_SUCCESS) {
+                       do {
+                           result = RSI_OPERATION_CONTINUE(in_value_1);
+                       } while (result == RSI_INCOMPLETE);
+                   }
+
+                   return result;
+             }
+
+             See also:
+
+Chapter B5. Realm Services Interface
+
+                 • B5.4.2 RSI_ATTESTATION_TOKEN_CONTINUE command
+                 • B5.4.3 RSI_ATTESTATION_TOKEN_INIT command
+             B5.2.2.3 Range RSI operation which returns progress address
+INDRGM       This pattern has the following characteristics:
+                 • The operation modifies the state of objects which are contiguous within an address space.
+                 • The caller initiates the operation by calling an RSI command, with the target address range identified by
+                   input values base and top.
+                 • If the result of this command is RSI_SUCCESS then an out_top output value indicates the top of the target
+                   address range for which the requested state change has been completed.
+                 • In order to continue an incomplete operation, the call invokes the same command repeatedly, each time
+                   adjusting using the previous out_top as the new base value. This process is repeated until
+                   out_top == top.
+                 • While the operation is incomplete, changes in state are observable by the caller and are explicitly reported in
+                   the out_top value.
+             The following pseudocode illustrate the programming model for this pattern.
+             int rsi_range_progress(
+                 uint64_t base, // input value 1
+                 uint64_t top, // input value 2
+                 uint64_t in_value_3,
+                 ...
+                 uint64_t *out_top, // output value 1
+                 uint64_t *out_value_2,                            T
+             {
+                 ...)
+
+                 int result;
+
+                   do {
+                                                     AF
+                                              R
+                          result = RSI_DO_OPERATION(
+                              base, top, in_value_3, ...,
+
+                                       D
+                              out_top, out_value_2, ...);
+                          base = *out_top;
+
+                       // If result == RSI_SUCCESS then the requested state change has been
+                       // applied to the range [base, *out_top).
+                   } while (result == RSI_SUCCESS && *out_top != top)
+
+                   // If result == RSI_SUCCESS && *out_top == top then the requested state change
+                   // has been applied to the entire range [base, top).
+
+                   return result;
+             }
+
+IGSLYM       When a range RSI operation returns out_top, the requested state transition has been applied to all objects in the
+             range [base, out_top).
+IXZZKG       When a range RSI operation returns out_top, the state of objects in the range [out_top, top) is unchanged
+             by the operation.
+             See also:
+                 • B5.4.7 RSI_IPA_STATE_SET command
+                 • B5.4.11 RSI_MEM_SET_PERM_INDEX command
+                 • B5.4.20 RSI_VDEV_VALIDATE_MAPPING command
+
+Chapter B5. Realm Services Interface
+
+B5.3 RSI command return codes
+ICYQDJ       An RSI command return code indicates whether the command
+                 • succeeded, or
+                 • failed, and the reason for the failure.
+IDQJSP       If an RSI command succeeds then it returns RSI_SUCCESS.
+IYMHKC       Multiple failure conditions in an RSI command may return the same return code.
+RMLBDM       If an input to an RSI command uses an invalid encoding then the command fails and returns RSI_ERROR_INPUT.
+             Command inputs include registers and in-memory data structures.
+             Invalid encodings include:
+                 • using a reserved encoding in an enumeration
+             See also:
+                 • B5.5.3 RsiCommandReturnCode type
+
+                                                                    T
+                                                      AF
+                                               R
+                                       D
+
+Chapter B5. Realm Services Interface
+
+B5.4 RSI commands
+             The following table summarizes the FIDs of commands in the RSI interface.
+
+                                                  FID                    Command
+
+                                                  0xC4000190             RSI_VERSION
+                                                  0xC4000191             RSI_FEATURES
+                                                  0xC4000192             RSI_MEASUREMENT_READ
+                                                  0xC4000193             RSI_MEASUREMENT_EXTEND
+                                                  0xC4000194             RSI_ATTESTATION_TOKEN_INIT
+                                                  0xC4000195             RSI_ATTESTATION_TOKEN_CONTINUE
+                                                  0xC4000196             RSI_REALM_CONFIG
+                                                  0xC4000197             RSI_IPA_STATE_SET
+                                                  0xC4000198             RSI_IPA_STATE_GET
+                                                  0xC4000199             RSI_HOST_CALL
+                                                  0xC400019A             RSI_VSMMU_GET_INFO
+                                                  0xC400019B       T     RSI_ARCH_DEV_ACTIVATE
+
+                                                     AF
+                                                  0xC400019C
+                                                  0xC400019D
+
+                                                  0xC400019F
+                                                                         RSI_VDEV_DMA_ENABLE
+                                                                         RSI_VDEV_GET_INFO
+                                                                         RSI_VDEV_VALIDATE_MAPPING
+                                              R   0xC40001A0             RSI_MEM_GET_PERM_VALUE
+
+                                       D          0xC40001A1
+                                                  0xC40001A2
+
+                                                  0xC40001A3
+                                                                         RSI_MEM_SET_PERM_INDEX
+                                                                         RSI_MEM_SET_PERM_VALUE
+                                                                         RSI_PLANE_ENTER
+                                                  0xC40001A4             RSI_VDEV_DMA_DISABLE
+                                                  0xC40001AE             RSI_PLANE_SYSREG_READ
+                                                  0xC40001AF             RSI_PLANE_SYSREG_WRITE
+
+Chapter B5. Realm Services Interface
+

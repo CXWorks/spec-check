@@ -1,0 +1,85 @@
+B4.5.38 RMI_PSMMU_ST_L2_DESTROY command
+                 Destroy a PSMMU Level 2 Stream Table.
+                 The RMI_PSMMU_ST_L2_DESTROY command may initiate a Stateful RMI Operation whose context is bound
+                 to the object identified by psmmu_ptr.
+                 The RMI_PSMMU_ST_L2_DESTROY command may initiate a memory-transferring RMI Operation.
+                 See also:
+                    • A9.7.4 PSMMU Stream Tables
+                 B4.5.38.1 Interface
+                 B4.5.38.1.1   Input values
+
+           Name                Register     Bits       Type                                  Description
+
+           fid                 X0           63:0       UInt64                                FID, value 0xC40001DC
+           psmmu_ptr           X1           63:0       Address                               PA of PSMMU
+           sid                 X2           63:0       Bits64                                Base of StreamID range described by
+                                                                                             the Level 2 Stream Table
+
+                 B4.5.38.1.2   Context                               T
+           Name
+                                                       AF
+                 The RMI_PSMMU_ST_L2_DESTROY command operates on the following context.
+
+                               Type                       Value                                      Before   Description
+
+           rmm                 RmmGlobal           R      Rmm()                                      false    RMM global state
+           psmmu
+           walk
+                               RmmPsmmu
+                                          D               PsmmuAt(psmmu_ptr)
+
+                               RmmPsmmuStWalkResultPsmmuStWalk(
+                                                                psmmu, sid)
+                                                                                                     false
+                                                                                                     false
+                                                                                                              PSMMU
+                                                                                                              Result of PSMMU
+                                                                                                              Stream Table walk
+
+                 B4.5.38.1.3   Output values
+
+           Name                Register     Bits       Type                                  Description
+
+           result              X0           63:0       RmiResult                             Command result
+
+                 B4.5.38.2 Failure conditions
+
+  ID                            Condition
+
+  feat                          pre: Rmm().static.feat_da != FEATURE_TRUE
+                                post: result.status == RMI_ERROR_NOT_SUPPORTED
+  psmmu_valid                   pre: !PsmmuAddrIsValid(psmmu_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+
+Chapter B4. Realm Management Interface
+
+  ID                         Condition
+
+  sid_bound                  pre: UInt(sid) >= 2^psmmu.sid_size
+                             post: result.status == RMI_ERROR_INPUT
+  sid_align                  pre: sid does not identify the first entry in an L2ST.
+                             post: result.status == RMI_ERROR_INPUT
+  psmmu_state                pre: psmmu.state != PSMMU_ACTIVE
+                             post: result.status == RMI_ERROR_INPUT
+  st_entry                   pre: walk.ste.state == PSMMU_ST_ENTRY_INVALID
+                             post: result.status == RMI_ERROR_INPUT
+  l2st_live                  pre: PsmmuL2StIsLive(psmmu, sid)
+                             post: (result.status == RMI_ERROR_PSMMU_ST
+                                       && result.data.level.level == walk.level)
+
+              B4.5.38.2.1   Failure condition ordering
+              The RMI_PSMMU_ST_L2_DESTROY command does not have any failure condition orderings.
+              B4.5.38.3 Success conditions
+
+  ID                         Condition
+
+  result                     post: result.status == RMI_SUCCESS
+                                                                  T
+  state                                             AF
+                             post: walk.ste.state == PSMMU_ST_ENTRY_INVALID
+
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

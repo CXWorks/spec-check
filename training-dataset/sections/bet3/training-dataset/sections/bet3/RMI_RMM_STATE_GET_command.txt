@@ -1,0 +1,55 @@
+B4.5.50 RMI_RMM_STATE_GET command
+                 Get the state of the RMM.
+                 B4.5.50.1 Interface
+                 B4.5.50.1.1   Input values
+
+           Name                Register      Bits       Type                                  Description
+
+           fid                 X0            63:0       UInt64                                FID, value 0xC40001EE
+
+                 B4.5.50.1.2   Context
+                 The RMI_RMM_STATE_GET command operates on the following context.
+
+           Name                Type                        Value                                      Before   Description
+
+           rmm                 RmmGlobal                   Rmm()                                      false    RMM global state
+
+                 B4.5.50.1.3   Output values
+                                                                      T
+           Name
+
+           result
+           state
+                               Register
+
+                               X0
+                               X1
+                                             Bits
+
+                                             63:0
+                                             7:0
+                                                        AF
+                                                        Type
+
+                                                        RmiResult
+                                                        RmiRmmState
+                                                                                              Description
+
+                                                                                              Command result
+                                                                                              RMM state
+
+                                                    R
+                                          D
+                 The following unused bits of RMI_RMM_STATE_GET output values MBZ: X1[63:8].
+                 B4.5.50.2 Failure conditions
+                 The RMI_RMM_STATE_GET command does not have any failure conditions.
+                 B4.5.50.3 Success conditions
+
+  ID                            Condition
+
+  result                        post: result.status == RMI_SUCCESS
+
+  state                         post: Equal(state, rmm.dynamic.state)
+
+Chapter B4. Realm Management Interface
+

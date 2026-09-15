@@ -1,0 +1,196 @@
+B4.5.69 RMI_RTT_INIT_RIPAS command
+                 Set the RIPAS of a target IPA range to RIPAS_RAM, for a Realm in the REALM_NEW state.
+                 The RMI_RTT_INIT_RIPAS command may initiate a Stateful RMI Operation whose context is bound to the
+                 object identified by rd.
+                 See also:
+                    • A5.2.2 Realm IPA state
+                    • B4.3.5 Range RMI operations
+                    • D1.2.3 Initialize memory of New Realm flow
+                 B4.5.69.1 Interface
+                 B4.5.69.1.1   Input values
+
+           Name                Register    Bits        Type                                  Description
+
+           fid                 X0          63:0        UInt64                                FID, value 0xC4000168
+           rd                  X1          63:0        Address                               PA of the RD for the target Realm
+           base                X2          63:0        Address                               Base of target IPA region
+           top                 X3          63:0        Address                               Top of target IPA region
+
+                                                                     T
+                 B4.5.69.1.2   Context
+                                                       AF
+                 The RMI_RTT_INIT_RIPAS command operates on the following context.
+
+           Name
+
+           rmm
+                               Type
+
+                               RmmGlobal
+                                                  R       Value                                      Before
+
+                                                                                                     false
+                                                                                                               Description
+
+                                                                                                               RMM global state
+           realm_pre
+           realm
+                               RmmRealm
+                               RmmRealm
+                                          D               Rmm()
+
+                                                          RealmAt(rd)
+
+                                                          RealmAt(rd)
+                                                                                                     true
+                                                                                                     false
+                                                                                                               Realm
+                                                                                                               Realm
+           walk                RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                              realm, base,
+                                                              RMM_RTT_PAGE_LEVEL,
+                                                              RMM_RTT_TREE_PRIMARY)
+           walk_top            Address                    RttSkipEntriesUnlessVoidData( false                 Top IPA of entries
+                                                              ,→                                              which are either
+                                                               RttAt(walk.rtt_addr),                          RTTE_VOID or
+                                                               walk.level,                                    RTTE_DATA,
+                                                               base, top)                                     starting from entry at
+                                                                                                              which the RTT walk
+                                                                                                              terminated
+
+                 B4.5.69.1.3   Output values
+
+           Name                Register    Bits        Type                                  Description
+
+           result              X0          63:0        RmiResult                             Command result
+
+Chapter B4. Realm Management Interface
+
+           Name                Register     Bits        Type                                  Description
+
+           out_top             X1           63:0        Address                               Top IPA of range whose RIPAS was
+                                                                                              modified
+
+IYLLSY          If result is not RMI_SUCCESS then the value of out_top is UNKNOWN.
+                When the out_top output value is valid, it is aligned to the size of the address range described by the RTT entry
+                at the level where the RTT walk terminated.
+                B4.5.69.2 Failure conditions
+
+  ID                            Condition
+
+  rd_align                      pre: !AddrIsRmiGranuleAligned(rd)
+                                post: result.status == RMI_ERROR_INPUT
+  rd_bound                      pre: !PaIsTracked(rd)
+                                post: result.status == RMI_ERROR_INPUT
+  rd_state                      pre: GranuleAt(rd).state != GRAN_RD
+                                post: result.status == RMI_ERROR_INPUT
+  size_valid                    pre: UInt(top) <= UInt(base)
+                                post: result.status == RMI_ERROR_INPUTT
+  top_bound                     pre:  !AddrIsProtected(
+                                                        AF
+                                          ToAddress(UInt(top) - rmm.dynamic.rmi_granule_size),
+                                          realm_pre)
+                                post: result.status == RMI_ERROR_INPUT
+  realm_state
+                                                   R
+                                pre: realm_pre.state != REALM_NEW
+                                post: result.status == RMI_ERROR_REALM
+  base_align
+
+  rtte_state
+                                          D
+                                pre: !AddrIsRttLevelAligned(base, walk.level)
+                                post: (result.status == RMI_ERROR_RTT
+
+                                pre:
+                                          && result.data.level.level == walk.level)
+                                      (walk.rtte.state != RTTE_VOID
+                                          && walk.rtte.state != RTTE_DATA)
+                                post: (result.status == RMI_ERROR_RTT
+                                          && result.data.level.level == walk.level)
+  top_gran_align                pre: !AddrIsRmiGranuleAligned(top)
+                                post: result.status == RMI_ERROR_INPUT
+  no_progress                   pre: UInt(base) == UInt(walk_top)
+                                post: (result.status == RMI_ERROR_RTT
+                                          && result.data.level.level == walk.level)
+  not_unassigned                pre:  Command encounters RTT entry whose state is neither RTTE_VOID
+                                      nor RTTE_DATA.
+                                post: (result.status == RMI_ERROR_RTT
+                                          && result.data.level.level == walk.level)
+
+                B4.5.69.2.1   Failure condition ordering
+                [rd_bound, rd_state] < [realm_state]
+                [rd_bound, rd_state] < [base_align, rtte_state]
+                [rd_bound, rd_state] < [no_progress, not_unassigned]
+                [top_gran_align] < [no_progress]
+
+Chapter B4. Realm Management Interface
+
+                           rd_align      rd_state      rd_bound                             top_gran_align    size_valid   top_bound
+
+                   realm_state         rtte_state     base_align        not_unassigned       no_progress
+
+               B4.5.69.3 Success conditions
+
+  ID                              Condition
+
+  rtte_ripas                      post: RttEntriesInRangeRipas(
+                                            RttAt(walk.rtt_addr),
+                                            walk.level,
+                                            base, walk_top,
+                                            RIPAS_RAM)
+  rim                             post: realm.rim == RimExtendRipas(
+                                            realm_pre, base, walk_top)
+  out_top                         post: out_top == walk_top
+
+               B4.5.69.4 RMI_RTT_INIT_RIPAS extension of RIM
+
+                                                                        T
+               Successful execution of RMI_RTT_INIT_RIPAS initiates a RIPAS initialization operation. The operation is
+               complete when any of the following happens:
+
+                                                          AF
+                  • RMI_RTT_INIT_RIPAS returns RMI_SUCCESS.
+                  • RMI_RTT_INIT_RIPAS returns RMI_INCOMPLETE, indicating that an SRO has been initialized.
+                    Subsequent execution of RMI_OP_CONTINUE returns RMI_SUCCESS.
+
+                                                    R
+               On completion of the RIPAS initialization operation, the out_top output value indicates the top of the IPA range
+               whose RIPAS was successfully initialized. If either of the following is true, out_top may be less than the top
+               input value:
+                                            D
+                  • The SRO was cancelled by execution of RMI_OP_CANCEL.
+                  • An RTT walk within the target IPA range terminated before reaching the level whose mapping size aligns
+                    with top.
+               On completion of the RIPAS initialization operation, the new RIM value of the target Realm is calculated by the
+               RMM as follows:
+                 1. Allocate an RmmMeasurementDescriptorRipas data structure.
+                 2. Populate the measurement descriptor:
+                  • Set the desc_type field to the descriptor type.
+                  • Set the len field to the descriptor length.
+                  • Set the rim field to the current RIM value of the target Realm.
+                  • Set the base field to the base input value provided to RMI_RTT_INIT_RIPAS.
+                  • Set the top field to the out_top output value returned from RMI_RTT_INIT_RIPAS.
+                 3. Using the RHA of the target Realm, compute the hash of the measurement descriptor. Set the RIM of the
+                    target Realm to this value, zero filling upper bytes if the RHA output is smaller than the size of the RIM.
+               The above algorithm means that, if the RIPAS initialization operation completes with out_top < top, the final
+               RIM may not match the value expected by a verifier. Because of this, the Host is expected to avoid such a partial
+               completion of the RIPAS initialization operation.
+               See also:
+                  • A7.1.1 Realm Initial Measurement
+
+Chapter B4. Realm Management Interface
+
+                •   B3.125 RimExtendRipas function
+                •   B4.3.2 Stateful RMI operations
+                •   B4.5.14 RMI_OP_CANCEL command
+                •   B4.5.15 RMI_OP_CONTINUE command
+                •   C2.26 RmmMeasurementDescriptorRipas type
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

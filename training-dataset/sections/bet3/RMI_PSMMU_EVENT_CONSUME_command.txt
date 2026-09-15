@@ -1,0 +1,58 @@
+B4.5.34 RMI_PSMMU_EVENT_CONSUME command
+                 Consume a PSMMU event.
+                 See also:
+                    • A9.8.6 Page Request Interface events
+                 B4.5.34.1 Interface
+                 B4.5.34.1.1   Input values
+
+           Name                Register     Bits       Type                                  Description
+
+           fid                 X0           63:0       UInt64                                FID, value 0xC40001F0
+           psmmu_ptr           X1           63:0       Address                               PA of PSMMU
+           irq                 X2           1:0        RmiPsmmuIrq                           SMMU IRQ
+
+                 The following unused bits of RMI_PSMMU_EVENT_CONSUME input values SBZ: X2[63:2].
+                 B4.5.34.1.2   Context
+                 The RMI_PSMMU_EVENT_CONSUME command operates on the following context.
+
+           Name                Type                       Value
+                                                                     T                               Before   Description
+
+           psmmu               RmmPsmmu                AF PsmmuAt(psmmu_ptr)                         false    PSMMU
+
+                 B4.5.34.1.3   Output values
+                                                   R
+           Name
+
+           result
+                               Register
+
+                               X0
+                                          D Bits
+
+                                            63:0
+                                                       Type
+
+                                                       RmiResult
+                                                                                             Description
+
+                                                                                             Command result
+
+                 B4.5.34.2 Failure conditions
+
+  ID                            Condition
+
+  feat                          pre: Rmm().static.feat_da != FEATURE_TRUE
+                                post: result.status == RMI_ERROR_NOT_SUPPORTED
+  psmmu_valid                   pre: !PsmmuAddrIsValid(psmmu_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  psmmu_state                   pre: psmmu.state != PSMMU_ACTIVE
+                                post: result.status == RMI_ERROR_INPUT
+
+                 B4.5.34.2.1   Failure condition ordering
+                 The RMI_PSMMU_EVENT_CONSUME command does not have any failure condition orderings.
+                 B4.5.34.3 Success conditions
+                 The RMI_PSMMU_EVENT_CONSUME command does not have any success conditions.
+
+Chapter B4. Realm Management Interface
+

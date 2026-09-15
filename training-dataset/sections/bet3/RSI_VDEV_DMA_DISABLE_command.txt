@@ -1,0 +1,80 @@
+B5.4.17 RSI_VDEV_DMA_DISABLE command
+                 Disable DMA.
+                 See also:
+                    • B5.2.2.1 Long-running non-range RSI operation without separate initialization command
+                 B5.4.17.1 Interface
+                 B5.4.17.1.1    Input values
+
+           Name                 Register     Bits       Type                                  Description
+
+           fid                  X0           63:0       UInt64                                FID, value 0xC40001A4
+           vdev_id              X1           63:0       Bits64                                Realm device identifier
+
+                 B5.4.17.1.2    Context
+                 The RSI_VDEV_DMA_DISABLE command operates on the following context.
+
+           Name                 Type                       Value                                      Before   Description
+
+           realm                RmmRealm                              T
+                                                           CurrentRealm()                             false    Current Realm
+           vdev                 RmmVdev
+                                                        AF VdevFromVdevId(
+                                                               realm,
+                                                               vdev_id)
+                                                                                                      false    Realm device
+
+                 B5.4.17.1.3    Output values       R
+           Name
+
+           result
+                                Register
+
+                                X0
+                                           D Bits
+
+                                             63:0
+                                                        Type
+
+                                                        RsiCommandReturnCode
+                                                                                              Description
+
+                                                                                              Command result
+
+                 B5.4.17.2 Failure conditions
+
+  ID                             Condition
+
+  da_en                          pre: realm.feat_da != FEATURE_TRUE
+                                 post: result == RSI_ERROR_STATE
+  vdev_id                        pre: VdevIdIsFree(realm, vdev_id)
+                                 post: result == RSI_ERROR_INPUT
+
+Chapter B5. Realm Services Interface
+
+               B5.4.17.2.1   Failure condition ordering
+               [da_en] < [vdev_id]
+
+                                                                                                   da_en
+
+                                                                                            RSI_ERROR_STATE
+
+                                                                                                vdev_id
+
+                                                                                          RSI_ERROR_INPUT
+
+                                                                   T
+  ID
+               B5.4.17.3 Success conditions
+
+                              Condition
+                                                     AF
+  incomplete                                  R
+                              pre: DMA state change is not complete.
+                              post: result == RSI_INCOMPLETE
+  complete                             D
+                              pre: DMA state change is complete.
+                              post: (result == RSI_SUCCESS
+                                        && vdev.dma_state == VDEV_DMA_DISABLED)
+
+Chapter B5. Realm Services Interface
+

@@ -1,0 +1,68 @@
+B4.5.49 RMI_RMM_DEACTIVATE command
+                 Deactivate the RMM.
+                 The RMI_RMM_DEACTIVATE command may initiate a Stateful RMI Operation whose context is bound to the
+                 current PE.
+                 The RMI_RMM_DEACTIVATE command may initiate a memory-transferring RMI Operation.
+                 See also:
+                    • A2.1 RMM
+                    • B4.5.46 RMI_RMM_ACTIVATE command
+                 B4.5.49.1 Interface
+                 B4.5.49.1.1   Input values
+
+           Name                Register     Bits       Type                                  Description
+
+           fid                 X0           63:0       UInt64                                FID, value 0xC400020F
+
+                 B4.5.49.1.2   Context
+                 The RMI_RMM_DEACTIVATE command operates on the following context.
+                                                                     T
+           Name
+
+           rmm
+                               Type
+
+                               RmmGlobal
+                                                       AF Value
+
+                                                          Rmm()
+                                                                                                     Before
+
+                                                                                                     false
+                                                                                                              Description
+
+                                                                                                              RMM global state
+
+                 B4.5.49.1.3   Output values       R
+           Name                Register
+                                          D Bits       Type                                  Description
+
+           result              X0           63:0       RmiResult                             Command result
+
+                 B4.5.49.2 Failure conditions
+
+  ID                            Condition
+
+  state                         pre: rmm.dynamic.state != RMM_STATE_ACTIVE
+                                post: result.status == RMI_ERROR_GLOBAL
+  delegated                     pre: AnyGranuleNotUndelegated()
+                                post: result.status == RMI_ERROR_GLOBAL
+
+                 B4.5.49.2.1   Failure condition ordering
+                 The RMI_RMM_DEACTIVATE command does not have any failure condition orderings.
+                 B4.5.49.3 Success conditions
+
+Chapter B4. Realm Management Interface
+
+  ID                        Condition
+
+  result                    post: result.status == RMI_SUCCESS
+
+  state                     post: rmm.dynamic.state == RMM_STATE_INIT
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

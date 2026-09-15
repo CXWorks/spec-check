@@ -1,0 +1,101 @@
+B4.5.36 RMI_PSMMU_IRQ_NOTIFY command
+                  Notify RMM of an SMMU interrupt.
+                  See also:
+                     • A9.7.6 PSMMU interrupts
+                     • A9.8.6 Page Request Interface events
+                  B4.5.36.1 Interface
+                  B4.5.36.1.1   Input values
+
+           Name                 Register    Bits        Type                                  Description
+
+           fid                  X0          63:0        UInt64                                FID, value 0xC400016F
+           psmmu_ptr            X1          63:0        Address                               PA of PSMMU
+           irqs                 X2          63:0        RmiPsmmuIrqSet                        Set of pending PSMMU IRQs
+
+                  B4.5.36.1.2   Context
+                  The RMI_PSMMU_IRQ_NOTIFY command operates on the following context.
+
+           Name                 Type                       Value      T                               Before    Description
+
+           psmmu                RmmPsmmu                AF PsmmuAt(psmmu_ptr)                         false     PSMMU
+
+                  B4.5.36.1.3   Output values
+                                                   R
+           Name
+
+           result
+                                Register
+
+                                X0
+                                           DBits
+
+                                            63:0
+                                                        Type
+
+                                                        RmiResult
+                                                                                              Description
+
+                                                                                              Command result
+           flags                X1          63:0        RmiPsmmuIrqResult                     Result of triaging the IRQ.
+                                                                                              This output value is always valid.
+           event_num            X2          63:0        UInt64                                SMMU event number.
+                                                                                              This output value is valid only when
+                                                                                              flags.irq_event ==
+                                                                                              RMI_PSMMU_IRQ_EVENT_PSMMU.
+           sid                  X3          63:0        Bits64                                SMMU Stream ID.
+                                                                                              This output value is valid only when
+                                                                                              flags.irq_event ==
+                                                                                              RMI_PSMMU_IRQ_EVENT_PSMMU
+                                                                                              or flags.irq_event ==
+                                                                                              RMI_PSMMU_IRQ_EVENT_VSMMU.
+           fetch_addr           X4          63:0        Address                               Physical fetch address.
+                                                                                              When flags.irq_event ==
+                                                                                              RMI_PSMMU_IRQ_EVENT_PSMMU,
+                                                                                              the validity of this field depends on the
+                                                                                              event number, as defined by the SMMU
+                                                                                              architecture.
+
+Chapter B4. Realm Management Interface
+
+           Name             Register     Bits       Type                                  Description
+
+           input_addr       X5           63:0       Address                               Physical input address.
+                                                                                          When flags.irq_event ==
+                                                                                          RMI_PSMMU_IRQ_EVENT_PSMMU,
+                                                                                          the validity of this field depends on the
+                                                                                          event number, as defined by the SMMU
+                                                                                          architecture.
+           syndrome         X6           63:0       Bits64                                RnW[0], S2[1] and Class[3:2] attributes.
+                                                                                          When flags.irq_event ==
+                                                                                          RMI_PSMMU_IRQ_EVENT_PSMMU,
+                                                                                          the validity of this field depends on the
+                                                                                          event number, as defined by the SMMU
+                                                                                          architecture.
+
+              B4.5.36.2 Failure conditions
+
+  ID                         Condition
+
+  feat                       pre: Rmm().static.feat_da != FEATURE_TRUE
+
+  psmmu_valid
+                                                                  T
+                             post: result.status == RMI_ERROR_NOT_SUPPORTED
+
+  psmmu_state
+                                                    AF
+                             pre: !PsmmuAddrIsValid(psmmu_ptr)
+                             post: result.status == RMI_ERROR_INPUT
+                             pre: psmmu.state != PSMMU_ACTIVE
+                             post: result.status == RMI_ERROR_INPUT
+
+              B4.5.36.2.1
+                                                R
+                            Failure condition ordering
+                                       D
+              The RMI_PSMMU_IRQ_NOTIFY command does not have any failure condition orderings.
+              B4.5.36.3 Success conditions
+              The RMI_PSMMU_IRQ_NOTIFY command does not have any success conditions.
+
+Chapter B4. Realm Management Interface
+

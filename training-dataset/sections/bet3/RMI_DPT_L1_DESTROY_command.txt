@@ -1,0 +1,75 @@
+B4.5.5 RMI_DPT_L1_DESTROY command
+                 Destroy a Level 1 DPT.
+                 The RMI_DPT_L1_DESTROY command may initiate a Stateful RMI Operation whose context is bound to the
+                 current PE.
+                 The RMI_DPT_L1_DESTROY command may initiate a memory-transferring RMI Operation.
+                 See also:
+                    • A9.7.5 Device Permission Table
+                 B4.5.5.1 Interface
+                 B4.5.5.1.1   Input values
+
+           Name                Register     Bits        Type                                  Description
+
+           fid                 X0           63:0        UInt64                                FID, value 0xC40001E0
+           addr                X1           63:0        Address                               Base of physical address region
+                                                                                              described by the L1DPT
+
+                 B4.5.5.1.2   Context
+                                                                      T
+                 The RMI_DPT_L1_DESTROY command operates on the following context.
+
+           Name                Type                     AF Value                                      Before   Description
+
+           rmm                 RmmGlobal                   Rmm()                                      false    RMM global state
+           l0dpt               RmmDptL0            R       DptL0()                                    false    Level 0 DPT
+           l0dpt_entry
+                                          D
+                               RmmDptL0Entry               DptL0Walk(addr)                            false    Level 0 DPT entry
+
+                 B4.5.5.1.3   Output values
+
+           Name                Register     Bits        Type                                  Description
+
+           result              X0           63:0        RmiResult                             Command result
+
+                 B4.5.5.2 Failure conditions
+
+  ID                            Condition
+
+  feat                          pre: Rmm().static.feat_ats != FEATURE_TRUE
+                                post: result.status == RMI_ERROR_NOT_SUPPORTED
+  l0dpt_state                   pre: l0dpt.state != DPT_L0_VALID
+                                post: result.status == RMI_ERROR_GLOBAL
+  addr_bound                    pre: UInt(addr) >= rmm.static.dptps
+                                post: result.status == RMI_ERROR_INPUT
+  addr_align                    pre: !AddrIsAligned(addr, rmm.static.l0dptsz)
+                                post: result.status == RMI_ERROR_INPUT
+
+Chapter B4. Realm Management Interface
+
+  ID                           Condition
+
+  entry_state                  pre: l0dpt_entry.state == DPT_L0_ENTRY_BLOCK
+                               post: (result.status == RMI_ERROR_DPT
+                                         && result.data.level.level == 0)
+  dpt_l1_homo                  pre: !DptL1IsHomogeneous(addr)
+                               post: (result.status == RMI_ERROR_DPT
+                                         && result.data.level.level == 1)
+
+                B4.5.5.2.1   Failure condition ordering
+                The RMI_DPT_L1_DESTROY command does not have any failure condition orderings.
+                B4.5.5.3 Success conditions
+
+  ID                           Condition
+
+  result                       post: result.status == RMI_SUCCESS
+
+  state                        post: l0dpt_entry.state == DPT_L0_ENTRY_BLOCK
+
+                                                                     T
+                                                       AF
+                                                R
+                                        D
+
+Chapter B4. Realm Management Interface
+

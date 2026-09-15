@@ -1,0 +1,71 @@
+B4.5.35 RMI_PSMMU_INFO command
+                 Returns PSMMU info.
+                 B4.5.35.1 Interface
+                 B4.5.35.1.1   Input values
+
+           Name                Register     Bits       Type                                  Description
+
+           fid                 X0           63:0       UInt64                                FID, value 0xC400020E
+           psmmu_ptr           X1           63:0       Address                               PA of the PSMMU
+           info_ptr            X2           63:0       Address                               PA of the PSMMU info structure
+
+                 B4.5.35.1.2   Context
+                 The RMI_PSMMU_INFO command operates on the following context.
+
+           Name                Type                       Value                                      Before   Description
+
+           psmmu               RmmPsmmu                   PsmmuAt(psmmu_ptr)                         false    PSMMU
+           info                RmiPsmmuInfo                          T
+                                                          PsmmuInfoAt(info_ptr)                      false    PSMMU info
+
+                 B4.5.35.1.3   Output values
+                                                       AF
+           Name                Register     Bits
+                                                   R   Type                                  Description
+
+           result              X0
+                                          D 63:0
+
+                 B4.5.35.2 Failure conditions
+                                                       RmiResult                             Command result
+
+  ID                            Condition
+
+  feat                          pre: Rmm().static.feat_da != FEATURE_TRUE
+                                post: result.status == RMI_ERROR_NOT_SUPPORTED
+  psmmu_valid                   pre: !PsmmuAddrIsValid(psmmu_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  info_align                    pre: !AddrIsAligned(info_ptr, 0x100)
+                                post: result.status == RMI_ERROR_INPUT
+  info_pas                      pre: !NonSecureAccessPermitted(info_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+
+                 B4.5.35.2.1   Failure condition ordering
+                 The RMI_PSMMU_INFO command does not have any failure condition orderings.
+                 B4.5.35.3 Success conditions
+
+Chapter B4. Realm Management Interface
+
+  ID                        Condition
+
+  irq_cfg                   post: Equal(info.flags.irq_cfg, psmmu.irq_cfg)
+
+  cmdq_sync_irq             post: Equal(info.flags.cmdq_sync_irq_wired, psmmu.cmdq_sync_irq_wired)
+
+  ats                       post: Equal(info.flags.ats, psmmu.feat_ats)
+
+  gerror_intr_num           post: info.gerror_intr_num == psmmu.gerror_intr_num
+
+  eventq_intr_num           post: info.eventq_intr_num == psmmu.eventq_intr_num
+
+  priq_intr_num             post: info.priq_intr_num == psmmu.priq_intr_num
+
+  cmdq_sync_intr_num        post: info.cmdq_sync_intr_num == psmmu.cmdq_sync_intr_num
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

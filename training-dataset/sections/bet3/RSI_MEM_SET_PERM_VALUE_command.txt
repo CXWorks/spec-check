@@ -1,0 +1,71 @@
+B5.4.12 RSI_MEM_SET_PERM_VALUE command
+                 Set overlay permission value for a specified (plane index, overlay permission index) tuple.
+                 See also:
+                    • A10.3.2 Stage 2 Access Permissions within a multi-Plane Realm
+                 B5.4.12.1 Interface
+                 B5.4.12.1.1   Input values
+
+           Name                 Register     Bits        Type                                  Description
+
+           fid                  X0           63:0        UInt64                                FID, value 0xC40001A2
+           plane_index          X1           63:0        UInt64                                Plane index
+           perm_index           X2           63:0        UInt64                                Permission index
+           value                X3           63:0        Bits64                                Memory permission value
+
+                 B5.4.12.1.2   Context
+                 The RSI_MEM_SET_PERM_VALUE command operates on the following context.
+
+           Name                 Type                        Value
+                                                                       T                               Before     Description
+
+           realm                RmmRealm                 AF CurrentRealm()                             false      Current Realm
+
+                 B5.4.12.1.3   Output values        R
+           Name
+
+           result
+                                Register
+
+                                X0
+                                           D Bits
+
+                                             63:0
+                                                         Type
+
+                                                         RsiCommandReturnCode
+                                                                                               Description
+
+                                                                                               Command result
+
+                 B5.4.12.2 Failure conditions
+
+  ID                             Condition
+
+  plane_bound                    pre:  (plane_index == 0
+                                           || plane_index > realm.num_aux_planes)
+                                 post: result == RSI_ERROR_INPUT
+  perm_bound                     pre:  perm_index >=
+                                           RMM_NUM_PERM_OVERLAY_INDICES
+                                 post: result == RSI_ERROR_INPUT
+  locked                         pre: realm.overlay_locked[[perm_index]] == MEM_PERM_LOCKED
+                                 post: result == RSI_ERROR_INPUT
+  supported                      pre: !MemPermLabelSupported(value)
+                                 post: result == RSI_ERROR_INPUT
+
+Chapter B5. Realm Services Interface
+
+             B5.4.12.2.1    Failure condition ordering
+             The RSI_MEM_SET_PERM_VALUE command does not have any failure condition orderings.
+             B5.4.12.3 Success conditions
+
+  ID                         Condition
+
+  label                      post: realm.overlay_perms[[plane_index]].values[[perm_index]] == value
+
+                                                                   T
+                                                     AF
+                                              R
+                                       D
+
+Chapter B5. Realm Services Interface
+

@@ -1,0 +1,144 @@
+B4.5.68 RMI_RTT_FOLD command
+                 Destroys a homogeneous primary RTT.
+                 The RMI_RTT_FOLD command may initiate a Stateful RMI Operation whose context is bound to the object
+                 identified by rd.
+                 See also:
+                    •   A5.6 Realm Translation Table
+                    •   A5.6.6 RTT folding
+                    •   B4.5.60 RMI_RTT_CREATE command
+                    •   B4.5.64 RMI_RTT_DESTROY command
+                 B4.5.68.1 Interface
+                 B4.5.68.1.1   Input values
+
+           Name                Register    Bits        Type                                  Description
+
+           fid                 X0          63:0        UInt64                                FID, value 0xC4000166
+           rd                  X1          63:0        Address                               PA of the RD for the target Realm
+           ipa                 X2          63:0        Address                               Base of the IPA range described by the
+                                                                                             RTT
+           level               X3          63:0        Int64         T                       RTT level
+
+                 B4.5.68.1.2   Context
+                                                       AF
+                 The RMI_RTT_FOLD command operates on the following context.
+
+           Name                Type
+                                                  R       Value                                      Before   Description
+
+           realm
+           walk
+                               RmmRealm
+                                          D
+                               RmmRttWalkResult
+                                                          RealmAt(rd)
+
+                                                          RttWalk(
+                                                                                                     false
+                                                                                                     false
+                                                                                                              Realm
+                                                                                                              RTT walk result
+                                                              realm, ipa,
+                                                              level - 1,
+                                                              RMM_RTT_TREE_PRIMARY)
+           entry_idx           UInt64                     RttEntryIndex(                             false    RTTE index
+                                                              ipa, walk.level)
+           fold_pre            RmmRttEntry                RttFold(                                   true     Result of folding RTT
+                                                              RttAt(walk.rtte.addr))
+
+                 B4.5.68.1.3   Output values
+
+           Name                Register    Bits        Type                                  Description
+
+           result              X0          63:0        RmiResult                             Command result
+           rtt                 X1          63:0        Address                               PA of the RTT which was destroyed
+
+                 The rtt output value is valid only when the command result is RMI_SUCCESS.
+
+Chapter B4. Realm Management Interface
+
+               B4.5.68.2 Failure conditions
+
+  ID                           Condition
+
+  rd_align                     pre: !AddrIsRmiGranuleAligned(rd)
+                               post: result.status == RMI_ERROR_INPUT
+  rd_bound                     pre: !PaIsTracked(rd)
+                               post: result.status == RMI_ERROR_INPUT
+  rd_state                     pre: GranuleAt(rd).state != GRAN_RD
+                               post: result.status == RMI_ERROR_INPUT
+  level_bound                  pre:  (!RttLevelIsValid(realm, level)
+                                         || RttLevelIsStarting(realm, level))
+                               post: result.status == RMI_ERROR_INPUT
+  ipa_align                    pre: !AddrIsRttLevelAligned(ipa, level - 1)
+                               post: result.status == RMI_ERROR_INPUT
+  ipa_bound                    pre: UInt(ipa) >= (2 ^ realm.ipa_width)
+                               post: result.status == RMI_ERROR_INPUT
+  rtt_walk                     pre: walk.level < level - 1
+                               post: (result.status == RMI_ERROR_RTT
+                                         && result.data.level.level == walk.level)
+  rtte_state                   pre: walk.rtte.state != RTTE_TABLE
+                               post: (result.status == RMI_ERROR_RTT T
+                                         && result.data.level.level == walk.level)
+  rtt_homo
+                                                      AF
+                               pre: !RttIsHomogeneous(RttAt(walk.rtte.addr))
+                               post: (result.status == RMI_ERROR_RTT
+                                         && result.data.level.level == level)
+  aux_ref
+                                                 R
+                               pre: AddrIsAuxRef(ipa, realm)
+                               post: (result.status == RMI_ERROR_RTT
+                                         && result.data.level.level == walk.level)
+
+               B4.5.68.2.1
+                                         D
+                              Failure condition ordering
+               [rd_bound, rd_state] < [rtt_walk, rtte_state, rtt_homo, aux_ref]
+               [level_bound, ipa_bound] < [rtt_walk, rtte_state]
+
+                   rd_align           rd_state        rd_bound              ipa_bound             level_bound   ipa_align
+
+                    aux_ref           rtt_homo          rtte_state          rtt_walk
+
+               B4.5.68.3 Success conditions
+
+  ID                           Condition
+
+  rtt                          post: rtt == walk.rtte.addr
+
+  result                       post: result.status == RMI_SUCCESS
+
+  rtte_state                   post: walk.rtte.state == fold_pre.state
+
+Chapter B4. Realm Management Interface
+
+  ID                        Condition
+
+  rtte_addr                 pre:  fold_pre.state != RTTE_VOID
+                                  && fold_pre.state != RTTE_UNMAPPED_NS
+                            post: walk.rtte.addr == fold_pre.addr
+  rtte_attr_prot            pre: fold_pre.state == RTTE_DATA
+                            post: (RttMemAttrEqual(
+                                      walk.rtte, fold_pre,
+                                      RTT_PROTECTED)
+                                      && RttS2APEqual(
+                                          walk.rtte, fold_pre,
+                                          S2AP_INDIRECT))
+  rtte_attr_unprot          pre: fold_pre.state == RTTE_MAPPED_NS
+                            post: (RttMemAttrEqual(
+                                      walk.rtte, fold_pre,
+                                      RTT_UNPROTECTED)
+                                      && RttS2APEqual(
+                                          walk.rtte, fold_pre,
+                                          realm.rtt_s2ap_encoding))
+  rtte_ripas                pre: AddrIsProtected(ipa, realm)
+                            post: walk.rtte.ripas == fold_pre.ripas
+  rtt_state                 post: GranuleAt(walk.rtte.addr).state == GRAN_DELEGATED
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

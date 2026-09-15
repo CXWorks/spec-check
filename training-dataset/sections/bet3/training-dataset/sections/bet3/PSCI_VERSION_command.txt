@@ -1,0 +1,31 @@
+B6.3.8 PSCI_VERSION command
+                  Query the version of PSCI implemented.
+
+                  B6.3.8.1 Interface
+                  B6.3.8.1.1   Input values
+
+            Name                                 Register     Bits        Type                 Description
+
+            fid                                  X0           63:0        UInt64               FID, value 0xC4000000
+
+                  B6.3.8.1.2   Output values
+
+            Name                                 Register     Bits        Type                 Description
+
+            result                               X0           63:0        PsciInterfaceVersion
+                                                                                             Interface version
+
+                  See also:
+                     • B6.2 PSCI version
+                  B6.3.8.2 Failure conditions                          T
+                                                         AF
+                  The PSCI_VERSION command does not have any failure conditions.
+                  B6.3.8.3 Success conditions
+
+  ID                             Condition        R
+  version
+                                          D
+                                 post: VersionEqual(result, PsciVersion())
+
+Chapter B6. Power State Control Interface
+

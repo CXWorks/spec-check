@@ -1,0 +1,163 @@
+B4.5.64 RMI_RTT_DESTROY command
+                 Destroys a primary RTT.
+                 The RMI_RTT_DESTROY command may initiate a Stateful RMI Operation whose context is bound to the object
+                 identified by rd.
+                 See also:
+                    •   A5.6 Realm Translation Table
+                    •   A5.6.9 RTT destruction
+                    •   B4.5.60 RMI_RTT_CREATE command
+                    •   B4.5.68 RMI_RTT_FOLD command
+                 B4.5.64.1 Interface
+                 B4.5.64.1.1   Input values
+
+           Name                Register    Bits        Type                                  Description
+
+           fid                 X0          63:0        UInt64                                FID, value 0xC400015E
+           rd                  X1          63:0        Address                               PA of the RD for the target Realm
+           ipa                 X2          63:0        Address                               Base of the IPA range described by the
+                                                                                             RTT
+           level               X3          63:0        Int64         T                       RTT level
+
+                 B4.5.64.1.2   Context
+                                                       AF
+                 The RMI_RTT_DESTROY command operates on the following context.
+
+           Name                Type
+                                                  R       Value                                      Before   Description
+
+           realm
+           walk
+                               RmmRealm
+                                          D
+                               RmmRttWalkResult
+                                                          RealmAt(rd)
+
+                                                          RttWalk(
+                                                                                                     false
+                                                                                                     false
+                                                                                                              Realm
+                                                                                                              RTT walk result
+                                                              realm, ipa,
+                                                              level - 1,
+                                                              RMM_RTT_TREE_PRIMARY)
+           entry_idx           UInt64                     RttEntryIndex(                             false    RTTE index
+                                                              ipa, walk.level)
+           walk_top            Address                    RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                                              RttAt(walk.rtt_addr),                           RTT entries, from
+                                                              walk.level,                                     entry at which the
+                                                              ipa)                                            RTT walk terminated
+
+                 B4.5.64.1.3   Output values
+
+           Name                Register    Bits        Type                                  Description
+
+           result              X0          63:0        RmiResult                             Command result
+           rtt                 X1          63:0        Address                               PA of the RTT which was destroyed
+
+Chapter B4. Realm Management Interface
+
+           Name                Register     Bits        Type                                  Description
+
+           top                 X2           63:0        Address                               Top IPA of non-live RTT entries, from
+                                                                                              entry at which the RTT walk terminated
+
+                 The rtt output value is valid only when the command result is RMI_SUCCESS.
+                 The values of the result and top output values for different command outcomes are summarized in the following
+                 table.
+
+       Scenario                               result                                    top          walk.rtte.state
+
+       Target RTT exists and is not live      RMI_SUCCESS                                            Before execution:
+                                                                                               ipa   RTTE_TABLE
+                                                                                                     After execution: RTTE_VOID
+                                                                                                     and RIPAS is
+                                                                                                     RIPAS_DESTROYED
+       Missing RTT                            (RMI_ERROR_RTT, < level)                               RTTE_VOID or
+                                                                                               ipa   RTTE_UNMAPPED_NS
+       Block mapping at lower level           (RMI_ERROR_RTT, < level)                  == ipa       RTTE_DATA or
+
+       Live RTT at target level               (RMI_ERROR_RTT, level)
+                                                                      T                 == ipa
+                                                                                                     RTTE_MAPPED_NS
+                                                                                                     RTTE_TABLE
+       RTT walk was not performed,
+       due to any other command
+       failure
+                                                        AF
+                                              Another error code                        0            Unknown
+
+                                                   R
+                 See also:
+                                          D
+                    • A5.6.8 RTTE liveness and RTT liveness
+                 B4.5.64.2 Failure conditions
+
+  ID                            Condition
+
+  rd_align                      pre: !AddrIsRmiGranuleAligned(rd)
+                                post: result.status == RMI_ERROR_INPUT
+  rd_bound                      pre: !PaIsTracked(rd)
+                                post: result.status == RMI_ERROR_INPUT
+  rd_state                      pre: GranuleAt(rd).state != GRAN_RD
+                                post: result.status == RMI_ERROR_INPUT
+  level_bound                   pre:  (!RttLevelIsValid(realm, level)
+                                          || RttLevelIsStarting(realm, level))
+                                post: result.status == RMI_ERROR_INPUT
+  ipa_align                     pre: !AddrIsRttLevelAligned(ipa, level - 1)
+                                post: result.status == RMI_ERROR_INPUT
+  ipa_bound                     pre: UInt(ipa) >= (2 ^ realm.ipa_width)
+                                post: result.status == RMI_ERROR_INPUT
+
+Chapter B4. Realm Management Interface
+
+  ID                          Condition
+
+  rtt_walk                    pre: walk.level < level - 1
+                              post: (result.status == RMI_ERROR_RTT
+                                        && result.data.level.level == walk.level
+                                        && top == walk_top)
+  rtte_state                  pre: walk.rtte.state != RTTE_TABLE
+                              post: (result.status == RMI_ERROR_RTT
+                                        && result.data.level.level == walk.level
+                                        && top == walk_top)
+  rtt_live                    pre: RttIsLive(RttAt(walk.rtte.addr))
+                              post: (result.status == RMI_ERROR_RTT
+                                        && result.data.level.level == level
+                                        && top == ipa)
+  aux_ref                     pre: AddrIsAuxRef(ipa, realm)
+                              post: (result.status == RMI_ERROR_RTT
+                                        && result.data.level.level == walk.level)
+
+               B4.5.64.2.1   Failure condition ordering
+               [rd_bound, rd_state] < [rtt_walk, rtte_state]
+               [rtte_state] < [rtt_live, aux_ref]
+               [level_bound, ipa_bound] < [rtt_walk, rtte_state]
+                                                                   T
+                  rd_align        rd_state
+                                                     AF
+                                                    rd_bound              ipa_bound               level_bound   ipa_align
+
+                                              R                   rtt_walk           rtte_state
+
+                                      D                              aux_ref          rtt_live
+
+               B4.5.64.3 Success conditions
+
+  ID                          Condition
+
+  rtt                         post: rtt == walk.rtte.addr
+
+  top                         post: top == walk_top
+
+  result                      post: result.status == RMI_SUCCESS
+
+  state_prot                  pre: AddrIsProtected(ipa, realm)
+                              post: walk.rtte.state == RTTE_VOID
+  ripas                       pre: AddrIsProtected(ipa, realm)
+                              post: walk.rtte.ripas == RIPAS_DESTROYED
+  state_unprot                pre: !AddrIsProtected(ipa, realm)
+                              post: walk.rtte.state == RTTE_UNMAPPED_NS
+  rtt_state                   post: GranuleAt(walk.rtte.addr).state == GRAN_DELEGATED
+
+Chapter B4. Realm Management Interface
+

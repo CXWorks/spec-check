@@ -1,0 +1,78 @@
+B5.4.21 RSI_VERSION command
+                 Returns RSI version.
+                 On calling this command, the Realm provides a requested RSI version.
+                 The output values include a status code and two revisions which are supported by the RMM: a lower revision and a
+                 higher revision.
+                     • The higher revision value is the highest interface revision which is supported by the RMM.
+                     • The lower revision is less than or equal to the higher revision.
+                 The status code and lower revision output values indicate which of the following is true, in order of precedence:
+                    a) The RMM supports an interface revision which is compatible with the requested revision.
+                         • The status code is RSI_SUCCESS.
+                         • The lower revision is equal to the requested revision.
+                    b) The RMM does not support an interface revision which is compatible with the requested revision. The RMM
+                       supports an interface revision which is incompatible with and less than the requested revision.
+                         • The status code is RSI_ERROR_INPUT.
+                         • The lower revision is the highest interface revision which is both less than the requested revision and
+                           supported by the RMM.
+                    c) The RMM does not support an interface revision which is compatible with the requested revision. The RMM
+                       supports an interface revision which is incompatible with and greater than the requested revision.
+                         • The status code is RSI_ERROR_INPUT.
+                                                                       T
+                                                         AF
+                         • The lower revision is equal to the higher revision.
+                 See also:
+                     • Chapter B2 Interface versioning
+                     • B5.1 RSI version
+                 B5.4.21.1 Interface
+                                                    R
+                 B5.4.21.1.1               D
+                                Input values
+
+           Name                 Register     Bits        Type                                  Description
+
+           fid                  X0           63:0        UInt64                                FID, value 0xC4000190
+           req                  X1           63:0        RsiInterfaceVersion                   Requested interface revision
+
+                 B5.4.21.1.2    Output values
+
+           Name                 Register     Bits        Type                                  Description
+
+           result               X0           63:0        RsiCommandReturnCode                  Command result
+           lower                X1           63:0        RsiInterfaceVersion                   Lower supported interface revision
+           higher               X2           63:0        RsiInterfaceVersion                   Higher supported interface revision
+
+                 B5.4.21.2 Failure conditions
+
+Chapter B5. Realm Services Interface
+
+  ID                         Condition
+
+  incompat_lower             pre:  (!RsiVersionIsSupported(req)
+                                       && RsiVersionLowerIsSupported(req))
+                             post: (result == RSI_ERROR_INPUT
+                                       && VersionEqual(lower, RsiVersionHighestBelow(req))
+                                       && VersionEqual(higher, RsiVersionHighest()))
+  incompat_higher            pre:  (!RsiVersionIsSupported(req)
+                                       && !RsiVersionLowerIsSupported(req)
+                                       && RsiVersionHigherIsSupported(req))
+                             post: (result == RSI_ERROR_INPUT
+                                       && VersionEqual(lower, higher)
+                                       && VersionEqual(higher, RsiVersionHighest()))
+
+             B5.4.21.2.1    Failure condition ordering
+             The RSI_VERSION command does not have any failure condition orderings.
+             B5.4.21.3 Success conditions
+
+  ID                         Condition
+
+  lower                      post: VersionEqual(lower, req)
+                                                                   T
+  higher
+                                                     AF
+                             post: VersionEqual(higher, RsiVersionHighest())
+
+                                              R
+                                       D
+
+Chapter B5. Realm Services Interface
+

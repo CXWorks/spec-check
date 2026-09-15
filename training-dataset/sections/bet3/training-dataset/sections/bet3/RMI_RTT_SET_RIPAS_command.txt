@@ -1,0 +1,171 @@
+B4.5.71 RMI_RTT_SET_RIPAS command
+                 Completes a request made by the Realm to change the RIPAS of a target IPA range.
+                 The RMI_RTT_SET_RIPAS command may initiate a Stateful RMI Operation whose context is bound to the object
+                 identified by rd.
+                 See also:
+                     • A5.4 RIPAS change
+                 B4.5.71.1 Interface
+                 B4.5.71.1.1   Input values
+
+           Name                Register     Bits        Type                                  Description
+
+           fid                 X0           63:0        UInt64                                FID, value 0xC4000169
+           rd                  X1           63:0        Address                               PA of the RD for the target Realm
+           rec_ptr             X2           63:0        Address                               PA of the target REC
+           base                X3           63:0        Address                               Base of target IPA region
+           top                 X4           63:0        Address                               Top of target IPA region
+
+                 B4.5.71.1.2   Context
+                                                                      T
+                                                        AF
+                 The RMI_RTT_SET_RIPAS command operates on the following context.
+
+           Name                Type                        Value                                      Before    Description
+
+           realm               RmmRealm
+                                                   R       RealmAt(rd)                                false     Realm
+           realm_pre
+           rec
+                               RmmRealm
+                               RmmRec
+                                          D                RealmAt(rd)
+
+                                                           RecAt(rec_ptr)
+                                                                                                      true
+                                                                                                      false
+                                                                                                                Realm
+                                                                                                                REC
+           walk                RmmRttWalkResult            RttWalk(                                   false     RTT walk result
+                                                               realm, base,
+                                                               RMM_RTT_PAGE_LEVEL,
+                                                               RMM_RTT_TREE_PRIMARY)
+           ripas_pre           RmmRipas                    walk.rtte.ripas                            true      RIPAS before the
+                                                                                                                command executed
+           walk_top_pre        Address                     RttSkipEntriesWithRipas(                   true     Top IPA of entries
+                                                               RttAt(walk.rtt_addr),                           which have
+                                                               walk.level,                                     associated RIPAS
+                                                               base, top,                                      values, starting from
+                                                               (rec.ripas_value                                entry at which the
+                                                                   == RIPAS_RAM) &&
+                                                                                                               RTT walk terminated
+                                                               (rec.ripas_destroyed
+                                                                   !=
+                                                                   CHANGE_DESTROYED))
+
+                 B4.5.71.1.3   Output values
+
+Chapter B4. Realm Management Interface
+
+           Name            Register      Bits       Type                                  Description
+
+           result          X0            63:0       RmiResult                             Command result
+           out_top         X1            63:0       Address                               Top IPA of range whose RIPAS was
+                                                                                          modified
+
+IZTWQF         If result is not RMI_SUCCESS then the value of out_top is UNKNOWN.
+               B4.5.71.2 Failure conditions
+
+  ID                        Condition
+
+  rd_align                  pre: !AddrIsRmiGranuleAligned(rd)
+                            post: result.status == RMI_ERROR_INPUT
+  rd_bound                  pre: !PaIsTracked(rd)
+                            post: result.status == RMI_ERROR_INPUT
+  rd_state                  pre: GranuleAt(rd).state != GRAN_RD
+                            post: result.status == RMI_ERROR_INPUT
+  rec_align                 pre: !AddrIsRmiGranuleAligned(rec_ptr)
+                            post: result.status == RMI_ERROR_INPUT
+  rec_bound                 pre: !PaIsTracked(rec_ptr)            T
+  rec_gran_state
+
+  rec_state
+                                                    AF
+                            post: result.status == RMI_ERROR_INPUT
+                            pre: GranuleAt(rec_ptr).state != GRAN_REC
+                            post: result.status == RMI_ERROR_INPUT
+                            pre: rec.state == REC_RUNNING
+
+  rec_owner
+                                                R
+                            post: result.status == RMI_ERROR_REC
+                            pre: rec.owner != rd
+
+  size_valid                          D
+                            post: result.status == RMI_ERROR_REC
+                            pre: UInt(top) <= UInt(base)
+                            post: result.status == RMI_ERROR_INPUT
+  base_bound                pre: base != rec.ripas_addr
+                            post: result.status == RMI_ERROR_INPUT
+  top_bound                 pre: UInt(top) > UInt(rec.ripas_top)
+                            post: result.status == RMI_ERROR_INPUT
+  base_align                pre:  (!AddrIsRttLevelAligned(base, walk.level)
+                                      && ripas_pre != rec.ripas_value)
+                            post: (result.status == RMI_ERROR_RTT
+                                      && result.data.level.level == walk.level)
+  top_gran_align            pre: !AddrIsRmiGranuleAligned(top)
+                            post: result.status == RMI_ERROR_INPUT
+  no_progress               pre:  (UInt(base) == UInt(walk_top_pre)
+                                      && ripas_pre != rec.ripas_value)
+                            post: (result.status == RMI_ERROR_RTT
+                                      && result.data.level.level == walk.level)
+  aux_live                  pre: AddrRangeIsAuxLive(base, top, realm_pre)
+                            post: (result.status == RMI_ERROR_RTT
+                                      && result.data.level.level == walk.level)
+
+Chapter B4. Realm Management Interface
+
+  ID                                     Condition
+
+  ram_invalid                            pre:  ripas == RIPAS_RAM and command encounters RTT entry whose state
+                                               is neither RTTE_DATA nor RTTE_VOID.
+                                         post: (result.status == RMI_ERROR_RTT
+                                                   && result.data.level.level == walk.level)
+  dpt                                    pre:  ATS is enabled for the Realm and command encounters RTT entry
+                                               with a valid output address which is not aligned to the size
+                                               of the corresponding DPT entry.
+                                         post: result.status == RMI_ERROR_DPT
+
+                                                          result.data.level_addr.addr identifies the
+                                                          PA at which the error was encountered.
+
+                                                          result.data.level_addr.level identifies the
+                                                          level reached by the DPT walk.
+
+               B4.5.71.2.1              Failure condition ordering
+               [rd_bound, rd_state] < [base_align]
+               [rd_bound, rd_state] < [no_progress]
+               [rec_bound, rec_gran_state] < [rec_state, rec_owner]
+               [base_bound] < [base_align]
+               [top_gran_align] < [no_progress]                                                          T
+                rd_align   base_bound          rd_state
+
+                                        base_align
+                                                            rd_bound
+                                                                                     AF
+                                                                                top_gran_align
+
+                                                                       no_progress
+                                                                                                 rec_align   rec_gran_state
+
+                                                                                                                  rec_owner
+                                                                                                                              rec_bound
+
+                                                                                                                              rec_state
+                                                                                                                                          size_valid   top_bound   aux_live   ram_invalid   dpt
+
+               B4.5.71.3 Success conditions                            R
+  ID
+
+  rtte_ripas
+                                         Condition        D
+                                         post: RttEntriesInRangeRipas(
+                                                   RttAt(walk.rtt_addr),
+                                                   walk.level,
+                                                   base, walk_top_pre,
+                                                   rec.ripas_value)
+  ripas_addr                             post: rec.ripas_addr == MinAddress(top, walk_top_pre)
+
+  out_top                                post: out_top == MinAddress(top, walk_top_pre)
+
+Chapter B4. Realm Management Interface
+

@@ -1,0 +1,105 @@
+B4.5.83 RMI_VDEV_START command
+                 Start VDEV.
+                 See also:
+                    • A9.4.3 Virtual device lifecycle
+                 B4.5.83.1 Interface
+                 B4.5.83.1.1   Input values
+
+           Name                Register     Bits        Type                                  Description
+
+           fid                 X0           63:0        UInt64                                FID, value 0xC40001D3
+           rd                  X1           63:0        Address                               PA of the RD
+           pdev_ptr            X2           63:0        Address                               PA of the PDEV
+           vdev_ptr            X3           63:0        Address                               PA of the VDEV
+
+                 B4.5.83.1.2   Context
+                 The RMI_VDEV_START command operates on the following context.
+
+           Name                Type                        Value
+                                                                      T                               Before   Description
+
+           realm
+           pdev
+                               RmmRealm
+                               RmmPdev
+                                                        AF RealmAt(rd)
+
+                                                           PdevAt(pdev_ptr)
+                                                                                                      false
+                                                                                                      false
+                                                                                                               Realm
+                                                                                                               PDEV
+           vdev                RmmVdev
+                                                   R       VdevAt(vdev_ptr)                           false    VDEV
+
+                 B4.5.83.1.3              D
+                               Output values
+
+           Name                Register     Bits        Type                                  Description
+
+           result              X0           63:0        RmiResult                             Command result
+
+                 B4.5.83.2 Failure conditions
+
+  ID                            Condition
+
+  feat                          pre: Rmm().static.feat_da != FEATURE_TRUE
+                                post: result.status == RMI_ERROR_NOT_SUPPORTED
+  rd_align                      pre: !AddrIsRmiGranuleAligned(rd)
+                                post: result.status == RMI_ERROR_INPUT
+  rd_bound                      pre: !PaIsTracked(rd)
+                                post: result.status == RMI_ERROR_INPUT
+  rd_state                      pre: GranuleAt(rd).state != GRAN_RD
+                                post: result.status == RMI_ERROR_INPUT
+
+Chapter B4. Realm Management Interface
+
+  ID                            Condition
+
+  pdev_align                    pre: !AddrIsRmiGranuleAligned(pdev_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  pdev_bound                    pre: !PaIsTracked(pdev_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  pdev_gran_state               pre: GranuleAt(pdev_ptr).state != GRAN_PDEV
+                                post: result.status == RMI_ERROR_INPUT
+  vdev_align                    pre: !AddrIsRmiGranuleAligned(vdev_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  vdev_bound                    pre: !PaIsTracked(vdev_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  vdev_gran_state               pre: GranuleAt(vdev_ptr).state != GRAN_VDEV
+                                post: result.status == RMI_ERROR_INPUT
+  vdev_realm                    pre: vdev.realm != rd
+                                post: result.status == RMI_ERROR_INPUT
+  vdev_pdev                     pre: vdev.pdev != pdev_ptr
+                                post: result.status == RMI_ERROR_DEVICE
+  vdev_state                    pre: vdev.vdev_state != VDEV_LOCKED
+                                post: result.status == RMI_ERROR_DEVICE
+  comm_state                    pre: vdev.comm_state != DEV_COMM_IDLE
+                                post: result.status == RMI_ERROR_DEVICE   T
+               B4.5.83.2.1    Failure condition ordering
+                                                           AF
+               [feat] < [rd_align, rd_bound, rd_state, pdev_align, pdev_bound,
+
+                                                        R
+                    pdev_gran_state, vdev_align, vdev_bound, vdev_gran_state,
+                    vdev_realm]
+
+                                           D
+               [vdev_gran_state] < [vdev_pdev, vdev_state, comm_state]
+
+                                                                                                                              feat
+
+                 vdev_realm   vdev_bound   vdev_align   pdev_gran_state   pdev_bound   pdev_align   rd_state     rd_bound   rd_align     vdev_gran_state
+
+                                                                                                               comm_state   vdev_state     vdev_pdev
+
+               B4.5.83.3 Success conditions
+
+  ID                            Condition
+
+  op                            post: vdev.op == VDEV_OP_START
+
+  comm_state                    post: vdev.comm_state == DEV_COMM_PENDING
+
+Chapter B4. Realm Management Interface
+

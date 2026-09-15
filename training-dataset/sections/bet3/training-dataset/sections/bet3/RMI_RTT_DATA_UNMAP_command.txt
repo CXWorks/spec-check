@@ -1,0 +1,194 @@
+B4.5.63 RMI_RTT_DATA_UNMAP command
+                  Removes mappings to conventional memory within a target Protected IPA range.
+                  The RMI_RTT_DATA_UNMAP command may initiate a Stateful RMI Operation whose context is bound to the
+                  object identified by rd.
+                  See also:
+                     • A5.3.6 Remove mappings from Protected IPA space to conventional memory
+                     • B4.5.61 RMI_RTT_DATA_MAP command
+                     • D1.5.1 Add memory to Active Realm flow
+                  B4.5.63.1 Interface
+                  B4.5.63.1.1   Input values
+
+           Name                 Register    Bits        Type                                  Description
+
+           fid                  X0          63:0        UInt64                                FID, value 0xC40001F6
+           rd                   X1          63:0        Address                               PA of the RD for the target Realm
+           base                 X2          63:0        Address                               Base of the target IPA range
+           top                  X3          63:0        Address                               Top of the target IPA range
+           flags                X4          63:0                      T
+                                                        RmiRttUnmapFlags                      Flags
+           oaddr                X5          63:0
+                                                        AF
+                                                        RmiAddrSetDesc                        Output address set descriptor.
+                                                                                              If flags.oaddr_type !=
+                                                                                              RMI_ADDR_TYPE_LIST then this
+                                                                                              SBZ.
+
+                                                   R                                          If flags.oaddr_type ==
+                                                                                              RMI_ADDR_TYPE_LIST then this is
+                                                                                              the PA of a Granule that holds an RMI
+                                           D                                                  Address Range List. This describes a
+                                                                                              list of PA regions which have been
+                                                                                              unmapped from the target IPA range.
+
+                  B4.5.63.1.2   Context
+                  The RMI_RTT_DATA_UNMAP command operates on the following context.
+
+           Name                 Type                       Value                                      Before    Description
+
+           realm_pre            RmmRealm                   RealmAt(rd)                                true      Realm
+           realm                RmmRealm                   RealmAt(rd)                                false     Realm
+           size                 UInt64                     UInt(top) - UInt(base)                     false     Size of target IPA
+                                                                                                                range in bytes
+           progress             UInt64                     UInt(out_top) - UInt(base)                 false     Size of IPA range
+                                                                                                                which has been
+                                                                                                                unmapped
+           walk_pre             RmmRttWalkResult           RttWalk(                                   true      Result of RTT walk
+                                                               realm, base,                                     from base of the
+                                                               RMM_RTT_PAGE_LEVEL,                              target IPA range
+                                                               RMM_RTT_TREE_PRIMARY)
+
+Chapter B4. Realm Management Interface
+
+           Name              Type                       Value                                      Before    Description
+
+           oaddr_first       Address                    walk_pre.rtte.addr                         false     PA of start of the
+                                                                                                             output address set
+           region            RmmTrackingRegion          TrackingRegionAt(                          false     Tracking region
+                                                            oaddr_first)                                     containing start of the
+                                                                                                             output address set
+           walk              RmmRttWalkResult           RttWalk(                                   false     Result of RTT walk
+                                                            realm, base,                                     from base of the
+                                                            RMM_RTT_PAGE_LEVEL,                              target IPA range
+                                                            RMM_RTT_TREE_PRIMARY)
+
+               B4.5.63.1.3   Output values
+
+           Name              Register     Bits       Type                                  Description
+
+           result            X0           63:0       RmiResult                             Command result
+           out_top           X1           63:0       Address                               Top IPA of range which has been
+                                                                                           unmapped
+           out_range         X2           63:0                     T
+                                                     RmiAddrRangeDesc                      Output address range.
+                                                                                           If flags.oaddr_type ==
+
+                                                     AF                                    RMI_ADDR_TYPE_SINGLE then this
+                                                                                           describes a contiguous PA range which
+                                                                                           has been unmapped from the target IPA
+                                                                                           range.
+
+                                                 R                                         If flags.oaddr_type !=
+                                                                                           RMI_ADDR_TYPE_SINGLE then this
+
+           out_count         X3
+                                        D 63:0       UInt64
+                                                                                           value is zero.
+                                                                                           Number of entries in output address list.
+                                                                                           If flags.oaddr_type ==
+                                                                                           RMI_ADDR_TYPE_LIST then this is
+                                                                                           the number of entries which have been
+                                                                                           written to the output address list.
+                                                                                           If flags.oaddr_type !=
+                                                                                           RMI_ADDR_TYPE_LIST then this
+                                                                                           value is zero.
+
+IVTKMV         If result is not RMI_SUCCESS then the value of out_top is UNKNOWN.
+               B4.5.63.2 Failure conditions
+
+  ID                          Condition
+
+  rd_align                    pre: !AddrIsRmiGranuleAligned(rd)
+                              post: result.status == RMI_ERROR_INPUT
+  rd_bound                    pre: !PaIsTracked(rd)
+                              post: result.status == RMI_ERROR_INPUT
+  rd_state                    pre: GranuleAt(rd).state != GRAN_RD
+                              post: result.status == RMI_ERROR_INPUT
+
+Chapter B4. Realm Management Interface
+
+  ID                           Condition
+
+  base_align                   pre: !AddrIsRmiGranuleAligned(base)
+                               post: result.status == RMI_ERROR_INPUT
+  top_align                    pre: !AddrIsRmiGranuleAligned(top)
+                               post: result.status == RMI_ERROR_INPUT
+  size_valid                   pre: UInt(top) <= UInt(base)
+                               post: result.status == RMI_ERROR_INPUT
+  ipa_bound                    pre: !AddrRangeIsProtected(base, top, realm)
+                               post: result.status == RMI_ERROR_INPUT
+  oaddr_align                  pre:  (flags.oaddr_type == RMI_ADDR_TYPE_LIST
+                                         && !AddrIsAligned(oaddr.data.list_addr.addr, 8))
+                               post: result.status == RMI_ERROR_INPUT
+  oaddr_list_pas               pre:  (flags.oaddr_type == RMI_ADDR_TYPE_LIST
+                                         && !NonSecureAccessPermitted(
+                                             oaddr.data.list_addr.addr))
+                               post: result.status == RMI_ERROR_INPUT
+  rtte_size                    pre:  (walk.rtte.state == RTTE_DATA
+                                         && RttLevelSize(walk.level) > size)
+                               post: (result.status == RMI_ERROR_RTT
+                                         && result.data.level.level == walk.level)
+  tracking                     pre:
+                                                                    T
+                                     (!TrackingRegionIsTracked(region)
+                                         || TrackingRegionGranularity(region) > size)
+
+                                                      AF
+                               post: (result.status == RMI_ERROR_TRACKING
+                                         && result.data.level_addr.level ==
+                                             TrackingToRmiResult(oaddr_first)
+                                         && result.data.level_addr.addr ==
+                                             AddrShiftRmiGranule(oaddr_first))
+  dpt_gran                     pre:            R
+                                     (realm.feat_ats == FEATURE_TRUE
+                                         && !DptEntryCanDescribe(oaddr_first, size))
+                                       D
+                               post: (result.status == RMI_ERROR_DPT
+                                         && result.data.level_addr.level ==
+                                             DptLevel(oaddr_first)
+                                         && result.data.level_addr.addr ==
+                                             AddrShiftRmiGranule(oaddr_first))
+
+                B4.5.63.2.1   Failure condition ordering
+                The RMI_RTT_DATA_UNMAP command does not have any failure condition orderings.
+                B4.5.63.3 Success conditions
+
+  ID                           Condition
+
+  state                        post: RttTreeRangeAllState(
+                                         realm, RMM_RTT_TREE_PRIMARY,
+                                         base, out_top, RTTE_VOID)
+  ripas                        post: RealmIpaRangeAllRipasIf(
+                                         realm_pre, realm,
+                                         base, out_top,
+                                         RIPAS_RAM, RIPAS_DESTROYED)
+  addr_single                  pre: flags.oaddr_type == RMI_ADDR_TYPE_SINGLE
+                               post: out_range.data.addr == walk_pre.rtte.addr
+
+Chapter B4. Realm Management Interface
+
+  ID                        Condition
+
+  addr_list                 pre: flags.oaddr_type == RMI_ADDR_TYPE_LIST
+                            post: RttTreeRangeAllOaddrList(
+                                      realm, RMM_RTT_TREE_PRIMARY,
+                                      base,
+                                      oaddr.data.list_addr.addr,
+                                      progress)
+  gran_state_contig         pre: flags.oaddr_type == RMI_ADDR_TYPE_SINGLE
+                            post: GranulesAllState(
+                                      RmiAddrRangeDescDecode(oaddr.data.single).base,
+                                      progress, GRAN_DELEGATED)
+  gran_state_list           pre: flags.oaddr_type == RMI_ADDR_TYPE_LIST
+                            post: GranulesAllStateList(
+                                      oaddr.data.list_addr.addr,
+                                      progress, GRAN_DELEGATED)
+  result                    post: result.status == RMI_SUCCESS
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

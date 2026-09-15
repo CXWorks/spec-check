@@ -1,0 +1,865 @@
+B5.4.22 RSI_VSMMU_GET_INFO command
+                 Get information of a VSMMU.
+                 See also:
+                    • A9.8.4 VSMMU validation
+                 B5.4.22.1 Interface
+                 B5.4.22.1.1   Input values
+
+           Name                Register     Bits       Type                                  Description
+
+           fid                 X0           63:0       UInt64                                FID, value 0xC400019A
+           addr                X1           63:0       Address                               Base IPA of the VSMMU
+
+                 B5.4.22.1.2   Context
+                 The RSI_VSMMU_GET_INFO command operates on the following context.
+
+           Name                Type                       Value                                      Before   Description
+
+           realm               RmmRealm                              T
+                                                          CurrentRealm()                             false    Current Realm
+           walk                RmmRttWalkResult
+                                                       AF RttWalk(
+                                                              realm, addr,
+                                                              RMM_RTT_PAGE_LEVEL,
+                                                              RMM_RTT_TREE_PRIMARY)
+                                                                                                     false    RTT walk result
+
+                 B5.4.22.1.3   Output values
+                                                   R
+           Name                Register
+                                          D Bits       Type                                  Description
+
+           result              X0           63:0       RsiCommandReturnCode                  Command result
+           top                 X1           63:0       Address                               Top IPA of the VSMMU
+
+                 B5.4.22.2 Failure conditions
+
+  ID                            Condition
+
+  addr_align                    pre: !AddrIsRsiGranuleAligned(addr)
+                                post: result == RSI_ERROR_INPUT
+  addr_bound                    pre: !AddrIsProtected(addr, realm)
+                                post: result == RSI_ERROR_INPUT
+  rtte_state                    pre: walk.rtte.state != RTTE_ARCH_DEV
+                                post: result == RSI_ERROR_INPUT
+  vsmmu_base                    pre: addr != VsmmuAt(walk.rtte.addr).reg_base
+                                post: result == RSI_ERROR_INPUT
+
+Chapter B5. Realm Services Interface
+
+             B5.4.22.2.1    Failure condition ordering
+             The RSI_VSMMU_GET_INFO command does not have any failure condition orderings.
+             B5.4.22.3 Success conditions
+
+  ID                         Condition
+
+  vsmmu_base                 post: top == VsmmuAt(walk.rtte.addr).reg_top
+
+                                                                   T
+                                                     AF
+                                              R
+                                       D
+
+Chapter B5. Realm Services Interface
+
+B5.5 RSI types
+               This section defines types which are used in the RSI interface.
+
+B5.5.1 RsiArchDevType type
+               The RsiArchDevType enumeration represents architectural device type.
+               The RsiArchDevType enumeration is a concrete type.
+               The width of the RsiArchDevType enumeration is 64 bits.
+               The values of the RsiArchDevType enumeration are shown in the following table.
+
+           Encoding        Name                                  Description
+
+           0               RSI_ARCH_DEV_SMMUV3                   SMMUv3
+
+               Unused encodings for the RsiArchDevType enumeration are reserved for use by future versions of this specification.
+
+B5.5.2 RsiBoolean type
+               The RsiBoolean enumeration represents a boolean value.
+               The RsiBoolean enumeration is a concrete type.        T
+                                                       AF
+               The width of the RsiBoolean enumeration is 1 bits.
+               The values of the RsiBoolean enumeration are shown in the following table.
+
+           Encoding        Name
+                                                R                Description
+
+           0
+           1
+                           RSI_FALSE
+                           RSI_TRUE
+                                        D                        False
+                                                                 True
+
+               The RsiBoolean enumeration is used in the following types:
+                  • RsiVdevFlags
+                  • RsiSysregAddress
+
+B5.5.3 RsiCommandReturnCode type
+               The RsiCommandReturnCode enumeration represents a return code from an RSI command.
+               The RsiCommandReturnCode enumeration is a concrete type.
+               The width of the RsiCommandReturnCode enumeration is 64 bits.
+               See also:
+                  • Chapter B1 Commands
+               The values of the RsiCommandReturnCode enumeration are shown in the following table.
+
+Chapter B5. Realm Services Interface
+
+           Encoding      Name                                   Description
+
+           0             RSI_SUCCESS                            Command completed successfully
+           1             RSI_ERROR_INPUT                        The value of a command input value caused the command to fail
+           2             RSI_ERROR_STATE                        The state of the current Realm or current REC does not match the
+                                                                state expected by the command
+           3             RSI_INCOMPLETE                         The operation requested by the command is not complete
+           4             RSI_ERROR_UNKNOWN                      The operation requested by the command failed for an unknown
+                                                                reason
+           5             RSI_ERROR_DEVICE                       The state of a Realm device does not match the state expected by
+                                                                the command
+
+               Unused encodings for the RsiCommandReturnCode enumeration are reserved for use by future versions of this
+               specification.
+
+B5.5.4 RsiDevMemCoherent type
+               The RsiDevMemCoherent enumeration represents whether a device memory location is within the system coherent
+               memory space.
+               The RsiDevMemCoherent enumeration is a concrete type.T
+                                                      AF
+               The width of the RsiDevMemCoherent enumeration is 1 bits.
+               The values of the RsiDevMemCoherent enumeration are shown in the following table.
+
+           Encoding      Name
+                                               R                    Description
+
+           0
+
+           1
+                                       D
+                         RSI_DEV_MEM_NON_COHERENT A device memory location is not within the system coherent
+
+                         RSI_DEV_MEM_COHERENT
+                                                  memory space
+                                                                    A device memory location is within the system coherent
+                                                                    memory space
+
+               The RsiDevMemCoherent enumeration is used in the following types:
+                  • RsiDevMemFlags
+
+B5.5.5 RsiDevMemFlags type
+               The RsiDevMemFlags fieldset contains flags which describe properties of a device memory mapping.
+               The RsiDevMemFlags fieldset is a concrete type.
+               The width of the RsiDevMemFlags fieldset is 64 bits.
+               The fields of the RsiDevMemFlags fieldset are shown in the following diagram.
+
+Chapter B5. Realm Services Interface
+
+               The fields of the RsiDevMemFlags fieldset are shown in the following table.
+
+ Name                               Bits     Description                                           Value
+
+ coh                                0        Whether the output address of the device              RsiDevMemCoherent
+                                             memory mapping is within the system coherent
+                                             memory space.
+ order                              1                               T
+                                             Ordering properties of the device memory
+                                             location.
+                                                                                                   RsiDevMemOrdering
+
+                                    63:2     Reserved
+                                                      AF                                           SBZ
+
+B5.5.6 RsiDevMemOrdering type
+                                               R
+               The RsiDevMemOrdering enumeration represents ordering properties of a device memory location.
+                                        D
+               The RsiDevMemOrdering enumeration is a concrete type.
+               The width of the RsiDevMemOrdering enumeration is 1 bits.
+               The values of the RsiDevMemOrdering enumeration are shown in the following table.
+
+           Encoding      Name                                                 Description
+
+           0             RSI_DEV_MEM_NOT_LIMITED_ORDER                        A device memory location is not within a Limited
+                                                                              Order Region (LOR)
+           1             RSI_DEV_MEM_LIMITED_ORDER                            A device memory location is within a Limited Order
+                                                                              Region (LOR)
+
+               The RsiDevMemOrdering enumeration is used in the following types:
+                  • RsiDevMemFlags
+
+B5.5.7 RsiFeature type
+               The RsiFeature enumeration represents whether a feature is enabled.
+               The RsiFeature enumeration is a concrete type.
+
+Chapter B5. Realm Services Interface
+
+               The width of the RsiFeature enumeration is 1 bits.
+               The values of the RsiFeature enumeration are shown in the following table.
+
+           Encoding       Name                                   Description
+
+           0              RSI_FEATURE_FALSE                      Feature is not enabled.
+           1              RSI_FEATURE_TRUE                       Feature is enabled.
+
+               The RsiFeature enumeration is used in the following types:
+                  • RsiVdevFlags
+                  • RsiFeatureRegister0
+                  • RsiVdevDmaFlags
+
+B5.5.8 RsiFeatureRegister0 type
+               The RsiFeatureRegister0 fieldset contains RSI feature register 0.
+               The RsiFeatureRegister0 fieldset is a concrete type.
+               The width of the RsiFeatureRegister0 fieldset is 64 bits.
+               The fields of the RsiFeatureRegister0 fieldset are shown in the following diagram.
+                                                                     T
+                                                       AF
+                                                R
+                                         D
+               The fields of the RsiFeatureRegister0 fieldset are shown in the following table.
+
+ Name                                Bits     Description                                           Value
+
+ DA                                  0        Whether Realm device assignment is supported          RsiFeature
+ MRO                                 1        Whether “mostly read-only” permissions are            RsiFeature
+                                              supported
+ ATS                                 2        Whether Address Translation Service is                RsiFeature
+                                              supported for devices assigned to the Realm
+                                     63:3     Reserved                                              MBZ
+
+B5.5.9 RsiGicOwner type
+               The RsiGicOwner enumeration represents which Plane is GIC owner.
+
+Chapter B5. Realm Services Interface
+
+               The RsiGicOwner enumeration is a concrete type.
+               The width of the RsiGicOwner enumeration is 1 bits.
+               The values of the RsiGicOwner enumeration are shown in the following table.
+
+           Encoding        Name                                  Description
+
+           0               RSI_GIC_OWNER_0                       Plane 0 is GIC owner.
+           1               RSI_GIC_OWNER_N                       Plane N is GIC owner.
+
+               The RsiGicOwner enumeration is used in the following types:
+                  • RsiPlaneEnterFlags
+
+B5.5.10 RsiHashAlgorithm type
+               The RsiHashAlgorithm enumeration represents hash algorithm.
+               The RsiHashAlgorithm enumeration is a concrete type.
+               The width of the RsiHashAlgorithm enumeration is 8 bits.
+               See also:
+                  • B5.4.16 RSI_REALM_CONFIG command                 T
+                                                       AF
+               The values of the RsiHashAlgorithm enumeration are shown in the following table.
+
+           Encoding        Name                                  Description
+
+           0               RSI_HASH_SHA_256     R                SHA-256 (Secure Hash Standard (SHS) [27])
+           1
+           2
+                                        D
+                           RSI_HASH_SHA_512
+                           RSI_HASH_SHA_384
+                                                                 SHA-512 (Secure Hash Standard (SHS) [27])
+                                                                 SHA-384 (Secure Hash Standard (SHS) [27])
+
+               Unused encodings for the RsiHashAlgorithm enumeration are reserved for use by future versions of this
+               specification.
+               The RsiHashAlgorithm enumeration is used in the following types:
+                  • RsiRealmConfig
+                  • RsiVdevInfo
+
+B5.5.11 RsiHostCall type
+               The RsiHostCall structure contains data structure used to pass Host call arguments and return values.
+               The RsiHostCall structure is a concrete type.
+               The width of the RsiHostCall structure is 256 (0x100) bytes.
+               See also:
+                  • A4.5 Host call
+                  • B5.4.5 RSI_HOST_CALL command
+               The members of the RsiHostCall structure are shown in the following table.
+
+Chapter B5. Realm Services Interface
+
+         Name                  Byte offset       Type                                     Description
+
+         imm                   0x0               UInt16                                   Immediate value
+         gprs[31]              0x8               Bits64                                   Registers
+
+                 Unused bits of the RsiHostCall structure SBZ.
+
+B5.5.12 RsiInterfaceVersion type
+                 The RsiInterfaceVersion fieldset contains an RSI interface version.
+                 The RsiInterfaceVersion fieldset is a concrete type.
+                 The width of the RsiInterfaceVersion fieldset is 64 bits.
+                 See also:
+                    • B5.1 RSI version
+                    • B5.4.21 RSI_VERSION command
+                 The fields of the RsiInterfaceVersion fieldset are shown in the following diagram.
+
+                                                                       T
+                                                          AF
+                 The fields of the RsiInterfaceVersion fieldset are shown in the following table.
+
+ Name                                  Bits
+                                                  R
+                                                Description                                           Value
+
+ minor
+
+ major
+                                          D
+                                       15:0
+
+                                       30:16
+                                                Interface minor version number (the value y in
+                                                interface version x.y)
+                                                Interface major version number (the value x in
+                                                                                                      UInt16
+
+                                                                                                      UInt15
+                                                interface version x.y)
+                                       63:31    Reserved                                              SBZ
+
+B5.5.13 RsiPlaneEnter type
+                 The RsiPlaneEnter structure contains data passed from P0 to the RMM on Plane entry.
+                 The RsiPlaneEnter structure is a concrete type.
+                 The width of the RsiPlaneEnter structure is 2048 (0x800) bytes.
+                 The members of the RsiPlaneEnter structure are shown in the following table.
+
+         Name                  Byte offset       Type                                     Description
+
+         flags                 0x0               RsiPlaneEnterFlags                       Flags
+         pc                    0x8               Bits64                                   Program counter
+         pstate                0x10              Bits64                                   PSTATE
+
+Chapter B5. Realm Services Interface
+
+        Name                Byte offset      Type                                     Description
+
+        gprs[31]            0x100            Bits64                                   Registers
+        gicv3_hcr           0x200            Bits64                                   GICv3 Hypervisor Control Register value
+        gicv3_lrs[16]       0x208            Bits64                                   GICv3 List Register values
+        elr_el1             0x400            Bits64                                   ELR_EL1 value
+
+             Unused bits of the RsiPlaneEnter structure SBZ.
+             The RsiPlaneEnter structure is used in the following types:
+                   • RsiPlaneRun
+
+B5.5.14 RsiPlaneEnterFlags type
+             The RsiPlaneEnterFlags fieldset contains flags provided by P0 during Plane entry.
+             The RsiPlaneEnterFlags fieldset is a concrete type.
+             The width of the RsiPlaneEnterFlags fieldset is 64 bits.
+             The fields of the RsiPlaneEnterFlags fieldset are shown in the following diagram.
+
+                                                                   T
+                                                      AF
+                                              R
+                                        D
+             The fields of the RsiPlaneEnterFlags fieldset are shown in the following table.
+
+ Name                               Bits    Description                                           Value
+
+ trap_wfi                           0       Whether to trap WFI execution by the Plane.           RsiTrap
+ trap_wfe                           1       Whether to trap WFE execution by the Plane.           RsiTrap
+ trap_hc                            2       Whether to trap RSI_HOST_CALL execution               RsiTrap
+                                            by the Plane.
+                                            RSI_TRAP: execution of RSI_HOST_CALL
+                                            causes Plane exit
+                                            RSI_NO_TRAP: execution of
+                                            RSI_HOST_CALL causes REC exit to Host
+ gic_owner                          3       Whether to transfer GIC ownership to the              RsiGicOwner
+                                            target Plane.
+
+Chapter B5. Realm Services Interface
+
+ Name                                 Bits    Description                                             Value
+
+ trap_simd                            4       Whether to trap access to SIMD and SVE by               RsiTrap
+                                              the Plane.
+ trap_dbg                             5       Whether to trap debug exceptions taken from             RsiTrap
+                                              the Plane.
+                                      63:6    Reserved                                                SBZ
+
+             The RsiPlaneEnterFlags fieldset is used in the following types:
+                    • RsiPlaneEnter
+
+B5.5.15 RsiPlaneExit type
+             The RsiPlaneExit structure contains data passed from the RMM to P0 on Plane exit.
+             The RsiPlaneExit structure is a concrete type.
+             The width of the RsiPlaneExit structure is 2048 (0x800) bytes.
+             The members of the RsiPlaneExit structure are shown in the following table.
+
+        Name                 Byte offset       Type                  T                  Description
+
+        reason
+        pc
+        pstate
+                             0x0
+                             0x8
+
+                             0x10
+                                                        AF
+                                               RsiPlaneExitReason
+                                               Bits64
+                                               Bits64
+                                                                                        Exit reason
+                                                                                        Program counter
+                                                                                        PSTATE
+        gprs[31]             0x100              R
+                                               Bits64                                   Registers
+        esr_el2
+        far_el2
+        hpfar_el2
+                             0x200
+                             0x208
+
+                             0x210
+                                          D    Bits64
+                                               Bits64
+                                               Bits64
+                                                                                        Exception Syndrome Register
+                                                                                        Fault Address Register
+                                                                                        Hypervisor IPA Fault Address register
+        gicv3_hcr            0x300             Bits64                                   GICv3 Hypervisor Control Register value
+        gicv3_lrs[16]        0x308             Bits64                                   GICv3 List Register values
+        gicv3_misr           0x388             Bits64                                  GICv3 Maintenance Interrupt State Register
+                                                                                       value
+        gicv3_vmcr           0x390             Bits64                                  GICv3 Virtual Machine Control Register
+                                                                                       value
+        cntp_ctl             0x400             Bits64                                   Counter-timer Physical Timer Control
+                                                                                        Register value
+        cntp_cval            0x408             Bits64                                   Counter-timer Physical Timer CompareValue
+                                                                                        Register value
+        cntv_ctl             0x410             Bits64                                   Counter-timer Virtual Timer Control
+                                                                                        Register value
+        cntv_cval            0x418             Bits64                                   Counter-timer Virtual Timer CompareValue
+                                                                                        Register value
+        sctlr_el1            0x500             Bits64                                   SCTLR_EL1 value
+
+Chapter B5. Realm Services Interface
+
+        Name                  Byte offset       Type                                     Description
+
+        vbar_el1              0x508             Bits64                                   VBAR_EL1 value
+        elr_el1               0x510             Bits64                                   ELR_EL1 value
+        pmu_ovf_status        0x600             RsiPmuOverflowStatus                     PMU overflow status
+
+                Unused bits of the RsiPlaneExit structure SBZ.
+                The RsiPlaneExit structure is used in the following types:
+                   • RsiPlaneRun
+
+B5.5.16 RsiPlaneExitReason type
+                The RsiPlaneExitReason enumeration represents the reason for a Plane exit.
+                The RsiPlaneExitReason enumeration is a concrete type.
+                The width of the RsiPlaneExitReason enumeration is 8 bits.
+                The values of the RsiPlaneExitReason enumeration are shown in the following table.
+
+           Encoding       Name
+                                                                      T
+                                                                  Description
+
+           0
+           1
+           2
+                          RSI_EXIT_SYNC
+                          RSI_EXIT_IRQ
+                          RSI_EXIT_HOST
+                                                         AF       Plane exit due to synchronous exception
+                                                                  Plane exit due to IRQ
+                                                                  Plane exit due to Host action
+
+                                                 R
+                Unused encodings for the RsiPlaneExitReason enumeration are reserved for use by future versions of this
+                specification.           D
+                The RsiPlaneExitReason enumeration is used in the following types:
+                   • RsiPlaneExit
+
+B5.5.17 RsiPlaneRun type
+                The RsiPlaneRun structure contains fields used to share information between RMM and P0 during Plane entry and
+                Plane exit.
+                The RsiPlaneRun structure is a concrete type.
+                The width of the RsiPlaneRun structure is 4096 (0x1000) bytes.
+                The members of the RsiPlaneRun structure are shown in the following table.
+
+        Name                  Byte offset       Type                                     Description
+
+        enter                 0x0               RsiPlaneEnter                            Entry information
+        exit                  0x800             RsiPlaneExit                             Exit information
+
+Chapter B5. Realm Services Interface
+
+B5.5.18 RsiPmuOverflowStatus type
+               The RsiPmuOverflowStatus enumeration represents PMU overflow status.
+               The RsiPmuOverflowStatus enumeration is a concrete type.
+               The width of the RsiPmuOverflowStatus enumeration is 8 bits.
+               The values of the RsiPmuOverflowStatus enumeration are shown in the following table.
+
+           Encoding        Name                                           Description
+
+           0               RSI_PMU_OVERFLOW_NOT_ACTIVE                    PMU overflow is not active.
+           1               RSI_PMU_OVERFLOW_ACTIVE                        PMU overflow is active.
+
+               Unused encodings for the RsiPmuOverflowStatus enumeration are reserved for use by future versions of this
+               specification.
+               The RsiPmuOverflowStatus enumeration is used in the following types:
+                  • RsiPlaneExit
+
+B5.5.19 RsiRealmConfig type
+                                                                    T
+               The RsiRealmConfig structure contains realm configuration.
+
+                                                       AF
+               The RsiRealmConfig structure is a concrete type.
+               The width of the RsiRealmConfig structure is 4096 (0x1000) bytes.
+               See also:
+
+                                               R
+                  • B5.4.16 RSI_REALM_CONFIG command
+               The members of the RsiRealmConfig structure are shown in the following table.
+
+        Name
+                                       D
+                             Byte offset      Type                                     Description
+
+        ipa_width            0x0              UInt64                                   IPA width in bits
+        hash_algo            0x8              RsiHashAlgorithm                         Hash algorithm
+        num_aux_planes       0x10             UInt64                                   Number of auxiliary Planes
+        gicv3_vtr            0x18             Bits64                                   GICv3 VGIC Type Register value
+        ats_plane            0x20             UInt64                                   Index of Plane whose stage 2 permissions are
+                                                                                       observed by ATS requests from devices
+                                                                                       assigned to the Realm
+        rpv                  0x200            Bits512                                  Realm Personalization Value
+
+               Unused bits of the RsiRealmConfig structure MBZ.
+
+B5.5.20 RsiResponse type
+               The RsiResponse enumeration represents whether the Host accepted or rejected a Realm request.
+               The RsiResponse enumeration is a concrete type.
+
+Chapter B5. Realm Services Interface
+
+               The width of the RsiResponse enumeration is 1 bits.
+               The values of the RsiResponse enumeration are shown in the following table.
+
+           Encoding        Name                                 Description
+
+           0               RSI_RESPONSE_ACCEPT                  Host accepted the Realm request.
+           1               RSI_RESPONSE_REJECT                  Host rejected the Realm request.
+
+B5.5.21 RsiRipas type
+               The RsiRipas enumeration represents realm IPA state.
+               The RsiRipas enumeration is a concrete type.
+               The width of the RsiRipas enumeration is 8 bits.
+               See also:
+                  • A5.4 RIPAS change
+                  • B5.4.6 RSI_IPA_STATE_GET command
+                  • B5.4.7 RSI_IPA_STATE_SET command
+               The values of the RsiRipas enumeration are shown in the following table.
+                                                                    T
+           Encoding
+
+           0
+           1
+                           Name
+
+                           RSI_RIPAS_EMPTY
+                           RSI_RIPAS_RAM
+                                                      AF        Description
+
+                                                                Address where no Realm resources are mapped.
+                                                                Address where private code or data owned by the Realm is
+
+           2               RSI_RIPAS_DESTROYED
+                                               R                mapped.
+                                                                Address which is inaccessible to the Realm due to an action taken
+
+           3
+                                       D
+                           RSI_RIPAS_DEV
+                                                                by the Host.
+                                                                Address where memory of an assigned Realm device is mapped.
+
+               Unused encodings for the RsiRipas enumeration are reserved for use by future versions of this specification.
+
+B5.5.22 RsiRipasChangeDestroyed type
+               The RsiRipasChangeDestroyed enumeration represents whether a RIPAS change from RIPAS_DESTROYED to
+               RIPAS_RAM should be permitted.
+               The RsiRipasChangeDestroyed enumeration is a concrete type.
+               The width of the RsiRipasChangeDestroyed enumeration is 1 bits.
+               The values of the RsiRipasChangeDestroyed enumeration are shown in the following table.
+
+           Encoding        Name                                   Description
+
+           0               RSI_NO_CHANGE_DESTROYED                A RIPAS change from RIPAS_DESTROYED to RIPAS_RAM
+                                                                  should not be permitted.
+           1               RSI_CHANGE_DESTROYED                   A RIPAS change from RIPAS_DESTROYED to RIPAS_RAM
+                                                                  should be permitted.
+
+Chapter B5. Realm Services Interface
+
+             The RsiRipasChangeDestroyed enumeration is used in the following types:
+                 • RsiRipasChangeFlags
+
+B5.5.23 RsiRipasChangeFlags type
+             The RsiRipasChangeFlags fieldset contains flags provided by the Realm when requesting a RIPAS change.
+             The RsiRipasChangeFlags fieldset is a concrete type.
+             The width of the RsiRipasChangeFlags fieldset is 64 bits.
+             The fields of the RsiRipasChangeFlags fieldset are shown in the following diagram.
+
+                                                                   T
+                                                     AF
+             The fields of the RsiRipasChangeFlags fieldset are shown in the following table.
+
+ Name                              Bits
+                                              R
+                                            Description                                           Value
+
+ destroyed                         0
+                                       D    Whether a RIPAS change from
+                                            RIPAS_DESTROYED to RIPAS_RAM should
+                                            be permitted
+                                                                                                  RsiRipasChangeDestroyed
+
+                                   63:1     Reserved                                              SBZ
+
+B5.5.24 RsiSysregAddress type
+             The RsiSysregAddress fieldset contains system register address.
+             The RsiSysregAddress fieldset is a concrete type.
+             The width of the RsiSysregAddress fieldset is 64 bits.
+             The fields of the RsiSysregAddress fieldset are shown in the following diagram.
+
+Chapter B5. Realm Services Interface
+
+               The fields of the RsiSysregAddress fieldset are shown in the following table.
+
+ Name                                Bits     Description                                           Value
+
+ Op2                                 2:0      Op2                                                   Bits3
+ CRm                                 6:3      CRm                                                   Bits4
+ CRn
+ Op1
+                                     10:7
+                                     13:11
+                                              CRn
+                                              Op1
+                                                                     T                              Bits4
+                                                                                                    Bits3
+ Op0
+ d128
+                                     15:14
+                                     16
+                                              Op0
+                                                       AF
+                                              Perform 128-bit sysreg access
+                                                                                                    Bits2
+                                                                                                    RsiBoolean
+                                     63:17
+                                                R
+                                              Reserved                                              SBZ
+
+B5.5.25 RsiTrap type                      D
+               The RsiTrap enumeration represents whether a trap is enabled.
+               The RsiTrap enumeration is a concrete type.
+               The width of the RsiTrap enumeration is 1 bits.
+               The values of the RsiTrap enumeration are shown in the following table.
+
+           Encoding      Name                                    Description
+
+           0             RSI_NO_TRAP                             Trap is disabled.
+           1             RSI_TRAP                                Trap is enabled.
+
+               The RsiTrap enumeration is used in the following types:
+                  • RsiPlaneEnterFlags
+
+B5.5.26 RsiVdevDmaFlags type
+               The RsiVdevDmaFlags fieldset contains flags which control device DMA.
+               The RsiVdevDmaFlags fieldset is a concrete type.
+
+Chapter B5. Realm Services Interface
+
+             The width of the RsiVdevDmaFlags fieldset is 64 bits.
+             The fields of the RsiVdevDmaFlags fieldset are shown in the following diagram.
+
+             The fields of the RsiVdevDmaFlags fieldset are shown in the following table.
+
+ Name                              Bits     Description                                           Value
+
+ ats                               0
+                                   63:1
+                                                                   T
+                                            Whether to enable ATS for this device.
+                                            Reserved
+                                                                                                  RsiFeature
+                                                                                                  SBZ
+
+B5.5.27 RsiVdevFlags type
+                                                     AF
+                                              R
+             The RsiVdevFlags fieldset contains flags which describe properties of a device.
+             The RsiVdevFlags fieldset is a concrete type.
+                                       D
+             The width of the RsiVdevFlags fieldset is 64 bits.
+             The fields of the RsiVdevFlags fieldset are shown in the following diagram.
+
+             The fields of the RsiVdevFlags fieldset are shown in the following table.
+
+Chapter B5. Realm Services Interface
+
+ Name                                Bits     Description                                           Value
+
+ vsmmu                               0        Whether this device is associated with a              RsiFeature
+                                              VSMMU
+ protocol_data_set                   1        Whether protocol data has been set for this           RsiBoolean
+                                              device
+ platform_nonce                      2        Whether signed measurements for this device           RsiBoolean
+                                              use a platform-nonce
+                                     63:3     Reserved                                              MBZ
+
+                The RsiVdevFlags fieldset is used in the following types:
+                   • RsiVdevInfo
+
+B5.5.28 RsiVdevInfo type
+                The RsiVdevInfo structure contains device configuration information.
+                The RsiVdevInfo structure is a concrete type.
+                The width of the RsiVdevInfo structure is 512 (0x200) bytes.
+                See also:                                            T
+                                                        AF
+                   • A9.6 Realm management of an assigned virtual device
+                   • B5.4.19 RSI_VDEV_GET_INFO command
+                The members of the RsiVdevInfo structure are shown in the following table.
+
+        Name                  Byte offset       R
+                                               Type                                     Description
+
+        flags
+        id_index
+                              0x0
+
+                              0x8
+                                         D     RsiVdevFlags
+                                               UInt64
+                                                                                        Flags
+                                                                                        Device identity index
+        hash_algo             0x10             RsiHashAlgorithm                         Algorithm used to generate device digests
+        lock_seq              0x18             UInt64                                   Lock sequence counter which is incremented
+                                                                                        on successful transition to VDEV_LOCKED
+                                                                                        state
+        meas_seq              0x20             UInt64                                   Measurement sequence counter which is
+                                                                                        incremented on every successful
+                                                                                        GET_MEASUREMENT request
+        report_seq            0x28             UInt64                                   Report sequence counter which is
+                                                                                        incremented on every successful
+                                                                                        GET_INTERFACE_REPORT request
+        tdisp_version         0x38             UInt64                                  TDISP version, encoded as follows:
+                                                                                       bits[31:16]: major version bits[15:0]: minor
+                                                                                       version
+        state                 0x40             RsiVdevState                             State of the device
+
+Chapter B5. Realm Services Interface
+
+        Name                 Byte offset      Type                                     Description
+
+        protocol_data_digest0x80              Bits512                                  Protocol data digest
+                                                                                       If protocol_data_set is RSI_TRUE, this field
+                                                                                       contains the digest of the protocol data
+                                                                                       associated with this device; otherwise, this
+                                                                                       field is set to zero.
+        identity_digest      0xc0             Bits512                                  Identity digest
+        pubkey_digest        0x100            Bits512                                  Public key digest
+        meas_digest          0x140            Bits512                                  Measurement digest
+        report_digest        0x180            Bits512                                  Interface report digest
+        vsmmu_addr           0x1c0            Address                                 Base IPA of the VSMMU which is
+                                                                                      associated with this device.
+                                                                                      This field is valid only if flags.vsmmu ==
+                                                                                      RSI_FEATURE_TRUE.
+        vsmmu_vsid           0x1c8            Bits64                                  Virtual Stream ID.
+                                                                                      This field is valid only if flags.vsmmu ==
+                                                                                      RSI_FEATURE_TRUE.
+
+               Unused bits of the RsiVdevInfo structure MBZ.
+                                                                    T
+B5.5.29 RsiVdevState type                              AF
+               The RsiVdevState enumeration represents the state of a VDEV.
+
+                                               R
+               The RsiVdevState enumeration is a concrete type.
+               The width of the RsiVdevState enumeration is 8 bits.
+                                       D
+               The values of the RsiVdevState enumeration are shown in the following table.
+
+           Encoding       Name                                  Description
+
+           0              RSI_VDEV_UNLOCKED                     Device interface is unlocked.
+           1              RSI_VDEV_LOCKED                       Device interface is locked.
+           2              RSI_VDEV_STARTED                      Device interface is started.
+           3              RSI_VDEV_ERROR                        Device interface has reported a fatal error.
+
+               Unused encodings for the RsiVdevState enumeration are reserved for use by future versions of this specification.
+               The RsiVdevState enumeration is used in the following types:
+                  • RsiVdevInfo
+
+Chapter B6
+Power State Control Interface
+
+                                                                T
+                                                  AF
+                                           R
+           This section describes how Power State Control Interface (PSCI) function execution by a Realm execution of SMC
+           instructions is handled.
+
+                                   D
+
+Chapter B6. Power State Control Interface
+
+B6.1 PSCI overview
+IGBVWX        In this section,
+                 • rec refers to the currently executing REC
+                 • exit refer to the RmiRecExit object which was provided to the RMI_REC_ENTER command
+                 • target_rec refers to the REC object identified by an MPIDR value passed to a PSCI function.
+IGHKCJ        The RMM provides a trusted implementation of parts of the PSCI ABI. This section describes the checks performed
+              by the RMM when a Realm executes a PSCI command, and the internal RMM state changes which result from a
+              successful PSCI command execution. Successful execution by the RMM of some PSCI commands results in a
+              REC exit due to PSCI, which allows the Host to perform further processing of the command.
+IXHDQF        The HVC conduit for PSCI is not supported for Realms.
+              See also:
+                 • Arm Power State Coordination Interface (PSCI) [28]
+                 • A2.4.2 REC attributes
+                 • A4.3.7 REC exit due to PSCI
+                 • A4.5 Host call
+                 • D1.4 PSCI flows
+
+B6.2 PSCI version
+RTFCVF
+                                                                       T
+              The RMM must support version >= 1.1 of the Power State Control Interface.
+              See also:
+                 • B6.3.8 PSCI_VERSION command
+                                                         AF
+                                                  R
+                                          D
+
+Chapter B6. Power State Control Interface
+
+B6.3 PSCI commands
+              The following table summarizes the FIDs of commands in the PSCI interface.
+
+                                                   FID                    Command
+
+                                                   0xC4000000             PSCI_VERSION
+                                                   0xC4000001             PSCI_CPU_SUSPEND
+                                                   0xC4000002             PSCI_CPU_OFF
+                                                   0xC4000003             PSCI_CPU_ON
+                                                   0xC4000004             PSCI_AFFINITY_INFO
+                                                   0xC4000008             PSCI_SYSTEM_OFF
+                                                   0xC4000009             PSCI_SYSTEM_RESET
+                                                   0xC400000A             PSCI_FEATURES
+
+                                                                    T
+                                                      AF
+                                               R
+                                       D
+
+Chapter B6. Power State Control Interface
+

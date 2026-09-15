@@ -1,0 +1,268 @@
+B4.5.76 RMI_VDEV_COMMUNICATE command
+                 Perform device communication associated with a VDEV.
+                 See also:
+                    • Chapter A9 Realm device assignment
+                 B4.5.76.1 Interface
+                 B4.5.76.1.1   Input values
+
+           Name                Register    Bits        Type                                  Description
+
+           fid                 X0          63:0        UInt64                                FID, value 0xC4000186
+           rd                  X1          63:0        Address                               PA of the RD
+           pdev_ptr            X2          63:0        Address                               PA of the PDEV
+           vdev_ptr            X3          63:0        Address                               PA of the VDEV
+           data_ptr            X4          63:0        Address                               PA of the communication data structure
+
+UMVSFY           An implementation may store state in a PDEV object which is required for communication with the child
+
+                                                                     T
+                 VDEVs. For this reason, and to simplify locking of PDEV and VDEV objects which may be performed by the
+                 implementation, a PDEV pointer is passed to RMI_VDEV_COMMUNICATE.
+                 B4.5.76.1.2   Context
+                                                       AF
+                 The RMI_VDEV_COMMUNICATE command operates on the following context.
+
+           Name                Type
+                                                  R       Value                                      Before   Description
+
+           rmm
+           realm
+           realm_pre
+                               RmmGlobal
+                               RmmRealm
+                               RmmRealm
+                                          D               Rmm()
+                                                          RealmAt(rd)
+
+                                                          RealmAt(rd)
+                                                                                                     false
+                                                                                                     false
+                                                                                                     true
+                                                                                                              RMM global state
+                                                                                                              Realm
+                                                                                                              Realm
+           pdev                RmmPdev                    PdevAt(pdev_ptr)                           false    PDEV
+           vdev_pre            RmmVdev                    VdevAt(vdev_ptr)                           true     VDEV
+           vdev                RmmVdev                    VdevAt(vdev_ptr)                           false    VDEV
+           data                RmiDevCommData             RmiDevCommDataAt(data_ptr)                 false    Device
+                                                                                                              communication
+                                                                                                              object
+           last_lock_seq_pre UInt64                       VdevLastLockSequence(                      false    Last VDEV lock
+                                                              realm_pre,                                      sequence counter
+                                                              vdev_pre.vdev_id)
+
+                 B4.5.76.1.3   Output values
+
+           Name                Register    Bits        Type                                  Description
+
+           result              X0          63:0        RmiResult                             Command result
+
+Chapter B4. Realm Management Interface
+
+               B4.5.76.2 Failure conditions
+
+  ID                        Condition
+
+  feat                      pre: Rmm().static.feat_da != FEATURE_TRUE
+                            post: result.status == RMI_ERROR_NOT_SUPPORTED
+  rd_align                  pre: !AddrIsRmiGranuleAligned(rd)
+                            post: result.status == RMI_ERROR_INPUT
+  rd_bound                  pre: !PaIsTracked(rd)
+                            post: result.status == RMI_ERROR_INPUT
+  rd_state                  pre: GranuleAt(rd).state != GRAN_RD
+                            post: result.status == RMI_ERROR_INPUT
+  pdev_align                pre: !AddrIsRmiGranuleAligned(pdev_ptr)
+                            post: result.status == RMI_ERROR_INPUT
+  pdev_bound                pre: !PaIsTracked(pdev_ptr)
+                            post: result.status == RMI_ERROR_INPUT
+  pdev_gran_state           pre: GranuleAt(pdev_ptr).state != GRAN_PDEV
+                            post: result.status == RMI_ERROR_INPUT
+  vdev_align                pre: !AddrIsRmiGranuleAligned(vdev_ptr)
+                            post: result.status == RMI_ERROR_INPUT
+  vdev_bound                pre: !PaIsTracked(vdev_ptr)
+                            post: result.status == RMI_ERROR_INPUTT
+  vdev_gran_state
+
+  vdev_realm
+                                                    AF
+                            pre: GranuleAt(vdev_ptr).state != GRAN_VDEV
+                            post: result.status == RMI_ERROR_INPUT
+                            pre: vdev.realm != rd
+                            post: result.status == RMI_ERROR_INPUT
+  data_align                                 R
+                            pre: !AddrIsRmiGranuleAligned(data_ptr)
+                            post: result.status == RMI_ERROR_INPUT
+  data_pas
+
+  req_align
+                                     D
+                            pre: !NonSecureAccessPermitted(data_ptr)
+                            post: result.status == RMI_ERROR_INPUT
+                            pre: !AddrIsRmiGranuleAligned(data.enter.req_addr)
+                            post: result.status == RMI_ERROR_INPUT
+  req_pas                   pre: !NonSecureAccessPermitted(data.enter.req_addr)
+                            post: result.status == RMI_ERROR_INPUT
+  resp_align                pre: !AddrIsRmiGranuleAligned(data.enter.rsp_addr)
+                            post: result.status == RMI_ERROR_INPUT
+  resp_pas                  pre: !NonSecureAccessPermitted(data.enter.rsp_addr)
+                            post: result.status == RMI_ERROR_INPUT
+  rsp_len                   pre: data.enter.rsp_len > rmm.dynamic.rmi_granule_size
+                            post: result.status == RMI_ERROR_INPUT
+  vdev_pdev                 pre: vdev.pdev != pdev_ptr
+                            post: result.status == RMI_ERROR_DEVICE
+  comm_state                pre: vdev.comm_state == DEV_COMM_IDLE
+                            post: result.status == RMI_ERROR_DEVICE
+  lock_seq_overfl ow        pre:  vdev.op == VDEV_OP_LOCK
+                                      && last_lock_seq_pre == UINT64_MAX
+                            post: result.status == RMI_ERROR_DEVICE
+  meas_seq_overfl ow        pre:  vdev.op == VDEV_OP_GET_MEAS
+                                      && vdev.freshness.meas_seq == UINT64_MAX
+                            post: result.status == RMI_ERROR_DEVICE
+
+Chapter B4. Realm Management Interface
+
+  ID                                             Condition
+
+  report_seq_over flow                           pre:  vdev.op == VDEV_OP_GET_REPORT
+                                                           && vdev.freshness.report_seq == UINT64_MAX
+                                                 post: result.status == RMI_ERROR_DEVICE
+  busy                                           pre: PdevIsBusy(pdev)
+                                                 post: result.status == RMI_BUSY
+
+             B4.5.76.2.1                    Failure condition ordering
+             [feat] < [rd_align, rd_bound, rd_state, pdev_align, pdev_bound,
+                  pdev_gran_state, vdev_align, vdev_bound, vdev_gran_state,
+                  vdev_realm, data_align, data_pas, req_align, req_pas, resp_align,
+                  resp_pas, rsp_len]
+             [pdev_gran_state, vdev_gran_state] < [vdev_pdev, comm_state]
+             [comm_state] < [lock_seq_overflow, meas_seq_overflow,
+                  report_seq_overflow]
+
+                                                                                                                                                                                          feat     busy
+
+               rsp_len   resp_pas   resp_align     req_pas   req_align   data_pas   data_align   vdev_realm   vdev_bound   vdev_align   pdev_bound   pdev_align   rd_state   rd_bound   rd_align          vdev_gran_state             pdev_gran_state
+
+                                                                                                                                                                                                                                        vdev_pdev         comm_state
+
+             B4.5.76.3 Success conditions
+                                                                                                                       T                                                                 report_seq_overflow                meas_seq_overflow           lock_seq_overflow
+
+  ID                                             Condition
+                                                                                                 AF
+  comm_state                                     pre:
+                                                                                    R
+                                                       (DeviceCommunicate(vdev, data) != DEV_COMM_ERROR
+                                                           && !VdevUnlockKeyRefreshCheck(vdev, data)
+                                                           && !(VdevUnlockKeyPurgeCheck(vdev, data)
+
+  error_comm_state
+                                                                  D
+                                                               && !VdevStreamPurgeComplete(vdev)))
+                                                 post: vdev.comm_state == DeviceCommunicate(vdev, data)
+                                                 pre: DeviceCommunicate(vdev, data) == DEV_COMM_ERROR
+                                                 post: vdev.comm_state == DEV_COMM_IDLE
+  error                                          pre: DeviceCommunicate(vdev, data) == DEV_COMM_ERROR
+                                                 post: vdev.vdev_state == VDEV_ERROR
+  new_init                                       pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                                           && vdev.vdev_state == VDEV_NEW
+                                                           && vdev.op == VDEV_OP_INIT)
+                                                 post: vdev.vdev_state == VDEV_UNLOCKED
+  unlock_no_refresh                              pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                                           && (vdev.vdev_state == VDEV_LOCKED
+                                                               || vdev.vdev_state == VDEV_STARTED
+                                                               || vdev.vdev_state == VDEV_ERROR)
+                                                           && vdev.op == VDEV_OP_UNLOCK)
+                                                 post: vdev.vdev_state == VDEV_UNLOCKED
+  key_refresh_purge                              pre:  (VdevUnlockKeyRefreshCheck(vdev, data)
+                                                           && VdevStreamRefreshComplete(vdev))
+                                                 post: vdev.vdev_state == VDEV_KEY_PURGE
+  key_refresh_purge_count                        pre:  (VdevUnlockKeyRefreshCheck(vdev, data)
+                                                           && VdevStreamRefreshComplete(vdev))
+                                                 post: vdev.stream_purge_cnt
+                                                           == VdevStreamPurgeCountSnapshot(vdev)
+
+Chapter B4. Realm Management Interface
+
+  ID                        Condition
+
+  key_refresh_purge_pending pre:  (VdevUnlockKeyRefreshCheck(vdev, data)
+                                      && VdevStreamRefreshComplete(vdev))
+                            post: vdev.comm_state == DEV_COMM_PENDING
+  key_refresh_incomplete    pre:  (VdevUnlockKeyRefreshCheck(vdev, data)
+                                      && !VdevStreamRefreshComplete(vdev))
+                            post: vdev.comm_state == DEV_COMM_PENDING
+  key_purge_unlock          pre:  (VdevUnlockKeyPurgeCheck(vdev, data)
+                                      && VdevStreamPurgeComplete(vdev))
+                            post: vdev.vdev_state == VDEV_UNLOCKED
+  key_purge_incomplete      pre:  (VdevUnlockKeyPurgeCheck(vdev, data)
+                                      && !VdevStreamPurgeComplete(vdev))
+                            post: vdev.comm_state == DEV_COMM_PENDING
+  lock_state                pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_LOCK)
+                            post: vdev.vdev_state == VDEV_LOCKED
+  lock_started_once         pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_LOCK)
+                            post: vdev.started_once == RMM_FALSE
+  lock_seq                  pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_LOCK)
+                                                                  T
+                            post: vdev.freshness.lock_seq == last_lock_seq_pre + 1
+  last_lock_seq             pre:
+                                                    AF
+                                  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_LOCK)
+                            post: VdevLastLockSequence(
+                                      realm,
+                                      vdev.vdev_id) == last_lock_seq_pre + 1
+  meas_seq_reset            pre:             R
+                                  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_LOCK)
+
+  report_seq_reset
+                                     D
+                            post: vdev.freshness.meas_seq == 0
+                            pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_LOCK)
+                            post: vdev.freshness.report_seq == 0
+  start_state               pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_START)
+                            post: vdev.vdev_state == VDEV_STARTED
+  start_started_once        pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_START)
+                            post: vdev.started_once == RMM_TRUE
+  meas_seq                  pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_GET_MEAS)
+                            post: vdev.freshness.meas_seq
+                                      == vdev_pre.freshness.meas_seq + 1
+  report_seq                pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && vdev.op == VDEV_OP_GET_REPORT)
+                            post: vdev.freshness.report_seq
+                                      == vdev_pre.freshness.report_seq + 1
+  op                        pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && !VdevUnlockKeyRefreshCheck(vdev, data)
+                                      && !(VdevUnlockKeyPurgeCheck(vdev, data)
+                                          && !VdevStreamPurgeComplete(vdev)))
+                            post: vdev.op == VDEV_OP_NONE
+
+Chapter B4. Realm Management Interface
+
+  ID                        Condition
+
+  complete                  pre:  (DeviceCommunicate(vdev, data) == DEV_COMM_IDLE
+                                      && !VdevUnlockKeyRefreshCheck(vdev, data)
+                                      && !(VdevUnlockKeyPurgeCheck(vdev, data)
+                                          && !VdevStreamPurgeComplete(vdev)))
+                            post: RmiDevCommComplete(data.exit.flags)
+  incomplete                pre:  (DeviceCommunicate(vdev, data) != DEV_COMM_IDLE
+                                      || VdevUnlockKeyRefreshCheck(vdev, data)
+                                      || (VdevUnlockKeyPurgeCheck(vdev, data)
+                                          && !VdevStreamPurgeComplete(vdev)))
+                            post: !RmiDevCommComplete(data.exit.flags)
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

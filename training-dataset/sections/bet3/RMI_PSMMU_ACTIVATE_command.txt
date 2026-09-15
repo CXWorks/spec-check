@@ -1,0 +1,153 @@
+B4.5.32 RMI_PSMMU_ACTIVATE command
+                 Activate a PSMMU.
+                 The RMI_PSMMU_ACTIVATE command may initiate a Stateful RMI Operation whose context is bound to the
+                 object identified by psmmu_ptr.
+                 The RMI_PSMMU_ACTIVATE command may initiate a memory-transferring RMI Operation.
+                 See also:
+                    • A9.7 Physical SMMU
+                    • A9.7.6 PSMMU interrupts
+                    • B4.5.33 RMI_PSMMU_DEACTIVATE command
+                 B4.5.32.1 Interface
+                 B4.5.32.1.1   Input values
+
+           Name                Register     Bits       Type                                  Description
+
+           fid                 X0           63:0       UInt64                                FID, value 0xC40001D7
+           psmmu_ptr           X1           63:0       Address                               PA of PSMMU
+           params_ptr          X2           63:0       Address                               PA of PSMMU parameters
+
+                                                                     T
+                 B4.5.32.1.2   Context
+                                                       AF
+                 The RMI_PSMMU_ACTIVATE command operates on the following context.
+
+           Name
+
+           psmmu
+                               Type
+
+                               RmmPsmmu
+                                                   R      Value                                      Before
+
+                                                                                                     false
+                                                                                                              Description
+
+                                                                                                              PSMMU
+           params                         D
+                               RmiPsmmuParams
+                                                          PsmmuAt(psmmu_ptr)
+
+                                                          RmiPsmmuParamsAt(
+                                                              params_ptr)
+                                                                                                     false    PSMMU parameters
+
+                 B4.5.32.1.3   Output values
+
+           Name                Register     Bits       Type                                  Description
+
+           result              X0           63:0       RmiResult                             Command result
+
+                 B4.5.32.2 Failure conditions
+
+  ID                            Condition
+
+  feat                          pre: Rmm().static.feat_da != FEATURE_TRUE
+                                post: result.status == RMI_ERROR_NOT_SUPPORTED
+  psmmu_valid                   pre: !PsmmuAddrIsValid(psmmu_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  psmmu_state                   pre: psmmu.state != PSMMU_INACTIVE
+                                post: result.status == RMI_ERROR_INPUT
+
+Chapter B4. Realm Management Interface
+
+  ID                          Condition
+
+  params_align                pre: !AddrIsRmiGranuleAligned(params_ptr)
+                              post: result.status == RMI_ERROR_INPUT
+  params_pas                  pre: !NonSecureAccessPermitted(params_ptr)
+                              post: result.status == RMI_ERROR_INPUT
+  irq_cfg                     pre: !Equal(params.flags.irq_cfg, psmmu.irq_cfg)
+                              post: result.status == RMI_ERROR_INPUT
+  cmdq_sync_irq_w ired        pre:  !Equal(
+                                        params.flags.cmdq_sync_irq_wired,
+                                        psmmu.cmdq_sync_irq_wired)
+                              post: result.status == RMI_ERROR_INPUT
+  gerror_valid                pre:  (params.flags.irq_cfg == RMI_IRQ_MSI
+                                        && !MsiAddrIsValid(params.gerr_addr))
+                              post: result.status == RMI_ERROR_INPUT
+  eventq_valid                pre:  (params.flags.irq_cfg == RMI_IRQ_MSI
+                                        && !MsiAddrIsValid(params.eventq_addr))
+                              post: result.status == RMI_ERROR_INPUT
+  priq_valid                  pre:  (params.flags.irq_cfg == RMI_IRQ_MSI
+                                        && !MsiAddrIsValid(params.priq_addr))
+                              post: result.status == RMI_ERROR_INPUT
+  ats_supp                    pre:
+                                                                   T
+                                    (params.flags.ats == RMI_FEATURE_TRUE
+                                        && psmmu.feat_ats != FEATURE_TRUE)
+
+  pri_supp                                           AF
+                              post: result.status == RMI_ERROR_INPUT
+                              pre:  (params.flags.pri == RMI_FEATURE_TRUE
+                                        && psmmu.feat_pri != FEATURE_TRUE)
+                              post: result.status == RMI_ERROR_INPUT
+  dpt                         pre:
+                                              R
+                                    (params.flags.ats == RMI_FEATURE_TRUE
+                                        && DptL0().state != DPT_L0_VALID)
+
+               B4.5.32.2.1
+                                      D
+                              post: result.status == RMI_ERROR_DPT
+
+                             Failure condition ordering
+               [feat] < [psmmu_valid, psmmu_state, params_align, params_pas, irq_cfg,
+                    cmdq_sync_irq_wired, gerror_valid, eventq_valid, priq_valid,
+                    ats_supp, pri_supp, dpt]
+               [psmmu_valid] < [psmmu_state]
+               [psmmu_valid] < [irq_cfg, cmdq_sync_irq_wired, ats_supp, pri_supp]
+               [params_align, params_pas] < [irq_cfg, cmdq_sync_irq_wired,
+                    gerror_valid, eventq_valid, priq_valid, ats_supp, pri_supp, dpt]
+               [irq_cfg] < [gerror_valid, eventq_valid, priq_valid]
+               [ats_supp, pri_supp] < [dpt]
+
+Chapter B4. Realm Management Interface
+
+                                                                                                    feat
+
+                            params_pas            params_align                                psmmu_valid
+
+                      cmdq_sync_irq_wired             irq_cfg           pri_supp         ats_supp           psmmu_state
+
+                    priq_valid         eventq_valid             gerror_valid               dpt
+
+              B4.5.32.3 Success conditions
+
+  ID                        Condition
+
+  state                     post: psmmu.state == PSMMU_ACTIVE
+
+  gerr_addr                 pre: params.flags.irq_cfg == RMI_IRQ_MSI
+                            post: psmmu.msi_config.gerr_addr == params.gerr_addr
+  gerr_data                                                        T
+                            pre: params.flags.irq_cfg == RMI_IRQ_MSI
+                            post: psmmu.msi_config.gerr_data == params.gerr_data
+  eventq_addr
+
+  eventq_data
+                                                      AF
+                            pre: params.flags.irq_cfg == RMI_IRQ_MSI
+                            post: psmmu.msi_config.eventq_addr == params.eventq_addr
+                            pre: params.flags.irq_cfg == RMI_IRQ_MSI
+
+  priq_addr                                  R
+                            post: psmmu.msi_config.eventq_data == params.eventq_data
+                            pre: params.flags.irq_cfg == RMI_IRQ_MSI
+
+  priq_data                          D
+                            post: psmmu.msi_config.priq_addr == params.priq_addr
+                            pre: params.flags.irq_cfg == RMI_IRQ_MSI
+                            post: psmmu.msi_config.priq_data == params.priq_data
+
+Chapter B4. Realm Management Interface
+

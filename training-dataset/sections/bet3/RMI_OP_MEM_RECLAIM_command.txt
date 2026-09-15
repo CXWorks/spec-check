@@ -1,0 +1,70 @@
+B4.5.17 RMI_OP_MEM_RECLAIM command
+                   Reclaim memory from a stateful RMI operation.
+                   See also:
+                      • B4.3.2 Stateful RMI operations
+                   B4.5.17.1 Interface
+                   B4.5.17.1.1   Input values
+
+             Name                Register     Bits       Type                                  Description
+
+             fid                 X0           63:0       UInt64                                FID, value 0xC4000209
+             handle              X1           63:0       Bits64                                Handle which identifies the operation
+             list_addr           X2           63:0       Address                               PA of RMI Address Range List
+             list_count          X3           63:0       UInt64                                Number of entries in RMI Address
+                                                                                               Range List
+
+                   B4.5.17.1.2   Output values
+
+             Name                Register     Bits       Type
+                                                                       T                       Description
+
+             result
+             reclaim_count
+                                 X0
+                                 X1
+                                              63:0
+                                              63:0
+                                                         AF
+                                                         RmiResult
+                                                         UInt64
+                                                                                               Command result
+                                                                                               Number of entries written to RMI
+                                                                                               Address Range List
+                                                     R
+                                            D
+                   B4.5.17.2 Failure conditions
+
+  ID                              Condition
+
+  complete                        pre: !OperationIncomplete(handle)
+                                  post: result.status == RMI_ERROR_INPUT
+  list_align                      pre: !AddrIsAligned(list_addr, 8)
+                                  post: result.status == RMI_ERROR_INPUT
+  list_pas                        pre: !NonSecureAccessPermitted(list_addr)
+                                  post: result.status == RMI_ERROR_INPUT
+
+                   B4.5.17.2.1   Failure condition ordering
+                   The RMI_OP_MEM_RECLAIM command does not have any failure condition orderings.
+                   B4.5.17.3 Success conditions
+
+  ID                              Condition
+
+  result                          post: (result.status == RMI_INCOMPLETE
+                                            && result.data.incomplete.mem == RMI_OP_MEM_REQ_NONE)
+
+Chapter B4. Realm Management Interface
+
+  ID                        Condition
+
+  gran_state                post: State of Granules described by first
+                                  reclaim_count entries in RMI Address Range List
+                                  is the state described in each RMI Address Range
+                                  Descriptor.
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

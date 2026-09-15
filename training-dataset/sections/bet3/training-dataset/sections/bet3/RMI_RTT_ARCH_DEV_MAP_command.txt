@@ -1,0 +1,134 @@
+B4.5.51 RMI_RTT_ARCH_DEV_MAP command
+                  Create mappings to an architectural device within a target Protected IPA range.
+                  See also:
+                     • A5.3.9 Create mappings from Protected IPA space to an architectural device
+                     • A9.8 Virtual SMMU
+                     • B4.5.52 RMI_RTT_ARCH_DEV_UNMAP command
+                  B4.5.51.1 Interface
+                  B4.5.51.1.1   Input values
+
+           Name                 Register     Bits        Type                                  Description
+
+           fid                  X0           63:0        UInt64                                FID, value 0xC40001F9
+           rd                   X1           63:0        Address                               PA of the RD for the target Realm
+           dev_ptr              X2           63:0        Address                               PA of the device
+           base                 X3           63:0        Address                               Base of the target IPA range
+           top                  X4           63:0        Address                               Top of the target IPA range
+
+                  B4.5.51.1.2   Context                                T
+           Name
+                                                         AF
+                  The RMI_RTT_ARCH_DEV_MAP command operates on the following context.
+
+                                Type                        Value                                      Before     Description
+
+           rmm                  RmmGlobal           R       Rmm()                                      false      RMM global state
+           realm
+           vsmmu
+           size
+                                RmmRealm
+                                RmmVsmmu
+                                UInt64
+                                           D                RealmAt(rd)
+                                                            VsmmuAt(dev_ptr)
+
+                                                            UInt(top) - UInt(base)
+                                                                                                       false
+                                                                                                       false
+                                                                                                       false
+                                                                                                                  Realm
+                                                                                                                  VSMMU
+                                                                                                                  Size of target IPA
+                                                                                                                  range in bytes
+           walk                 RmmRttWalkResult            RttWalk(                                   false      Result of RTT walk
+                                                                realm, base,                                      from base of the
+                                                                RMM_RTT_PAGE_LEVEL,                               target IPA range
+                                                                RMM_RTT_TREE_PRIMARY)
+
+                  B4.5.51.1.3   Output values
+
+           Name                 Register     Bits        Type                                  Description
+
+           result               X0           63:0        RmiResult                             Command result
+           out_top              X1           63:0        Address                               Top IPA of range which has been
+                                                                                               mapped
+
+IJJQSG            If result is not RMI_SUCCESS then the value of out_top is UNKNOWN.
+
+Chapter B4. Realm Management Interface
+
+               B4.5.51.2 Failure conditions
+
+  ID                          Condition
+
+  feat                        pre: Rmm().static.feat_vsmmu != FEATURE_TRUE
+                              post: result.status == RMI_ERROR_NOT_SUPPORTED
+  rd_align                    pre: !AddrIsRmiGranuleAligned(rd)
+                              post: result.status == RMI_ERROR_INPUT
+  rd_bound                    pre: !PaIsTracked(rd)
+                              post: result.status == RMI_ERROR_INPUT
+  rd_state                    pre: GranuleAt(rd).state != GRAN_RD
+                              post: result.status == RMI_ERROR_INPUT
+  dev_align                   pre: !AddrIsRmiGranuleAligned(dev_ptr)
+                              post: result.status == RMI_ERROR_INPUT
+  dev_bound                   pre: !PaIsTracked(dev_ptr)
+                              post: result.status == RMI_ERROR_INPUT
+  dev_state                   pre: GranuleAt(dev_ptr).state != GRAN_VSMMU
+                              post: result.status == RMI_ERROR_INPUT
+  dev_realm                   pre: vsmmu.realm != rd
+                              post: result.status == RMI_ERROR_INPUT
+  base_align                  pre: !AddrIsRmiGranuleAligned(base)
+                                                                   T
+                              post: result.status == RMI_ERROR_INPUT
+  top_align
+
+  size_valid
+                                                     AF
+                              pre: !AddrIsRmiGranuleAligned(top)
+                              post: result.status == RMI_ERROR_INPUT
+                              pre: UInt(top) <= UInt(base)
+                              post: result.status == RMI_ERROR_INPUT
+  ipa_bound                                   R
+                              pre: !AddrRangeIsProtected(base, top, realm)
+                              post: result.status == RMI_ERROR_INPUT
+  oaddr_value                 pre:
+                                      D
+                                    (walk.rtte.state == RTTE_ARCH_DEV
+                                        && walk.rtte.addr != dev_ptr)
+                              post: (result.status == RMI_ERROR_RTT
+                                        && result.data.level.level == walk.level)
+  rtte_state                  pre:  (walk.rtte.state != RTTE_ARCH_DEV
+                                        && walk.rtte.state != RTTE_VOID)
+                              post: (result.status == RMI_ERROR_RTT
+                                        && result.data.level.level == walk.level)
+  rtte_size                   pre:  (walk.rtte.state == RTTE_VOID
+                                        && RttLevelSize(walk.level) > size)
+                              post: (result.status == RMI_ERROR_RTT
+                                        && result.data.level.level == walk.level)
+  rtte_ripas                  pre: walk.rtte.ripas != RIPAS_EMPTY
+                              post: (result.status == RMI_ERROR_RTT
+                                        && result.data.level.level == walk.level)
+
+               B4.5.51.2.1   Failure condition ordering
+               The RMI_RTT_ARCH_DEV_MAP command does not have any failure condition orderings.
+               B4.5.51.3 Success conditions
+
+Chapter B4. Realm Management Interface
+
+  ID                        Condition
+
+  state                     post: RttTreeRangeAllState(
+                                      realm, RMM_RTT_TREE_PRIMARY,
+                                      base, out_top, RTTE_ARCH_DEV)
+  addr                      post: IPA base is associated with dev_ptr,
+                                  allowing Realm access to the device to
+                                  be emulated.
+  result                    post: result.status == RMI_SUCCESS
+
+                                                                  T
+                                                    AF
+                                             R
+                                     D
+
+Chapter B4. Realm Management Interface
+

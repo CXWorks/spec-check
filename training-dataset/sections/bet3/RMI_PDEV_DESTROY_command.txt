@@ -1,0 +1,85 @@
+B4.5.21 RMI_PDEV_DESTROY command
+                 Destroy a PDEV.
+                 The RMI_PDEV_DESTROY command may initiate a Stateful RMI Operation whose context is bound to the
+                 object identified by pdev_ptr.
+                 The RMI_PDEV_DESTROY command may initiate a memory-transferring RMI Operation.
+                 See also:
+                    • Chapter A9 Realm device assignment
+                    • B4.3.4 Object creation and destruction
+                 B4.5.21.1 Interface
+                 B4.5.21.1.1   Input values
+
+           Name                Register     Bits       Type                                  Description
+
+           fid                 X0           63:0       UInt64                                FID, value 0xC4000177
+           pdev_ptr            X1           63:0       Address                               PA of the PDEV
+
+                 B4.5.21.1.2   Context
+                                                                     T
+                 The RMI_PDEV_DESTROY command operates on the following context.
+
+           Name
+
+           pdev_pre
+                               Type
+
+                               RmmPdev
+                                                       AF Value
+
+                                                          PdevAt(pdev_ptr)
+                                                                                                     Before
+
+                                                                                                     true
+                                                                                                              Description
+
+                                                                                                              PDEV
+
+                                                   R
+           Name
+                 B4.5.21.1.3
+                                          D
+                               Output values
+
+                               Register     Bits       Type                                  Description
+
+           result              X0           63:0       RmiResult                             Command result
+
+                 B4.5.21.2 Failure conditions
+
+  ID                            Condition
+
+  feat                          pre: Rmm().static.feat_da != FEATURE_TRUE
+                                post: result.status == RMI_ERROR_NOT_SUPPORTED
+  pdev_align                    pre: !AddrIsRmiGranuleAligned(pdev_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  pdev_tracking                 pre: !PaIsTrackedFine(pdev_ptr)
+                                post: result.status == RMI_ERROR_INPUT
+  pdev_gran_state               pre: GranuleAt(pdev_ptr).state != GRAN_PDEV
+                                post: result.status == RMI_ERROR_INPUT
+  pdev_state                    pre: pdev_pre.state != PDEV_STOPPED
+                                post: result.status == RMI_ERROR_DEVICE
+
+Chapter B4. Realm Management Interface
+
+               B4.5.21.2.1   Failure condition ordering
+               [pdev_gran_state] < [pdev_state]
+               [feat] < [pdev_align, pdev_tracking, pdev_gran_state, pdev_state]
+
+                                                                  feat
+
+                        pdev_tracking                        pdev_align                        pdev_gran_state
+
+                                                                                                   pdev_state
+
+               B4.5.21.3 Success conditions
+
+  ID                          Condition
+                                                                   T
+  gran_state                                         AF
+                              post: GranuleAt(pdev_ptr).state == GRAN_DELEGATED
+
+                                              R
+                                      D
+
+Chapter B4. Realm Management Interface
+
