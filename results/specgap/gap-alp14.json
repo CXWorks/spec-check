@@ -1,0 +1,45 @@
+{
+ "rows": [
+  {
+   "command": "RMI_PSMMU_IRQ_NOTIFY",
+   "output": "msi_addr",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_PSMMU_IRQ_NOTIFY",
+   "output": "msi_data",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_RTT_READ_ENTRY",
+   "output": "desc",
+   "success_table_empty": false
+  },
+  {
+   "command": "RMI_RTT_SET_S2AP",
+   "output": "rtt_tree",
+   "success_table_empty": false
+  }
+ ],
+ "unparsed": [
+  "RMI_FEATURES",
+  "RMI_PDEV_DESTROY",
+  "RMI_PDEV_GET_STATE",
+  "RMI_PDEV_IDE_RESET",
+  "RMI_PDEV_STOP",
+  "RMI_PSMMU_MSI_CONFIG",
+  "RMI_REALM_ACTIVATE",
+  "RMI_VDEV_ABORT",
+  "RMI_VDEV_GET_INTERFACE_REPORT",
+  "RMI_VDEV_GET_STATE",
+  "RMI_VDEV_LOCK",
+  "RMI_VDEV_START",
+  "RMI_VDEV_UNLOCK",
+  "RSI_MEM_SET_PERM_VALUE",
+  "PSCI_CPU_OFF",
+  "PSCI_CPU_SUSPEND",
+  "PSCI_SYSTEM_OFF",
+  "PSCI_SYSTEM_RESET"
+ ],
+ "commands": 98
+}

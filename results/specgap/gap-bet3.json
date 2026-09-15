@@ -1,0 +1,124 @@
+{
+ "rows": [
+  {
+   "command": "RMI_PSMMU_IRQ_NOTIFY",
+   "output": "flags",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_PSMMU_IRQ_NOTIFY",
+   "output": "event_num",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_PSMMU_IRQ_NOTIFY",
+   "output": "sid",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_PSMMU_IRQ_NOTIFY",
+   "output": "fetch_addr",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_PSMMU_IRQ_NOTIFY",
+   "output": "input_addr",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_PSMMU_IRQ_NOTIFY",
+   "output": "syndrome",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_RTT_DEV_UNMAP",
+   "output": "out_count",
+   "success_table_empty": false
+  },
+  {
+   "command": "RMI_RTT_READ_ENTRY",
+   "output": "desc",
+   "success_table_empty": false
+  },
+  {
+   "command": "RMI_RTT_SET_S2AP",
+   "output": "rtt_tree",
+   "success_table_empty": false
+  },
+  {
+   "command": "RMI_RTT_UNPROT_UNMAP",
+   "output": "out_count",
+   "success_table_empty": false
+  },
+  {
+   "command": "RMI_VSMMU_CMD_COMPLETE",
+   "output": "flags",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_VSMMU_CMD_COMPLETE",
+   "output": "vsid",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_VSMMU_CMD_COMPLETE",
+   "output": "msi_addr",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_VSMMU_CMD_COMPLETE",
+   "output": "msi_data",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_VSMMU_CMD_GET",
+   "output": "flags",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_VSMMU_CMD_GET",
+   "output": "vsid",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_VSMMU_CMD_GET",
+   "output": "msi_addr",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_VSMMU_CMD_GET",
+   "output": "msi_data",
+   "success_table_empty": true
+  },
+  {
+   "command": "RMI_VSMMU_EVENT_HANDLE",
+   "output": "fipa",
+   "success_table_empty": false
+  },
+  {
+   "command": "RMI_VSMMU_EVENT_HANDLE",
+   "output": "syndrome",
+   "success_table_empty": false
+  }
+ ],
+ "unparsed": [
+  "RMI_ATTEST_PLAT_TOKEN_REFRESH",
+  "RMI_DPT_L0_DESTROY",
+  "RMI_OP_MEM_RECLAIM",
+  "RMI_PDEV_ABORT",
+  "RMI_PDEV_GET_STATE",
+  "RMI_PDEV_STOP",
+  "RMI_PSMMU_EVENT_CONSUME",
+  "RMI_PSMMU_INFO",
+  "RMI_REALM_ACTIVATE",
+  "RMI_RMM_STATE_GET",
+  "RMI_VDEV_GET_STATE",
+  "RSI_MEM_SET_PERM_VALUE",
+  "RSI_VDEV_DMA_DISABLE",
+  "PSCI_CPU_OFF",
+  "PSCI_CPU_SUSPEND",
+  "PSCI_SYSTEM_OFF",
+  "PSCI_SYSTEM_RESET"
+ ],
+ "commands": 121
+}
