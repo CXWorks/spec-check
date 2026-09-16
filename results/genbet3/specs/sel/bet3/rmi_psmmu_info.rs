@@ -1,0 +1,32 @@
+pub open spec fn rmi_psmmu_info_spec(psmmu_ptr: Address, info_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+  (Rmm(old_s).static.feat_da != FEATURE_TRUE ==> result.status == RMI_ERROR_NOT_SUPPORTED)
+  && (!PsmmuAddrIsValid(old_s, psmmu_ptr) ==> result.status == RMI_ERROR_INPUT)
+  && (!AddrIsAligned(old_s, info_ptr, 0x100 as int) ==> result.status == RMI_ERROR_INPUT)
+  && (!NonSecureAccessPermitted(old_s, info_ptr) ==> result.status == RMI_ERROR_INPUT)
+  && (result.is_Ok() ==> Equal(PsmmuInfoAt(new_s, info_ptr).flags.irq_cfg, PsmmuAt(new_s, psmmu_ptr).irq_cfg))
+  && (result.is_Ok() ==> Equal(PsmmuInfoAt(new_s, info_ptr).flags.cmdq_sync_irq_wired, PsmmuAt(new_s, psmmu_ptr).cmdq_sync_irq_wired))
+  && (result.is_Ok() ==> Equal(PsmmuInfoAt(new_s, info_ptr).flags.ats, PsmmuAt(new_s, psmmu_ptr).feat_ats))
+  && (result.is_Ok() ==> PsmmuInfoAt(new_s, info_ptr).gerror_intr_num == PsmmuAt(new_s, psmmu_ptr).gerror_intr_num)
+  && (result.is_Ok() ==> PsmmuInfoAt(new_s, info_ptr).eventq_intr_num == PsmmuAt(new_s, psmmu_ptr).eventq_intr_num)
+  && (result.is_Ok() ==> PsmmuInfoAt(new_s, info_ptr).priq_intr_num == PsmmuAt(new_s, psmmu_ptr).priq_intr_num)
+  && (result.is_Ok() ==> PsmmuInfoAt(new_s, info_ptr).cmdq_sync_intr_num == PsmmuAt(new_s, psmmu_ptr).cmdq_sync_intr_num)
+  && ((!(Rmm(old_s).static.feat_da != FEATURE_TRUE) &&
+       PsmmuAddrIsValid(old_s, psmmu_ptr) &&
+       AddrIsAligned(old_s, info_ptr, 0x100 as int) &&
+       NonSecureAccessPermitted(old_s, info_ptr))
+    ==> result.is_Ok())
+  && (result.is_Err()
+    ==> PsmmuInfoAt(new_s, info_ptr).flags.irq_cfg == PsmmuInfoAt(old_s, info_ptr).flags.irq_cfg)
+  && (result.is_Err()
+    ==> PsmmuInfoAt(new_s, info_ptr).flags.cmdq_sync_irq_wired == PsmmuInfoAt(old_s, info_ptr).flags.cmdq_sync_irq_wired)
+  && (result.is_Err()
+    ==> PsmmuInfoAt(new_s, info_ptr).flags.ats == PsmmuInfoAt(old_s, info_ptr).flags.ats)
+  && (result.is_Err()
+    ==> PsmmuInfoAt(new_s, info_ptr).gerror_intr_num == PsmmuInfoAt(old_s, info_ptr).gerror_intr_num)
+  && (result.is_Err()
+    ==> PsmmuInfoAt(new_s, info_ptr).eventq_intr_num == PsmmuInfoAt(old_s, info_ptr).eventq_intr_num)
+  && (result.is_Err()
+    ==> PsmmuInfoAt(new_s, info_ptr).priq_intr_num == PsmmuInfoAt(old_s, info_ptr).priq_intr_num)
+  && (result.is_Err()
+    ==> PsmmuInfoAt(new_s, info_ptr).cmdq_sync_intr_num == PsmmuInfoAt(old_s, info_ptr).cmdq_sync_intr_num)
+}

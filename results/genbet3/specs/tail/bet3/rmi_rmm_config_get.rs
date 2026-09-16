@@ -1,0 +1,17 @@
+pub open spec fn rmi_rmm_config_get_spec(cfg_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+  (!Rmm().dynamic.state IN { RMM_STATE_INIT, RMM_STATE_ACTIVE} ==> ResultEqual(result, RMI_ERROR_GLOBAL))
+  && (!AddrIsRmiGranuleAligned(old_s, cfg_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!NonSecureAccessPermitted(old_s, cfg_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (result.is_Ok() ==> RmmRmmConfigAt(new_s, cfg_ptr).rmi_granule_size == GranuleSizeToRmi(new_s, Rmm().dynamic.rmi_granule_size))
+  && (result.is_Ok() ==> RmmRmmConfigAt(new_s, cfg_ptr).tracking_region_size == TrackingRegionSizeToRmi(new_s, Rmm().dynamic.rmi_granule_size,Rmm().dynamic.tracking_region_size))
+  && ((!(Rmm().dynamic.state IN { RMM_STATE_INIT, RMM_STATE_ACTIVE}))
+    ==> ResultEqual(result, RMI_SUCCESS))
+  && (AddrIsRmiGranuleAligned(old_s, cfg_ptr)
+    ==> ResultEqual(result, RMI_SUCCESS))
+  && (NonSecureAccessPermitted(old_s, cfg_ptr)
+    ==> ResultEqual(result, RMI_SUCCESS))
+  && (result.is_Err()
+    ==> RmmRmmConfigAt(new_s, cfg_ptr).rmi_granule_size == RmmRmmConfigAt(old_s, cfg_ptr).rmi_granule_size)
+  && (result.is_Err()
+    ==> RmmRmmConfigAt(new_s, cfg_ptr).tracking_region_size == RmmRmmConfigAt(old_s, cfg_ptr).tracking_region_size)
+}
