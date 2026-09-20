@@ -1,0 +1,320 @@
+{
+ "doc": "ffa",
+ "vocab": [
+  "ABORTED",
+  "BUSY",
+  "DENIED",
+  "INTERRUPTED",
+  "INVALID_PARAMETERS",
+  "NOT_READY",
+  "NOT_SUPPORTED",
+  "NO_DATA",
+  "NO_MEMORY",
+  "RETRY"
+ ],
+ "commands": {
+  "FFA_ABORT": {
+   "codes": [],
+   "weak_source": true
+  },
+  "FFA_CONSOLE_LOG": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "RETRY"
+   ],
+   "weak_source": true
+  },
+  "FFA_EL3_INTR_HANDLE": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_ERROR": {
+   "codes": [
+    "ABORTED",
+    "BUSY",
+    "DENIED",
+    "INTERRUPTED",
+    "INVALID_PARAMETERS",
+    "NOT_READY",
+    "NOT_SUPPORTED",
+    "NO_DATA",
+    "NO_MEMORY",
+    "RETRY"
+   ],
+   "weak_source": true
+  },
+  "FFA_FEATURES": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_ID_GET": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_INTERRUPT": {
+   "codes": [],
+   "weak_source": true
+  },
+  "FFA_MSG_POLL": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "RETRY"
+   ],
+   "weak_source": true
+  },
+  "FFA_MSG_SEND2": {
+   "codes": [
+    "BUSY",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "NO_MEMORY"
+   ],
+   "weak_source": true
+  },
+  "FFA_MSG_SEND_DIRECT_REQ2": {
+   "codes": [
+    "ABORTED",
+    "BUSY",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_READY",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_MSG_SEND_DIRECT_REQ": {
+   "codes": [
+    "ABORTED",
+    "BUSY",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_READY",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_MSG_SEND_DIRECT_RESP2": {
+   "codes": [
+    "ABORTED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_MSG_SEND_DIRECT_RESP": {
+   "codes": [
+    "ABORTED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_MSG_SEND": {
+   "codes": [
+    "BUSY",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "NO_MEMORY"
+   ],
+   "weak_source": true
+  },
+  "FFA_MSG_WAIT": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NORMAL_WORLD_RESUME": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_BIND2": {
+   "codes": [
+    "ABORTED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_BIND": {
+   "codes": [
+    "ABORTED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_BITMAP_CREATE": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "NO_MEMORY"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_BITMAP_DESTROY": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_GET2": {
+   "codes": [],
+   "weak_source": false
+  },
+  "FFA_NOTIFICATION_GET": {
+   "codes": [],
+   "weak_source": false
+  },
+  "FFA_NOTIFICATION_INFO_GET": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "NO_DATA"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_SET2": {
+   "codes": [
+    "ABORTED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_SET": {
+   "codes": [
+    "ABORTED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_UNBIND2": {
+   "codes": [
+    "ABORTED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NOTIFICATION_UNBIND": {
+   "codes": [
+    "ABORTED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_NS_RES_INFO_GET": {
+   "codes": [
+    "ABORTED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "RETRY"
+   ],
+   "weak_source": true
+  },
+  "FFA_PARTITION_INFO_GET_REGS": {
+   "codes": [],
+   "weak_source": false
+  },
+  "FFA_PARTITION_INFO_GET": {
+   "codes": [
+    "BUSY",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_READY",
+    "NOT_SUPPORTED",
+    "NO_MEMORY"
+   ],
+   "weak_source": true
+  },
+  "FFA_RUN": {
+   "codes": [
+    "ABORTED",
+    "BUSY",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_READY",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_RXTX_MAP": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "NO_MEMORY"
+   ],
+   "weak_source": true
+  },
+  "FFA_RXTX_UNMAP": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_RX_ACQUIRE": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_RX_RELEASE": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_SPM_ID_GET": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "FFA_SUCCESS": {
+   "codes": [],
+   "weak_source": true
+  },
+  "FFA_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "FFA_YIELD": {
+   "codes": [],
+   "weak_source": false
+  }
+ }
+}

@@ -50,6 +50,8 @@ CODE_TABLE = {
     # PSCI has no numbered "Return codes" section; the list lives under a
     # table caption instead, so anchor on the caption.
     "psci_13": (r'(?mi)^\s*Table \d+ +Return error codes\s*$', r'(?mi)^\s*Table \d+\b'),
+    # FF-A numbers its tables "12.2" and titles this one "Error status codes".
+    "ffa":     (r'(?mi)^\s*Table [\d.]+: *Error status codes\s*$', r'(?mi)^\s*Table [\d.]+:'),
 }
 PDF_OF = {
     "drtm":    "DEN0113_DRTM_1.4.pdf",
@@ -109,12 +111,20 @@ def doc_vocab(doc):
     # Only the first column. A table row is "NAME  Description...  Value", so
     # the code is the leading token; taking every match also picked up acronyms
     # out of the Description column (TPM) and the page footer (DEN, ARM).
-    # Indentation is not constrained at all: DRTM's rows start at the margin,
-    # SDEI's about ten columns in, PSCI's about thirty-eight. Any fixed bound
-    # silently drops one of them. What keeps prose out is that the token must
-    # be the first thing on its line and be followed by a column gap, inside a
-    # block that is already known to be the code table.
-    rows = re.findall(r'(?m)^\s*([A-Z][A-Z0-9_]{2,})\s{2,}\S', block)
+    # Column order is not fixed. DRTM, SDEI and PSCI put the code name first
+    # and its value after; FF-A puts the value first ("-1  NOT_SUPPORTED").
+    # Assuming name-first picked FF-A's page footer (DEN0077A) as its only
+    # "code". Both orders are accepted, and both require a second column so a
+    # footer or a prose line cannot look like a row.
+    #
+    # Indentation is not constrained at all: rows start at the margin in DRTM,
+    # about ten columns in for SDEI, thirty-eight for PSCI and sixty for FF-A.
+    name_first = re.findall(r'(?m)^\s*([A-Z][A-Z0-9_]{2,})\s{2,}\S', block)
+    value_first = re.findall(r'(?m)^\s*-?\d+\s{2,}([A-Z][A-Z0-9_]{2,})\b', block)
+    rows = name_first + value_first
+    # Arm document IDs (DEN0077A, DEN0113) sit in the page footer at the left
+    # margin followed by a copyright line, which is row-shaped.
+    rows = [c for c in rows if not re.fullmatch(r'DEN\d+[A-Z]?', c)]
     return {c for c in rows if c not in STOP} or None
 
 
