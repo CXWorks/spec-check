@@ -1,0 +1,176 @@
+{
+ "doc": "psci_13",
+ "vocab": [
+  "ALREADY_ON",
+  "DENIED",
+  "DISABLED",
+  "INTERNAL_FAILURE",
+  "INVALID_ADDRESS",
+  "INVALID_PARAMETERS",
+  "NOT_PRESENT",
+  "NOT_SUPPORTED",
+  "ON_PENDING",
+  "SUCCESS"
+ ],
+ "commands": {
+  "AFFINITY_INFO": {
+   "codes": [
+    "DISABLED",
+    "INVALID_PARAMETERS",
+    "ON_PENDING"
+   ],
+   "weak_source": true
+  },
+  "CPU_DEFAULT_SUSPEND": {
+   "codes": [
+    "INVALID_ADDRESS",
+    "SUCCESS"
+   ],
+   "weak_source": true
+  },
+  "CPU_FREEZE": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "CPU_OFF": {
+   "codes": [
+    "DENIED"
+   ],
+   "weak_source": true
+  },
+  "CPU_ON": {
+   "codes": [
+    "ALREADY_ON",
+    "DENIED",
+    "INTERNAL_FAILURE",
+    "INVALID_ADDRESS",
+    "INVALID_PARAMETERS",
+    "ON_PENDING"
+   ],
+   "weak_source": true
+  },
+  "CPU_SUSPEND": {
+   "codes": [
+    "DENIED",
+    "INVALID_ADDRESS",
+    "INVALID_PARAMETERS",
+    "SUCCESS"
+   ],
+   "weak_source": true
+  },
+  "MEM_PROTECT_CHECK_RANGE": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": true
+  },
+  "MEM_PROTECT": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "MIGRATE_INFO_TYPE": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "MIGRATE_INFO_UP_CPU": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "MIGRATE": {
+   "codes": [
+    "DENIED",
+    "INTERNAL_FAILURE",
+    "INVALID_PARAMETERS",
+    "NOT_PRESENT",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "NODE_HW_STATE": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "PSCI_FEATURES": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "PSCI_SET_SUSPEND_MODE": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "PSCI_STAT_COUNT": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "PSCI_STAT_RESIDENCY": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "PSCI_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "SYSTEM_OFF2": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "SYSTEM_OFF": {
+   "codes": [
+    "DENIED"
+   ],
+   "weak_source": true
+  },
+  "SYSTEM_RESET2": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  },
+  "SYSTEM_RESET": {
+   "codes": [],
+   "weak_source": true
+  },
+  "SYSTEM_SUSPEND": {
+   "codes": [
+    "DENIED",
+    "INVALID_ADDRESS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": true
+  }
+ }
+}

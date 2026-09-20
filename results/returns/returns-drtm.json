@@ -1,0 +1,100 @@
+{
+ "doc": "drtm",
+ "vocab": [
+  "ALREADY_CLOSED",
+  "COPROCESSOR_ERROR",
+  "DENIED",
+  "INTERNAL_ERROR",
+  "INVALID_DATA",
+  "INVALID_PARAMETERS",
+  "MEM_PROTECT_INVALID",
+  "NOT_FOUND",
+  "NOT_SUPPORTED",
+  "OUT_OF_RESOURCE",
+  "SUCCESS",
+  "TPM_ERROR"
+ ],
+ "commands": {
+  "DRTM_CLOSE_LOCALITY": {
+   "codes": [
+    "ALREADY_CLOSED",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "DRTM_DYNAMIC_LAUNCH": {
+   "codes": [],
+   "weak_source": true
+  },
+  "DRTM_ENABLE_SECURE_INTERRUPTS": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "DRTM_FEATURES": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "DRTM_GET_ERROR": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "DRTM_LOCK_TCB_HASHES": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "DRTM_PARAMETERS": {
+   "codes": [],
+   "weak_source": true
+  },
+  "DRTM_SET_ERROR": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "DRTM_SET_TCB_HASH": {
+   "codes": [
+    "DENIED",
+    "INVALID_DATA",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "OUT_OF_RESOURCE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "DRTM_UNPROTECT_MEMORY": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "DRTM_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  }
+ }
+}

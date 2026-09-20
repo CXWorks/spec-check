@@ -1,0 +1,165 @@
+{
+ "doc": "sdei",
+ "vocab": [
+  "DENIED",
+  "INVALID_PARAMETERS",
+  "NOT_SUPPORTED",
+  "OUT_OF_RESOURCE",
+  "PENDING",
+  "SUCCESS"
+ ],
+ "commands": {
+  "SDEI_EVENT_COMPLETE_AND_RESUME": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_COMPLETE": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_CONTEXT": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_DISABLE": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_ENABLE": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_GET_INFO": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_REGISTER": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_ROUTING_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_SIGNAL": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_STATUS": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "SDEI_EVENT_UNREGISTER": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "PENDING",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_FEATURES": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "SDEI_INTERRUPT_BIND": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "OUT_OF_RESOURCE"
+   ],
+   "weak_source": false
+  },
+  "SDEI_INTERRUPT_RELEASE": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_PE_MASK": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "SDEI_PE_UNMASK": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_PRIVATE_RESET": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_SHARED_RESET": {
+   "codes": [
+    "DENIED",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "SDEI_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  }
+ }
+}
