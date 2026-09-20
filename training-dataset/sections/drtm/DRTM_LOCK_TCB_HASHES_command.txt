@@ -1,0 +1,30 @@
+3.10 DRTM_LOCK_TCB_HASHES
+Used by firmware to prevent further hashes from being recorded.
+ Parameter                 Register       Value
+ uint32 Function ID           W0          0xC400_0119
+ Return
+                                          On success:
+                                                                                  The operation succeeded.
+                                          SUCCESS
+                                          On error:
+                                                                                  DRTM is not supported.
+                                          NOT_SUPPORTED
+ int64
+                              X0          DENIED                                  Hashes are already locked.
+                                                                                  Note: This function may return
+                                                                                  other error codes as defined in
+                                                                                  section 3.18.
+3.10.1 DRTM_LOCK_TCB_HASHES usage
+After recording TCB hashes using DRTM_SET_TCB_HASH, firmware can invoke this function to prevent further
+hashes from being recorded.
+3.10.2 DRTM_LOCK_TCB_HASHES caller responsibilities
+As section 3.9 describes, the function DRTM_SET_TCB_HASH can be used to record hashes of TCB components.
+These measurements must be performed when Non-secure firmware is in an execution phase where all
+components are under the authority of the platform manufacturer. For UEFI-based firmware this is the phase of
+execution before the End of DXE event. Before transitioning to the next execution phase, firmware uses
+DRTM_LOCK_TCB_HASHES to prevent further hashes from being recorded.
+3.10.3 DRTM_LOCK_TCB_HASHES implementation responsibilities
+This function must be implemented if DRTM_SET_TCB_HASH is implemented.
+The implementation must record state to indicate that TCB measurement are locked. The implementation of
+DRTM_SET_TCB_HASH uses this state data to prevent further measurements from being made. If the TCB hashes
+are already locked, the error DENIED must be returned.

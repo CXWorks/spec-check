@@ -1,0 +1,27 @@
+18.4.2 FFA_MSG_POLL
+            Description
+                • Poll if a message is available in the RX buffer of the caller. Execution is returned to the caller if no message is
+                  available.
+                     – Must not be invoked when the caller is processing a Direct request.
+                • Valid FF-A instances and conduits are listed in Table 18.19.
+                • Syntax of this function is described in Table 18.20.
+                • Successful completion of this function is indicated through the invocation of the FFA_MSG_SEND interface
+                  (see 18.4.1 FFA_MSG_SEND).
+                • Encoding of error code in the FFA_ERROR function is described in Table 18.21.
+                                                                      Table 18.19: FFA_MSG_POLL instances and conduits
+           Config No.                   FF-A instance                                           Valid conduits
+           1                            Non-secure virtual                                      SMC, HVC
+                                                                                Table 18.20: FFA_MSG_POLL function syntax
+           Parameter                                 Register         Value
+           uint32 Function ID                        w0                   • 0x8400006A.
+           Other Parameter registers                 w1-w7                • Reserved (MBZ).
+                                                     x1-x7
+                                                                                             Table 18.21: FFA_ERROR encoding
+           Parameter                                 Register         Value
+           int32 Error code                          w2                   • RETRY: Message is not available in the caller’s RX
+                                                                            buffer.
+                                                                          • DENIED: Callee is not in a state to handle this request.
+                                                                          • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+Chapter 18. Appendix
+18.5. Changes to FF-A v1.0 data structures for forward compatibility

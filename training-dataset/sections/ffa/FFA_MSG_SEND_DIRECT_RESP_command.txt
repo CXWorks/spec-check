@@ -1,0 +1,63 @@
+15.3 FFA_MSG_SEND_DIRECT_RESP
+           Description
+               • Send a Partition or Framework message in parameter registers as a response to a target endpoint, run the
+                 endpoint and wait until a new message is available. Also see 8.3 Direct messaging.
+               • Valid FF-A instances and conduits are listed in Table 15.10.
+               • Syntax of this function is described in Table 15.11.
+               • Successful completion of this function is indicated in the same manner as that of the FFA_MSG_WAIT
+                 function (also see 14.1 FFA_MSG_WAIT).
+               • Encoding of error code in the FFA_ERROR function is described in Table 15.12.
+                                                 Table 15.10: FFA_MSG_SEND_DIRECT_RESP instances and conduits
+           Config No.                  FF-A instance                              Valid conduits
+           1                           Non-secure physical                        ERET
+           2                           Secure physical                            SMC, ERET
+           3                           Non-secure virtual                         SMC, HVC, ERET
+           4                           Secure virtual                             SMC, HVC, SVC, ERET
+                                                           Table 15.11: FFA_MSG_SEND_DIRECT_RESP function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x84000070.
+                                                                             – This function ID can be used to complete the
+                                                                                SMC32 or SMC64 variant of the
+                                                                                FFA_MSG_SEND_DIRECT_REQ ABI.
+                                                                         • 0xC4000070.
+                                                                             – This function ID can be used to complete the
+                                                                                SMC64 variant of the
+                                                                                FFA_MSG_SEND_DIRECT_REQ ABI.
+           uint32 Source/Destination IDs            w1                   • Source and destination endpoint IDs.
+                                                                             – Bit[31:16]: Source endpoint ID.
+                                                                             – Bit[15:0]: Destination endpoint ID.
+           uint32 Flags                             w2                   • Message flags.
+                                                                             – Bit[31]: Message type.
+                                                                                  * b’0: Message encoded in parameter registers
+                                                                                    is a partition message.
+                                                                                  * b’1: Message encoded in parameter registers
+                                                                                    is a framework message.
+                                                                             – Bit[30:8]: Reserved (SBZ).
+                                                                             – Bit[7:0]:
+                                                                                  * Reserved (MBZ) if Bit[31] = b’0.
+                                                                                  * Framework message type if bit[31] = b’1.
+                                                                                       · See Table 18.8 in 18.2.4 Power
+                                                                                         Management messages.
+Chapter 15. Messaging interfaces
+15.3. FFA_MSG_SEND_DIRECT_RESP
+           Parameter                              Register         Value
+           IMPLEMENTATION DEFINED values          w3-w7                • IMPLEMENTATION DEFINED values.
+                                                  x3-x7
+           Other Parameter registers when         x8-x17               • IMPLEMENTATION DEFINED values.
+           using the SMC64, HVC64 or
+           SVC64 convention.
+                                                                                          Table 15.12: FFA_ERROR encoding
+           Parameter                              Register         Value
+           int32 Error code                       w2                   • INVALID_PARAMETERS: Invalid endpoint ID or
+                                                                         message flags.
+                                                                       • DENIED:
+                                                                             – Callee is not in a state to handle this request.
+                                                                             – Caller is not allowed to invoke this ABI.
+                                                                             – Receiver endpoint does not support receipt of
+                                                                               Direct response messages.
+                                                                       • NOT_SUPPORTED: This function is not implemented
+                                                                         at this FF-A instance.
+                                                                       • ABORTED: Receiver endpoint ran into an unexpected
+                                                                         error and has aborted.
+Chapter 15. Messaging interfaces
+15.4. FFA_MSG_SEND_DIRECT_REQ2

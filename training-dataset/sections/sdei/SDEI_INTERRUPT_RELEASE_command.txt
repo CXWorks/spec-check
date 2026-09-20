@@ -1,0 +1,43 @@
+5.1.15 SDEI_INTERRUPT_RELEASE
+                Description                         Release the interrupt from event binding.
+                Parameters
+                uint32 Function ID:                  0xC400_002E
+                int32 event                          Event number
+                Return
+                                                     SUCCESS                                     Event released successfully.
+                                                     NOT_SUPPORTED                               SDEI is not supported.
+                int64
+                                                     INVALID_PARAMETERS                          Invalid event number in the call.
+                                                     DENIED                                      Inappropriate event state.
+5.1.15.1        Usage
+                        This interface call can be used to release an interrupt-event binding. If the release call is
+                        executed on an interrupt that is not currently bound, an error code INVALID_PARAMETERS
+                        will be returned.
+                        As the event binding is global, to release a private event, the event must be in handler-
+                        unregistered state for all registered PEs. To release a shared event, the event handler
+                        must be in handler-unregistered state, see the state diagram in Event handler states and
+                        properties on page 46 for more information.
+Interface
+5.1.15.2    Parameters
+                    event is the event number that was returned from an earlier call to SDEI_INTERRUPT_BIND,
+                    see page 36.
+5.1.15.3    Client responsibilities
+                    A successful SDEI_INTERRUPT_RELEASE call effectively removes the event number and no
+                    further SDEI calls will be valid on this event.
+                    The client must also handle the following potential return error codes,
+                        •     INVALID_PARAMETERS is returned if
+                                   •     Event number is invalid.
+                                   •     Event number is not bound.
+                        •     DENIED is returned if the event handler is in a state other than handler-
+                              unregistered.
+5.1.15.4    Dispatcher responsibilities
+                    After a successful release, the free slot returns to the pool of bind slots. The client can
+                    reuse the bind slot for the same or different interrupt number. After releasing a bound
+                    event, it is IMPLEMENTATION DEFINED, if the dispatcher returns the same or different event
+                    number for a subsequent bind of the same interrupt. The dispatcher must ensure that all
+                    registered PEs have completed (not pending) unregistering the handler before releasing an
+                    event.
+                    The dispatcher implementation must restore any configuration of an interrupt that is done
+                    during SDEI_INTERRUPT_BIND, so that the client owns and manages the interrupt. For
+                    example, for a physical SDEI instance with a system that uses GIC, the interrupt must be
+                    in Group-1 Non-secure. The interrupt must be disabled at the interrupt controller.

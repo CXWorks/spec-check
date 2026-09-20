@@ -1,0 +1,38 @@
+5.1.17 SDEI_FEATURES
+                Description                          Enumerate SDEI features
+                Parameters
+                uint32 Function ID:                  0xC400_0030
+                                                     This argument specifies the feature that is queried. Currently the
+                                                     following value is defined:
+                                                     0: BIND_SLOTS - returns the number of private events and shared
+                uint32 feature                       event slots available for binding.
+                                                     All other values are reserved.
+                                                     1: RELATIVE_MODE – returns whether the implementation
+                                                     supports the relative_mode feature of SDEI_EVENT_REGISTER.
+                Return
+                On success, the format of the return value is as follows,
+                                                     For BIND_SLOTS as the parameter, the return value is as follows:
+                                                     Bits [63:32] : must be zero
+                                                     Bits [31:16] : The count of shared event slots allocated in the
+                                                     system.
+                                                     Bits [15:0] : The count of private event slots allocated in the
+                int64                                system.
+                                                     For RELATIVE_MODE as the parameter, the return value is as
+                                                     follows:
+                                                     0: relative_mode is not supported.
+                                                     1: relative_mode is supported.
+Interface
+            On error,
+                                               NOT_SUPPORTED                                SDEI is not supported.
+            int64
+                                               INVALID_PARAMETERS                           Invalid feature requested.
+5.1.17.1    Usage
+                    This interface call is used to query SDEI features that are implemented in the system.
+                    Currently only the number of bind slots can be queried using this interface. Return value for
+                    the bind slots provide the number of private bind slots and shared bind slots that are
+                    allocated by the platform for binding.
+5.1.17.2    Parameters
+                    parameter used to specify the feature that is queried.
+                    This version of specification defines only the following value:
+                      0 : BIND_SLOTS
+                    All other values are reserved for future.

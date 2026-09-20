@@ -1,0 +1,140 @@
+18.4.1 FFA_MSG_SEND
+            Overview
+                • Send a Partition message to a VM through the RX/TX buffers by using Indirect messaging.
+                     – Message is copied by Hypervisor from the TX buffer of Sender NS-Endpoint to the RX buffer of
+                        Receiver NS-endpoint.
+                     – The scheduler is informed about the pending message in the RX buffer of the Receiver.
+                     – Message will be read when the Receiver endpoint is scheduled to run.
+                     – See 18.4.1.2 Component responsibilities for FFA_MSG_SEND for caller and callee roles and
+                        responsibilities.
+                     – Must not be invoked when the caller is processing a Direct request.
+                • Valid FF-A instances and conduits are listed in Table 18.15.
+                     – Is used with the ERET conduit in the following scenarios.
+                          * Inform an endpoint that a message is available in its RX buffer.
+                          * Inform the primary scheduler that the Receiver has a pending message in its RX buffer.
+                • Syntax of this function is described in Table 18.16.
+                • Successful completion of this function call is indicated as follows.
+                     – w0 contains FFA_SUCCESS function ID.
+                     – w1/x1-w7/x7 are Reserved (MBZ).
+                     – Successful completion of this function does not imply that the message has been read by the Receiver
+                        endpoint.
+                • Encoding of error code in the FFA_ERROR function is described in Table 18.17.
+                     – See 18.4.1.1 Target availability notification for behavior when BUSY is returned and caller must be
+                        notified about availability of TX buffer.
+                                                                      Table 18.15: FFA_MSG_SEND instances and conduits
+           Config No.                   FF-A instance                                           Valid conduits
+           1                            Non-secure virtual                                      SMC, HVC, ERET
+                                                                                Table 18.16: FFA_MSG_SEND function syntax
+           Parameter                                 Register         Value
+           uint32 Function ID                        w0                   • 0x8400006E.
+           uint32 Sender/Receiver IDs                w1                   • Sender and Receiver endpoint IDs.
+                                                                              – Bit[31:16]: Sender endpoint ID.
+                                                                              – Bit[15:0]: Receiver endpoint ID.
+           uint32/uint64 Reserved                    w2/x2                • Reserved for future use (MBZ).
+           uint32 Message size                       w3                   • Length of message payload in the RX buffer.
+                                                                          • This is an optional field when used with the ERET
+                                                                            conduit at the Non-secure virtual FF-A instance and
+                                                                            the callee is not the Receiver of the message. It MBZ
+                                                                            in this case.
+Chapter 18. Appendix
+18.4. Legacy Indirect messaging usage
+           Parameter                                Register         Value
+           uint32 Flags                             w4                   • Message flags.
+                                                                              – Must be ignored by callee when SVC conduit is
+                                                                                used.
+                                                                              – Bit[0]: Blocking behavior.
+                                                                                  * b’0: Return BUSY if message cannot be
+                                                                                     delivered to Receiver.
+                                                                                  * b’1: Return BUSY if message cannot be
+                                                                                     delivered to Receiver and notify when
+                                                                                     delivery is possible.
+                                                                              – Bit[31:1]: Reserved (MBZ).
+           uint32 Sender vCPU ID                    w5                   • Information to identify execution context or vCPU of
+                                                                           Sender endpoint.
+                                                                              – Only valid when ERET conduit is used. MBZ
+                                                                                and ignored by callee otherwise.
+                                                                              – Bits[31:16]: Reserved (MBZ).
+                                                                              – Bits[15:0]: vCPU ID of Sender endpoint.
+           Other Parameter registers                w6-w7                • Reserved (MBZ).
+                                                    x6-x7
+                                                                                            Table 18.17: FFA_ERROR encoding
+           Parameter                                Register         Value
+           int32 Error code                         w2                   • INVALID_PARAMETERS: A field in input
+                                                                           parameters is incorrectly encoded.
+                                                                         • BUSY: Receiver RX buffer is not free.
+                                                                         • DENIED: Callee is not in a state to handle this request.
+                                                                         • NO_MEMORY: Insufficient memory to handle this
+                                                                           request.
+                                                                         • NOT_SUPPORTED: This function is not implemented
+                                                                           at this FF-A instance.
+             18.4.1.1 Target availability notification
+             When this interface is invoked, it is possible that the callee determines that the RX buffer of the Receiver VM
+             cannot be written to. This can happen if either another instance of a Producer is writing to the RX buffer or the
+             Receiver VM is reading from it as a Consumer (see 4.10 RX/TX buffers). The callee must complete the interface
+             invocation with a BUSY error code in this case.
+             A VM running in EL1 can request to be notified when the RX buffer becomes available again by setting bit[0] = 1
+             in the Flags parameter. In this case, the Hypervisor must:
+                1. Determine when the RX buffer is available as per the ownership rules described in 4.10 RX/TX buffers.
+                2. Notify each caller about the RX buffer availability.
+             The Hypervisor must describe the interrupt to indicate availability of the Receiver VM RX buffer to each VM
+             respectively through an IMPLEMENTATION DEFINED mechanism. This could be done through a platform discovery
+             mechanism like ACPI or Device tree.
+             A Consumer that is, OS kernel or VM must indicate the availability of its RX buffer by using a mechanism listed
+             in 4.10 RX/TX buffers for example, through the FFA_RX_RELEASE interface.
+Chapter 18. Appendix
+18.4. Legacy Indirect messaging usage
+             18.4.1.2 Component responsibilities for FFA_MSG_SEND
+             This section describes the common responsibilities that the participating FF-A components must fulfill during
+             transmission of Partition messages between VMs through the FFA_MSG_SEND interface. This interface is used in
+             the scenarios listed in 8.2 Indirect messaging.
+             18.4.1.2.1    Sender VM responsibilities
+                1. Must acquire ownership of empty TX buffer (see 4.10 RX/TX buffers).
+                2. Must write Partition message payload to TX buffer.
+                3. Must specify length of Partition message payload.
+                4. Must specify blocking behavior in Flags parameter.
+                5. Must specify Sender and Receiver VM IDs.
+                6. Must implement support for handling all error status codes that can be returned on completion of these
+                   interfaces.
+                7. See 18.4.1.2.2 Hypervisor responsibilities for Hypervisor responsibilities in this message transmission.
+             18.4.1.2.2    Hypervisor responsibilities
+               1. Must validate Sender and Receiver VM IDs and return INVALID PARAMETER if either is invalid.
+               2. Must check that reserved bits are 0 in Flags parameter. Return INVALID PARAMETER if this check fails.
+               3. Must check that reserved and unused parameter registers are 0. Return INVALID PARAMETER if this check
+                  fails.
+               4. Must check that the size of the Receiver RX buffer is large enough to accommodate the message. Must return
+                  NO_MEMORY if this is not true.
+               5. Must lock TX buffer of Sender from concurrent accesses before copying the message.
+               6. Must determine availability of RX buffer of Receiver.
+                    1. Return BUSY if RX buffer is not available.
+                         1. Save Sender ID if it wants the target availability interrupt when the RX buffer becomes free.
+                         2. Arrange for target availability interrupt to be delivered to Sender.
+                    2. Mark RX buffer as unavailable if it is available.
+               7. Must protect RX buffer of Receiver from concurrent accesses.
+               8. Must copy message from Sender TX buffer to Receiver RX buffer.
+               9. Must unlock TX buffer of Sender after copying the message.
+              10. Must unlock RX buffer of Receiver after copying the message.
+              11. Must inform primary scheduler that Receiver has a pending message as described in 18.4.1.3 Legacy
+                  mechanism for scheduler notification.
+              12. Must return SUCCESS to Sender if message is successfully transmitted.
+              13. Must mark the RX buffer as available when the Receiver releases it.
+             18.4.1.2.3    Receiver VM responsibilities
+                1. Copy message from RX buffer.
+                2. Transfer ownership of the RX buffer by invoking the FFA_RX_RELEASE interface.
+             18.4.1.3 Legacy mechanism for scheduler notification
+             This section describes how the primary scheduler must be notified depending on its location relative to the message
+             Sender.
+                1. A VM is the Sender. The primary scheduler and Hypervisor are co-resident. The Hypervisor must use an
+                   IMPLEMENTATION DEFINED mechanism to notify the primary scheduler in response to the FFA_MSG_SEND
+                   call.
+                2. A VM is the Sender.
+                    1. The primary scheduler is resident in another VM.
+                          1. The Hypervisor must forward the FFA_MSG_SEND call to the primary scheduler using the ERET
+                             conduit on the PE where the call is made.
+                          2. Primary scheduler must respond to the forwarded FFA_MSG_SEND call with either a
+                             FFA_SUCCESS or FFA_ERROR invocation through the SMC conduit.
+Chapter 18. Appendix
+18.4. Legacy Indirect messaging usage
+                3. The primary scheduler and Sender VM are co-resident. The Sender VM must use an IMPLEMENTATION
+                   DEFINED mechanism to notify the scheduler.
+Chapter 18. Appendix
+18.4. Legacy Indirect messaging usage

@@ -1,0 +1,99 @@
+13.3 FFA_FEATURES
+            Description
+                • This interface is used by an FF-A component at the lower EL at an FF-A instance to query:
+                      – The presence, properties and implementation of optional features of an FF-A interface.
+                      – The presence and properties of a feature supported by the Framework and not specific to an FF-A
+                        interface.
+                • This interface can be invoked at the FF-A instances through the conduits listed in Table 13.11.
+                • Syntax of this function is described in Table 13.12.
+                • If the FF-A interface or feature that was queried is implemented, the callee completes this call with an
+                  invocation of the FFA_SUCCESS interface as described in Table 13.13.
+                • If the FF-A interface or feature that was queried is not implemented or invalid, the callee completes this call
+                  with an invocation of the FFA_ERROR interface with the NOT_SUPPORTED error code.
+                                                                       Table 13.11: FFA_FEATURES instances and conduits
+            Config No.                  FF-A instance                                           Valid conduits
+            1                           Non-secure physical                                     SMC
+            2                           Secure physical                                         ERET, SMC
+            3                           Secure and Non-secure virtual                           SMC, HVC, SVC
+                                                                                Table 13.12: FFA_FEATURES function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0                   • 0x84000064.
+            uint32 FF-A function ID or Feature       w1                   • Bit[31]: w1 contains an FF-A Function ID or Feature
+            ID                                                              ID.
+                                                                               – b’1: w1 must be interpreted as the Function ID of
+                                                                                 the FF-A interface whose implementation is
+                                                                                 being queried. Effectively, bit[31] of the SMCCC
+                                                                                 Function ID i.e. the Fastcall bit is used to
+                                                                                 distinguish between an FF-A feature and function
+                                                                                 ID.
+                                                                                    * If an interface defines both SMC32 and
+                                                                                      SMC64 FIDs, then either FID could be used.
+                                                                                      (Also see common rules that govern
+                                                                                      definition and behavior of FF-A ABIs in
+                                                                                      Chapter 11 Interface overview).
+                                                                               – b’0: w1 must be interpreted as the ID of a feature
+                                                                                 supported by the Framework at this FF-A
+                                                                                 instance. IDs of supported features are listed in
+                                                                                 Table 13.14.
+                                                                                    * Bit[30:8]: Reserved (MBZ).
+                                                                                    * Bit[7:0]: Feature ID.
+Chapter 13. Setup and discovery interfaces
+13.3. FFA_FEATURES
+            Parameter                                Register         Value
+            uint32 Input properties                  w2                   • A list of properties expected by the caller
+                                                                            corresponding to the Function ID specified in w1.
+                                                                          • This parameter is Reserved (MBZ) if a Feature ID is
+                                                                            specified in w1.
+            Other Parameter registers                w3-w7                • Reserved (SBZ).
+                                                                                         Table 13.13: FFA_SUCCESS encoding
+            Parameter                                Register         Value
+            uint32 Interface properties              w2-w3                • Used to encode any optional features implemented or
+                                                                            any properties exported by the queried interface or
+                                                                            feature.
+                                                                               – FF-A interfaces that use these parameters and the
+                                                                                  encodings of their properties are listed in Table
+                                                                                  13.15.
+                                                                               – Feature IDs and encodings of their properties are
+                                                                                  listed in Table 13.14.
+                                                                          • MBZ if no optional features are implemented or no
+                                                                            implementation details are exported by the queried
+                                                                            interface.
+            Other Result registers                   w4-w7                • Reserved (MBZ).
+                                                                                 Table 13.14: Feature IDs and properties table
+                          FF-A
+FF-A Feature Name         Feature ID      Input properties (w2)        Encoding of feature in return parameters
+Notification pending      0x1                 • Reserved (SBZ).             • w2 : Interrupt ID.
+interrupt
+Schedule Receiver         0x2                 • Reserved (SBZ).             • w2 : Interrupt ID.
+interrupt
+Managed exit interrupt    0x3                 • Reserved (SBZ).             • w2 : Interrupt ID.
+Chapter 13. Setup and discovery interfaces
+13.3. FFA_FEATURES
+                          FF-A
+FF-A Feature Name         Feature ID      Input properties (w2)        Encoding of feature in return parameters
+Notification features     0x4                 • Reserved (SBZ).             • w2 : Notification features.
+                                                                                – Bit[0]:
+                                                                                     * b’0: Per-vCPU notifications supported for
+                                                                                        VM notifications.
+                                                                                     * b’1: Per-vCPU notifications not supported
+                                                                                        for VM notifications.
+                                                                                – Bit[1]:
+                                                                                     * b’0: Per-vCPU notifications supported for
+                                                                                        SP notifications.
+                                                                                     * b’1: Per-vCPU notifications not supported
+                                                                                        for SP notifications.
+                                                                                – Bits[10:2]: Number of VM notifications i
+                                                                                   supported where,
+                                                                                     * Total notification count = i + 64.
+                                                                                     * 0 <= i <= 320.
+                                                                                     * Reserved (MBZ) at the non-secure
+                                                                                        physical interface.
+                                                                                – Bits[19:11]: Number of SP notifications i
+                                                                                   supported where,
+                                                                                     * Total notification count = i + 64.
+                                                                                     * 0 <= i <= 320.
+                                                                                – Bit[31:20]: Reserved (MBZ).
+                                                                  Table 13.15: Encoding of interface properties parameters
+FF-A Function ID (w1)      Input properties (w2)        Return parameters (w2-w3)
+FFA_RXTX_MAP                    • Reserved (SBZ).            • w2: Buffer sizes.
+                                                                 – Bits[1:0]: Minimum buffer size and alignment boundary (see

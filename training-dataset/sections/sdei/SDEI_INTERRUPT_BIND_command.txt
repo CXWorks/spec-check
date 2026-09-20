@@ -1,0 +1,64 @@
+5.1.14 SDEI_INTERRUPT_BIND
+            Description                        Binds an interrupt to an event.
+            Parameters
+            uint32 Function ID:                0xC400_002D
+            uint32 interrupt                   Interrupt number.
+            Return
+            On success an event number is returned as follows,
+                                               Bits [63:32]: Must be zero.
+            int64                              Bits [31:0]: Event number, see Event number allocation on page
+                                               19.
+            On error,
+                                               NOT_SUPPORTED                               SDEI is not supported.
+                                               INVALID_PARAMETERS                          Invalid interrupt number in the
+                                                                                           call.
+            int64
+                                               DENIED                                      Inappropriate interrupt state.
+                                                                                           The client has exceeded the
+                                               OUT_OF_RESOURCE                             available event binding slots,
+                                                                                           see Bound events on page 51.
+5.1.14.1    Usage
+                    This interface call can be used to bind any client interrupt in to a normal priority SDEI
+                    event. The interrupt can be a private peripheral interrupt (PPI) or a shared peripheral
+                    interrupt (SPI). Binding a software generated interrupt (SGI) is not allowed. Binding a PPI
+                    results in a private event and binding a SPI results in a shared event. The event number
+                    returned by this call is valid across all PEs for both private and shared events. Binding any
+                    type of interrupt that is already bound will return the same event number. Refer to Bound
+                    events on page 51 for more information.
+                    The number of such bind slots that can exist in a system is platform specific and can be
+                    discovered using the SDEI_FEATURES call, see page 39. It is IMPLEMENTATION DEFINED on
+                    how the mapped event number is formed, within the vendor event space, refer to Event
+                    number allocation on page 19.
+5.1.14.2    Parameters
+                    interrupt is the interrupt number that is to be promoted as an SDEI event. For physical
+                    SDEI instance, the interrupt will be a Non-secure interrupt and for virtual SDEI the interrupt
+                    number will be a virtual interrupt.
+5.1.14.3    Client responsibilities
+                    The client can bind any PPI or SPI as an event. When the interrupt is promoted to an
+                    event, the client will lose the ability to change any properties of the interrupt and only SDEI
+                    calls are allowed on the event. The interrupt, prior to binding must be owned and managed
+                    by the client, for example, in the case of a physical SDEI instance and the system uses
+                                                                                                                              Interface
+                        GIC, the interrupt must be in Group-1 Non-secure. Before binding the interrupt, the client
+                        must ensure that the interrupt is disabled at the interrupt controller and in inactive state,
+                        refer to Arm Generic Interrupt Controller Architecture Specification version 3.0 for more
+                        information.
+                        The client must also handle the following potential return error codes,
+                            •     INVALID_PARAMETERS is returned if
+                                       •     Interrupt number is invalid
+                                       •     Interrupt number is not allowed for binding. In particular, when the interrupt
+                                             is not owned by the client, for example is a secure interrupt.
+                            •     DENIED is returned if the interrupt is not in Inactive state, as defined in Arm
+                                  Generic Interrupt Controller Architecture Specification version 3.0.
+                            •     OUT_OF_RESOURCE is returned if the client has used all the available event
+                                  bind slots, see Bound events on page 51.
+5.1.14.4        Dispatcher responsibilities
+                        The dispatcher must reserve a set of bind slots to be used by the client. The dispatcher
+                        must only allow the binding of interrupts owned by the clients. All bound interrupts must
+                        have their priority elevated to ensure that they can always preempt client execution.
+                        When an interrupt that is bound as an event triggers, the dispatcher acknowledges the
+                        interrupt and delivers the event to the client. This ensures that only valid (non-spurious)
+                        interrupts are delivered to the client. When the client completes the event, the dispatcher
+                        does the end of interrupt. Dispatcher does the interrupt management from the interrupt
+                        controller side, however it is the client’s responsibility to do the device side interrupt
+                        management.

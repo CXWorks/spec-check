@@ -1,0 +1,61 @@
+5.1.10 SDEI_EVENT_GET_INFO
+                Description                          Retrieves the information of an event.
+                Parameters
+                uint32 Function ID                   0xC400_0029
+                int32 event                          Event number
+                uint32 info                          Information requested, refer to Parameter and Return values below
+                Return
+                int64 result
+                The return value on success depends on the information requested, refer to Parameter and
+                Return values below.
+                On error the following error codes can be returned. Specific error codes that can be returned
+                depending on info value are listed in Parameter and Return values below.
+Interface
+                                                      NOT_SUPPORTED                      SDEI is not supported.
+                                                      INVALID_PARAMETERS                 Invalid event number or invalid info
+                   int64                                                                 value
+                                                      DENIED                             see Parameter and Return values
+                                                                                         below.
+5.1.10.1          Usage
+                           This call is used to retrieve the information of an SDEI event. The call is permitted in all
+                           states, however some return values depends on the event handler state, see Parameter
+                           and Return values below. For event handler states, see Event handler states and
+                           properties on page 46.
+5.1.10.2          Parameter and Return values
+                           The different values possible for info parameter and the associated return values are as
+                           follows:
+                                                                                                             Additional error
+            Info value                       Condition                      Success return value
+                                                                                                             return
+                                                                            0: Private event.
+            0: EV_TYPE
+                                                                            1: Shared event.
+                                                                            0: Event can be
+                                                                            software signaled.
+            1: EV_SIGNALED
+                                                                            1: Event cannot be
+                                                                            software signaled.
+                                                                            0: Normal priority event.
+            2:EV_PRIORITY
+                                                                            1: Critical priority event.
+                                             Valid only for shared          0: RM_ANY (Route to              INVALID_PARAMETERS
+                                             events and when                any PE in the system)            if event is not shared.
+            3: EV_ROUTING_MODE               event handler is in                                             DENIED if event is not
+                                             handler-registered             1: RM_PE (Route to the
+                                                                            PE specified by affinity)        registered.
+                                             state.
+                                             Valid only for shared          Affinity value. The              INVALID_PARAMETERS
+                                             events and RM_PE               format of this field             if event is not shared
+                                             routing_mode and               depends on the selected          or routing mode does
+                                             when event handler             routing mode. Currently          not have an
+                                             is in handler-                 the format is defined            associated affinity.
+                                             registered state.              only when the selected           DENIED if event is not
+            4: EV_ROUTING_AFF
+                                                                            routing mode is RM_PE.           registered.
+                                                                            With RM_PE, this field
+                                                                            follows the MPIDR
+                                                                            format as described in
+                                                                            SDEI_EVENT_REGISTER
+                                                                            on page 22
+            Other values of info are reserved for future use
+                                                                                                                           Interface

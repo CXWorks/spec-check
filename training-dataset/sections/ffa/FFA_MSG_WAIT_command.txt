@@ -1,0 +1,84 @@
+14.1 FFA_MSG_WAIT
+            Description
+               • An invocation of this ABI at a virtual or Secure physical FF-A instance with a valid conduit does the
+                 following,
+                    – Transitions the state of the calling execution context from running to waiting as described in 7.2.7
+                      Waiting state.
+                    – Optionally relinquishes ownership of the caller’s RX buffer (see 4.10 RX/TX buffers).
+               • An invocation of this ABI at a physical FF-A instance with a valid conduit is used to inform the scheduler of
+                 the calling execution context about this state transition.
+               • An invocation of this ABI at the Non-secure virtual FF-A instance with the ERET conduit is used by the
+                 Hypervisor to inform the primary or a secondary scheduler about this state transition.
+                    – An optional 64-bit timeout could be specified by the Hypervisor if the calling execution context is a VM
+                       vCPU.
+                    – The scheduler runs the VM vCPU after the timeout expires.
+                    – Syntax of this function in this scenario is described in Table 14.5.
+               • An invocation of this ABI at a virtual FF-A instance with the SMC, HVC or SVC conduits completes when
+                 the calling execution context is allocated CPU cycles as described in 7.2.7 Waiting state.
+               • An invocation of this ABI at the Secure physical FF-A instance completes with an invocation of any FF-A
+                 ABI.
+               • Valid FF-A instances and conduits are listed in Table 14.2.
+               • Syntax of this function is described in Table 14.3.
+               • Encoding of error codes in the FFA_ERROR function is described in Table 14.4.
+                                                                       Table 14.2: FFA_MSG_WAIT instances and conduits
+           Config No.                  FF-A instance                              Valid conduits
+           1                           Non-secure physical                        ERET
+           2                           Secure physical                            SMC
+           3                           Non-secure virtual                         SMC, HVC, ERET
+           4                           Secure virtual                             SMC, HVC, SVC
+                                                                                 Table 14.3: FFA_MSG_WAIT function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x8400006B.
+                                                                         • 0xC400006B (see 11.1.2 Parameter Register
+                                                                           Preservation).
+           Reserved                                 w1/x1                • Reserved (SBZ).
+Chapter 14. CPU cycle management interfaces
+14.1. FFA_MSG_WAIT
+           Parameter                                Register         Value
+           uint32 Flags                             w2                   • Flags.
+                                                                              – Bit[0]: Retain RX Buffer Ownership flag.
+                                                                                  * This flag specifies if the caller relinquishes
+                                                                                     Ownership of its RX buffer.
+                                                                                  * It is ignored by a callee if the caller does not
+                                                                                     have ownership of its RX Buffer.
+                                                                                  * Only valid at the virtual or Secure physical
+                                                                                     FF-A instance. It is ignored by a callee at all
+                                                                                     other instances.
+                                                                                  * b’0: The caller relinquishes ownership of its
+                                                                                     RX buffer.
+                                                                                  * b’1: The caller does not relinquish
+                                                                                     ownership of its RX buffer.
+                                                                              – Bits[31:1]: Reserved (SBZ).
+           Other Parameter registers                w3-w7                • Reserved (SBZ).
+                                                    x3-x17
+                                                                                             Table 14.4: FFA_ERROR encoding
+           Parameter                                Register         Value
+           int32 Error code                         w2                   • INVALID_PARAMETERS: Unrecognized endpoint or
+                                                                           vCPU ID specified at Non-secure physical or virtual
+                                                                           FF-A instance.
+                                                                         • DENIED: Callee is not in a state to handle this request.
+                                                                         • NOT_SUPPORTED: This function is not implemented
+                                                                           at this FF-A instance.
+                   Table 14.5: FFA_MSG_WAIT function syntax with the ERET conduit at NS virtual FF-A instance
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x8400006B.
+           uint32 Endpoint/vCPU IDs                 w1                   • Endpoint and vCPU IDs of the caller.
+                                                                              – Bit[31:16]: Endpoint ID.
+                                                                              – Bit[15:0]: vCPU ID.
+           uint32 TimeoutLo                         w2                   • Bits[31:0] of an interval measured in nanoseconds
+                                                                           after which vCPU of the endpoint specified in w1 must
+                                                                           be run.
+                                                                         • This parameter MBZ if the caller does not specify a
+                                                                           timeout.
+           uint32 TimeoutHi                         w3                   • Bits[63:32] of an interval measured in nanoseconds
+                                                                           after which vCPU of the endpoint specified in w1 must
+                                                                           be run.
+                                                                         • This parameter MBZ if the caller does not specify a
+                                                                           timeout.
+Chapter 14. CPU cycle management interfaces
+14.1. FFA_MSG_WAIT
+           Parameter                               Register         Value
+           Other Parameter registers               w4-w7                • Reserved (MBZ).
+                                                   x4-x17
+Chapter 14. CPU cycle management interfaces
+14.2. FFA_YIELD

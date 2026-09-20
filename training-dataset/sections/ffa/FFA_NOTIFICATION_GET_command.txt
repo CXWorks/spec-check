@@ -1,0 +1,126 @@
+16.6 FFA_NOTIFICATION_GET
+             Description
+                 • This ABI is invoked by an endpoint at a virtual FF-A instance with the SMC, HVC or SVC conduits to
+                   request the partition manager to retrieve notifications pending in notification bitmaps specified in the Flags
+                   parameter. Also see 10.5 Notification signaling.
+                 • This ABI is invoked by the Hypervisor at the Non-secure physical FF-A instance with the SMC conduit to
+                   request the SPMC to return pending SP or SPM Framework notifications as specified in the Flags parameter
+                   for the VM specified in the Receiver endpoint ID parameter. The Receiver vCPU ID parameter is used to
+                   return any pending per-vCPU notifications.
+                 • Valid FF-A instances and conduits are listed in Table 16.23.
+                 • Syntax of this function is described in Table 16.24.
+                 • Encoding of result parameters in the FFA_SUCCESS function is described in Table 16.25.
+                 • Encoding of error codes in the FFA_ERROR function is described in Table 16.26.
+                                                            Table 16.23: FFA_NOTIFICATION_GET instances and conduits
+            Config No.                   FF-A instance                                           Valid conduits
+            1                            Non-secure virtual                                      SMC, HVC
+            2                            Secure virtual                                          SMC, HVC, SVC
+            3                            Non-secure physical                                     SMC
+            4                            Secure physical                                         ERET
+                                                                      Table 16.24: FFA_NOTIFICATION_GET function syntax
+            Parameter                                 Register         Value
+            uint32 Function ID                        w0                   • 0x84000082.
+            uint32 Receiver ID                        w1                   • Receiver endpoint and vCPU ID.
+                                                                               – Bit[31:16]: Receiver vCPU ID.
+                                                                               – Bit[15:0]: Receiver endpoint ID.
+Chapter 16. Notification interfaces
+16.6. FFA_NOTIFICATION_GET
+            Parameter                                 Register         Value
+            uint32 Flags                              w2                   • Bit[0]: Receiver’s SP notifications bitmap identifier.
+                                                                                – b’1: Return bitmap for notifications pended by
+                                                                                   SPs.
+                                                                                – b’0: Do not return bitmap for notifications
+                                                                                   pended by SPs.
+                                                                           • Bit[1]: Receiver’s VM notifications bitmap identifier.
+                                                                             This bit SBZ at the Non-secure physical FF-A instance.
+                                                                                – b’1: Return bitmap for notifications pended by
+                                                                                   VMs.
+                                                                                – b’0: Do not return bitmap for notifications
+                                                                                   pended by VMs.
+                                                                           • Bit[2]: Receiver’s SPM Framework notification bitmap
+                                                                             identifier.
+                                                                                – b’1: Return bitmap for notifications pended by
+                                                                                   the SPM.
+                                                                                – b’0: Do not return bitmap for notifications
+                                                                                   pended by the SPM.
+                                                                           • Bit[3]: Receiver’s Hypervisor Framework notifications
+                                                                             bitmap identifier. This bit SBZ at the Non-secure
+                                                                             physical FF-A instance.
+                                                                                – b’1: Return bitmap for notifications pended by
+                                                                                   the Hypervisor.
+                                                                                – b’0: Do not return bitmap for notifications
+                                                                                   pended by the Hypervisor.
+                                                                           • Bit[31:4]: Reserved (SBZ).
+            Other Parameter registers                 w3-w7                • Reserved (SBZ).
+                                                                                          Table 16.25: FFA_SUCCESS encoding
+            Parameter                                 Register         Value
+            uint32 SP Notifications bitmap            w2                   • Bits[31:0] of the SP notifications bitmap with one or
+                                                                             more set bits to identify the notifications which are
+                                                                             pending for the Receiver endpoint.
+                                                                           • For each bit in the bitmap, if the value is:
+                                                                                – b’1: The notification corresponding to this bit
+                                                                                   position is pending for the Receiver
+                                                                                – b’0: The notification corresponding to this bit
+                                                                                   position is not pending for the Receiver.
+                                                                           • Caller must ignore this field if Bit[0] in the Flags field
+                                                                             was not set.
+Chapter 16. Notification interfaces
+16.6. FFA_NOTIFICATION_GET
+            Parameter                                 Register         Value
+            uint32 SP Notifications bitmap            w3                   • Bits[63:32] of the SP notifications bitmap with one or
+                                                                             more set bits to identify the notifications which are
+                                                                             pending for the Receiver endpoint.
+                                                                           • For each bit in the bitmap, if the value is:
+                                                                                – b’1: The notification corresponding to this bit
+                                                                                   position is pending for the Receiver
+                                                                                – b’0: The notification corresponding to this bit
+                                                                                   position is not pending for the Receiver.
+                                                                           • Caller must ignore this field if Bit[0] in the Flags field
+                                                                             was not set.
+            uint32 VM Notifications bitmap            w4                   • Bits[31:0] of the VM notifications bitmap with one or
+                                                                             more set bits to identify the notifications which are
+                                                                             pending for the Receiver endpoint.
+                                                                           • For each bit in the bitmap, if the value is:
+                                                                                – b’1: The notification corresponding to this bit
+                                                                                   position is pending for the Receiver
+                                                                                – b’0: The notification corresponding to this bit
+                                                                                   position is not pending for the Receiver.
+                                                                           • Caller must ignore this field if Bit[1] in the Flags field
+                                                                             was not set.
+            uint32 VM Notifications bitmap            w5                   • Bits[63:32] of the VM notifications bitmap with one or
+                                                                             more set bits to identify the notifications which are
+                                                                             pending for the Receiver endpoint.
+                                                                           • For each bit in the bitmap, if the value is:
+                                                                                – b’1: The notification corresponding to this bit
+                                                                                   position is pending for the Receiver
+                                                                                – b’0: The notification corresponding to this bit
+                                                                                   position is not pending for the Receiver.
+                                                                           • Caller must ignore this field if Bit[1] in the Flags field
+                                                                             was not set.
+            uint32 SPM Framework                      w6                   • Bits[31:0] of the SPM Framework notifications bitmap
+            Notifications bitmap                                             with one or more set bits to identify the notifications
+                                                                             which are pending for the Receiver endpoint as sent by
+                                                                             the SPM.
+                                                                           • These 32 bits will be set by the SPM and reflect
+                                                                             notifications regarding events in the secure world.
+                                                                           • Caller must ignore this field if Bit[2] in the Flags field
+                                                                             was not set.
+            uint32 Hypervisor Framework               w7                   • Bits[31:0] of the Hypervisor Framework notifications
+            Notifications bitmap                                             bitmap with one or more set bits to identify the
+                                                                             notifications which are pending for the Receiver
+                                                                             endpoint as sent by the Hypervisor.
+                                                                           • These 32 bits will be set by the Hypervisor and reflect
+                                                                             notifications regarding events in the normal world.
+                                                                           • Caller must ignore this field if Bit[3] in the Flags field
+                                                                             was not set.
+Chapter 16. Notification interfaces
+16.6. FFA_NOTIFICATION_GET
+                                                                                              Table 16.26: FFA_ERROR encoding
+            Parameter                                 Register         Value
+            int32 Error code                          w2                   • INVALID_PARAMETERS: Unrecognized partition
+                                                                             ID or incorrectly encoded Flags parameter.
+                                                                           • DENIED: Caller is not allowed to invoke this ABI.
+                                                                           • NOT_SUPPORTED: This function is not implemented
+                                                                             at this FF-A instance.
+Chapter 16. Notification interfaces
+16.7. FFA_NOTIFICATION_BIND2

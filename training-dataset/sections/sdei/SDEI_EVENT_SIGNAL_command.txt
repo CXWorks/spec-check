@@ -1,0 +1,40 @@
+5.1.16 SDEI_EVENT_SIGNAL
+            Description                          Signal a software event to a client PE.
+            Parameters
+            uint32 Function ID:                  0xC400_002F
+            int32 event                          event number, must be zero.
+            uint64 target_pe                     Target PE including self.
+            Return
+                                                 SUCCESS                                     Event was successfully set as
+                                                                                             pending.
+            int64                                NOT_SUPPORTED                               SDEI is not supported.
+                                                 INVALID_PARAMETERS                          Invalid event or target PE.
+5.1.16.1    Usage
+                    This interface call can be used to signal a software event to a client PE. The target PE that
+                    receives the event is specified in target_pe argument in the MPIDR format similar to
+                    SDEI_EVENT_REGISTER call on page 22 call. The target PE can be same as the calling PE.
+                    The software signaled event will be delivered as a private event to the target PE. To handle
+                    the event, the target PE must register and enable the event. The signaling is an
+                    asynchronous process and sets the event pending on the target PE. The event has edge-
+                    triggered semantics and the number of event signals may not correspond to the number of
+                    times the handler is invoked in the target PE.
+                                                                                                                       Interface
+5.1.16.2        Parameters
+                        event must be an event that can be signaled. This can be queried using
+                        SDEI_EVENT_GET_INFO. This version of the specification supports only event number 0 that
+                        can be signaled, refer to Event number allocation on page 19 for standard events.
+                        target_pe specifies the PE that receives the event. This is the MPIDR of the target_pe as
+                        described in SDEI_EVENT_REGISTER call on page 22.
+5.1.16.3        Client responsibilities
+                        A SUCCESS status code from this call indicates that the event was successfully set as
+                        pending. However, this does not indicate that the event will be handled by the target PE.
+                        To handle the event the target PE must:
+                            •     Register for the event.
+                            •     Enable the event.
+                            •     Unmask SDEI events.
+                        A successful return cannot be relied as an indication for the start or completion of the
+                        handler in the target PE, instead the client must use its own mechanisms to determine
+                        handler execution status.
+5.1.16.4        Dispatcher responsibilities
+                        The dispatcher implementation must ensure that the updates to shared data structures by
+                        client is observable by the target PE before generating the event.

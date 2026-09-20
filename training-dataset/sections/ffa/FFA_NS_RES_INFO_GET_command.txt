@@ -1,0 +1,454 @@
+13.13 FFA_NS_RES_INFO_GET
+            Description
+                • A caller uses this interface to retrieve information about accessibility of resources associated with the
+                  Non-secure Security state from S-Endpoints. See 13.13.1 Overview for the description of this interface.
+                • Valid FF-A instances and conduits are listed in Table 13.58.
+                • Syntax of this function is described in Table 13.59.
+                • Encoding of result parameters in the FFA_SUCCESS function is described in Table 13.60.
+                     – Resource accessibility information is returned in a Resource information descriptor Table 13.62 in the
+                        RX buffer of the caller.
+                • Encoding of error code in the FFA_ERROR function is described in Table 13.61.
+                                                           Table 13.58: FFA_NS_RES_INFO_GET instances and conduits
+            Config No.                  FF-A instance                                           Valid conduits
+            1                           Non-secure physical                                     SMC
+            2                           Secure physical                                         ERET
+                                                                     Table 13.59: FFA_NS_RES_INFO_GET function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0                   • 0xC400008F.
+            uint64 Target ID                         x1                   • Bits[63:16]: Reserved (SBZ).
+                                                                          • Bits[15:0]: Target S-Endpoint ID.
+                                                                               – Information about accessibility of NS resources
+                                                                                  from this endpoint is returned.
+                                                                               – Only valid if the Target S-Endpoint ID valid flag
+                                                                                  is b’1. It is Reserved (SBZ) otherwise.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+            Parameter                                Register         Value
+            uint64 Flags                             x2                   • Bits[63:5]: Reserved (SBZ).
+                                                                          • Bit[4]: Request type.
+                                                                               – b’0: Request to start retrieval of the Resource
+                                                                                  information descriptor.
+                                                                               – b’1: Request to continue retrieval of the
+                                                                                  Resource information descriptor.
+                                                                          • Bits[3:2]: NS resource type.
+                                                                               – Type of NS resource whose access information is
+                                                                                  returned.
+                                                                                     * b’00: List of regions in the NS PAS that are
+                                                                                       accessible by a S-Endpoint.
+                                                                                     * All other values are reserved.
+                                                                          • Bit[1]: Reserved (SBZ).
+                                                                          • Bit[0]: Target S-Endpoint ID valid.
+                                                                               – b’0: Resource access information is returned for
+                                                                                  all S-Endpoints.
+                                                                               – b’1: Resource access information is returned
+                                                                                  only for the specified S-Endpoint.
+            Other Parameter registers                x3-x17               • Reserved (SBZ)
+                                                                                         Table 13.60: FFA_SUCCESS encoding
+            Parameter                                Register         Value
+            Resource information descriptor          x2                   • Bits[63:32]: Written size.
+            length information                                                 – Length in bytes of the Resource information
+                                                                                  descriptor written in the RX buffer in this
+                                                                                  invocation of the ABI.
+                                                                          • Bits[31:0]: Remaining size.
+                                                                               – Length in bytes of the Resource information
+                                                                                  descriptor that remains to be transmitted to the
+                                                                                  caller of this ABI.
+            Other Parameter Registers.               x3-x17               • Reserved (MBZ).
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+                                                                                             Table 13.61: FFA_ERROR encoding
+            Parameter                                Register         Value
+            int32 Error code                         w2                   • INVALID_PARAMETERS:
+                                                                                – Parameters are not correctly encoded.
+                                                                                – An invalid endpoint ID is specified.
+                                                                          • RETRY:
+                                                                                – RX buffer of the caller is not mapped in the
+                                                                                  callee.
+                                                                                – RX buffer of the caller is not owned by the callee.
+                                                                                – Callee is busy and the caller must retry the
+                                                                                  operation.
+                                                                          • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+                                                                          • ABORTED: The callee could not continue retrieval of
+                                                                            the Resource information descriptor due to an
+                                                                            IMPLEMENTATION DEFINED reason.
+                                                                       Table 13.62: Resource information descriptor header
+           Field                       Byte length     Byte offset     Description
+           Address map descriptor      4               0                    • Size in bytes of each address map descriptor in the
+           size                                                               array. See Table 13.63.
+           Address map descriptor      4               4                    • Count of address map descriptors.
+           count
+           Address map descriptor      4               8                    • 16-byte aligned offset from the base address of this
+           array offset                                                       descriptor to the first element of the Address map
+                                                                              descriptor array.
+           Reserved                    4               12                   • Reserved (MBZ).
+           Address map descriptor      –               –                    • Each entry in the array must be encoded as specified
+           array                                                              in Table 13.63.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+13.13.1 Overview
+G0237         The Framework specifies a mechanism that allows the Hypervisor or Host OS in the Non-secure Security state to
+              discover regions in the NS PAS that are accessible by components in the Secure Security state.
+X0238         In use cases such as DRTM Dynamic launch, the Hypervisor relies on such a mechanism to discover regions in the
+              Non-secure physical address space that are being accessed from the Secure world. This information is included in
+              an attestation report to determine the security posture of the running system. See also [9].
+D0239         A region in the NS PAS is directly accessible from an S-Endpoint if any of the following are true:
+                 • The S-Endpoint is a physical S-EL1 SP running under the S-EL2 SPMC and one of the following is true:
+                     – Stage 2 translations in the EL1&0 translation regime are disabled.
+                     – Stage 2 translations in the EL1&0 translation regime are enabled, and the SP has at least one of the
+                       following permissions on the region:
+                         * Read.
+                         * Write.
+                         * Execute.
+                 • The S-Endpoint is a physical S-EL0 SP running under any SPMC and one of the following is true:
+                     – Stage 1 translations in the applicable translation regime are disabled.
+                     – Stage 1 translations in the applicable translation regime are enabled, and the SP has at least one of the
+                       following permissions on the region:
+                         * Read.
+                         * Write.
+                         * Execute.
+                 • The S-Endpoint is an LSP that is not co-resident with the EL3 SPMC.
+                 • The S-Endpoint is an LSP co-resident with the SPMC and one of the following is true:
+                     – Stage 1 translations in the SPMC’s translation regime are disabled.
+                     – Stage 1 translations in the SPMC’s translation regime are enabled, and the SPMC has at least one of the
+                       following permissions on the region:
+                         * Read.
+                         * Write.
+                         * Execute.
+X0240         The SPMC considers a region in the NS PAS as directly accessible from the SP if it does not control any stage of
+              the translation regime used by the SP. This is applicable in the following scenarios:
+                 • The S-Endpoint is a logical S-EL1 SP running under the EL3 SPMC.
+                 • The S-Endpoint is a physical SP running under any SPMC, and the stage of translation under the control of
+                   the SPMC is disabled.
+              In the case of a S-EL1 SP, it is possible that the region in the NS PAS is not accessed via stage 1 of the EL1&0
+              translation regime. The mechanism to determine this is IMPLEMENTATION DEFINED and beyond the scope of the
+              SPMC’s responsibilities.
+D0241         A region in the NS PAS is indirectly accessible from an S-Endpoint, if the SPMC can be requested to access the
+              region in response to an FF-A ABI.
+X0242         The SPMC considers a region in the NS PAS as indirectly accessible from an SP if it is possible for the SPMC to
+              access the region on behalf of an S-Endpoint.
+              In the case an SP supports indirect messaging, it is possible for the SP to indirectly access the RX/TX buffers of a
+              VM in the NS PAS. For example, the SPMC can be requested to write into the RX buffer of a VM via the use of
+              the FFA_MSG_SEND2 ABI.
+D0243         The term accessible is used when it is not required to distinguish between regions that are directly or indirectly
+              accessible.
+D0244         A region in the NS PAS is inaccessible if it is not accessible.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+I0245          The Hypervisor or the Host OS use the FFA_NS_RES_INFO_GET interface to obtain information about regions
+               in the NS PAS that are accessible from one or more S-Endpoints by specifying NS resource type as b’00 in the
+               Flags input parameter.
+I0246          The Hypervisor or the Host OS use the FFA_NS_RES_INFO_GET interface to obtain information about regions
+               in the NS PAS that are accessible from a single S-Endpoint as follows:
+                     • The Target S-Endpoint ID valid flag in the Flags input parameter is set to 1.
+                     • The Target S-Endpoint ID input parameter contains a valid ID.
+I0247          The Hypervisor or the Host OS use the FFA_NS_RES_INFO_GET interface to obtain information about regions
+               in the NS PAS that are accessible from all S-Endpoints as follows:
+                     • The Target S-Endpoint ID valid flag in the Flags input parameter is set to 0.
+                     • The Target S-Endpoint ID input parameter is set to 0.
+D0248          A successful invocation of the FFA_NS_RES_INFO_GET interface returns information about a region in the NS
+               PAS in an Address map descriptor (AMD) specified in Table 13.63.
+                                                                                              Table 13.63: Address map descriptor
+             Field                        Byte length     Byte offset     Description
+             Address                      8               0                    • Base address of a region in the NS PAS as follows:
+                                                                                    – The address is aligned to 4K boundary.
+                                                                                    – Address is a PA at the Non-secure physical
+                                                                                       FF-A instance.
+             Page count                   4               8                    • Number of 4K pages from the Base address to
+                                                                                 specify the size of the region.
+             Region access                1               12                   • Access permissions for the region in the NS PAS.
+             permissions                                                            – Bits[7:4]: Privileged permissions.
+                                                                                    – Bits[3:0]: Unprivileged permissions.
+                                                                               • See also Table 13.64.
+             Component ID                 2               13                   • The ID of the FF-A component whose access to a
+                                                                                 region in the NS PAS is described by this descriptor.
+             Flags                        1               15                   • Bits[7:1]: Reserved (MBZ).
+                                                                               • Bit[0]: Access type.
+                                                                                    – b’0: Region is directly accessible.
+                                                                                    – b’1: Region is indirectly accessible.
+     Issue     The AMD does not specify whether a region in the NS PAS that is accessible by an S-Endpoint is a device MMIO
+               region or a conventional memory region. The Hypervisor is expected to understand the breakdown of the NS PAS
+               among device MMIO regions and conventional memory regions. It can use the physical address of a region returned
+               by the SPMC to determine its type. Arm requests feedback if this is a concern for Hypervisor implementations.
+     Issue     The FFA_NS_RES_INFO_GET interface should specify whether a region was lent or donated via the FF-A
+               memory management ABIs. This should allow the Hypervisor or Host OS to avoid access to regions that were
+               originally in the NS PAS but might be currently in the Secure PAS. Arm requests feedback if this categorization
+               must be done either in the input to the interface or in the output of this interface.
+I0249          All AMDs are encapsulated in a Resource information descriptor. The Resource information descriptor is returned
+               in the RX buffer of the caller. See also Table 13.62.
+R0250          If the Target S-Endpoint ID valid flag in the Flags input parameter is 0, an AMD is populated in the Resource
+               information descriptor, for each region in the NS PAS that is accessible by each S-Endpoint. Otherwise, an AMD is
+               populated in the Resource information descriptor, for each region in the NS PAS that is accessible by the specified
+               S-Endpoint.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+R0251         If a region is indirectly accessible, the AMD is populated as follows:
+                    • AMD.Flags.Access Type is 1.
+                    • AMD.Component ID is the SPMC ID.
+                    • AMD.RAP is the most permissive permission any SP can have on the region.
+I0252         An AMD with the Component ID of the SPMC indicates that the region may be indirectly accessed by one or more
+              SPs via the SPMC.
+X0253         This encoding of the AMD avoids the need to describe the same region for every SP that can indirectly access the
+              memory region.
+R0254         The Resource information descriptor length information output parameter in the FFA_SUCCESS function is 0 if
+              all of the following are true:
+                    • The NS resource type is b’00.
+                    • One of the following is true:
+                        – The Target S-Endpoint ID valid flag in the Flags input parameter is 1, and the entire NS PAS is
+                          inaccessible from the Target S-Endpoint.
+                        – The Target S-Endpoint ID valid flag in the Flags input parameter is 0, and the entire NS PAS is
+                          inaccessible from all S-Endpoints.
+X0255         The SPMC indicates inaccessibility of the NS PAS from one or more S-Endpoints by indicating that a Resource
+              information descriptor is not present in the RX buffer of the caller. A zero total length and current length indicates
+              the absence of the Resource information descriptor.
+D0256         The Region access permissions (RAP) field in an AMD encodes the data access permissions and the instruction
+              access permissions of the S-Endpoint for a region in the NS PAS as follows:
+                                                                           Table 13.64: Region access permission encodings
+            Field                                      Description
+            Bits[3:0]                                       • Unprivileged permissions:
+                                                                 – Bit[0] specifies the read permission as follows:
+                                                                      * b’0: No read permission.
+                                                                      * b’1: Read permission.
+                                                                 – Bit[1] specifies the write permission as follows:
+                                                                      * b’0: No write permission.
+                                                                      * b’1: Write permission.
+                                                                 – Bit[2] specifies the execute permission as follows:
+                                                                      * b’0: No execute permission.
+                                                                      * b’1: Execute permission.
+                                                                 – Bit[3] is Reserved and MBZ.
+            Bits[7:4]                                       • Privileged permissions:
+                                                                 – Bit[4] specifies the read permission as follows:
+                                                                      * b’0: No read permission.
+                                                                      * b’1: Read permission.
+                                                                 – Bit[5] specifies the write permission as follows:
+                                                                      * b’0: No write permission.
+                                                                      * b’1: Write permission.
+                                                                 – Bit[6] specifies the execute permission as follows:
+                                                                      * b’0: No execute permission.
+                                                                      * b’1: Execute permission.
+                                                                 – Bit[7] is Reserved and MBZ.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+R0257         If a region in the NS PAS is inaccessible from an S-Endpoint, it is identified by one of the following methods:
+                 • It is not described by an AMD.
+                 • It is described by an AMD and the AMD.RAP field is 0.
+              The method used by the SPMC is IMPLEMENTATION DEFINED.
+R0258         The Framework considers the entire NS PAS as accessible from an S-Endpoint with Privileged and Unprivileged
+              Read, Write and Execute permissions if any of the following are true:
+                 • The S-Endpoint is a logical S-EL1 SP running under the EL3 SPMC.
+                 • The S-Endpoint is a physical SP running under any SPMC, and the stage of translation under the control of
+                   the SPMC is disabled.
+R0259         If the entire NS PAS is accessible from an S-Endpoint with Privileged and Unprivileged Read, Write and Execute
+              permissions, the AMD is populated as follows:
+                 • AMD.Address is 0xFFFFFFFFFFFFFFFF.
+                 • AMD.Page count is 0.
+                 • AMD.RAP is 0x77.
+X0260         This encoding of the AMD avoids the need to specify every individual region in the NS PAS that is accessible
+              from an S-Endpoint with Privileged and Unprivileged Read, Write and Execute permissions.
+D0261         A region in the NS PAS that is shared or lent with one or more physical S-Endpoints, or donated to a single
+              physical S-Endpoint, by the Hypervisor or an NS-Endpoint via the FF-A memory management protocol is called a
+              Dynamic NS region (See also [1]). Otherwise the region is called a Static NS region.
+I0262         A region in the NS PAS can be shared with any S-Endpoint by describing it in the SP manifest. The region does not
+              participate in the FF-A memory management protocol and is a Static NS region. See also Table 5.2 and Table 5.3.
+R0263         If the S-Endpoint is a physical S-EL1 SP running under a S-EL2 SPMC, the Stage 2 Base permissions in the
+              EL1&0 translation regime for a Static NS region are specified in the AMD.RAP field. The mapping of Stage
+              2 permissions to the AMD.RAP field is specified in Table 13.65. See [6] for the description of Stage 2 Base
+              permissions in the EL1&0 translation regime.
+                                               Table 13.65: Mapping of Stage 2 Base permissions to AMD permissions
+            Stage 2 Base permissions                 AMD Unprivileged permissions               AMD Privileged permissions
+            No Access                                0b0000                                     0b0000
+            RO                                       0b0001                                     0b0001
+            WO                                       0b0010                                     0b0010
+            RW                                       0b0011                                     0b0011
+            RO and uX                                0b0101                                     0b0001
+            RO and pX                                0b0001                                     0b0101
+            RO and puX                               0b0101                                     0b0101
+            RW and uX                                0b0111                                     0b0011
+            RW and pX                                0b0011                                     0b0111
+            RW and puX                               0b0111                                     0b0111
+            MRO any                                  0b0011                                     0b0011
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+X0264         If FEAT_S2PIE is implemented and used by the S-EL2 SPMC, the Mostly Read Only (MRO) permission in stage
+              2 translations is used to protect EL1 translation tables from explicit write accesses from the EL1&0 translation
+              regime. Memory regions associated with the NS PAS are not expected to be used by a physical S-EL1 SP for
+              its EL1 translation tables. While such usage is extremely unlikely, it is not disallowed by the Arm architecture.
+              For completeness, the Framework acknowledges this possibility but upgrades the MRO permission to RW for
+              simplicity.
+R0265         If the S-Endpoint is a physical S-EL0 SP running under any SPMC, the Unprivileged Stage 1 Base permissions
+              in the EL1&0 translation regime, or the EL2&0 translation regime, for a Static NS region are specified in the
+              AMD.RAP field. The mapping of Unprivileged Stage 1 permissions to the AMD.RAP field is specified in Table
+              13.66. See [6] for the description of Stage 2 Base permissions in the EL1&0 translation regime.
+                                      Table 13.66: Mapping of Unprivileged Stage 1 permissions to AMD permissions
+            Stage 1 Unprivileged permissions         AMD Unprivileged permissions               AMD Privileged permissions
+            No Access                                0b0000                                     0b0000
+            Read                                     0b0001                                     0b0000
+            Read and Write                           0b0011                                     0b0000
+            Read and Execute                         0b0101                                     0b0000
+            Read, Write and Execute                  0b0111                                     0b0000
+            Execute                                  0b0100                                     0b0000
+R0266         If the S-Endpoint is an LSP co-resident with the SPMC, the Privileged Stage 1 Base permissions in the SPMC’s
+              translation regime, for a region in the NS PAS are specified in the AMD.RAP field. The mapping of Privileged
+              Stage 1 permissions to the AMD.RAP field is specified in Table 13.67. See [6] for the description of Stage 2 Base
+              permissions in the EL1&0 translation regime.
+                                         Table 13.67: Mapping of Privileged Stage 1 permissions to AMD permissions
+            Stage 1 Privileged permissions           AMD Unprivileged permissions               AMD Privileged permissions
+            No Access                                0b0000                                     0b0000
+            Read                                     0b0000                                     0b0001
+            Read and Write                           0b0000                                     0b0011
+            Read and Execute                         0b0000                                     0b0101
+            Read, Write and Execute                  0b0000                                     0b0111
+            Execute                                  0b0000                                     0b0100
+I0267         The Hypervisor or the NS-Endpoint can specify the most permissive data access permissions and instruction access
+              permissions with which the physical S-Endpoint can access a Dynamic NS region.
+R0268         For a Dynamic NS region, the permissions specified by the Hypervisor or the NS-Endpoint at the start of the
+              memory management transaction are specified in the AMD.RAP field as follows:
+                   • If the S-Endpoint is a physical S-EL1 SP running under a S-EL2 SPMC, the mapping of these permissions to
+                     the AMD.RAP field is specified in Table 13.68.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+                 • If the S-Endpoint is a physical S-EL0 SP running under any SPMC, the mapping of these permissions to the
+                   AMD.RAP field is specified in Table 13.69.
+              See [1] for the description of permissions that can be specified in an FF-A memory management transaction.
+              Table 13.68: Mapping of memory management transaction permissions to AMD permissions for S-EL1
+                                                                                                         SPs
+            Memory management operation
+            permissions                              AMD Unprivileged permissions               AMD Privileged permissions
+            RO                                       0b0001                                     0b0001
+            RW                                       0b0011                                     0b0011
+            RO and X                                 0b0101                                     0b0101
+            RW and X                                 0b0111                                     0b0111
+              Table 13.69: Mapping of memory management transaction permissions to AMD permissions for S-EL0
+                                                                                                         SPs
+            Memory management operation
+            permissions                              AMD Unprivileged permissions               AMD Privileged permissions
+            RO                                       0b0001                                     0b0000
+            RW                                       0b0011                                     0b0000
+            RO and X                                 0b0101                                     0b0000
+            RW and X                                 0b0111                                     0b0000
+R0269         For a Dynamic NS region that has been lent or donated to a physical S-Endpoint, the permissions can be determined
+              by the SPMC by an IMPLEMENTATION DEFINED method, and not specified by the Hypervisor or the NS-Endpoint
+              at the start of the memory management transaction. The SPMC specifies the most permissive permissions in the
+              AMD.RAP field as follows:
+                 • If the S-Endpoint is a physical S-EL1 SP running under a S-EL2 SPMC, the mapping of these permissions to
+                   the AMD.RAP field is specified in Table 13.68.
+                 • If the S-Endpoint is a physical S-EL0 SP running under any SPMC, the mapping of these permissions to the
+                   AMD.RAP field is specified in Table 13.69.
+X0270         The Hypervisor or an NS-Endpoint cannot govern when a physical S-Endpoint gains or relinquishes access to a
+              Dynamic NS region via the FF-A memory management protocol interfaces. Furthermore, it is possible that the
+              Dynamic NS region is mapped in the translation regime of a physical S-Endpoint with more restrictive permissions
+              than the permissions specified by the Hypervisor, NS-Endpoint or the SPMC. To ensure that the Hypervisor or
+              the Host OS obtains the most accurate information, the most permissive permissions take precedence over the
+              permissions with which the Dynamic NS region is currently mapped in the S-Endpoint’s translation regime.
+R0271         During an invocation of the FFA_NS_RES_INFO_GET interface, the effect of a concurrent change to the state of
+              a Dynamic NS region is CONSTRAINED UNPREDICTABLE with a choice of:
+                 • The change in state is reflected in the information returned by this interface.
+                 • The change in state is not reflected in the information returned by this interface.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+I0272          An example of a state change is where access to a Dynamic NS region is revoked to a S-Endpoint via the
+               FFA_MEM_RECLAIM interface. An active invocation of the FFA_NS_RES_INFO_GET interface when the state
+               change takes place is not guaranteed to reflect the effect of the change in the returned information. The region is
+               reported as accessible by the S-Endpoint if the effect of the change is not yet observed by the SPMC. Otherwise,
+               the SPMC treats the region accessible by the S-Endpoint.
+I0273          It is possible that the size of the Resource information descriptor exceeds the size of the caller’s RX buffer. In this
+               case, the FFA_NS_RES_INFO_GET ABI is invoked multiple times such that each invocation returns a chunk of
+               the Resource information descriptor that can fit in the buffer. This process is repeated until the entire Resource
+               information descriptor is returned in the RX buffer.
+R0274          The maximum number of pending retrievals of the Resource information descriptor via the FFA_NS_RES_INFO_GET
+               ABI at a valid FF-A instance is 1.
+I0275          An invocation of the FFA_NS_RES_INFO_GET ABI with the Request type flag set to 0 is a request to start
+               retrieval of the Resource information descriptor.
+I0276          An invocation of the FFA_NS_RES_INFO_GET ABI with the Request type flag set to 1 is a request to continue
+               retrieval of the Resource information descriptor.
+I0277          An invocation of the FFA_NS_RES_INFO_GET ABI with the Request type flag set to 0 terminates an ongoing
+               retrieval of the Resource information descriptor, and starts a new retrieval.
+I0278          A completion of the FFA_NS_RES_INFO_GET ABI with a non-zero written size and a zero remaining size is a
+               response that completes retrieval of the Resource information descriptor.
+I0279          A completion of the FFA_NS_RES_INFO_GET ABI with a non-zero written size and a non-zero remaining size is
+               a response that indicates partial retrieval of the Resource information descriptor.
+I0280          A completion of the FFA_NS_RES_INFO_GET ABI with a zero written size and a non-zero remaining size is a
+               response that indicates no chunk of the Resource information descriptor was written to the RX buffer because
+               of an IMPLEMENTATION DEFINED reason. The caller must invoke the FFA_NS_RES_INFO_GET ABI again to
+               continue retrieval of the descriptor.
+I0281          A completion of a request to start retrieval of the Resource information descriptor with a zero written size and
+               a zero remaining size is a response that indicates no Resource information is available for the specified input
+               parameters.
+I0282          A completion of a request to continue retrieval of the Resource information descriptor with a zero written size and
+               a zero remaining size is a response that indicates there is no outstanding retrieval of the Resource information
+               descriptor in progress for the specified input parameters.
+I0283          Once a caller has initiated retrieval of the Resource information descriptor, a subsequent invocation of the
+               FFA_NS_RES_INFO_GET ABI on any PE at the same FF-A instance either continues retrieval of this descriptor
+               (if the Request type flag size is 1), or restarts retrieval of the descriptor (if the Request type flag is 0).
+R0284          Table 13.70 lists the valid combinations and description of the following parameters when an invocation of the
+               FFA_NS_RES_INFO_GET ABI completes successfully.
+                  • Request type flag input parameter.
+                  • Written size output parameter.
+                  • Remaining size output parameter.
+                            Table 13.70: Description of parameters that govern progress of FFA_NS_RES_INFO_GET
+           Input                           Output
+           Request         Output          remaining
+           type flag       written size    size            Description
+           0                0              0               No resource information is available for the specified input parameters.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+           Input                          Output
+           Request         Output         remaining
+           type flag       written size   size            Description
+           0               0              Non-zero        No resource information was written to the RX buffer. The
+                                                          FFA_NS_RES_INFO_GET ABI must be invoked again to continue
+                                                          retrieval of the descriptor.
+           0               Non-zero       0               The complete Resource information descriptor has been written to the
+                                                          RX buffer.
+           0               Non-zero       Non-zero        A chunk of the Resource information descriptor has been written to the
+                                                          RX buffer. The FFA_NS_RES_INFO_GET ABI must be invoked again
+                                                          to retrieve the remaining descriptor.
+           1               0              0               There is no retrieval of the Resource information descriptor in progress.
+           1               0              Non-zero        No resource information was written to the RX buffer. The
+                                                          FFA_NS_RES_INFO_GET ABI must be invoked again to continue
+                                                          retrieval of the descriptor.
+           1               Non-zero       0               Retrieval of the Resource information descriptor is complete.
+           1               Non-zero       Non-zero        A chunk of the Resource information descriptor has been written to the
+                                                          RX buffer. The FFA_NS_RES_INFO_GET ABI must be invoked again
+                                                          to retrieve the remaining descriptor.
+S0285          The mechanism functions as follows,
+                 1. The caller starts retrieving the resource information descriptor by setting the Request type flag to 0.
+                 2. The callee returns the length of the Resource information descriptor written to the RX buffer.
+                 3. If the complete resource information descriptor cannot fit into the caller’s RX buffer, the callee returns the
+                    length of the remaining chunk of the Resource information descriptor. Otherwise, remaining length is 0.
+                 4. If the remaining length is not 0, the caller invokes the FFA_NS_RES_INFO_GET ABI again with the
+                    Request type flag set to 1 and step 2 is repeated. Otherwise, retrieval of the Resource information
+                    descriptor completes.
+I0286          Figure 13.3 illustrates an example resource information descriptor (see Table 13.62) describing three NS PAS
+               memory regions.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET
+                                                    Resource information descriptor
+                                                         Resource information descriptor header
+                                                         Address map descriptor size
+                                                         Address map descriptor count
+                                                         Address map descriptor array offset
+                                                         Reserved
+                                                        Address map descriptor
+                                                        Address
+                                                        Page count
+                                                        Region access permissions
+                                                        Component ID
+                                                        Flags
+                                                        Address map descriptor
+                                                        Address
+                                                        Page count
+                                                        Region access permissions
+                                                        Component ID
+                                                        Flags
+                                                        Address map descriptor
+                                                        Address
+                                                        Page count
+                                                        Region access permissions
+                                                        Component ID
+                                                        Flags
+                                                                      Figure 13.3: Example resource information descriptor
+I0287         The ownership of the RX buffer is transferred between the callee and the caller, at the Non-secure physical FF-A
+              instance through a mechanism described in 4.10 RX/TX buffers.
+Chapter 13. Setup and discovery interfaces
+13.14. FFA_ABORT

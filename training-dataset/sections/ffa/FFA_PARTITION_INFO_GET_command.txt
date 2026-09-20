@@ -1,0 +1,80 @@
+13.8 FFA_PARTITION_INFO_GET
+            Description
+                • Returns information about FF-A components implemented in the system as described in 13.8.1 Overview.
+                • Valid FF-A instances and conduits are listed in Table 13.34.
+                • Syntax of this function is described in Table 13.35.
+                • Encoding of result parameters in the FFA_SUCCESS function is described in Table 13.36.
+                • Encoding of error code in the FFA_ERROR function is described in Table 13.37.
+                                                         Table 13.34: FFA_PARTITION_INFO_GET instances and conduits
+            Config No.                  FF-A instance                              Valid conduits
+            1                           Non-secure physical                        SMC
+            2                           Secure physical                            SMC, ERET
+            3                           Non-secure virtual                         SMC, HVC
+            4                           Secure virtual                             SMC, HVC, SVC
+                                                                  Table 13.35: FFA_PARTITION_INFO_GET function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0                   • 0x84000068.
+            uint128 UUID                             w1-w4                • Specified as described in Section 5.3 of [5].
+            uint32 Flags                             w5                   • Bit[0]: Return information type flag.
+                                                                               – b’1: Return the count of partitions deployed in
+                                                                                 the system corresponding to the specified UUID
+                                                                                 in w2 as specified in Table 13.36.
+                                                                               – b’0: Return partition information descriptors
+                                                                                 corresponding to the specified UUID in the RX
+                                                                                 buffer of the caller (see Table 6.1).
+                                                                          • Bit[31:1]: Reserved (SBZ).
+            Other Parameter registers                w6-w7                • Reserved (SBZ).
+Chapter 13. Setup and discovery interfaces
+13.8. FFA_PARTITION_INFO_GET
+                                                                                          Table 13.36: FFA_SUCCESS encoding
+            Parameter                                 Register         Value
+            uint32 Count                              w2                   • If Bit[0] = b’0 in the Flags input parameter, this field
+                                                                             contains the count of partition information descriptors
+                                                                             corresponding to the specified UUID in w1-w4. The
+                                                                             descriptors are populated in the RX buffer of the caller.
+                                                                           • If Bit[0] = b’1 in the Flags input parameter, this field
+                                                                             contains the count of partitions deployed in the system
+                                                                             corresponding to the specified UUID in w1-w4.
+                                                                           • Count must be >= 1.
+            uint32 Size                               w3                   • If Bit[0] = b’0 in the Flags input parameter, this field
+                                                                             contains the size of each partition information
+                                                                             descriptor populated in the RX buffer of the caller.
+                                                                           • If Bit[0] = b’1 in the Flags input parameter, this field
+                                                                             MBZ.
+            Other Result registers                    w4-w7                • Reserved (SBZ).
+                                                                                              Table 13.37: FFA_ERROR encoding
+            Parameter                                 Register         Value
+            int32 Error code                          w2                   • BUSY: RX buffer of the caller is required to return
+                                                                             partition information but is either not free or not
+                                                                             mapped.
+                                                                           • INVALID_PARAMETERS: Invalid UUID.
+                                                                           • NO_MEMORY: Results cannot fit in RX buffer of the
+                                                                             caller.
+                                                                           • DENIED: Callee is not in a state to handle this request.
+                                                                           • NOT_SUPPORTED: This function is not implemented
+                                                                             at this FF-A instance.
+                                                                           • NOT_READY: Callee is not ready to handle this
+                                                                             request.
+13.8.1 Overview
+              FFA_PARTITION_INFO_GET is used by FF-A components for the following purposes.
+                 • To discover the ID (see Chapter 6 Identification and Discovery) and other properties of partitions. This
+                   information is,
+                      – Requested by specifying a UUID as an input parameter as described in Table 13.35.
+                           * The Return information type flag is set to b’0 to indicate that partition properties are being requested.
+                      – Encoded in a partition information descriptor as described in Table 6.1.
+                      – Returned in the RX buffer of the caller as an array of one or more partition information descriptors. The
+                        count of descriptors is returned in w2 (see Table 13.36).
+                 • To discover the count of partitions of a particular type. This information is,
+                      – Requested by specifying a UUID as an input parameter as described in Table 13.35.
+                           * The Return information type flag is set to b’1 to indicate that a partition count is being requested.
+Chapter 13. Setup and discovery interfaces
+13.8. FFA_PARTITION_INFO_GET
+                      – Returned in w2 (see Table 13.36).
+13.8.2 Usage
+              The result of an invocation of this ABI depends upon the version of the Framework, specified UUID, Flags
+              parameter and the FF-A instance where the ABI is invoked. This is described in 6.2.2 Partition discovery ABI
+              usage.
+              If this ABI is invoked with the Return information type flag in Flags input parameter = b’0, the caller transfers
+              ownership of the RX buffer back to the producer through a mechanism described in 4.10 RX/TX buffers.
+Chapter 13. Setup and discovery interfaces
+13.9. FFA_PARTITION_INFO_GET_REGS

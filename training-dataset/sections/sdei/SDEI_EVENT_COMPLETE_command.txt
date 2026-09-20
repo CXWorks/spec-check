@@ -1,0 +1,51 @@
+5.1.6   SDEI_EVENT_COMPLETE
+                                                     Complete the event handling and resume execution from the
+                Description
+                                                     interrupted context.
+                Parameters
+                uint32 Function ID                   0xC400_0025
+                uint32                               0: EV_HANDLED                   The event was handled successfully.
+                status_code                          1: EV_FAILED                    The event was not handled.
+                Return
+                On success this call never returns and resumes the execution from the point of interruption.
+                On error,
+                                                     NOT_SUPPORTED                               SDEI is not supported.
+                int64
+                                                     DENIED                                      No event handler running for the
+                                                                                                 calling PE.
+5.1.6.1 Usage
+                        This call is used by the handler to complete the handling of the event. The event handler
+                        function must never return, it has no valid return address, and always ends with a
+                        SDEI_EVENT_COMPLETE call or SDEI_EVENT_COMPLETE_AND_RESUME call, see page 28. If
+                        successful, the call resumes the execution of the client from where the event occurred.
+                        This call is valid only when the handler-running property is set to TRUE. This call sets the
+                        event handler property handler-running to FALSE. See Event handler states and properties
+                        on page 46.
+                        For private and shared events, this call can be invoked only from the PE that received the
+                        event. For a private event, this call completes the event handling for the calling PE. For a
+                        shared event, this call completes the event handling globally.
+5.1.6.2 Parameters
+                        status_code can be used to indicate the status of event handling. The following status
+                        values are defined,
+                            •     EV_HANDLED indicates that the event was successfully handled by the client.
+                            •     EV_FAILED indicates that the client failed to handle the event. The associated
+                                  action for this status code is platform and event specific. For example, with a
+                                  software watchdog event, the platform implementation might choose to reset the
+                                  system for this status code.
+5.1.6.3 Client responsibilities
+                        The client must never return from the event handler and must always call
+                        SDEI_EVENT_COMPLETE or SDEI_EVENT_COMPLETE_AND_RESUME to end the event handling
+                        and resume execution in the client. If the client fails to complete the event handling, the
+                        client might behave in an unpredictable way.
+                        For a hardware event due to a physical interrupt, the trigger could be edge triggered or
+                        level sensitive. For both type of triggers, the client must call SDEI_EVENT_COMPLETE to exit
+Interface
+                         the event handler. In addition, for a level sensitive interrupt, it is up to the client to clear the
+                         interrupt at source before calling SDEI_EVENT_COMPLETE from the event handler.
+                         The call returns only if there is an error and the client must handle the following potential
+                         return error code,
+                            • DENIED is returned if,
+                                    •    the handler-running property is set to FALSE on the calling PE
+5.1.6.4 Dispatcher responsibilities
+                         The status_code available for a given event and for a given client is IMPLEMENTATION
+                         DEFINED by the platform.

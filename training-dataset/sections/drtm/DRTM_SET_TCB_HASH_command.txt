@@ -1,0 +1,75 @@
+3.9 DRTM_SET_TCB_HASH
+Used by firmware to record hashes of components of the TCB of the system.
+ Parameter                 Register       Value
+ uint32 Function ID           W0          0xC400_0118
+ uint64 TCB Hash Table        X1
+                                          64-bit physical address of a TCB hash table.
+ Address
+ Return
+                                          On success:                           The operation succeeded. See
+                                          SUCCESS                               supplemental value in X1.
+                                          On error:
+                                                                                DRTM is not supported.
+                                          NOT_SUPPORTED
+                                                                                The address in the parameter was
+                                          INVALID_PARAMETERS                    invalid or there was an error in the
+                                                                                header of the TCB_HASH_TABLE.
+                                                                                An entry in the TCB_HASH_TABLE
+                              X0
+                                          INVALID_DATA                          contains an error. See
+ int64
+                                                                                supplemental value in X1.
+                                                                                The maximum number of hashes
+                                          OUT_OF_RESOURCE                       has been exceeded. See maximum
+                                                                                advertised by DRTM_FEATURES.
+                                          DENIED
+                                                                                The implementation is locked
+                                                                                against recording further hashes.
+                                                                                Note: This function may return
+                                                                                other error codes as defined in
+                                                                                section 3.18.
+                                                                                Specifies how many valid entries
+                                          If X0 == SUCCESS
+                              X1                                                are populated in the table.
+ int64
+                                                                                Indicates which table entry
+                                          If X0 == INVALID_DATA
+                                                                                contains the error.
+3.9.1 DRTM_SET_TCB_HASH usage
+This function can be called by Normal world firmware before the dynamic launch to record hashes of
+components belonging to the TCB, such as ACPI tables. These hashes are made available to the DLME in the
+DLME data.
+The function takes as a parameter the address of a TCB_HASH_TABLE containing one or more hashes.
+3.9.2 DRTM_SET_TCB_HASH caller responsibilities
+The hashes recorded by this function are made available to the DLME which uses them to validate the TCB of the
+system, and so it is critical that firmware invoking this function be in an execution phase where all firmware
+components are under the authority of the platform manufacturer. For UEFI-based firmware this is the phase of
+execution before the End of DXE event.
+The following are responsibilities of the caller:
+    •   The caller must compute TCB hashes using the hash algorithm in use by the DRTM implementation when
+        it performs firmware-based measurements (see 2.7.1). The caller determines the hash algorithm using
+        the DRTM_FEATURES function.
+    •   The caller constructs a TCB_HASH_TABLE which consists of entries defining each hash. For each TCB
+        component to be measured, the caller must compute the digest of the component and record the digest
+        value in the TCB_HASH_TABLE.
+    •   The caller should not set the Source of Entry field in a table entry, because it will be ignored.
+    •   DRTM_SET_TCB_HASH can be invoked multiple times, for example once for each component being
+        measured. Alternatively, a single TCB_HASH_TABLE can be constructed containing all TCB hashes with
+        DRTM_SET_TCB_HASH being invoked once.
+3.9.3 DRTM_SET_TCB_HASH implementation responsibilities
+The following are responsibilities of the implementation:
+    •   The implementation must verify the validity of the referenced TCB_HASH_TABLE based on the
+        requirements in Table 16 and Table 17. If there are any errors in TCB_HASH_TABLE, the return value
+        INVALID_PARAMETERS must be returned.
+    •   The maximum number of entries in the hash table is implementation-specific. The maximum is
+        advertised through DRTM_FEATURES. If this maximum is exceeded, the implementation must return the
+        return value OUT_OF_RESOURCE and the TCB hash table must be left as it was before the invocation of
+        this function.
+    •   The implementation must perform error checking on the TCB_HASH_TABLE passed to this function
+        before recording any of the hashes. If there are any errors, the TCB hash table must be left as it was
+        before the invocation of this function.
+    •   The implementation must ignore the Source of Entry if set in any table entry.
+    •   The implementation must preserve the measurements made with this function so that a single list of
+        measurements can later be presented in the DLME data during the dynamic launch.
+    •   After the function DRTM_LOCK_TCB_HASHES is invoked, the set of hashes is considered locked and
+        subsequent calls to this function must result in the error code DENIED.

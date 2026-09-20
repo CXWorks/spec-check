@@ -1,0 +1,34 @@
+3.11 DRTM_ENABLE_SECURE_INTERRUPTS
+Used by the DLME to re-enable Secure interrupts following a dynamic launch.
+ Parameter                  Register       Value
+ uint32 Function ID            W0          0xC400_011A
+ Return
+                                           On success:
+                                                                          The operation succeeded.
+                                           SUCCESS
+                               X0          On error:
+                                                                          DRTM is not supported.
+                                           NOT_SUPPORTED
+ int64
+                                           DENIED
+                                                                          A dynamic launch has not occurred, or
+                                                                          Secure interrupts are not disabled.
+                                                                          Note: This function may return other
+                                                                          error codes as defined in section 3.18.
+3.11.1 DRTM_ENABLE_SECURE_INTERRUPTS usage
+Secure interrupts may be disabled during a dynamic launch:
+   •     Hardware-backed implementation: Secure interrupts are always disabled during a dynamic launch by a
+         hardware-backed implementation of DRTM.
+   •     Firmware-backed implementation: If requested in DRTM_PARAMETERS, the DRTM implementation must
+         configure Secure firmware to not dispatch Secure interrupts below S-EL2.
+After the dynamic launch is complete, the DLME calls DRTM_ENABLE_SECURE_INTERRUPTS to re-enable Secure
+interrupts.
+3.11.2 DRTM_ENABLE_SECURE_INTERRUPTS caller responsibilities
+DRTM_ENABLE_SECURE_INTERRUPTS should only be called if Secure interrupts were requested to be disabled
+in the DRTM_PARAMETERS. After the dynamic launch is complete and the DLME is ready for Secure world
+operation to resume, it invokes the DRTM_ENABLE_SECURE_INTERRUPTS to re-enable Secure interrupts.
+3.11.3 DRTM_ENABLE_SECURE_INTERRUPTS implementation responsibilities
+The DRTM implementation must configure Secure firmware to re-enable Secure interrupts using a platform-
+dependent mechanism. If the disabling of Secure interrupts was not requested in DRTM_PARAMETERS, the
+implementation must return DENIED. Note, if Secure interrupts are not in use by the platform when this
+function is called, the implementation is not required to enable them.

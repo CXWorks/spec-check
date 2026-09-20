@@ -1,0 +1,31 @@
+3.5 DRTM_UNPROTECT_MEMORY
+Removes the memory protection requested by the DRTM_PARAMETERS and put in place during the dynamic
+launch.
+ Parameter                    Register       Value
+ uint32 Function ID              W0          0xC400_0113
+ Return
+                                             On success:                             The operation succeeded.
+                                             SUCCESS
+                                             On error:
+                                             NOT_SUPPORTED                           DRTM is not supported.
+ int64                            X0                                                 The system is not in a state
+                                             DENIED                                  where memory can be
+                                                                                     unprotected.
+                                                                                     Note: This function may return
+                                                                                     other error codes as defined in
+                                                                                     section 3.18.
+3.5.1 DRTM_UNPROTECT_MEMORY usage
+This function is called by the DLME to remove the DMA protections put in place during the dynamic launch. The
+function takes no arguments.
+The DLME calls this function when it has done sufficient verification and initialization so that it can defend itself
+from DMA attacks.
+3.5.2 DRTM_UNPROTECT_MEMORY implementation responsibilities
+The following are responsibilities of the implementation:
+    •    If the caller invokes DRTM_UNPROTECT_MEMORY and there are no memory protections in place, the
+         implementation must return the error value DENIED. If the caller invokes DRTM_UNPROTECT_MEMORY
+         multiple times, the first instance would remove the memory protections and subsequent calls would
+         return DENIED.
+    •    For complete DMA protection the implementation must not make any changes to any SMMU’s
+         configuration. For this case the return code must be SUCCESS.
+    •    For region-based DMA protection the implementation must remove the memory protections requested
+         by DRTM_PARAMETERS and put in place during the dynamic launch.

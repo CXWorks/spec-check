@@ -1,0 +1,55 @@
+15.4 FFA_MSG_SEND_DIRECT_REQ2
+           Description
+               • Send a Partition message in parameter registers as a request to a Receiver endpoint, run the endpoint and
+                 block until a response is available. The UUID parameter is used as described in 6.2.3 Protocol UUID usage.
+               • Valid FF-A instances and conduits are listed in Table 15.14.
+               • Syntax of this function is described in Table 15.15.
+               • Successful completion of this function is indicated through an invocation of the following interfaces by the
+                 callee:
+                    – FFA_MSG_SEND_DIRECT_RESP2 to provide a response to the Direct request.
+                    – FFA_INTERRUPT to indicate that the Direct request was interrupted and must be resumed through the
+                       FFA_RUN interface.
+                    – FFA_YIELD to indicate that the Receiver endpoint has transitioned to the blocked runtime state and must
+                       be resumed through the FFA_RUN interface.
+                    – FFA_SUCCESS to indicate completion of the Direct request without a corresponding Direct response.
+                       All other parameter registers MBZ.
+               • Encoding of error code in the FFA_ERROR function is described in Table 15.16.
+                                                 Table 15.14: FFA_MSG_SEND_DIRECT_REQ2 instances and conduits
+           Config No.                  FF-A instance                              Valid conduits
+           1                           Non-secure physical                        SMC
+           2                           Secure physical                            SMC, ERET
+           3                           Non-secure virtual                         SMC, HVC, ERET
+           4                           Secure virtual                             SMC, HVC, SVC, ERET
+                                                           Table 15.15: FFA_MSG_SEND_DIRECT_REQ2 function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0xC400008D.
+           uint32 Sender/Receiver IDs               w1                   • Sender and Receiver endpoint IDs.
+                                                                              – Bits[31:16]: Sender endpoint ID.
+                                                                              – Bits[15:0]: Receiver endpoint ID.
+           uint64 UUID Lo                           x2                   • Bytes[0. . . 7] of UUID with byte 0 in the low-order
+                                                                           bits. As specified in 6.2.3.2 UUID encodings.
+           uint64 UUID Hi                           x3                   • Bytes[8. . . 15] of UUID with byte 8 in the low-order
+                                                                           bits. As specified in 6.2.3.2 UUID encodings.
+           Other Parameter registers                x4-x17               • IMPLEMENTATION DEFINED values.
+Chapter 15. Messaging interfaces
+15.4. FFA_MSG_SEND_DIRECT_REQ2
+                                                                                          Table 15.16: FFA_ERROR encoding
+           Parameter                              Register         Value
+           int32 Error code                       w2                   • INVALID_PARAMETERS:
+                                                                             – Invalid endpoint ID or message flags.
+                                                                             – Unrecognized UUID.
+                                                                       • DENIED:
+                                                                             – Callee is not in a state to handle this request.
+                                                                             – Caller is not allowed to invoke this ABI.
+                                                                             – Receiver endpoint does not support receipt of
+                                                                               Direct request messages.
+                                                                       • NOT_SUPPORTED: This function is not implemented
+                                                                         at this FF-A instance.
+                                                                       • BUSY: Receiver endpoint is in a running, blocked or
+                                                                         preempted state.
+                                                                       • ABORTED: Receiver endpoint ran into an unexpected
+                                                                         error and has aborted.
+                                                                       • NOT_READY: Receiver endpoint is not ready to
+                                                                         handle this request.
+Chapter 15. Messaging interfaces
+15.5. FFA_MSG_SEND_DIRECT_RESP2

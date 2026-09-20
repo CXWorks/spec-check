@@ -1,0 +1,44 @@
+15.5 FFA_MSG_SEND_DIRECT_RESP2
+           Description
+               • Send a Partition message in parameter registers as a response to a target endpoint, run the endpoint and wait
+                 until a new message is available. Also see 8.3 Direct messaging.
+               • Valid FF-A instances and conduits are listed in Table 15.18.
+               • Syntax of this function is described in Table 15.19.
+               • Successful completion of this function is indicated in the same manner as that of the FFA_MSG_WAIT
+                 function (also see 14.1 FFA_MSG_WAIT).
+               • Encoding of error code in the FFA_ERROR function is described in Table 15.20.
+                                               Table 15.18: FFA_MSG_SEND_DIRECT_RESP2 instances and conduits
+           Config No.                  FF-A instance                              Valid conduits
+           1                           Non-secure physical                        ERET
+           2                           Secure physical                            SMC, ERET
+           3                           Non-secure virtual                         SMC, HVC, ERET
+           4                           Secure virtual                             SMC, HVC, SVC, ERET
+                                                         Table 15.19: FFA_MSG_SEND_DIRECT_RESP2 function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0xC400008E.
+           uint32 Source/Destination IDs            w1                   • Source and destination endpoint IDs.
+                                                                             – Bit[31:16]: Source endpoint ID.
+                                                                             – Bit[15:0]: Destination endpoint ID.
+           uint64 Reserved                          x2                   • Reserved (SBZ).
+           uint64 Reserved                          x3                   • Reserved (SBZ).
+           Other Parameter registers                x4-x17               • IMPLEMENTATION DEFINED values.
+Chapter 15. Messaging interfaces
+15.5. FFA_MSG_SEND_DIRECT_RESP2
+                                                                                          Table 15.20: FFA_ERROR encoding
+           Parameter                              Register         Value
+           int32 Error code                       w2                   • INVALID_PARAMETERS: Invalid endpoint ID or
+                                                                         message flags.
+                                                                       • DENIED:
+                                                                             – Callee is not in a state to handle this request.
+                                                                             – Caller does not support sending of Direct
+                                                                               response messages.
+                                                                             – Receiver endpoint does not support receipt of
+                                                                               Direct response messages.
+                                                                       • NOT_SUPPORTED: This function is not implemented
+                                                                         at this FF-A instance.
+                                                                       • ABORTED: Receiver endpoint ran into an unexpected
+                                                                         error and has aborted.
+Chapter 16
+Notification interfaces
+Chapter 16. Notification interfaces
+16.1. FFA_NOTIFICATION_BITMAP_CREATE

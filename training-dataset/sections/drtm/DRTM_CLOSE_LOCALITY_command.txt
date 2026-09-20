@@ -1,0 +1,40 @@
+3.6 DRTM_CLOSE_LOCALITY
+Closes a locality in the TPM.
+ Parameter                      Register     Value
+ uint32 Function ID               W0         0xC400_0115
+ uint32 Locality                  X1         Specifies the locality to close. Valid values are 2 and 3.
+ Return
+                                             On success:                               The operation succeeded.
+                                             SUCCESS
+                                             On error:
+                                                                                       DRTM is not supported.
+                                             NOT_SUPPORTED
+                                             INVALID_PARAMETERS
+                                                                                       The locality specified is not
+                                  X0                                                   valid.
+ int64
+                                             ALREADY_CLOSED                            The locality is already closed.
+                                             DENIED
+                                                                                       The locality has not been
+                                                                                       relinquished.
+                                                                                       Note: This function may return
+                                                                                       other error codes as defined in
+                                                                                       section 3.18.
+3.6.1 DRTM_CLOSE_LOCALITY usage
+This function is used by the DLME to close dynamic localities in the TPM. Localities that can be closed with this
+function are 2 and 3.
+Locality 2 is a dynamic locality used by the DLME to make any needed measurements. After the DLME has
+completed its measurements, it invokes DRTM_CLOSE_LOCALITY to prevent further measurements from being
+made.
+Locality 3 is a dynamic locality used by the D-CRTM and DCE to make measurements. A Normal world DCE
+component that runs at a Non-secure exception level can use this function to close locality 3 after all needed
+measurements are made.
+Note: if there is only a single stage DCE, the DCE executes in the Secure world and must close locality 3 when it
+finishes making measurements.
+3.6.2 DRTM_CLOSE_LOCALITY caller responsibilities
+The caller must relinquish the locality it is trying to close at the TPM before invoking this function. Failure to do
+this results in an error.
+3.6.3 DRTM_CLOSE_LOCALITY implementation responsibilities
+The implementation must interface to the TPM implementation in a platform-specific manner to close the target
+locality. If the locality is already closed or has not been relinquished the implementation must return an error to
+the caller.

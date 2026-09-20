@@ -1,0 +1,43 @@
+5.1.5       SDEI_EVENT_CONTEXT
+                  Description                          To retrieve additional context information within an event handler.
+                  Parameters
+                  uint32 Function ID                   0xC400_0024
+                                                       Parameter identifier. Possible values are,
+                                                       0-17: Returns register X0-X17 of the client PE at the time of the
+                  uint32 param_id
+                                                       event.
+                                                       All other values for param_id are reserved for future use.
+                  Return
+                  On success
+                  int64                                The value of the register as specified by param_id will be returned.
+                  On error,
+                                                       NOT_SUPPORTED                               SDEI is not supported.
+                                                       INVALID_PARAMETERS                          Invalid param_id value in the
+                  int64                                                                            call.
+                                                       DENIED                                      The event handler is not running
+                                                                                                   for the calling PE.
+5.1.5.1 Usage
+                          This call is used to retrieve additional context information from an event handler. When the
+                          dispatcher passes event to the client, the event number, ep_argument, interrupted PC and
+                          PSTATE is provided to the event handler through registers X0 – X3 respectively. This call
+                          can be used to retrieve the value of registers X0 – X17 of the PE which receives the event.
+                          See Event handler context page 42 for more information about the event handler context.
+                          The type of context information returned through this call is selected using the param_id
+                          argument. Currently the following values of param_id are defined,
+                              •     0-17: General purpose registers X0-X17 of the PE at the time of the event.
+                          The SDEI_EVENT_CONTEXT call is typically used within an event handler. The call is valid
+                          only when the event handler property handler-running is set to TRUE), see Event handler
+                          states and properties on page 46. For private and shared events, this call can be invoked
+                          only from the PE that received the event.
+5.1.5.2 Client responsibilities
+                          If the event handler property handler-running is set to TRUE, the call always succeeds, and
+                          the requested register value is returned.
+                          If the client executes the call when the handler-running property is FALSE or from a
+                          different PE than the one in which the event handler is running, the call will always fail with
+                          one of the following error codes,
+                              •     INVALID_PARAMETERS is returned for an unknown param_id value.
+                                                                                                                           Interface
+                            •     DENIED is returned if the handler-running property is FALSE on the calling PE.
+5.1.5.3 Dispatcher responsibilities
+                        The context information must be available until the event handler is completed. The call
+                        must always succeed when the event is running.

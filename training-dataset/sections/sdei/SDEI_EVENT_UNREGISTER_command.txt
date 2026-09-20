@@ -1,0 +1,46 @@
+5.1.8   SDEI_EVENT_UNREGISTER
+                Description                          Unregister an event handler.
+                Parameters
+                uint32 Function ID                   0xC400_0027
+                int32 event                          Event number
+                Return
+                                                     SUCCESS                                     Event successfully unregistered.
+                                                     NOT_SUPPORTED                               SDEI is not supported.
+                                                     INVALID_PARAMETERS                          Invalid event number.
+                int64
+                                                     DENIED                                      Event not registered by client.
+                                                     PENDING                                     Event handler is running and
+                                                                                                 unregister will be pending.
+5.1.8.1 Usage
+                        This call is used to unregister the client from receiving any future events specified by event.
+                        Any event that triggers after a successful unregister, might be queued or discarded with the
+                        specific behavior being event and platform specific. This call has no effect on a currently
+                        running event handler.
+Interface
+                       The SDEI_EVENT_UNREGISTER call, changes the event handler state, see the state diagram
+                       in Event handler states and properties on page 46 for more information.
+                       This function completes asynchronously without waiting for any current handlers executing
+                       on other PEs to complete. If unregister is called when the event handler is running,
+                       unregister will be pending and return code will be set to PENDING. For instance, if the call is
+                       invoked from the event handler, unregister would return PENDING.
+                       When this call returns PENDING, the unregister will be performed when the handler
+                       completes the event-handling using SDEI_EVENT_COMPLETE or
+                       SDEI_EVENT_COMPLETE_AND_RESUME. The client will not receive any future events of type
+                       event, after the client completes the currently running handler. Calling unregister on an
+                       event in the unregister-pending state is permitted and will return PENDING.
+                       For a shared event, this call will unregister the event globally. For a private event, this call
+                       will unregister the event for the calling PE.
+5.1.8.2 Client responsibilities
+                       Before a SDEI_EVENT_UNREGISTER call, the client must register the event using
+                       SDEI_EVENT_REGISTER.
+                       The client must also handle the following potential return error codes,
+                           •      INVALID_PARAMETERS is returned for an unknown event number.
+                           •      DENIED is returned if event is not registered by the client.
+                           •      PENDING is returned if the event handler property handler-running is set to TRUE.
+                                  This error indicates that any resource that the event handler uses cannot be freed
+                                  by the client until the event handler completes the event handling.
+5.1.8.3 Dispatcher responsibilities
+                       The dispatcher implementation must ensure that after a successful unregister, no events
+                       will be delivered to the client. If the event handler is in handler-unregister-pending state, no
+                       events will be delivered to the client after the client completes the currently running
+                       handler.

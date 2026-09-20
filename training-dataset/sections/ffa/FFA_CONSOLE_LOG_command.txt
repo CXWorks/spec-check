@@ -1,0 +1,46 @@
+13.12 FFA_CONSOLE_LOG
+            Description
+                • Allow an entity to provide debug logging to the console.
+                • Valid FF-A instances and conduits are listed in Table 13.54.
+                • Syntax of this function is described in Table 13.55.
+                • Returns FFA_SUCCESS without any further parameters on successful completion.
+                     – In this case, the characters are logged to the console in finite time.
+                • Encoding of error codes in the FFA_ERROR function is described in Table 13.56.
+                                                                Table 13.54: FFA_CONSOLE_LOG instances and conduits
+            Config No.                  FF-A instance                                           Valid conduits
+            1                           Secure physical                                         SMC
+            2                           Secure virtual                                          SMC, HVC, SVC
+                                                                          Table 13.55: FFA_CONSOLE_LOG function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0/x0                • 0x8400008A.
+                                                                          • 0xC400008A.
+            uint32 Character Count                   w1/x1                • Count of characters i provided in w2/x2-w7/x7
+                                                                               – Bit[31:8]: Reserved (SBZ).
+                                                                               – Bit[7:0]: Count of characters.
+                                                                                    * 1 <= i <= 24 if the SMC32 convention is
+                                                                                      used.
+                                                                                    * <= i <= 128 if the SMC64 convention is
+                                                                                      used.
+            uint32/uint64 Character lists            w2-w7                • Tightly packed list of characters
+                                                     x2-x17                    – Character i = Bits[M:N]
+                                                                               – M = ((8 x i) - 1)
+                                                                               – N = (8 x (i - 1))
+Chapter 13. Setup and discovery interfaces
+13.12. FFA_CONSOLE_LOG
+                                                                                         Table 13.56: Encoding of return codes
+            Parameter                                Register         Value
+            int32 Error code                         w2                   • INVALID_PARAMETERS:
+                                                                                – Count of characters is 0.
+                                                                                – Count of characters is greater than 24 when the
+                                                                                  SMC32 convention is used.
+                                                                                – Count of characters is greater than 128 when the
+                                                                                  SMC64 convention is used.
+                                                                          • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+                                                                          • RETRY: Some or all characters could not be logged.
+            uint32 Character Count                   w3                   • Number of characters that were successfully logged.
+                                                                            Count starts from the first character.
+                                                                                – Valid only with RETRY error code. MBZ
+                                                                                  otherwise.
+Chapter 13. Setup and discovery interfaces
+13.13. FFA_NS_RES_INFO_GET

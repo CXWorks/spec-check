@@ -1,0 +1,35 @@
+5.1.4   SDEI_EVENT_DISABLE
+                Description                        Disable the specified event.
+                Parameters
+                uint32 Function ID                 0xC400_0023
+                int32 event                        Event number.
+                Return
+                                                   SUCCESS                                     Event disabled successfully.
+                                                   NOT_SUPPORTED                               SDEI is not supported.
+                int64
+                                                   INVALID_PARAMETERS                          Invalid event number in the call.
+                                                   DENIED                                      Inappropriate event handler
+                                                                                               state.
+5.1.4.1 Usage
+                        This call disables the event for the client. When the event is disabled, no further events will
+                        be passed to client. Any event that triggers after it is disabled will stay pending and passed
+                        to the client when the event is enabled again. This call has no effect on a currently running
+                        event handler.
+                        The SDEI_EVENT_DISABLE call, changes the event handler state, see the state diagram in
+                        Event handler states and properties on page 46 for more information.
+                        Disabling an event, which is already disabled, is permitted and has no effect. For a private
+                        event, this call disables the event only for the calling PE. For a shared event, this call
+                        disables the event globally for the calling client.
+5.1.4.2 Client responsibilities
+                        Before a SDEI_EVENT_DISABLE call, the client must register the event using
+                        SDEI_EVENT_REGISTER.
+                        The client must also handle the following potential return error codes,
+                           • INVALID_PARAMETERS is returned for an unknown event number.
+                           • DENIED is returned if,
+                                   •    Event is not registered by the client.
+Interface
+                                       •    Event handler is in state handler-unregister-pending. See Event handler
+                                            states and properties on page 46 to know more about this.
+5.1.4.3 Dispatcher responsibilities
+                          The specific responsibilities of the dispatcher when an event is disabled are use-case
+                          dependent. See Appendix A: Implementing use cases.

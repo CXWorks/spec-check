@@ -1,0 +1,50 @@
+17.1 FFA_EL3_INTR_HANDLE
+            Description
+                • Request EL3 firmware to handle a pending interrupt.
+                • Valid FF-A instances and conduits are listed in Table 17.2.
+                • Syntax of this function is described in Table 17.3.
+                • Returns FFA_SUCCESS without any further parameters on successful completion.
+                • Encoding of error code in the FFA_ERROR function is described in Table 17.4.
+                                                             Table 17.2: FFA_EL3_INTR_HANDLE instances and conduits
+                Config No.                    FF-A instance                                     Valid conduits
+                1                             Secure physical FF-A                              SMC
+                                                                       Table 17.3: FFA_EL3_INTR_HANDLE function syntax
+           Parameter                                 Register         Value
+           uint32 Function ID                        w0                   • 0x8400008C.
+           Other Parameter registers                 w1-w7                • Reserved (SBZ).
+                                                                                              Table 17.4: FFA_ERROR encoding
+           Parameter                                 Register         Value
+           int32 Error code                          w2                   • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+17.1.1 Overview
+              This ABI is used by a S-EL2 or S-EL1 SPMC to delegate handling of an EL3 interrupt to EL3 firmware. On a
+              GICv3 system, when SCR_EL3.FIQ=0, the SPMC at S-EL2 or S-EL1 uses this ABI to request EL3 firmware to
+              handle a pending Group 0 interrupt that cannot be handled at the same or lower Exception level than the SPMC.
+              The following rules govern the behaviour of this ABI.
+                 • An invocation of this ABI returns the NOT_SUPPORTED error code in the following scenarios:
+                      – The ABI is invoked at an unsupported FF-A instance.
+                      – The ABI is invoked at S-EL1 or S-EL2 and SCR_EL3.FIQ=1.
+                 • EL3 firmware does not perform a switch to another security state as a part of handling an invocation of this
+                   ABI.
+                    This rule ensures that an invocation of this ABI is handled entirely in EL3 firmware before returning to the
+                    calling Exception level in the Secure state. This helps preserve the FF-A programming model where an exit
+                    to another Security state is always explicitly requested by software in the Secure state in S-EL1 or S-EL2.
+Chapter 17. Interrupt management interfaces
+17.1. FFA_EL3_INTR_HANDLE
+              Figure 17.1 illustrates how a Group 0 interrupt can be handled by TF-A at EL3 in coordination with an SPMC at
+              S-EL1 or S-EL2 via the use of this ABI when SCR_EL3.FIQ=0 in the Secure state.
+                   S-EL1 or S-EL2                                                   EL3 firmware
+                        SPMC                                  SPMD                          Interrupt handling module
+ 1 FIQ(Group 0 interrupt)
+           INTID = Read(ICC_HPPIR0_EL1)
+  Check if INTID corresponds to a Group 0 interrupt
+                             2 SMC(FFA_EL3_INTR_HANDLE)
+                               Call into Interrupt handling module to handle Group 0 interrupt
+                                                                   3 el3_interrupt_handler()
+                                                                                           INTID = Read(ICC_IAR0_EL1)
+                                                                                                   Handle INTID
+                                                                     4 ret(0)
+                              5 ERET(FFA_SUCCESS)
+                        SPMC                                  SPMD                          Interrupt handling module
+                                                                  Figure 17.1: Example usage of FFA_EL3_INTR_HANDLE
+Chapter 18

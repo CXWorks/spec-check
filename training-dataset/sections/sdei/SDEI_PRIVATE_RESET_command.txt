@@ -1,0 +1,36 @@
+5.1.18 SDEI_PRIVATE_RESET
+            Description                        Resets private SDEI data of the calling PE.
+            Parameters
+            uint32 Function ID                 0xC400_0031
+            Return
+                                               SUCCESS                                     All SDEI data for the calling PE
+                                                                                           was reset.
+                                               NOT_SUPPORTED                               SDEI is not supported.
+            int64
+                                                                                           At least one event handler was
+                                               DENIED                                      running while this call was
+                                                                                           invoked.
+5.1.18.1    Usage
+                    This call is used to reset all private SDEI event registrations of the calling PE. The call
+                    loops through all registered private events of the calling PE and unregisters the event. All
+                    private events will be unregistered if this call is executed outside an event handler. If this
+                    call is executed from an SDEI event handler, all handlers will be unregistered except for
+                    the running handlers. With two levels of event priority implemented, there can be at most
+                    two events that are currently running, see Nesting depth of running SDEI event handlers
+                    on page 19. The running handler will be in state handler-unregister-pending until the event
+                    is completed, see the state diagram in Event handler states and properties on page 46 for
+                    more information. This call has no effect on shared events.
+5.1.18.2    Client responsibilities
+                    For a PE reset or PE shutdown, in addition to executing this call, the client must also mask
+                    the PE and re-target or unregister any shared events targeting this PE.
+                    This call is useful in a reset scenario, especially when the private events registered by the
+                    PE are unknown.
+                    To successfully execute this call:
+                                                                                                                            Interface
+                            •     It is expected that no private event handlers would have the event handler property
+                                  handler-running set to TRUE. If an event handler is running, unregister will be
+                                  pending until the event is completed.
+5.1.18.3        Dispatcher responsibilities
+                        All private events must be unregistered or unregister-pending (if called from event handler)
+                        following this call. Any auxiliary information relating to the event registration must be
+                        cleared or must be set similar to the warm boot state of the PE.

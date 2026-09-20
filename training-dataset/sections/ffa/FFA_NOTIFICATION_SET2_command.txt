@@ -1,0 +1,86 @@
+16.9 FFA_NOTIFICATION_SET2
+             Description
+                 • This ABI is used by an FF-A component if it supports Extended notifications (see Chapter 10 Notifications).
+                 • This ABI is invoked by an endpoint at a virtual FF-A instance with the SMC, HVC or SVC conduits to
+                   request the partition manager to signal notifications specified in the Notification bitmap parameter to the
+                   Receiver endpoint. Also see 10.5 Notification signaling.
+                 • This ABI is invoked by the Hypervisor at the Non-secure physical FF-A instance with the SMC conduit to
+                   request the SPMC to signal VM notifications specified in the Notification bitmap parameter to the SP specified
+                   in the Receiver endpoint ID parameter on behalf of the VM specified in the Sender endpoint ID parameter.
+                 • Valid FF-A instances and conduits are listed in Table 16.36.
+                 • Syntax of this function is described in Table 16.37.
+                 • Returns FFA_SUCCESS without any further parameters on successful completion.
+                 • Encoding of error codes in the FFA_ERROR function is described in Table 16.38.
+                                                           Table 16.36: FFA_NOTIFICATION_SET2 instances and conduits
+            Config No.                   FF-A instance                                           Valid conduits
+            1                            Non-secure virtual                                      SMC, HVC
+            2                            Secure virtual                                          SMC, HVC, SVC
+            3                            Non-secure physical                                     SMC
+            4                            Secure physical                                         ERET
+                                                                     Table 16.37: FFA_NOTIFICATION_SET2 function syntax
+            Parameter                                 Register         Value
+            uint32 Function ID                        w0                   • 0xC4000096.
+            uint32 Sender/Receiver IDs                w1                   • Sender and Receiver endpoint IDs.
+                                                                                – Bit[31:16]: Sender endpoint ID.
+                                                                                – Bit[15:0]: Receiver endpoint ID.
+            uint64 Flags                              x2                   • Bit[0]: Per-vCPU notification flag (see 10.4.2
+                                                                             Notification binding):
+                                                                           • b’1: All notifications in the bitmap are per-vCPU
+                                                                             notifications (only if per-vCPU notifications are
+                                                                             supported).
+                                                                                – Each notification must be signaled to the vCPU
+                                                                                   specified in the Receiver vCPU ID field.
+                                                                           • b’0: All notifications in the bitmap are global
+                                                                             notifications.
+                                                                                – The Receiver vCPU ID field MBZ.
+                                                                           • Bit[1]: Delay Schedule Receiver interrupt flag. See
+                                                                             16.5.1 Delay Schedule Receiver interrupt flag.
+                                                                           • Bit[15:2]: Reserved (MBZ).
+                                                                           • Bit[63:16]: Receiver vCPU ID when Bit[0] is 1.
+Chapter 16. Notification interfaces
+16.9. FFA_NOTIFICATION_SET2
+            Parameter                                 Register         Value
+            uint64 Notification bitmap                x3-x8                • Bits[b:0] of a bitmap with one or more set bits to
+                                                                             identify the notifications which must be signaled to the
+                                                                             Receiver endpoint.
+                                                                                – b is the number of supported notifications - 1 (see
+                                                                                   Table 13.14).
+                                                                                – 63 <= b <= 383.
+                                                                                – Bits corresponding to unimplemented
+                                                                                   notification IDs MBZ.
+                                                                           • For each bit i in the bitmap, if the value is:
+                                                                                – b’1: The notification corresponding to this bit
+                                                                                   position must be signaled to the Receiver.
+                                                                                – b’0: The notification corresponding to this bit
+                                                                                   position must not be signaled to the Receiver.
+                                                                           • Bit position i = Bit[N] in xM.
+                                                                                – M = (i / 64) + 3.
+                                                                                – N = i % 64.
+            Other Parameter registers                 x9-x17               • Reserved (SBZ).
+                                                                                          Table 16.38: Encoding of return codes
+            Parameter                                 Register         Value
+            int32 Error code                          w2                   • INVALID_PARAMETERS:
+                                                                                 – Unrecognized partition ID or invalid flags.
+                                                                                 – Per-vCPU notification flag = b’0 and Receiver
+                                                                                   vCPU ID != 0.
+                                                                                 – Per-vCPU notification flag = b’0 and a per-vCPU
+                                                                                   notification is specified in the Notification
+                                                                                   bitmap.
+                                                                                 – Per-vCPU notification flag = b’1 and a global
+                                                                                   notification is specified in the Notification
+                                                                                   bitmap.
+                                                                                 – Per-vCPU notification flag = b’1 and per-vCPU
+                                                                                   notifications are not supported.
+                                                                                 – Notification set that exceeds the supported
+                                                                                   number of notifications.
+                                                                                 – Empty notification bitmap specified.
+                                                                           • NOT_SUPPORTED: This function is not implemented
+                                                                             at this FF-A instance.
+                                                                           • DENIED:
+                                                                                 – Sender is not permitted to signal at least one
+                                                                                   notification to the Receiver.
+                                                                                 – Receiver does not support receipt of notifications.
+                                                                           • ABORTED: Receiver partition ran into an unexpected
+                                                                             error and has aborted.
+Chapter 16. Notification interfaces
+16.10. FFA_NOTIFICATION_GET2

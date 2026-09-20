@@ -1,0 +1,105 @@
+5.1.2       SDEI_EVENT_REGISTER
+                  Description                        Register a handler to the specified event.
+                  Parameters
+                  uint32 Function ID                 0xC400_0021
+                  int32 event                        Event number.
+                  uint64
+                                                     Entry point address at ELC for the event handler.
+                  entry_point_address
+                  uint64 ep_argument                 User-defined argument passed to entry point routine.
+                                                     Registration Flags,
+                                                     Bits [63:2]: Reserved for future use. Must be zero.
+                                                     Bit [1]: relative_mode: Specifies whether the entry_point_address
+                                                     passed to this function is an absolute address or relative to the
+                                                     Vector Base Address Register (VBAR) for ELC. Possible values
+                                                     are:
+                                                          •    0: entry_point_address is an absolute address
+                  uint64 flags                            •    1: entry_point_address is relative to VBAR
+                                                     Note: relative_mode is an optional feature. Whether an
+                                                     implementation supports relative_mode may be determined using
+                                                     the SDEI_FEATURES function.
+                                                     Bit [0]: routing_mode Routing mode for shared event. Possible
+                                                     values are:
+                                                          •    0: RM_ANY (Route to any PE in the system)
+                                                          •    1: RM_PE (Route to the PE specified by affinity)
+                                                     Affinity argument. The format of this field depends on the selected
+                                                     routing mode.
+                                                     Currently the format is defined only when the selected routing
+                                                     mode is RM_PE.
+                                                     With RM_PE, this field follows the MPIDR format as described in
+                                                     Arm Architecture Reference Manual, Armv8 for Armv8-A
+                                                     architecture profile.
+                  uint64 affinity
+                                                     Bits [40:63]: Must be zero.
+                                                     Bits [32:39]: Aff3 : Match Aff3 of target PE MPIDR.
+                                                     Bits [24:31]: Must be zero.
+                                                     Bits [16:23]: Aff2 : Match Aff2 of target PE MPIDR.
+                                                    Bits [8:15]: Aff1 : Match Aff1 of target PE MPIDR.
+                                                    Bits [0:7]: Aff0 : Match Aff0 of target PE MPIDR.
+                                                                                                                            Interface
+                Return
+                                                   SUCCESS                                     Event registered successfully.
+                                                   NOT_SUPPORTED                               SDEI is not supported.
+                int64
+                                                   INVALID_PARAMETERS                          Invalid parameters in the call.
+                                                   DENIED                                      Inappropriate event state.
+5.1.2.1 Usage
+                        After the specified event has been registered, the event is disabled and the handler is not
+                        called until the event is enabled. The event handler always executes in ELC.
+                        The SDEI_EVENT_REGISTER call, changes the event handler state, see the state diagram in
+                        Event handler states and properties on page 46 for more information.
+                        Any event that triggers before it has been registered a handler is either ignored or remains
+                        pending. It is IMPLEMENTATION DEFINED whether the event is ignored or remains pending.
+                        A client can register only one handler to one event at a time. If the client needs to register a
+                        different handler to the event or change the ep_argument for the event, it must unregister
+                        the event.
+                        For a shared event, SDEI_EVENT_REGISTER registers the handler globally for the calling
+                        client. For a private event, this call only registers the handler for the calling PE.
+5.1.2.2 Parameters
+                        •   event is the event number that the client is registering. The event number is either
+                            provided by the dispatcher or created dynamic using the SDEI_INTERRUPT_BIND call.
+                        •   entry_point_address holds the entry point of the event handler. Event handlers are
+                            executed at ELC and in the client translation regime. Specifying an invalid address will
+                            result in an exception, for example a translation fault or permission fault, as defined in
+                            the Armv8-A architecture when the ERET is executed by the dispatcher targeting the
+                            invalid address. Refer to Event handler context for more details about the context of
+                            event handlers.
+                        •   ep_argument can be any value as defined by the client software. Typical usage might
+                            have this as an alternate stack pointer or a structure defining the event context for the
+                            client software. Dispatcher software must pass this argument unchanged to the
+                            handler routine.
+                        •   flags define the flags for registering the event. Currently only the routing mode of an
+                            event is specified through the flags. The unused fields are reserved for future
+                            expansion of the specification. Routing mode is valid only for a shared event. For a
+                            private event, the routing mode is ignored. This specification requires the support of
+                            the following routing modes,
+                                   •    RM_ANY: The event is routed to any PE in the system.
+                                   •    RM_PE: The event is routed to a single PE as specified by the affinity argument.
+                        •   affinity specifies the PE affinity of a shared event. The format of this field depends on
+                            the selected routing mode. This parameter is unused for private events and shared
+                            events with routing mode RM_ANY. For routing mode RM_PE, affinity specifies the PE to
+                            which the event will be routed and the format follows the MPIDR value as described in
+                            Arm Architecture Reference Manual, Armv8 for Armv8-A architecture profile. New
+                            formats might be introduced in later revisions of the specification.
+5.1.2.3 Client responsibilities
+                        Before a SDEI_EVENT_REGISTER call, the client must,
+Interface
+                          •   Identify the event number, obtained either from the dispatcher or by creating a bound
+                              event, see Bound events on page 51.
+                          •   For a shared event, specify an appropriate routing model and affinity if applicable.
+                          The client must specify a valid entry point address. The client must make sure that the
+                          address is valid to all the PEs that can handle this event. The address can be a physical or
+                          virtual address and must be valid according to the translation regime that will be used
+                          when the event is enabled.
+                          The client must also handle the following potential return error codes,
+                               •       INVALID_PARAMETERS is returned for any of the following,
+                                        •    Invalid event number.
+                                        •    Invalid event handler address, if the dispatcher can determine that it is not
+                                             valid.
+                                        •    For shared events, invalid routing mode or invalid affinity specified for routing
+                                             mode, RM_PE.
+                               •       DENIED is returned,
+                                        •    If the event is already registered by the client.
+                          If the event is in state handler-unregister-pending, see Event handler states and properties
+                          on page 46 for more information. The state of the event can be examined using
+                          SDEI_EVENT_STATUS call on page 30.

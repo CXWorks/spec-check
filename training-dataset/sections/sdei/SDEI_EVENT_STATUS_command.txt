@@ -1,0 +1,36 @@
+5.1.9       SDEI_EVENT_STATUS
+                  Description                       Retrieve the status of an event.
+                  Parameters
+                  uint32 Function ID                 0xC400_0028
+                  int32 event                        Event number.
+                  Return
+                  On success the format of the return value is as follows,
+                                                                                                                            Interface
+                                                     Bits[63-3]: Must be zero.
+                                                     Bit[2]: Running bit. Possible values are,
+                                                          •    0: Event handler is not-running.
+                                                          •    1: Event handler is running.
+                                                     Bit[1]: Enable bit. Possible values are,
+                                                          •     0: Event handler is disabled.
+                int64
+                                                          •    1: Event handler is enabled.
+                                                    Bit[0]: Register bit. Possible values are,
+                                                          •    0: Event handler is unregistered.
+                                                          •    1: Event handler is registered.
+                                                    See Table 13 on page 48 for more information on how to map the
+                                                    return value to the event handler states.
+                On error,
+                                                     NOT_SUPPORTED                               SDEI is not supported.
+                int64
+                                                     INVALID_PARAMETERS                          Invalid event number in the call.
+5.1.9.1 Usage
+                        This call can be used to retrieve the status of an event. The status of the event returned by
+                        this call can be directly mapped to event handler states, see Event handler states and
+                        properties on page 46.
+5.1.9.2 Client responsibilities
+                        The event status is dynamic and can change even when the return status is inspected.
+                        Therefore, the status must not be used to perform operations that depend on the current
+                        status of the event unless the client synchronizes itself not to change the event handler
+                        state.
+                        The client must handle the following potential return error code,
+                            •     INVALID_PARAMETERS is returned for an unknown event number.

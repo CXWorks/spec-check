@@ -1,0 +1,88 @@
+3.13 DRTM_PARAMETERS
+The DRTM_PARAMETERS are created by the DCE preamble and are the input parameters to the DRTM dynamic
+launch. The parameters describe dynamic launch features, the DLME region (see section 3.15), and any Normal
+world DCE image. The existence of a Normal world DCE image is implementation dependent.
+                                   Table 9: DRTM_PARAMETERS definition
+ Field                 Byte Offset        Byte Length         Description
+ Revision                   0                    2            Revision of this data structure. Must have a
+                                                              value of 2 for this revision of DRTM
+                                                              architecture for Arm.
+                                                              For a given DRTM major version number (see
+                                                              DRTM_VERSION, 3.2), this structure is always
+                                                              extended in a backwards compatible manner.
+ Reserved                   2                    2            Must be zero.
+ Launch Features            4                    4            Selects optional features, if supported by the
+                                                              implementation:
+                                                                  Bits[31:8]: Reserved. Must be zero.
+                                                                  Bit[7]: Request disable of Secure
+                                                                  interrupts during dynamic launch
+                                                                      0: Disabling of Secure interrupts not
+                                                                      requested.
+                                                                      1: Disabling of Secure interrupts
+                                                                      requested.
+                                                                  Bit[6]: DLME image authentication
+                                                                      0: No DLME image authentication
+                                                                      requested.
+                                                                      1: DLME image authentication requested.
+                                                                  Bits[5:3]: Memory protection type.
+                                                                      0: All. Complete DMA protection
+                                                                      requested.
+                                                                      1: Region. Region-based DMA protection
+                                                                      requested.
+                                                                      2-7: Reserved
+                                                                  Bits[2:1]: Requested PCR Usage Schema.
+                                                                      0: Default Schema (see section 4.8.4)
+                                                                      1: DLME Authorities Schema (see section
+                                                                      4.8.5)
+                                                                      2-3: Reserved
+                                                                  Bit[0]: Type of hashing
+                                                                      0: Request firmware-based hashing (see
+                                                                      section 2.7.1).
+                                                                     1: Request TPM-based hashing (see section
+                                                                     2.7.2).
+ DLME region                 8                  8            Starting physical address of the DLME region.
+ address
+ DLME region size          16                   8            Size of the DLME region in bytes.
+ DLME image start          24                   8            Offset in bytes to the start of the DLME image
+                                                             within the DLME region. See Figure 8.
+ DLME entry point          32                   8            Offset in bytes from the start of the DLME
+ offset                                                      image to the DLME image entry point.
+ DLME image size           40                   8            Size of the DLME executable image in bytes.
+ DLME data offset          48                   8            Offset in bytes to the DLME data within the
+                                                             DLME region. See Figure 8.
+ Normal world DCE          56                   8            Physical address of the Normal world DCE
+ region address                                              region. The address must be 4KB aligned.
+                                                             Must be zero if a Normal world DCE is not in
+                                                             use.
+ Normal world DCE          64                   8            Size of the Normal world DCE region in bytes.
+ region size                                                 Must be zero if a Normal world DCE is not in
+                                                             use.
+ Memory protection         72                   8            For a memory protection type value of
+ table address                                               Region in the Launch Features, this field
+                                                             specifies the 64-bit physical address of the
+                                                             memory protection table describing all
+                                                             memory regions to be protected. The address
+                                                             must be 4KB aligned.
+                                                             Must be zero if region-based DMA protection
+                                                             is not used.
+ Memory protection         80                   8            For a memory protection type value of
+ table size                                                  Region in the Launch Features, this field
+                                                             specifies the size of the memory protection
+                                                             table in bytes.
+                                                             Must be zero if region-based DMA protection
+                                                             is not used.
+Table 10 describes the requirements for the DRTM_PARAMETERS:
+                                 Table 10: DRTM_PARAMETERS requirements
+ ID            Requirement
+ R312000       The DRTM_PARAMETERS must be in Non-secure, physically contiguous memory.
+ R312010           The DRTM_PARAMETERS must start at a 4KB aligned address.
+ R312020           The address ranges described by the parameters must not overlap.
+ R312030           The address ranges described by the parameters must not wrap around.
+ R312040           The DLME image size must not extend beyond the bounds of the DLME region.
+ R312050           The DLME entry point offset must be within the bounds of the DLME image.
+ R312060           The DLME region must meet the requirements in section 3.15.
+ R312070           If in use, the Normal world DCE region must be in Non-secure physically contiguous memory.
+ R312080           If in use, the Normal world DCE region must start at a 4KB aligned address.
+ R312090           It is an error to request the DLME Authorities Schema unless DLME image authentication is also
+                   requested.
+ R312100           The Memory protection table address must be 4KB aligned

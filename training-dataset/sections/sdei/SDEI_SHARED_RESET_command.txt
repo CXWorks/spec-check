@@ -1,0 +1,37 @@
+5.1.19 SDEI_SHARED_RESET
+                Description                          Resets shared SDEI data.
+                Parameters
+                uint32 Function ID                   0xC400_0032
+                Return
+                                                     SUCCESS                                     All SDEI system data was reset.
+                                                     NOT_SUPPORTED                               SDEI is not supported.
+                int64
+                                                     DENIED                                      Event was running while this call
+                                                                                                 was invoked.
+5.1.19.1        Usage
+                        This call is used to clear all system level SDEI data, which includes shared event
+                        registrations and interrupt-event bindings.
+                        This call does the following:
+                            •     Loops through all registered shared events and unregisters the event.
+                            •     Releases all interrupts bound to events in the system.
+                        The precondition for invoking SDEI_SHARED_RESET call is as follows:
+                            •     For each managed PE, unregister all private events or invoke
+                                  SDEI_PRIVATE_RESET.
+                            •     For each managed PE, mask SDEI events using SDEI_PE_MASK. This is to stop the
+                                  PE from handling any shared events.
+                        To successfully execute this call:
+                            •     No shared events should have the event handler property handler-running set to
+                                  TRUE. If an event handler is running, unregister is pending until the event is
+                                  completed.
+                            •     All interrupt bound shared events must be unregistered (in step 1).
+                            •     All interrupt bound private events must be unregistered from all registered PEs.
+                        This call has no effect on private events.
+5.1.19.2        Client responsibilities
+                        This call is useful in a reset scenario, especially when the various shared events registered
+                        and the interrupt-event bindings are unknown.
+                        The call will return a DENIED error if there was at least one shared event that was running
+                        or at least one interrupt-event binding (private or shared) that was still registered.
+Interface
+5.1.19.3           Dispatcher responsibilities
+                        Any auxiliary information relating to the shared event registration or interrupt binding must
+                        be cleared.

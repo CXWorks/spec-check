@@ -1,0 +1,499 @@
+13.2 FFA_VERSION
+            Description
+                • Returns version of the Firmware Framework implementation at an FF-A instance as described in 13.2.1
+                  Overview.
+                • Valid FF-A instances and conduits are listed in Table 13.3.
+                • Syntax of this function is described in Table 13.4.
+                • Encoding of a version number in return parameters is described in Table 13.5.
+                • Encoding of error codes in return parameters is described in Table 13.6.
+                                                                          Table 13.3: FFA_VERSION instances and conduits
+            Config No.                  FF-A instance                                           Valid conduits
+            1                           Secure and Non-secure physical                          SMC
+            2                           Secure and Non-secure virtual                           SMC, HVC, SVC
+                                                                                    Table 13.4: FFA_VERSION function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0                   • 0x84000063.
+            uint32 Input version number              w1                   • Version number specified by the caller as follows.
+                                                                               – Bit[31]: Must be 0.
+                                                                               – Bits[30:16] Major Version number.
+                                                                               – Bits[15:0] Minor Version number.
+                                                                               – This field is Reserved (SBZ) when the Version
+                                                                                  query type is b’10.
+            uint32 Input flags                       w2                   • Bits[32:2]: Reserved (SBZ).
+                                                                          • Bits[1:0]: Version query type.
+                                                                               – b’00: Request to negotiate version specified in
+                                                                                 Input version number.
+                                                                                    * Also see 13.2.2.1 Version negotiation.
+                                                                               – b’01: Request to query whether the callee
+                                                                                  implements a version that is compatible with the
+                                                                                 version specified in the Input version number by
+                                                                                  the caller.
+                                                                                    * Also see 13.2.2.2 Version discovery.
+                                                                               – b’10: Request to query the negotiated version for
+                                                                                  the caller.
+                                                                                    * Also see 13.2.2.2 Version discovery.
+                                                                               – All other values are reserved for future use.
+            Other Parameter registers                w3-w7                • Reserved (SBZ).
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+                                                                                    Table 13.5: Encoding of a version number
+            Parameter                                Register         Value
+            int32 Output version number              w0                   • Supported version number (see 13.2.2 Usage).
+                                                                              – Bit[31]: Must be 0.
+                                                                              – Bits[30:16]: Major Version number.
+                                                                              – Bits[15:0]: Minor Version number.
+            Other Result registers                   w1-w7                • Reserved (MBZ).
+                                                                                            Table 13.6: Encoding of error codes
+            Parameter                                Register         Value
+            int32 Error code                         w0                   • Error code as defined in the SMCCC [5].
+                                                                               – -1: NOT_SUPPORTED:
+                                                                                    * A Firmware Framework implementation of
+                                                                                      the requested version does not exist at this
+                                                                                      FF-A instance.
+                                                                               – -3: INVALID_PARAMETER:
+                                                                                    * Bit[31] in the Input version number input
+                                                                                      parameter is not 0.
+                                                                                    * Version query type field in the Input flags
+                                                                                      input parameter is incorrectly encoded.
+13.2.1 Overview
+R0191         The version number of a Firmware Framework implementation is a 31-bit unsigned integer, with the upper 15 bits
+              denoting the major revision, and the lower 16 bits denoting the minor revision.
+I0192         If an invocation of the FFA_VERSION ABI returns a valid version number, the FFA_FEATURES ABI can be used
+              to discover which functions that are described in this specification are available to the caller. A partition manager
+              can make a subset of functions available to an endpoint it manages. See also:
+                 • 13.3 FFA_FEATURES.
+R0193         The following rules apply to the version numbering.
+                 • Different major revision values indicate possibly incompatible functions.
+                 • For two revisions, A and B, for which the major revision values are identical, if the minor revision value of
+                   revision B is greater than the minor revision value of revision A, then every function in revision A must work
+                   in a compatible way with revision B. However, it is possible for revision B to have a higher function count
+                   than revision A.
+              In an invocation of this function, the compatibility of the version number (x.y) of the caller with the version number
+              (a.b) of the callee can also be as follows.
+                1. If x != a, then the versions are incompatible.
+                      • The caller cannot inter-operate with the callee.
+                2. If x == a and y > b, then the versions are incompatible.
+                      • The caller can inter-operate with the callee only if it downgrades its minor revision such that y <= b.
+                3. If x == a and y <= b, then the versions are compatible.
+              A version number (x.y) is less than a version number (a.b) if one of the following conditions is true.
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+                 • x < a.
+                 • y < b if x == a.
+R0194         In this revision of the Firmware Framework, the major version is 1 and the minor version is 3.
+13.2.2 Usage
+R0195         The FFA_VERSION ABI is implemented at every FF-A instance that implements the Firmware Framework.
+I0196         The FFA_VERSION ABI enables a caller to determine if the callee implements the Firmware Framework. If the
+              Firmware Framework is implemented, it enables the caller to perform the following actions related to version
+              management:
+                 • Determine whether the callee implements a version of the Firmware Framework that is compatible with a
+                   version implemented by the caller.
+                 • Negotiate a version of the Firmware Framework with the callee.
+                 • Determine the version of the Firmware Framework previously negotiated with the callee.
+              See also:
+                 • 13.2.2.1 Version negotiation.
+                 • 13.2.2.2 Version discovery.
+I0197         An invocation of the FFA_VERSION ABI completes with the SMCCC NOT_SUPPORTED error code, if no
+              version of the Firmware Framework is implemented by the callee.
+R0198         An invocation of the FFA_VERSION ABI completes with the SMCCC INVALID_PARAMETER error code, if a
+              reserved value of the Version query type field in the Input flags input parameter is used.
+              13.2.2.1 Version negotiation
+D0199         Between the caller and the callee at an FF-A instance, the negotiated version is a version of the Firmware
+              Framework that has all of the following properties:
+                 • The caller implements this version.
+                 • The callee either implements this version or a higher version that is compatible with this version.
+                 • The version is mutually accepted i.e. the callee is aware that the caller is using this version, and vice-versa.
+D0200         An invocation of the FFA_VERSION ABI with a Version query type = 0 is a request to negotiate the specified
+              Input version number with the callee.
+D0201         A major version value of 0, and the minor version value of 0, is called the Null version.
+R0202         If no version is negotiated between a caller and the callee, the negotiated version is the Null version.
+I0203         The callee can discover an FF-A version implemented by the caller via an IMPLEMENTATION DEFINED mechanism
+              before the caller starts execution. For example:
+                 • The FF-A version implemented by a VM is specified at the time of its creation to the Hypervisor.
+                 • An SP specifies an FF-A version in its manifest to the SPMC. See also:
+                      – 5.2.1 Partition manifest.
+                 • In SPM configurations where the SPMD and SPMC reside in separate Exception levels, the SPMD discovers
+                   the FF-A version of the SPMC via an IMPLEMENTATION DEFINED mechanism e.g. through the SPMC
+                   manifest. See also:
+                      – Table 4.1.
+                      – 5.2.2 SPMC manifest.
+R0204         If the FF-A version of a caller at an FF-A instance is discovered by the callee before the caller starts execution, and
+              this version is compatible with an FF-A version implemented by the callee, this is the negotiated version of the
+              caller when it starts executing. If this version is not compatible, the callee does not start execution of the caller.
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+I0205         If the FF-A version implemented by an SP is discovered by the SPMC before the SP enters the starting state, and
+              this version is compatible with an FF-A version implemented by the SPMC, this is the negotiated version of the SP
+              when it enters the starting state. If this version is not compatible, the SPMC does not start the SP. See also:
+                 • 7.2.5 Starting state.
+I0206         If the FF-A version implemented by the SPMC is discovered by the SPMD before the SPMC starts execution, and
+              this version is compatible with an FF-A version implemented by the SPMD, this is the negotiated version of the
+              SPMC when it starts execution. If this version is not compatible, the SPMD does not start the SPMC.
+R0207         The negotiated version between the SPMC and the SPMD is the highest FF-A version that is used by any LSP that
+              is co-resident with either component.
+X0208         In SPM configurations where the SPMD and SPMC reside in separate Exception levels, the system integrator
+              ensures the following:
+                 • Compatibility is maintained between any LSPs that are co-resident with the SPMD, the SPMC, and all
+                   partitions managed by the SPMC.
+                 • LSPs co-resident with the SPMD do not advertise an FF-A version number that is higher than the version
+                   used by the SPMC.
+R0209         An invocation of any FF-A ABI apart from FFA_VERSION completes via the FFA_ERROR interface with the
+              NOT_SUPPORTED error code, if the negotiated version of the caller is the Null version.
+X0210         A caller negotiates the FF-A version before it invokes any FF-A ABI apart from FFA_VERSION. In the absence
+              of a negotiated version, the callee does not know how to handle an invocation of an FF-A ABI from the caller. See
+              also:
+                 • Chapter 11 Interface overview.
+I0211         If the negotiated version of a caller is not the Null version, it is IMPLEMENTATION DEFINED whether the callee
+              allows a downgrade of the negotiated version.
+D0212         The Firmware Framework is not in use by a partition if all of the following are true:
+                 • The RX/TX buffers of the partition are unmapped.
+                 • Neither VM nor SP notifications of the partition are bound.
+                 • No Framework notifications of the partition are pending.
+                 • All memory regions shared or lent by the partition are reclaimed.
+                 • All memory regions shared with, or lent to the partition are relinquished and reclaimed by the partitions that
+                   had shared or lent them.
+                 • Apart from a single outstanding invocation of the FFA_VERSION ABI, there are no outstanding invocations
+                   of any other FF-A ABI on any PE from the partition.
+              Otherwise the Firmware Framework is in use by the partition.
+D0213         The Firmware Framework is not in use by a Hypervisor if all of the following are true:
+                 • The RX/TX buffers of the Hypervisor are unmapped.
+                 • Apart from a single outstanding invocation of the FFA_VERSION ABI, there are no outstanding invocations
+                   of any other FF-A ABI on any PE from the Hypervisor.
+                 • The RX/TX buffers of each VM are unmapped from the SPMC’s translation regime.
+                 • No SP notifications of any VM are bound.
+                 • No VM notifications of any SP are bound.
+                 • No SPMC Framework notifications of any VM are pending.
+                 • All memory regions shared or lent by any VM are reclaimed.
+              Otherwise the Firmware Framework is in use by the Hypervisor.
+D0214         If the Hypervisor is absent, the Firmware Framework is not in use by the OS kernel if all of the following are true:
+                 • The RX/TX buffers of the OS kernel are unmapped.
+                 • No SP notifications of the OS kernel are bound.
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+                 • No SPMC Framework notifications of the OS kernel are pending.
+                 • All memory regions shared or lent by the OS kernel are reclaimed.
+                 • All memory regions shared with, or lent to the OS kernel are relinquished and reclaimed by the SPs that had
+                   shared or lent them.
+                 • Apart from a single outstanding invocation of the FFA_VERSION ABI, there are no outstanding invocations
+                   of any other FF-A ABI on any PE from the OS kernel.
+              Otherwise the Firmware Framework is in use by the OS kernel.
+R0215         If the negotiated version of an FF-A component is the Null version, the Firmware Framework is not in use by that
+              FF-A component.
+R0216         A request to negotiate a version from a partition or the Hypervisor completes successfully with an Output version
+              number that is compatible with, and greater than or equal to the Input version number, if none of the following are
+              true:
+                 • The callee does not implement any version of the Firmware Framework.
+                     – In this case, the request completes with the SMCCC NOT_SUPPORTED error code.
+                 • Bit[31] in the Input version number input parameter is not 0.
+                     – In this case, the request completes with the SMCCC INVALID_PARAMETER error code.
+                 • The callee only implements one or more versions of the Firmware Framework that are incompatible with,
+                   and lower than the Input version number.
+                     – In this case, the request completes with the highest incompatible version number implemented by the
+                        callee.
+                 • The callee only implements one or more versions of the Firmware Framework that are incompatible with,
+                   and higher than the Input version number.
+                     – In this case, it is strongly recommended that the request completes with the lowest incompatible
+                        version number implemented by the callee. The request is also allowed to complete with the SMCCC
+                        NOT_SUPPORTED error code. See also:
+                          * 18.5 Changes to FF-A v1.0 data structures for forward compatibility.
+                          * 18.5.3 Compatibility requirements for FF-A v1.0 data structures.
+                 • The callee only implements multiple versions of the Firmware Framework that are incompatible with, and
+                   are both higher and lower than the Input version number.
+                     – In this case, the request completes with the highest incompatible version number implemented by the
+                        callee.
+                 • The callee is aware that the Firmware Framework is in use by the caller.
+                     – In this case, the request completes with the Null version.
+                 • The Input version number is less than the negotiated version and the callee does not permit the negotiated
+                   version to be downgraded by the caller.
+                     – In this case, the request completes with the Null version.
+              If a request to negotiate a version from a partition or the Hypervisor completes successfully, the Input version
+              number is the negotiated version. Otherwise, the value of the negotiated version is unchanged.
+R0217         If the Framework is in use by a caller when there is a pending request to negotiate a version from the same caller,
+              the results of Framework usage are CONSTRAINED UNPREDICTABLE with a choice of the following:
+                 • The FF-A operation completes as per the behaviour specified in the version of the Framework that was
+                   previously negotiated between the caller and the callee.
+                 • The FF-A operation completes as per the behaviour specified in the version of the Framework that is being
+                   currently negotiated between the caller and the callee.
+                 • The FF-A operation completes as per behaviour that is neither specified in the version of the Framework
+                   that was previously negotiated, nor is it specified in the version of the Framework that is being currently
+                   negotiated between the caller and the callee.
+X0218         A callee is not expected to implement mutual exclusion between use of the Framework by a caller, and a request to
+              negotiate a version by the same caller. The caller is expected to implement this mutual exclusion instead.
+              The callee can check whether the Framework is in use by the caller at any point of time during the request to
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+              negotiate a version. The callee is not expected to prevent use of the Framework by the caller during the request to
+              negotiate a version.
+              The caller should expect the CONSTRAINED UNPREDICTABLE behaviour described above if it uses the Framework
+              and negotiates the version simultaneously.
+I0219         The following table shows the outcome of a version negotiation request when the caller and the callee implement
+              different FF-A versions. The following assumptions are made:
+                 • The Firmware Framework is not in use by the caller.
+                 • The callee does not support downgrade of the negotiated version.
+                                                            Version
+                                                            re-                                          Output
+                                   Versions                 quested Negotiated                           version     Negotiated
+                                   supported by             by      version             Outcome as       number in   version
+                            No.    callee                   caller before               per callee       w0          after
+                            1      (1, 3)                   (1, 3)    Null version      Success          (1, 3)      (1, 3)
+                            2      (1, 3)                   (1, 3)    (1, 3)            Success          (1, 3)      (1, 3)
+                            3      (1, 6)                   (1, 3)    Null version      Success          (1, 6)      (1, 3)
+                            4      (1, 6)                   (1, 3)    (1, 3)            Success          (1, 6)      (1, 3)
+                            5      (1, 6)                   (1, 4)    (1, 3)            Success          (1, 6)      (1, 4)
+                            6      (1, 6)                   (1, 5)    (1, 4)            Success          (1, 6)      (1, 5)
+                            7      (1, 3)                   (1, 6)    Not               Failure          (1, 3)      Same as
+                                                                      applicable                                     before
+                            8      (1, 6)                   (2, 0)    Not               Failure          (1, 6)      Same as
+                                                                      applicable                                     before
+                            9      (3, 0)                   (2, 0)    Not               Failure          (3, 0)      Same as
+                                                                      applicable                                     before
+                            10     (1, 6), (3, 0)           (2, 0)    Not               Failure          (1, 6)      Same as
+                                                                      applicable                                     before
+R0220         When the SPMD and the SPMC reside in separate Exception levels, a request to negotiate a version from the
+              SPMC completes successfully with an Output version number that is equal to the negotiated version when the
+              SPMC started execution, if none of the following are true:
+                 • The callee does not implement any version of the Firmware Framework.
+                     – In this case, the request completes with the SMCCC NOT_SUPPORTED error code.
+                 • Bit[31] in the Input version number input parameter is not 0.
+                     – In this case, the request completes with the SMCCC INVALID_PARAMETER error code.
+              The request to negotiate a version from the SPMC is a nop.
+I0221         If a request to negotiate a version does not complete with the SMCCC NOT_SUPPORTED error code, the caller
+              uses the compatibility rules in 13.2.1 Overview to determine if it can inter-operate with the Output version number
+              returned by the callee.
+R0222         A request to negotiate a version from a partition or the Hypervisor is forwarded by the SPMD to the SPMC through
+              one of the following mechanisms:
+                 • The message described in Table 13.8 if the SPMC is implemented in S-EL2 or S-EL1.
+                 • An IMPLEMENTATION DEFINED mechanism if the SPMC is implemented in EL3.
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+X0223         If the SPMC is implemented in S-EL1 or S-EL2, it needs to know the version presented by the Hypervisor or
+              OS Kernel to determine which version it should use to maintain compatibility with the SPMD as well as the
+              Hypervisor or OS kernel.
+              The forwarded message from the SPMD enables the SPMC to make this choice and either return a compatible
+              version or return the NOT_SUPPORTED error code to the Normal world as per the callee specific guidelines
+              described in 13.2.2.1 Version negotiation.
+              The negotiated FF-A version of the SPMD and the Hypervisor or OS is used by the SPMC at runtime to determine
+              the applicable FF-A ABI behavior for a given caller, including version dependent semantics.
+R0224         The SPMC returns the response to the forwarded message through one of the following mechanisms:
+                 • The message described in Table 13.9 if the SPMC is implemented in S-EL2 or S-EL1.
+                 • An IMPLEMENTATION DEFINED mechanism if the SPMC is implemented in EL3.
+S0225         Figure 13.1 illustrates how the SPMD forwards,
+                 • An FFA_VERSION call from the Normal world to an SPMC in S-EL2 or EL3.
+                 • The response from the SPMC back to the Normal world.
+             Normal world                          EL3                                                        Secure world
+        Hypervisor or OS Kernel                   SPMD                                                            SPMC
+                    1 SMC(FFA_VERSION, version)
+                            Encode Normal world FF-A version message to SPMC
+                                                         ERET(FFA_MSG_SEND_DIRECT_REQ, SPMD ID/SPMC ID,
+                                                         FF-A version Framework message, version)
+                                                                                                 Encode version to be presented to Normal
+                                                                                                 world in FF-A version response message
+                                                             SMC(FFA_MSG_SEND_DIRECT_RESP, SPMC ID/SPMD ID,
+                                                             FF-A version response Framework message, chosen_version)
+                       4 ERET(chosen_version)
+        Hypervisor or OS Kernel                   SPMD                                                            SPMC
+                                        Figure 13.1: Forwarding of FFA_VERSION call from SPMD to SPMC at lower EL
+                                                                                 Table 13.8: Normal world FF-A version message
+            Register                      Parameter
+            w0                            FFA_MSG_SEND_DIRECT_REQ Function ID (0x8400006F or 0xC400006F).
+            w1                                  • Sender and Receiver endpoint IDs.
+                                                    – Bit[31:16]:
+                                                         * SPMD ID.
+                                                    – Bit[15:0]:
+                                                         * SPMC ID.
+            w2                                  • Message flags.
+                                                    – Bit[31] = b’1: Framework message.
+                                                    – Bit[30:8]: Reserved (SBZ).
+                                                    – Bit[7:0] = b’00001000: Message for forwarding FFA_VERSION call from
+                                                      Normal world to the SPMC.
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+            Register                     Parameter
+            w3                               • Input version number parameter from Normal world.
+            w4                               • Input flags parameter from Normal world.
+            w5-w7                        Reserved (SBZ).
+                                                            Table 13.9: Response to Normal world FF-A version message
+            Register       Parameter
+            w0             FFA_MSG_SEND_DIRECT_RESP Function ID (0x84000070 or 0xC4000070).
+            w1                • Sender and Receiver endpoint IDs.
+                                   – Bit[31:16]:
+                                       * SPMC ID.
+                                   – Bit[15:0]:
+                                       * SPMD ID.
+            w2                • Message flags.
+                                   – Bit[31] = b’1: Framework message.
+                                   – Bit[30:8]: Reserved (SBZ).
+                                   – Bit[7:0] = b’00001001: Response message to forwarded FFA_VERSION call from the
+                                      Normal world.
+            w3                • Encoding of w0 in Table 13.5 if a version is returned by the SPMC.
+                              • Encoding of w0 in Table 13.6 if a version is not returned by the SPMC.
+            w4-w7          Reserved (SBZ).
+              13.2.2.2 Version discovery
+D0226         An invocation of the FFA_VERSION ABI with a Version query type = 1 is a request to query a version implemented
+              by the callee that is compatible with the specified Input version number.
+R0227         A request to query a compatible version completes successfully with a Output version number that is compatible
+              with, and greater than or equal to the Input version number, if none of the following are true:
+                 • The callee does not implement any version of the Firmware Framework.
+                     – In this case, the request completes with the SMCCC NOT_SUPPORTED error code.
+                 • Bit[31] in the Input version number input parameter is not 0.
+                     – In this case, the request completes with the SMCCC INVALID_PARAMETER error code.
+                 • The callee only implements one or more versions of the Firmware Framework that are incompatible with,
+                   and lower than the Input version number.
+                     – In this case, the request completes with the highest incompatible version number implemented by the
+                        callee.
+                 • The callee only implements one or more versions of the Firmware Framework that are incompatible with,
+                   and higher than the Input version number.
+                     – In this case, the request completes with the lowest incompatible version number implemented by the
+                        callee.
+                 • The callee only implements multiple versions of the Firmware Framework that are incompatible with, and
+                   are both higher and lower than the Input version number.
+                     – In this case, the request completes with the highest incompatible version number implemented by the
+                        callee.
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+D0228         An invocation of the FFA_VERSION ABI with Version query type = 2, is a request to query the negotiated version
+              from the callee.
+R0229         A request to query the negotiated version completes successfully with the negotiated version as the Output version
+              number, if none of the following are true:
+                  • The callee does not implement any version of the Firmware Framework.
+                      – In this case, the request completes with the SMCCC NOT_SUPPORTED error code.
+                  • Bit[31] in the Input version number input parameter is not 0.
+                      – In this case, the request completes with the SMCCC INVALID_PARAMETER error code.
+I0230         A callee returns the Null version if no version is negotiated with the caller.
+              13.2.2.3 Software usage
+S0231         The following pseudocode illustrates an implementation of the FFA_VERSION ABI in a partition manager, for
+              negotiating a version with a partition it manages, as per the above guidance.
+              #define NULL_VERSION "MAJOR_VER(0) | MINOR_VER(0)"
+              // Array of different versions supported by the callee.
+              // Each entry represents the maximum version supported
+              // in that major version range e.g. if an entry == x.y
+              // then all versions from x.0 to x.y are supported.
+              uint32 supported_versions[NUM_VERSIONS];
+              // Return the version supported by the callee that is
+              // closest to and incompatible with the input_version.
+              uint32 closest_incompatible_version(uint32 input_version);
+              // Return a version compatible with the input version
+              uint32 compatible_version(uint32 input_version);
+              // By default, the negotiated version for a partition is
+              // either the Null version i.e. there is no negotiated
+              // version or an IMPDEF version e.g. obtained from the
+              // partition manifest.
+              uint32 negotiated_version = impdef_version ? impdef_version; NULL_VERSION;
+              // Whether FF-A is in use or not depends upon the
+              // negotiated version.
+              // If negotiated_version is == NULL_VERSION, FF-A is not in use.
+              // If negotiated_version is != NULL_VERSION, FF-A may or may
+              // not be in use.
+              bool is_version_negotiable(uint32 negotiated_version, bool ffa_in_use)
+              {
+                  // This scenario should not be allowed by the callee.
+                  if ((negotiated_version == NULL_VERSION) && ffa_in_use) {
+                      panic();
+                  }
+                   if ((negotiated_version != NULL_VERSION) && ffa_in_use) {
+                       return false;
+                   }
+                   return true;
+              }
+              // Return true if the input version is compatible with a supported version
+              bool are_versions_compatible(uint32 supported_version, uint32 input_version)
+              {
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+                   if (MAJOR_VER(input_version) != MAJOR_VER(supported_version)) {
+                       return false;
+                   }
+                   if (MINOR_VER(input_version) > MINOR_VER(supported_version)) {
+                       return false;
+                   }
+                   return true;
+              }
+              // Return true if input version is supported otherwise false
+              bool is_version_supported(uint32 input_version, uint32 start_version, uint32
+                  ,→end_version)
+              {
+                   uint32 ver;
+                   for (ver = start_version; ver < end_version; ver++)
+                   {
+                       if (are_versions_compatible(supported_versions[ver], input_version)) {
+                           return true;
+                   }
+                   return false;
+              }
+              // It is assumed that the implementation allows the negotiated
+              // version to be downgraded.
+              ffa_version(uint32 input_version, uint32 flags, uint32 negotiated_version, bool
+                  ,→ffa_in_use)
+              {
+                   switch (flags) {
+                       case REQUEST_NEGOTIATED_VER:
+                           return negotiated_version;
+                         case REQUEST_COMPAT_VER:
+                             return compatible_version(input_version);
+                         case REQUEST_NEGOTIATE_VER:
+                             // If the input_version is not supported, return the closest
+                             // incompatible version.
+                             if (!is_version_supported(input_version, 0, NUM_VERSIONS))
+                                 return closest_incompatible_version(input_version);
+                              // Input version is supported but check whether it can be
+                              // accepted as the negotiated version.
+                              if (is_version_negotiable(negotiated_version, ffa_in_use)) {
+                                     // Either FF-A is not in use or no version has been negotiated
+                                     // so far. Set the negotiated_version to the input_version
+                                     // and return the highest version that is compatible with the
+                                     // input_version.
+                                     negotiated_version = input_version;
+                                     return compatible_version(input_version);
+                              }
+                              // Return the Null version to indicate version could not be
+                              // negotiated. The negotiated version remains unchanged.
+                              return NULL_VERSION;
+                   }
+Chapter 13. Setup and discovery interfaces
+13.2. FFA_VERSION
+                    default:
+                        return SMCCC_INVALID_PARAMETER;
+              }
+S0232         A common usage model of the Firmware Framework is when it is first used by the bootloader followed by the OS
+              in the same partition. Until version 1.2 of the Firmware Framework, the FF-A version is negotiated once during the
+              lifetime of a partition. This implies that the OS is constrained to use the FF-A version negotiated by the bootloader.
+              The OS relies on an IMPLEMENTATION DEFINED mechanism to determine the FF-A version negotiated by the
+              bootloader. In the absence of this mechanism, if the bootloader negotiates version (x.y), and the OS tries to
+              negotiate version (x.z) via the FFA_VERSION ABI, then the following outcomes are possible:
+                  • If y < z, the callee returns version (x.y) as it is the highest version number that it implements, and is
+                    incompatible with version (x.z).
+                    The caller uses the compatibility rules in 13.2.1 Overview to determine that it cannot inter-operate with the
+                    version already negotiated by bootloader.
+                  • If y >= z, the callee returns version (x.y) as it is the version number that it implements, and is compatible
+                    with version (x.z).
+                    The caller uses the compatibility rules in 13.2.1 Overview to determine that it can inter-operate with the
+                    version already negotiated by bootloader.
+                    However, if y > z, the callee uses version (x.y), and assumes that the caller is using the same version, while
+                    the caller assumes that version (x.z) is in use. This mismatch could prevent the callee from maintaining
+                    backwards compatibility in the usage of the Firmware Framework by the caller.
+              It is not possible for a caller to only query the versions of the Firmware Framework supported by the callee without
+              simultaneously negotiating a compatible version.
+              From version v1.3 of the Firmware Framework, the FFA_VERSION ABI is extended as follows:
+                  • Both the bootloader and the OS can use the request to query a compatible version multiple times, to discover
+                    all versions implemented by the callee.
+                  • The OS can use the request to query the negotiated version to determine the version negotiated by the
+                    bootloader instead of relying on an IMPLEMENTATION DEFINED mechanism.
+                  • If the bootloader negotiates version (x.y), and the OS tries to negotiate version (x.z) via the FFA_VERSION
+                    ABI, then the following outcomes are possible in an order of precedence:
+                      – If the Firmware Framework is in use by the caller, the callee returns the Null version.
+                        The caller uses the compatibility rules in 13.2.1 Overview to determine that it cannot inter-operate with
+                        the Null version returned by the callee.
+                      – If the Firmware Framework is not in use by the caller, but the caller is attempting to downgrade the
+                        negotiated version i.e. y > z, and the callee does not allow the negotiated version to be downgraded, it
+                        returns the Null version.
+                        The caller uses the compatibility rules in 13.2.1 Overview to determine that it cannot inter-operate with
+                        the Null version returned by the callee.
+                      – If the Firmware Framework is not in use by the caller, and the callee implements a version that is
+                        compatible with, and greater than or equal to version (x.z), it returns that version.
+                        The caller uses the compatibility rules in 13.2.1 Overview to determine that it can inter-operate with the
+                        version returned by the callee.
+                    Effectively, the OS can override the negotiated version if the bootloader ensures that the Firmware Framework
+                    is not in use when it finishes execution. Also, in contrast to version 1.2 of the Firmware Framework, if the
+                    negotiated version is not the Null version, the callee does not consider it as the only version that it supports.
+Chapter 13. Setup and discovery interfaces
+13.3. FFA_FEATURES

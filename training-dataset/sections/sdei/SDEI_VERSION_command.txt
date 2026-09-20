@@ -1,0 +1,33 @@
+5.1.1   SDEI_VERSION
+                Description                        Returns the version of the SDEI implementation.
+                Parameter
+                uint32 Function ID:                0xC400_0020
+                Return
+                                                   On success, the format of the version number is as follows:
+                                                   Bit [63] Must be 0.
+                                                   Bits [62:48] Major revision: must be 1 for this revision of SDEI.
+                                                   Bits [47:32] Minor revision: must be 1 for this revision of SDEI.
+                int64
+                                                  Bits [31:0] Vendor-defined version number.
+                                                   On error:
+                                                   NOT_SUPPORTED                               SDEI is not supported.
+5.1.1.1 Usage
+                        Each implemented SDEI instance must support this call and return its version number.
+                        The version number is a 63-bit unsigned integer, with the upper 31 bits denoting the major
+                        and minor revision, and the lower 32 bits denoting a vendor-defined number.
+                        The following rules apply to the version numbering:
+                                   •    Different major revision values indicate possibly incompatible functions. A
+                                        newer major revision might:
+                                             o    Introduce new functions.
+                                             o    Deprecate older functions.
+                                             o    Change behavior of existing functions.
+                                   •    For two versions, A and B, for which the major revisions are identical, if the
+                                        minor revision of B is greater than the minor revision of A, then all functions in
+Interface
+                                          A must work in B. However, it is possible for B to have a higher function count
+                                          than A.
+                                     •    This specification does not define the format of the vendor-defined version
+                                          number. However, a higher value must indicate a newer version.
+5.1.1.2 Dispatcher responsibilities
+                       If a valid version number is returned by this call, the SDEI instance must implement all
+                       SDEI calls described in this chapter.

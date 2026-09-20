@@ -1,0 +1,70 @@
+14.3 FFA_RUN
+            Description
+               • This ABI is used by a scheduler (see 4.9 Primary scheduler) to allocate CPU cycles to a target endpoint
+                 execution context specified in the Target information parameter.
+               • An invocation of this ABI at a virtual FF-A instance with the SMC, HVC or SVC conduits transitions the
+                 state of the calling execution context from running to blocked.
+               • An invocation of this ABI at a virtual FF-A instance with the ERET conduit results in a state transition of the
+                 target endpoint execution context as described below.
+                     – If the endpoint execution context is in the waiting state, it transitions to the running state.
+                     – If the endpoint execution context is in the blocked state, it transitions to the running state.
+               • If the target endpoint execution context is in the preempted state, it transitions to running state in response to
+                 an invocation of this ABI. The partition manager of the execution context changes the state through the eret()
+                 transition.
+               • An invocation of this ABI at a physical FF-A instance with a valid conduit, is used to request the partition
+                 manager of the target execution context, to perform the applicable state transition listed above. See also:
+                     – 7.2.7 Waiting state.
+                     – 7.2.9 Blocked state.
+                     – 7.2.8 Preempted state.
+               • An invocation of this ABI at a virtual FF-A instance with the SMC, HVC and SVC conduits and, at the
+                 Non-secure physical FF-A instance with the SMC conduit, completes and transitions the state of calling
+                 execution context from blocked to running through the following transitions.
+                     – eret(FFA_INTERRUPT).
+                     – eret(FFA_MSG_WAIT).
+                     – eret(FFA_YIELD).
+                     – eret(FFA_MSG_SEND_DIRECT_RESP).
+               • An invocation of this ABI at the Secure physical FF-A instance with the ERET conduit completes with
+                 invocations of the following ABIs.
+                     – smc(FFA_INTERRUPT).
+                     – smc(FFA_MSG_WAIT).
+                     – smc(FFA_YIELD).
+                     – smc(FFA_MSG_SEND_DIRECT_RESP).
+               • Valid FF-A instances and conduits are listed in Table 14.12.
+               • Syntax of this function is described in Table 14.13.
+               • Encoding of error code in the FFA_ERROR function is described in Table 14.14.
+                                                                             Table 14.12: FFA_RUN instances and conduits
+           Config No.                 FF-A instance                              Valid conduits
+           1                          Non-secure physical                        SMC
+           2                          Secure physical                            ERET
+           3                          Non-secure virtual                         SMC, HVC, ERET
+           4                          Secure virtual                             SMC, HVC, SVC, ERET
+Chapter 14. CPU cycle management interfaces
+14.3. FFA_RUN
+                                                                                        Table 14.13: FFA_RUN function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x8400006D.
+                                                                         • 0xC400006D (see 11.1.2 Parameter Register
+                                                                           Preservation).
+           uint32 Target information                w1                   • Information to identify target SP/VM.
+                                                                              – Bits[31:16]: ID of SP/VM.
+                                                                              – Bits[15:0]: ID of vCPU of SP/VM to run.
+           Other Parameter registers                w2-w7                • Reserved (SBZ).
+                                                    x2-x17
+                                                                                            Table 14.14: FFA_ERROR encoding
+           Parameter                                Register         Value
+           int32 Error code                         w2                   • INVALID_PARAMETERS:
+                                                                               – Unrecognized endpoint or vCPU ID.
+                                                                               – Target vCPU is pinned to a different PE.
+                                                                         • NOT_SUPPORTED: This function is not implemented
+                                                                           at this FF-A instance.
+                                                                         • DENIED:
+                                                                               – Callee is not in a state to handle this request.
+                                                                               – Caller is not allowed to invoke this ABI (see
+                                                                                 9.2.3 CPU cycle allocation modes).
+                                                                         • BUSY: vCPU is busy and caller must retry later.
+                                                                         • ABORTED: vCPU or VM ran into an unexpected error
+                                                                           and has aborted.
+                                                                         • NOT_READY: Receiver endpoint is not ready to
+                                                                           handle this request.
+Chapter 14. CPU cycle management interfaces
+14.4. FFA_INTERRUPT

@@ -1,0 +1,38 @@
+3.7 DRTM_GET_ERROR
+Returns an error code from the previous DRTM dynamic launch.
+ Parameter                  Register       Value
+ uint32 Function ID            W0          0xC400_0116
+ Return
+                                           On success:                             Error code from previous launch
+                                           SUCCESS                                 is returned in X1.
+                                           On error:
+                                                                                   DRTM is not supported.
+                                           NOT_SUPPORTED
+ int64                         X0                                                  An error occurred, and the error
+                                           NOT_FOUND
+                                                                                   code was not found.
+                                                                                   Note: This function may return
+                                                                                   other error codes as defined in
+                                                                                   section 3.18.
+                                                                                   Error code. See error encoding
+ int64                         X1          If X0 == SUCCESS
+                                                                                   in section 3.12
+3.7.1 DRTM_GET_ERROR usage
+This function can be called by a DRTM client to determine if a previous invocation of DRTM_DYNAMIC_LAUNCH
+failed and entered remediation. See section 4.7. If a previous invocation of DRTM_DYNAMIC_LAUNCH had not
+occurred, then the value returned by DRTM_GET_ERROR is undefined.
+An error code value of 0 indicates that the previous DRTM_LAUNCH did not enter remediation.
+3.7.2 DRTM_GET_ERROR caller responsibilities
+The DRTM_GET_ERROR function can be invoked in the DCE Preamble before the dynamic launch to determine
+the error code from a previous dynamic launch. If a previous dynamic launch has not occurred, then
+DRTM_GET_ERROR should not be invoked, as it will return an undefined value. The caller must determine using
+implementation-specific means whether a dynamic launch had been previously initiated.
+An error code value of zero indicates that no error occurred.
+3.7.3 DRTM_GET_ERROR implementation responsibilities
+If an error is detected during a dynamic launch and the DRTM implementation entered remediation (see section
+4.7), the implementation must record an error code in a location that is preserved across the remediation-
+initiated reset. How the error code is recorded is implementation-dependent. The implementation of
+DRTM_GET_ERROR must return the recorded error code.
+Calling the DRTM_GET_ERROR function does not clear the error. Multiple calls to DRTM_GET_ERROR returns the
+same error code value.
+The error code must be cleared by the DCE before transfer of control to the DLME.

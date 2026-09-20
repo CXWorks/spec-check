@@ -1,0 +1,38 @@
+3.8 DRTM_SET_ERROR
+Sets a DRTM error code indicating that a dynamic launch has failed.
+ Parameter                    Register       Value
+ uint32 Function ID              W0          0xC400_0117
+                                 X1          64-bit error code describing the reason for a dynamic launch
+ int64 Error Code
+                                             failure. See error encoding in section 3.12
+ Return
+                                             On success:                             The set error operation
+                                             SUCCESS                                 succeeded.
+                                             On error:
+                                                                                     DRTM is not supported.
+                                             NOT_SUPPORTED
+ int64                           X0                                                  An error code has been
+                                             DENIED
+                                                                                     previously set.
+                                                                                     Note: This function may return
+                                                                                     other error codes as defined in
+                                                                                     section 3.18.
+3.8.1 DRTM_SET_ERROR usage
+This function can be called by a Normal world DCE component or the DLME to report that an error was detected.
+This function can only be called once. A second or subsequent invocation results in an error with a return value
+of DENIED.
+3.8.2 DRTM_SET_ERROR caller responsibilities
+The DRTM_SET_ERROR function must only be called at most once and must be called either during the DCE stage
+of DRTM or by the DLME.
+Following the invocation of DRTM_SET_ERROR, the system must be reset to complete remediation. If the error
+was detected during the DCE phase of the dynamic launch the DRTM must reset the system (see requirement
+R47030). If the DLME detects an error the DLME is responsible for performing a system reset.
+3.8.3 DRTM_SET_ERROR implementation responsibilities
+The implementation must persist the DRTM error code in a non-volatile location not accessible by the Normal
+world so that it can be returned to a client using the DRTM_GET_ERROR function following the system reset.
+After the DCE phase has completed and control has transitioned to the DLME the DRTM implementation must
+ignore the value of error code bits [10:0] provided by the caller and record the DRTM error as follows (see
+section 3.12):
+    •    Bits [2:0] must be set to the value corresponding to “DLME” to indicate the DRTM phase where the error
+         occurred.
+    •    Bits [10:3] must be set to 0xFF, indicating a vendor specific error code.

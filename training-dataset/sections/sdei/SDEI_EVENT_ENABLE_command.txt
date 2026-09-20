@@ -1,0 +1,37 @@
+5.1.3       SDEI_EVENT_ENABLE
+                  Description                           Enable the specified event.
+                  Parameters
+                  uint32 Function ID:                   0xC400_0022
+                  int32 event                           Event number
+                  Return
+                                                        SUCCESS                                     Event enabled successfully.
+                                                        NOT_SUPPORTED                               SDEI is not supported.
+                  int64
+                                                        INVALID_PARAMETERS                          Invalid parameters in the call.
+                                                        DENIED                                      Inappropriate event handler
+                                                                                                    state.
+5.1.3.1 Usage
+                          This call enables the event for the client. The client can receive an event only after this call.
+                          Any event that triggers before the enable and after the register will stay pending and only
+                          be delivered to the client when the event is enabled.
+                          The SDEI_EVENT_ENABLE call, changes the event handler state, see the state diagram in
+                          Event handler states and properties on page 46 for more information.
+                          Enabling an event, which is already enabled, is permitted and has no effect. For a private
+                          event, this call enables the event only for the calling PE. For a shared event, this call
+                          enables the event globally for the calling client.
+5.1.3.2 Client responsibilities
+                          Before a SDEI_EVENT_ENABLE call, the client must:
+                               •        Register the event using SDEI_EVENT_REGISTER.
+                                                                                                                          Interface
+                             •     Perform any optional configuration of the event.
+                        The client must also handle the following potential return error codes,
+                             •     INVALID_PARAMETERS is returned for an unknown event number.
+                             •     DENIED is returned if,
+                                   •    Event is not registered by the client.
+                                   •    Event handler is in handler-unregister-pending state. See Event handler states
+                                        and properties on page 46 to know more about this.
+5.1.3.3 Dispatcher responsibilities
+                        The specific responsibilities of the dispatcher at the time that an event is enabled are use-
+                        case dependent. See Appendix A: Implementing use cases. For example, enabling a
+                        bound event may involve enabling a physical interrupt at the interrupt controller. Enabling
+                        a system event may require system-specific interactions.

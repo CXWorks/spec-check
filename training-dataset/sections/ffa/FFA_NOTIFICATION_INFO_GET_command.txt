@@ -1,0 +1,165 @@
+16.11 FFA_NOTIFICATION_INFO_GET
+           Description
+               • This ABI returns lists of endpoints that have pending notifications and must be run to handle their
+                 notifications. This is described in 16.11.1 Usage.
+               • Valid FF-A instances and conduits are listed in Table 16.45.
+               • Syntax of this function is described in Table 16.46.
+               • Encoding of result parameters in the FFA_SUCCESS function is described in Table 16.47.
+               • Encoding of error codes in the FFA_ERROR function is described in Table 16.48.
+                                                   Table 16.45: FFA_NOTIFICATION_INFO_GET instances and conduits
+           Config No.                  FF-A instance                                           Valid conduits
+           1                           Non-secure physical                                     SMC
+           2                           Secure physical                                         ERET
+           3                           Non-secure virtual                                      SMC, HVC
+                                                             Table 16.46: FFA_NOTIFICATION_INFO_GET function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x84000083.
+                                                                         • 0xC4000083.
+           Other Parameter registers                w1-w7                • Reserved (SBZ).
+                                                    x1-x17
+                                                                                        Table 16.47: FFA_SUCCESS encoding
+           Parameter                                Register         Value
+           uint32/uint64 Pending notification       w2/x2                • See 16.11.1 Usage.
+           flags
+           uint32/uint64 ID lists                   w3-w7                • See 16.11.1 Usage.
+                                                    x3-x7
+Chapter 16. Notification interfaces
+16.11. FFA_NOTIFICATION_INFO_GET
+                                                                                            Table 16.48: FFA_ERROR encoding
+           Parameter                                Register         Value
+           int32 Error code                         w2                   • NO_DATA: There is no pending notification
+                                                                           information available.
+                                                                         • NOT_SUPPORTED: This function is not implemented
+                                                                           at this FF-A instance.
+16.11.1 Usage
+             This ABI is used by an NS-Endpoint or the Hypervisor to retrieve a list of endpoints that have pending notifications
+             as described below. Also see 10.5 Notification signaling.
+                • This ABI is invoked by a VM at the Non-secure virtual FF-A instance with the SMC or HVC conduits to
+                  request the Hypervisor to return the list of SPs and VMs that have pending notifications. The Hypervisor
+                  returns the list of those endpoints whose schedulers are implemented in the calling VM.
+                • This ABI is invoked by the Hypervisor or the OS Kernel at a Non-secure physical FF-A instance with the
+                  SMC conduit to request the SPMC to return the list of SPs and VMs that have pending notifications. The
+                  ABI invocation is forwarded by the SPMD to the SPMC as described below,
+                    – Through the ERET conduit if they do not reside in the same exception level. Also see 4.1.1 Secure EL2
+                      SPM core component and 4.1.2 S-EL1 SPM core component.
+                    – Through an IMPLEMENTATION DEFINED mechanism if they reside in the same exception level. Also see
+                      4.1.3 EL3 SPM core component.
+                  The Hypervisor is responsible for signaling the Notification pending interrupt to any VM that has a pending
+                  notification. It uses the list of VMs returned by the SPMC to discover the VMs that have pending notifications
+                  signaled by SPs.
+             The lists of endpoints with pending notifications is returned in w2/x2-w7/x7 registers as described below.
+               1. One or more lists of 16-bit IDs are returned in the ID lists registers w3/x3-w7/x7. This is subject to the
+                  following rules.
+                    1. An ID is of one of the following types.
+                        1. An endpoint ID.
+                        2. A vCPU ID.
+                    2. If an endpoint has only one or more pending global notifications, its ID is returned in a list of size 1.
+                    3. If an endpoint has one or more pending per-vCPU notifications, its ID is the first element in the list
+                       followed by the IDs of vCPUs that have pending notifications. The size of the list is > 1 in this case.
+                    4. Each list has a minimum size of 1 and a maximum size of 4. If an endpoint has pending per-vCPU
+                       notifications for more than 3 vCPUs, it creates more than 1 list to encode all the vCPU IDs.
+                    5. The ID lists are tightly packed in the registers as follows.
+                        1. The first ID of the first list is encoded as follows,
+                           1. In Bit[15:0] in w3 if the SMC32 convention is used.
+                           2. In Bit[15:0] in x3 if the SMC64 convention is used.
+                        2. The bit position of the first ID of the next list is calculated by using the number of IDs in the previous
+                           list. Subsequent lists follow in the same or a higher numbered register.
+                    6. With the SMC32 calling convention, the ID lists registers can accommodate 10 IDs.
+                    7. With the SMC64 calling convention, the ID lists registers can accommodate 20 IDs.
+Chapter 16. Notification interfaces
+16.11. FFA_NOTIFICATION_INFO_GET
+                 2. The number of lists and the number of IDs (endpoint and vCPU) in each list is specified in the Pending
+                    notification flags parameter in w2/x2 as described in Table 16.49.
+                 3. All information about endpoints with pending notifications may not fit in one invocation of this ABI. The
+                    partition manager sets the More pending notifications flag in w2/x2 in this case. This ABI is invoked until the
+                    flag is unset by the partition manager to retrieve all the information.
+                    Information about pending notifications is returned by the partition manager only once i.e. an ID list retrieved
+                    in one invocation of this interface cannot be retrieved again in a subsequent invocation.
+                 4. 16.11.1.1 Example usage describes an example encoding of pending notification information as described
+                    above.
+                                                                            Table 16.49: Pending notifications flags encoding
+           Field            Description
+           Bit[0]                • More pending notifications flag.
+                                     – b’0: Caller has retrieved all ID lists of Receiver endpoints with pending notifications.
+                                     – b’1: Caller has not retrieved all ID lists of Receiver endpoints with pending notifications.
+                                        It must invoke this interface again to retrieve the remaining lists.
+           Bit[6:1]              • Reserved (MBZ).
+           Bit[11:7]             • Count of lists returned in ID lists registers.
+                                      – Bit[11] Reserved (MBZ) if the SMC32 convention is used.
+           Bit[M:N]              • Count of IDs in list i where,
+                                      – Count = Bit[M:N] + 1.
+                                      – M = ((2 x i) - 1) + off.
+                                      – N = (2 x (i - 1)) + off.
+                                      – off is the starting bit offset = 12.
+                                      – 1 <= i <= 10 if the SMC32 convention is used.
+                                      – 1 <= i <= 20 if the SMC64 convention is used.
+                                 • Value of Bit[M:N] in unused lists is ignored.
+           Bit[63:52]            • Reserved (MBZ) if the SMC64 convention is used.
+               16.11.1.1 Example usage
+                Table 16.50 considers an example scenario where partitions listed in the first column have pending notifications of
+               the type specified in the second column. If a per-vCPU notification is pending, the IDs of the vCPUs are listed in
+               the third column.
+                                                                 Table 16.50: Example encoding of notification information
+           Partition ID                  Notification type                                                vCPU IDs
+           0                                 • Per vCPU                                                   0, 2, 3, 4, 6
+           2                                 • Global Notification                                        NA
+           3                                 • Per vCPU                                                   1
+               This information is encoded by the partition manager of the partition that invokes the SMC32 variant of the
+               FFA_NOTIFICATION_INFO_GET ABI as illustrated in Figure 16.1. The encoding in response to an invocation
+               of the SMC64 variant of the FFA_NOTIFICATION_INFO_GET ABI is illustrated in Figure 16.2.
+Chapter 16. Notification interfaces
+16.11. FFA_NOTIFICATION_INFO_GET
+              Key
+                        Partition ID         vCPU ID
+              W2
+                                                                                                                  More Pending
+                                                                                                 Count of Lists
+                    Count of IDs                                                                                  Notifications
+                        Bits[31:20]     Bits[19:18]    Bits[17:16]   Bits[15:14]   Bits[13:12]       Bits[11:7]    Bit[0]
+                        MBZ             1              0             2             3                 4              0
+              W3
+                        Bits[31:16]          Bits[15:0]
+                    0                    0
+              W4
+                        Bits[31:16]          Bits[15:0]
+                    3                    2
+              W5
+                        Bits[31:16]          Bits[15:0]
+                    4                    0
+              W6
+                        Bits[31:16]          Bits[15:0]
+                    2                    6
+              W7
+                        Bits[31:16]          Bits[15:0]
+                    1                    3
+                                                             Figure 16.1: Encoding of NOTIFICATION_INFO_GET using 32bit ABI
+Chapter 16. Notification interfaces
+16.11. FFA_NOTIFICATION_INFO_GET
+         Key
+                Partition ID      vCPU ID
+         X2
+                                                                                                               More Pending
+               Count of IDs                                                                   Count of Lists
+                                                                                                               Notifications
+                    Bits[63:20]   Bits[19:18]   Bits[17:16]    Bits[15:14]   Bits[13:12]          Bits[11:7]    Bit[0]
+                    MBZ           1             0              2             3                    4              0
+               X3
+                        Bits[63:48]       Bits[47:32]         Bits[31:16]        Bits[15:0]
+                    3                 2                  0                   0
+               X4
+                        Bits[63:48]       Bits[47:32]         Bits[31:16]        Bits[15:0]
+                    2                 6                  4                   0
+               X5
+                        Bits[63:48]       Bits[47:32]         Bits[31:16]        Bits[15:0]
+                    MBZ               MBZ                1                   3
+               X6
+                        Bits[63:48]       Bits[47:32]         Bits[31:16]        Bits[15:0]
+                    MBZ               MBZ                MBZ                 MBZ
+               X7
+                        Bits[63:48]       Bits[47:32]         Bits[31:16]        Bits[15:0]
+                    MBZ               MBZ                MBZ                 MBZ
+                                                         Figure 16.2: Encoding of NOTIFICATION_INFO_GET using 64bit ABI
+Chapter 17
+Interrupt management interfaces
+Chapter 17. Interrupt management interfaces
+17.1. FFA_EL3_INTR_HANDLE

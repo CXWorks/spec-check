@@ -1,0 +1,106 @@
+16.5 FFA_NOTIFICATION_SET
+             Description
+                 • This ABI is invoked by an endpoint at a virtual FF-A instance with the SMC, HVC or SVC conduits to
+                   request the partition manager to signal notifications specified in the Notification bitmap parameter to the
+                   Receiver endpoint. Also see 10.5 Notification signaling.
+                 • This ABI is invoked by the Hypervisor at the Non-secure physical FF-A instance with the SMC conduit to
+                   request the SPMC to signal VM notifications specified in the Notification bitmap parameter to the SP specified
+                   in the Receiver endpoint ID parameter on behalf of the VM specified in the Sender endpoint ID parameter.
+                 • Valid FF-A instances and conduits are listed in Table 16.19.
+                 • Syntax of this function is described in Table 16.20.
+                 • Returns FFA_SUCCESS without any further parameters on successful completion.
+                 • Encoding of error codes in the FFA_ERROR function is described in Table 16.21.
+                                                             Table 16.19: FFA_NOTIFICATION_SET instances and conduits
+            Config No.                   FF-A instance                                           Valid conduits
+            1                            Non-secure virtual                                      SMC, HVC
+            2                            Secure virtual                                          SMC, HVC, SVC
+            3                            Non-secure physical                                     SMC
+            4                            Secure physical                                         ERET
+                                                                      Table 16.20: FFA_NOTIFICATION_SET function syntax
+            Parameter                                 Register         Value
+            uint32 Function ID                        w0                   • 0x84000081.
+            uint32 Sender/Receiver IDs                w1                   • Sender and Receiver endpoint IDs.
+                                                                               – Bit[31:16]: Sender endpoint ID.
+                                                                               – Bit[15:0]: Receiver endpoint ID.
+Chapter 16. Notification interfaces
+16.5. FFA_NOTIFICATION_SET
+            Parameter                                 Register         Value
+            uint32 Flags                              w2                   • Flags.
+                                                                                – Bit[0]: Per-vCPU notification flag (see 10.4.2
+                                                                                   Notification binding):
+                                                                                      * b’1: All notifications in the bitmap are
+                                                                                         per-vCPU notifications (only if per-vCPU
+                                                                                         notifications are supported).
+                                                                                           · Each notification must be signaled to
+                                                                                              the vCPU specified in the Receiver
+                                                                                              vCPU ID field.
+                                                                                      * b’0: All notifications in the bitmap are
+                                                                                         global notifications.
+                                                                                           · The Receiver vCPU ID field MBZ.
+                                                                                – Bit[1]: Delay Schedule Receiver interrupt flag.
+                                                                                   See 16.5.1 Delay Schedule Receiver interrupt
+                                                                                   flag.
+                                                                                – Bit[15:2]: Reserved (MBZ).
+                                                                                – Bit[31:16]: Receiver vCPU ID when Bit[0] is 1.
+            uint32 Notification bitmap                w3                   • Bits[31:0] of a bitmap with one or more set bits to
+                                                                             identify the notifications which must be signaled to the
+                                                                             Receiver endpoint.
+                                                                           • For each bit in the bitmap, if the value is:
+                                                                                – b’1: The notification corresponding to this bit
+                                                                                   position must be signaled to the Receiver.
+                                                                                – b’0: The notification corresponding to this bit
+                                                                                   position must not be signaled to the Receiver.
+            uint32 Notification bitmap                w4                   • Bits[63:32] of a bitmap with one or more set bits to
+                                                                             identify the notifications which must be signaled to the
+                                                                             Receiver endpoint.
+                                                                           • For each bit in the bitmap, if the value is:
+                                                                                – b’1: The notification corresponding to this bit
+                                                                                   position must be signaled to the Receiver.
+                                                                                – b’0: The notification corresponding to this bit
+                                                                                   position must not be signaled to the Receiver.
+            Other Parameter registers                 w5-w7                • Reserved (SBZ).
+Chapter 16. Notification interfaces
+16.5. FFA_NOTIFICATION_SET
+                                                                                          Table 16.21: Encoding of return codes
+            Parameter                                 Register         Value
+            int32 Error code                          w2                   • INVALID_PARAMETERS:
+                                                                                 – Unrecognized partition ID or invalid flags.
+                                                                                 – Per-vCPU notification flag = b’0 and Receiver
+                                                                                   vCPU ID != 0.
+                                                                                 – Per-vCPU notification flag = b’0 and a per-vCPU
+                                                                                   notification is specified in the Notification
+                                                                                   bitmap.
+                                                                                 – Per-vCPU notification flag = b’1 and a global
+                                                                                   notification is specified in the Notification
+                                                                                   bitmap.
+                                                                                 – Per-vCPU notification flag = b’1 and Per-vCPU
+                                                                                   notifications are not supported.
+                                                                           • NOT_SUPPORTED: This function is not implemented
+                                                                             at this FF-A instance.
+                                                                           • DENIED:
+                                                                                 – Sender is not permitted to signal at least one
+                                                                                   notification to the Receiver.
+                                                                                 – Receiver does not support receipt of notifications.
+                                                                           • ABORTED: Receiver partition ran into an unexpected
+                                                                             error and has aborted.
+16.5.1 Delay Schedule Receiver interrupt flag
+               The partition manager uses an IMPLEMENTATION DEFINED policy to determine when the Schedule
+               Receiver interrupt must be asserted in response an invocation of the FFA_NOTIFICATION_SET or
+               FFA_NOTIFICATION_SET2 interfaces. The interrupt could be asserted before or after an invocation of this
+               interface completes.
+               The SPMC could choose to assert this interrupt before completion of an FFA_NOTIFICATION_SET or
+               FFA_NOTIFICATION_SET2 interfaces invocation by an SP. The interrupt would either preempt or trigger a
+               managed exit of the caller SP execution context immediately upon the completion of the interface invocation. This
+               might be undesirable for the SP in some scenarios. The non-secure Schedule Receiver interrupt could trigger a
+               switch to the Normal world when the SP is about to request the same switch itself. For example, an SP sends
+               notifications while handling a Direct request from the Normal world. It could switch back to the Normal world
+               through a Direct response immediately after sending the notifications thereby avoiding the need to pend the
+               Schedule Receiver interrupt until switch takes place.
+               The Delay Schedule Receiver interrupt flag is a hint from the SP execution context to the SPMC it does not
+               have to assert this interrupt upon completion of the FFA_NOTIFICATION_SET or FFA_NOTIFICATION_SET2
+               interfaces invocation. The use of this flag by the SP could help the SPMC optimize the policy it uses for asserting
+               this interrupt. This flag is only used at the Secure virtual FF-A instance. It MBZ at all other FF-A instances.
+               The above guidance for this flag applies to the FFA_MSG_SEND2 ABI described in 15.1 FFA_MSG_SEND2 as
+               well.
+Chapter 16. Notification interfaces
+16.6. FFA_NOTIFICATION_GET

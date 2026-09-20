@@ -1,0 +1,57 @@
+16.4 FFA_NOTIFICATION_UNBIND
+            Description
+                • This ABI is invoked by an endpoint at a virtual FF-A instance with the SMC, HVC or SVC conduits to
+                  request the partition manager to unbind notifications specified in the Notification bitmap parameter from the
+                  Sender endpoint. Also see 10.4.2 Notification binding.
+                • This ABI is invoked by the Hypervisor at the Non-secure physical FF-A instance with the SMC conduit to
+                  request the SPMC to unbind SP notifications specified in the Notification bitmap parameter from the SP
+                  specified in the Sender endpoint ID parameter.
+                • Valid FF-A instances and conduits are listed in Table 16.15.
+                • Syntax of this function is described in Table 16.16.
+                • Returns FFA_SUCCESS without any further parameters on successful completion.
+                • Encoding of error codes in the FFA_ERROR function is described in Table 16.17.
+                                                     Table 16.15: FFA_NOTIFICATION_UNBIND instances and conduits
+           Config No.                  FF-A instance                                           Valid conduits
+           1                           Non-secure virtual                                      SMC, HVC
+           2                           Secure virtual                                          SMC, HVC, SVC
+           3                           Non-secure physical                                     SMC
+           4                           Secure physical                                         ERET
+                                                               Table 16.16: FFA_NOTIFICATION_UNBIND function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x84000080.
+           uint32 Sender/Receiver IDs               w1                   • Sender and Receiver endpoint IDs.
+                                                                             – Bit[31:16]: Sender endpoint ID.
+                                                                             – Bit[15:0]: Receiver endpoint ID.
+           uint32/uint64 Reserved                   w2/x2                • Reserved (SBZ).
+           uint32 Notification bitmap Lo            w3                   • Bits[31:0] of a bitmap with one or more set bits to
+                                                                           identify the notifications which the Sender endpoint is
+                                                                           not allowed to signal.
+                                                                         • For each bit in the bitmap, if the value is:
+                                                                              – b’1: The Sender endpoint cannot signal this
+                                                                                 notification.
+                                                                              – b’0: Has no effect.
+           uint32 Notification bitmap Hi            w4                   • Bits[63:32] of a bitmap with one or more set bits to
+                                                                           identify the notifications which the Sender endpoint is
+                                                                           not allowed to signal.
+                                                                         • For each bit in the bitmap, if the value is:
+                                                                              – b’1: The Sender endpoint cannot signal this
+                                                                                 notification.
+                                                                              – b’0: Has no effect.
+Chapter 16. Notification interfaces
+16.4. FFA_NOTIFICATION_UNBIND
+           Parameter                                Register         Value
+           Other Parameter registers                w5-w7                • Reserved (SBZ).
+                                                                                        Table 16.17: Encoding of return codes
+           Parameter                                Register         Value
+           int32 Error code                         w2                   • INVALID_PARAMETERS: Unrecognized partition
+                                                                           ID or invalid bitmap.
+                                                                         • NOT_SUPPORTED: This function is not implemented
+                                                                           at this FF-A instance.
+                                                                         • DENIED:
+                                                                               – At least one notification is bound to another
+                                                                                 Sender or is currently pending.
+                                                                               – Caller is not allowed to invoke this ABI.
+                                                                         • ABORTED: Sender partition ran into an unexpected
+                                                                           error and has aborted.
+Chapter 16. Notification interfaces
+16.5. FFA_NOTIFICATION_SET

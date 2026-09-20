@@ -1,0 +1,29 @@
+13.4 FFA_RX_ACQUIRE
+            Description
+                • Acquire ownership of a RX buffer before writing a message to it (see 4.10 RX/TX buffers).
+                • Valid FF-A instances and conduits are listed in Table 13.17.
+                • Syntax of this function is described in Table 13.18.
+                • Returns FFA_SUCCESS without any further parameters on successful completion.
+                • Encoding of error code in the FFA_ERROR function is described in Table 13.19.
+                                                                   Table 13.17: FFA_RX_ACQUIRE instances and conduits
+            Config No.                  FF-A instance                                           Valid conduits
+            1                           Non-secure Physical                                     SMC
+            2                           Secure Physical                                         ERET
+                                                                              Table 13.18: FFA_RX_ACQUIRE function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0                   • 0x84000084.
+            uint32 VM ID                             w1                   • ID of VM ownership of whose RX buffer should be
+                                                                            acquired.
+                                                                               – Bit[31:16]: Reserved (SBZ).
+                                                                               – Bit[15:0]: VM ID.
+            Other Parameter registers                w2-w7                • Reserved (SBZ).
+                                                                                             Table 13.19: FFA_ERROR encoding
+            Parameter                                Register         Value
+            int32 Error code                         w2                   • DENIED: Callee cannot relinquish ownership of the
+                                                                            RX buffer.
+                                                                          • INVALID_PARAMETERS: There is no buffer pair
+                                                                            registered on behalf of the VM.
+                                                                          • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+Chapter 13. Setup and discovery interfaces
+13.5. FFA_RX_RELEASE

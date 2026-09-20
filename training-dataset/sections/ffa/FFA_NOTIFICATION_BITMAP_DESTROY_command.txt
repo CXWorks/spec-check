@@ -1,0 +1,32 @@
+16.2 FFA_NOTIFICATION_BITMAP_DESTROY
+           Description
+               • This ABI is invoked by the Hypervisor at the Non-secure physical FF-A instance with the SMC conduit to
+                 request the SPMC to destroy the SP and SPM framework notifications bitmap for the VM specified in the VM
+                 ID input parameter. Also see 10.3 Notification bitmap setup.
+               • Valid FF-A instances and conduits are listed in Table 16.7.
+               • Syntax of this function is described in Table 16.8.
+               • Returns FFA_SUCCESS without any further parameters on successful completion.
+               • Encoding of error codes in the FFA_ERROR function is described in Table 16.9.
+                                         Table 16.7: FFA_NOTIFICATION_BITMAP_DESTROY instances and conduits
+           Config No.                  FF-A instance                                           Valid conduits
+           1                           Non-secure physical                                     SMC
+           2                           Secure physical                                         ERET
+                                                   Table 16.8: FFA_NOTIFICATION_BITMAP_DESTROY function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x8400007E.
+           uint32 VM ID                             w1                   • ID of VM whose notification bitmap in the Secure
+                                                                           world must be destroyed to prevent SPs to send
+                                                                           notifications to this VM.
+                                                                              – Bit[31:16]: Reserved (SBZ).
+                                                                              – Bit[15:0]: VM ID.
+           Other Parameter registers                w2-w7                • Reserved (SBZ).
+                                                                                         Table 16.9: Encoding of return codes
+           Parameter                                Register         Value
+           int32 Error code                         w2                   • INVALID_PARAMETERS: Unrecognized partition
+                                                                           ID.
+                                                                         • NOT_SUPPORTED: This function is not implemented
+                                                                           at this FF-A instance.
+                                                                         • DENIED: Notification bitmap is not registered or is
+                                                                           registered but not in a masked and non-pending state.
+Chapter 16. Notification interfaces
+16.3. FFA_NOTIFICATION_BIND

@@ -1,0 +1,35 @@
+13.7 FFA_RXTX_UNMAP
+            Description
+                • Unmaps the RX/TX buffer pair of an endpoint or Hypervisor from the translation regime of the callee.
+                     – A SP invokes this interface to unmap its buffer pair from the translation regime of the SPM.
+                     – A VM invokes this interface to unmap its buffer pair from the translation regime of the Hypervisor.
+                     – Hypervisor or OS Kernel invoke this interface to unmap their buffer pair from the translation regime of
+                        the SPM.
+                     – Hypervisor forwards an invocation of this interface by a VM to the SPM.
+                          * Identity of VM is specified in w1.
+                • Valid FF-A instances and conduits are listed in Table 13.30.
+                • Syntax of this function is described in Table 13.31.
+                • Returns FFA_SUCCESS without any further parameters on successful completion.
+                • Encoding of error code in the FFA_ERROR function is described in Table 13.32.
+                                                                  Table 13.30: FFA_RXTX_UNMAP instances and conduits
+            Config No.                  FF-A instance                                           Valid conduits
+            1                           Non-secure physical                                     SMC
+            2                           Secure physical                                         ERET
+            3                           Virtual                                                 SMC, HVC, SVC
+                                                                            Table 13.31: FFA_RXTX_UNMAP function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0/x0                • 0x84000067.
+            uint32 ID                                w1                   • ID of VM that allocated the RX/TX buffer. Only valid
+                                                                            at the Non-secure physical FF-A instance. MBZ
+                                                                            otherwise.
+                                                                                – Bit[31:16]: ID.
+                                                                                – Bit[15:0]: Reserved (SBZ).
+            Other Parameter registers                w2-w7                • Reserved (SBZ).
+                                                                                             Table 13.32: FFA_ERROR encoding
+            Parameter                                Register         Value
+            int32 Error code                         w2                   • INVALID_PARAMETERS: There is no buffer pair
+                                                                            registered on behalf of the caller.
+                                                                          • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+Chapter 13. Setup and discovery interfaces
+13.8. FFA_PARTITION_INFO_GET

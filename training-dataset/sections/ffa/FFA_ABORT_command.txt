@@ -1,0 +1,25 @@
+13.14 FFA_ABORT
+            Description
+                • This ABI is invoked by a partition execution context to enter the aborted state upon encountering a fatal error.
+                  See also:
+                     – Table 7.2.
+                • Valid FF-A instances and conduits are listed in Table 13.72.
+                • Syntax of this function is described in Table 13.73.
+                • An invocation of this ABI does not complete.
+                                                                           Table 13.72: FFA_ABORT instances and conduits
+            Config No.                  FF-A instance                                           Valid conduits
+            1                           Secure physical                                         SMC
+            2                           Secure virtual                                          SMC, HVC, SVC
+                                                                                     Table 13.73: FFA_ABORT function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0                   • 0x84000090.
+                                                                          • 0xC4000090.
+            First parameter register                 w1/x1                • Reserved (SBZ)
+            uint32/uint64 IMPLEMENTATION             w2/x2                • IMPLEMENTATION DEFINED value.
+            DEFINED
+            Other Parameter registers                w3-w7                • Reserved (SBZ)
+                                                     x3-x17
+Chapter 14
+CPU cycle management interfaces
+Chapter 14. CPU cycle management interfaces
+14.1. FFA_MSG_WAIT

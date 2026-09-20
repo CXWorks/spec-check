@@ -1,0 +1,123 @@
+3.3 DRTM_FEATURES
+Allows a client to query the DRTM implementation to determine the supported DRTM capabilities of the
+platform.
+ Parameter                     Register      Value
+ uint32 Function ID               W0         0xC400_0111
+                                             Bit[63] = 0: Parameter is function ID of the DRTM interface
+                                             whose implementation must be queried.
+                                                       Bit[62:32]: Reserved. Must be zero.
+                                                       Bit[31:0]: Function ID.
+ uint64 DRTM function ID           X1
+ or feature ID                               Bit[63] = 1: Parameter is ID of a feature supported by the
+                                             DRTM implementation.
+                                                       Bit[62:8]: Reserved. Must be zero.
+                                                       Bit[7:0]: Feature ID. IDs of supported features are
+                                                       listed in Table 6.
+ Return
+                                             On success:
+                                                                                   The function ID queried is
+                                                                                   implemented.
+                                                                                   The feature ID queried is
+                                   X0        >0                                    implemented. See Table 6 for
+                                                                                   feature-specific capabilities.
+ int64                                       On error:
+                                                                                   The function ID or feature ID
+                                             NOT_SUPPORTED                         specified as an input parameter
+                                                                                   is not supported.
+                                                                                   Note: This function may return
+                                                                                   other error codes as defined in
+                                                                                   section 3.18.
+                            Table 6: Return values for DRTM features
+    DRTM Feature   Feature ID             Return                                    Return
+       Name                              Register                                   Value
+                                                            Bits[63:37]: Reserved. Must be zero.
+                                                            Bits[36:33]: PCR Usage Schema. Bitmap of
+                                                            supported usage schemas:
+                                                                  0b0001: Default Schema. See section 4.8.4.
+                                                                  0b0010: DLME Authorities Schema. See
+                                                                  section 4.8.5.
+                                                                  0b0100: Reserved
+                                                                  0b1000: Reserved
+                                                            Bit[32]: TPM-based hash support
+ TPM features         0x1                    X1                   0: Implementation does not support TPM-
+                                                                  based hashing.
+                                                                  1: Implementation supports TPM-based
+                                                                  hashing. See section 2.7.2. The DRTM
+                                                                  implementation measures data by sending
+                                                                  it to the TPM using the command
+                                                                  TPM2_PCR_Event.
+                                                            Bits[31:16] Reserved
+                                                            Bits[15:0] Firmware hash algorithm
+                                                                  Value Identifies a single hash algorithm
+                                                                  used by the DRTM implementation for
+                                                                  firmware-based measurements. See section
+                                                                  2.7.1. Possible values are defined by the
+                                                                  TPM_ALG_ID constants defined in the TCG
+                                                                  Algorithm Registry [12]. A partial list is
+                                                                  shown below.
+                                                                      0x000B: SHA-256
+                                                                      0x000C: SHA-384
+                                                                      0x000D: SHA-512
+                                                             Bits[63:32] Minimum size of Normal World
+                                                             DCE
+                                                                   If the system utilizes a Normal World DCE,
+                                                                   the value specifies the minimum amount of
+                                                                   space needed for the Normal World DCE
+ Minimum memory        0x2                    X1                   region. The value is specified in number of
+ requirement                                                       4KB pages.
+                                                                   If the system does not use a Normal World
+                                                                   DCE, this value must be zero.
+                                                             Bits[31:0] Minimum size of DLME data
+                                                                   Value specifies the minimum amount of
+                                                                   space that the DRTM implementation
+                                                                   needs for the DLME data. The value is
+                                                                   specified in number of 4KB pages.
+                                                             Bits[63:24] Reserved. Must be zero.
+                                                             Bits[23:8] For region-based protection,
+                                                             specifies the maximum number of memory
+                                                             regions that can be protected through the
+                                                             DRTM_PARAMETERS.
+                                                                   Up to 64K regions can be supported.
+ DMA protection        0x3                    X1                   This field must be non-zero and is only valid
+ features                                                          if region-based DMA protection is
+                                                                   supported.
+                                                             Bits[7:0] DMA protection support. Bitmap
+                                                             with the types of DMA protection supported
+                                                             by the DRTM implementation:
+                                                                   0b00000001: Complete DMA protection.
+                                                                   0b00000010: Region-based DMA
+                                                                   protection.
+                                                             For further details on DMA protection, see
+                                                             section 5.8.
+                                                             Bits[63:0] Identifies the boot PE. The
+ Boot PE ID            0x4                    X1             encoding is the same as the target_cpu
+                                                             parameter to CPU_ON as defined in the PSCI
+                                                             specification [2]. The PSCI encoding is based
+                                                             on the affinity fields of the MPIDR register.
+                                                             Bits[63:8] Reserved. Must be zero.
+ TCB hash features     0x5                    X1             Bits[7:0] Maximum number of supported
+                                                             TCB hashes that can be recorded with
+                                                             DRTM_SET_TCB_HASH. See section 3.9. A
+                                                             value of zero indicates that hashes cannot
+                                                             be recorded with DRTM_SET_TCB_HASH.
+ DLME image                  0x6                    X1             Bits[63:1] Reserved. Must be zero.
+ authentication                                                    Bit[0] DLME image authentication support
+ features
+                                                                         0: Implementation does not support DLME
+                                                                         image authentication.
+                                                                         1: Implementation supports DLME image
+                                                                         authentication.
+3.3.1 DRTM_FEATURES usage
+The DRTM_FEATURES function can be used to query features implemented by the DRTM implementation,
+including:
+    •   Hash algorithm used by the implementation
+    •   Whether the implementation supports TPM-based measurements
+    •   The minimum size of the DLME region and the size of the Normal world DCE region
+    •   The type of memory protection supported by the implementation
+The caller passes a DRTM function ID or feature ID and the return value advertises features and capabilities.
+A return value of 0 means the function ID or feature ID is implemented.
+A return value of greater than 0 means the feature ID is implemented, and there are other feature-specific
+feature or capability bits available in other return value registers.
+See Table 6 for supported feature IDs and features.
+See section 2.8 for an overview of memory protection.
+See section 2.7 for an overview of PCR usage and TPM-based and firmware-based measurements.

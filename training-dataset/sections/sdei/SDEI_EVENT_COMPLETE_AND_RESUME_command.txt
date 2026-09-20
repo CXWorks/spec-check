@@ -1,0 +1,65 @@
+5.1.7       SDEI_EVENT_COMPLETE_AND_RESUME
+                                                    Complete the event handling and resume execution at the specified
+                 Description
+                                                    address in ELC.
+                 Parameters
+                 uint32 Function ID                 0xC400_0026
+                 uint64
+                                                    Address in client to resume the execution from.
+                 resume_addr
+                 Return
+                 On success this call never returns and resumes the client from the provided address.
+                 On error,
+                                                    NOT_SUPPORTED                               SDEI is not supported.
+                                                    INVALID_PARAMETERS                          Invalid resume address.
+                 int64
+                                                    DENIED                                      No event handler running for the
+                                                                                                calling PE.
+5.1.7.1 Usage
+                         This call is used by the handler to complete the handling of an event and resume the
+                         execution from the client at a specified address. This call is similar to
+                         SDEI_EVENT_COMPLETE except that the execution resumes from ELC at the specified
+                         address in the client as opposed to the interrupted context.
+                         If successful, the call never returns to the caller and resumes the execution at
+                         resume_addr from ELC.
+                         This call is valid only when the handler-running property is set to TRUE. The call sets
+                         handler-running to FALSE. See Event handler states and properties on page 46.
+                         For private and shared events, this call can be invoked only from the PE that received the
+                         event. For a private event, this call completes the event handling for the calling PE. For a
+                         shared event, this call completes the event handling globally.
+                         This call is particularly useful when the interrupted Exception level is different from ELC and
+                         the client needs to do additional processing of the event before resuming the interrupted
+                         context. For example, if a firmware SDEI event interrupted the guest OS and the
+                         hypervisor wants to inject a virtual SDEI event into the guest after completing the handling
+                         at hypervisor.
+                         The resume handler Execution state mimics a synchronous exception handler for ELC
+                         where the exception return address is set to the PC at which the SDEI event was taken.
+                         Refer to Event resume context on page 44 for more details about the context.
+                                                                                                                            Interface
+5.1.7.2 Parameters
+                        resume_addr must be a valid resume address in ELC. The resume address must be valid in
+                        translation regime of the client at the point when the event occurred. Specifying an invalid
+                        address will result in an exception, for example a translation fault or permission fault, as
+                        defined in the Armv8-A architecture when the ERET is executed by the dispatcher
+                        targeting the invalid address.
+5.1.7.3 Client responsibilities
+                        The client must use SDEI_EVENT_COMPLETE_AND_RESUME to end the event handling and
+                        resume execution from the client. This is typically useful in the form of ‘post-processing’ an
+                        event, for example, cascading events to a lower Exception level such as a hypervisor
+                        injecting virtual events to a guest, or choosing to preempt or terminate guest execution. If
+                        the client fails to complete the event handling, it might result in UNPREDICTABLE behavior
+                        in the client.
+                        The call returns only if there is an error and the client must handle the following potential
+                        return error code,
+                            •     INVALID_PARAMETERS is returned if the dispatcher can identify that the resume
+                                  address is invalid, for example address is not 4-byte aligned.
+                            •     DENIED is returned if the event handler property handler-running is set to FALSE
+                                  on the calling PE.
+5.1.7.4 Dispatcher responsibilities
+                        If the client fails to complete the event handling, the dispatcher implementation must
+                        ensure that this does not affect the dispatcher from functioning.
+                        If the client is executing a yielding SMC call and SDEI event interrupts the Secure
+                        execution of the SMC call, and the client completes the handler using
+                        SDEI_EVENT_COMPLETE_AND_RESUME, the resume handler must be executed prior to
+                        resuming the secure execution. The SMC call can be restarted later from the client using
+                        an IMPLEMENTATION DEFINED mechanism agreed with the Secure software.

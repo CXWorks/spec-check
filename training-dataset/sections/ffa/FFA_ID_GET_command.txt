@@ -1,0 +1,28 @@
+13.10 FFA_ID_GET
+            Description
+                • Returns 16-bit ID of calling FF-A component.
+                     – ID value 0 must be returned at the Non-secure physical FF-A instance (see Chapter 6 Identification and
+                       Discovery).
+                • Valid FF-A instances and conduits are listed in Table 13.44.
+                • Syntax of this function is described in Table 13.45.
+                • Encoding of result parameters in the FFA_SUCCESS function is described in Table 13.46.
+                • Encoding of error code in the FFA_ERROR function is described in Table 13.47.
+                                                                           Table 13.44: FFA_ID_GET instances and conduits
+            Config No.                  FF-A instance                                           Valid conduits
+            1                           Physical FF-A instance                                  SMC
+            2                           Virtual FF-A instance                                   SMC, HVC, SVC
+                                                                                     Table 13.45: FFA_ID_GET function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0                   • 0x84000069.
+            Other Parameter registers                w1-w7                • Reserved (SBZ).
+                                                                                         Table 13.46: FFA_SUCCESS encoding
+            Parameter                                Register         Value
+            uint32 ID                                w2                   • ID of the caller.
+                                                                               – Bit[31:16]: Reserved (MBZ).
+                                                                               – Bit[15:0]: ID.
+                                                                                             Table 13.47: FFA_ERROR encoding
+            Parameter                                Register         Value
+            int32 Error code                         w2                   • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+Chapter 13. Setup and discovery interfaces
+13.11. FFA_SPM_ID_GET

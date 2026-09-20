@@ -1,0 +1,44 @@
+14.5 FFA_NORMAL_WORLD_RESUME
+            Description
+                 • Request SPMD to resume execution of Normal world on current PE after the exception that originally
+                   preempted the Normal world has been handled. See 14.5.1 Overview for details.
+                 • Valid FF-A instances and conduits are listed in Table 14.19.
+                 • Syntax of this function is described in Table 14.20.
+                 • Successful completion of this function is indicated through the invocation of any FF-A function.
+                 • Encoding of error code in the FFA_ERROR function is described in Table 14.21.
+                                                 Table 14.19: FFA_NORMAL_WORLD_RESUME instances and conduits
+           Config No.                                FF-A instance                              Valid conduits
+           1                                         Secure physical                            SMC
+                                                           Table 14.20: FFA_NORMAL_WORLD_RESUME function syntax
+           Parameter                                 Register         Value
+           uint32 Function ID                        w0                   • 0x8400007C.
+                                                                          • 0xC400007C (see 11.1.2 Parameter Register
+                                                                            Preservation).
+           Other Parameter registers                 w1-w7                • Reserved (SBZ).
+                                                     x1-x17
+                                                                                             Table 14.21: FFA_ERROR encoding
+           Parameter                                 Register         Value
+           int32 Error code                          w2                   • DENIED: Callee is not in a state to handle this request.
+                                                                          • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+14.5.1 Overview
+               Execution in Normal world could be preempted in response to an exception for example, a Secure physical
+               interrupt. As per the Arm A-profile architecture, the exception will be delivered to EL3 in the AArch64 Execution
+               state or Monitor mode in the AArch32 Execution state. The exception could be handled in the Secure state at a
+               lower Exception level than EL3 or Monitor mode.
+               This function must be used by the SPMC in S-EL2 (see 4.1.1 Secure EL2 SPM core component) and S-EL1 (see
+               4.1.2 S-EL1 SPM core component) to request the SPMD to resume Normal world execution once the exception has
+               been handled.
+               The SPMD must ensure that the Normal world execution is resumed with exactly the same PE state that was saved
+               when it was preempted.
+Chapter 14. CPU cycle management interfaces
+14.5. FFA_NORMAL_WORLD_RESUME
+             The SPMD must return DENIED if this function is invoked at the Secure physical FF-A instance and the Normal
+             world execution was not preempted.
+             The partition manager must return NOT_SUPPORTED if this function is invoked at any other FF-A instance.
+             An invocation of this function at the Secure physical FF-A instance could be completed through a valid invocation
+             of any FF-A function through the ERET conduit.
+Chapter 15
+Messaging interfaces
+Chapter 15. Messaging interfaces
+15.1. FFA_MSG_SEND2

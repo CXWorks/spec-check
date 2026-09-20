@@ -1,0 +1,57 @@
+5.1.12 SDEI_PE_MASK
+            Description                       Mask the calling PE from receiving SDEI events.
+            Parameters
+            uint32 Function ID                0xC400_002B
+            Return
+            On success the return value can be,
+                                                                                          The calling PE was masked by
+                                              1: Masked
+                                                                                          this call.
+            int64
+                                                                                          The PE was not masked by this
+                                              0: Not masked
+                                                                                          call but is already masked.
+            On error the return value can be,
+            int64                             NOT_SUPPORTED                               SDEI is not supported.
+5.1.12.1    Usage
+                    This call removes the calling PE from participating in SDEI event handling for the calling
+                    client. The call masks the PE from receiving SDEI events of both normal and critical
+                    priority, analogous to masking the IRQ for the PE. This behavior is independent of any
+                    event status (see SDEI_EVENT_STATUS on page 30) and only affects the PE making the
+                    call. The typical use scenario for this call is to temporarily remove the PE from SDEI
+                    handling in particular during power management operations. This call can be invoked by
+                    the client to mask the PE, whether or not the PE is already masked. The return value of
+                    this call indicates whether the PE was already masked.
+                    The initial state for every PE is to have SDEI events masked. This means that the PE is
+                    masked from receiving any SDEI events following powerup or resume from power down
+                    state as defined in Power State Coordination Interface specification, see Power
+                    management and SDEI events on page 51 for more details.
+                    The mask operation is per client and per PE. Each client has to execute this call from each
+                    PE that is to be removed from event handling. If an SDEI implementation is present for the
+                    client, then this call must always succeed.
+5.1.12.2    Client responsibilities
+                    If the client decides to mask SDEI events, before the call to SDEI_PE_MASK, it must ensure
+                    that the preemption is disabled in the client.
+                    The client calls SDEI_PE_MASK mainly for two reasons:
+                        1. Powerdown state
+                            Before a suspend to powerdown state through a CPU_SUSPEND call, or a CPU_OFF
+                            call, as defined in Power State Coordination Interface, the client must mask the
+                            PE. See Power management and SDEI events on page 51 for more details on this.
+                        2. Mask PE from SDEI events
+                            To temporarily mask the PE from receiving SDEI events. Masking SDEI events
+                            could affect the handling of the events and it is expected that the masking be done
+                            very rarely.
+                    In the scenario where a registered event is triggered and the PE has its SDEI events
+                    masked, the event will stay pending. In this case
+                                                                                                                          Interface
+                            •     If the event is private to the PE, it will be delivered to the PE after the unmask call.
+                            •     If the event is shared, other target PEs could handle it.
+                        If a shared event has all of its target PEs masked, then the event remains pending, until a
+                        target PE for this event executes the unmask call.
+5.1.12.3        Dispatcher responsibilities
+                        The dispatcher implementation must ensure that the initial state for every PE is to have the
+                        SDEI events masked. During powerup or resume from powerdown state, the Dispatcher
+                        will mask the PE from receiving any SDEI events. This means that if the PE is powered up
+                        through the powerup entry point, then the PE must be masked for SDEI events by the
+                        dispatcher. For a standby power state, the dispatcher implementation must retain the mask
+                        status. See Power management and SDEI events on page 51 for more details on this.

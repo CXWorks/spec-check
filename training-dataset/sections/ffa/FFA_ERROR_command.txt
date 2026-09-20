@@ -1,0 +1,56 @@
+12.2 FFA_ERROR
+             Description
+                 • Returns error code in response to a previous invocation of an FF-A function.
+                 • Table 12.2 defines the values for status codes used with FF-A functions. All values are considered to be
+                   32-bit signed integers.
+                 • Valid FF-A instances and conduits are listed in Table 12.3.
+                 • Syntax of this function is described in Table 12.4.
+                 • Figure 12.1 illustrates example usage of this function with the following assumptions.
+                      – Component A makes an invalid request to Component B through an FF-A function described in this
+                         specification.
+                      – Component B uses the FFA_ERROR function to return the error code to Component A.
+                      – The FF-A function used by component A can be invoked through the SMC and ERET conduits.
+                      – Both components could be interacting at any FF-A instance support by the FF-A function. The two
+                         possible scenarios have been considered.
+                           * Component A is at a lower EL than component B at the FF-A instance.
+                           * Component A is at a higher EL than component B at the FF-A instance.
+                                                                                   Figure 12.1: Example usage of FFA_ERROR
+                                                                                                    Table 12.2: Error status codes
+                                                                Status code           Description
+                                                                -1                    NOT_SUPPORTED
+                                                                -2                    INVALID_PARAMETERS
+                                                                -3                    NO_MEMORY
+                                                                -4                    BUSY
+                                                                -5                    INTERRUPTED
+                                                                -6                    DENIED
+                                                                -7                    RETRY
+                                                                -8                    ABORTED
+Chapter 12. Status reporting interfaces
+12.2. FFA_ERROR
+                                                                Status code           Description
+                                                                -9                    NO_DATA
+                                                                -10                   NOT_READY
+                                                                               Table 12.3: FFA_ERROR instances and conduits
+            Config No.                    FF-A instance                                          Valid conduits
+            1                             Secure and Non-secure physical                         SMC, ERET
+            2                             Non-secure virtual                                     SMC, HVC, ERET
+            3                             Secure virtual                                         SMC, ERET
+                                                                                       Table 12.4: FFA_ERROR function syntax
+            Parameter                                 Register         Value
+            uint32 Function ID                        w0                   • 0x84000060.
+                                                                           • 0xC4000060.
+                                                                                – This function ID is used by callers that only
+                                                                                   implement SMC64 FIDs as described in 11.1.2
+                                                                                   Parameter Register Preservation.
+            uint32 Target information                 w1                   • Information to identify target SP/VM.
+                                                                                – Valid only when SMC conduit is used at the
+                                                                                   Non-secure virtual FF-A instance. MBZ
+                                                                                   otherwise.
+                                                                                – Bits[31:16]: ID of SP/VM.
+                                                                                – Bits[15:0]: ID of vCPU of SP/VM to deliver
+                                                                                   error to.
+            int32 Error code                          w2                   • FF-A function specific error code. See function
+                                                                             definition for applicable error codes.
+            Other Parameter registers                 w3-w7                • Reserved (SBZ).
+Chapter 12. Status reporting interfaces
+12.3. FFA_SUCCESS

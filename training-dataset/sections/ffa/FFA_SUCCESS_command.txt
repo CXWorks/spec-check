@@ -1,0 +1,48 @@
+12.3 FFA_SUCCESS
+             Description
+                 • Returns results on successful completion of a previous invocation of an FF-A function.
+                 • Valid FF-A instances and conduits are listed in Table 12.6.
+                 • Syntax of this function is described in Table 12.7.
+                 • Figure 12.2 illustrates example usage of this function with the following assumptions.
+                      – Component A makes an valid request to Component B through an FF-A function described in this
+                         specification.
+                      – Component B uses the FFA_SUCCESS function to return the results to Component A.
+                      – The FF-A function used by component A can be invoked through the SMC and ERET conduits.
+                      – Both components could be interacting at any FF-A instance support by the FF-A function. The two
+                         possible scenarios have been considered.
+                           * Component A is at a lower EL than component B at the FF-A instance.
+                           * Component A is at a higher EL than component B at the FF-A instance.
+                                                                                Figure 12.2: Example usage of FFA_SUCCESS
+                                                                          Table 12.6: FFA_SUCCESS instances and conduits
+            Config No.                    FF-A instance                                          Valid conduits
+            1                             Secure and Non-secure physical                         SMC, ERET
+            2                             Non-secure virtual FF-A                                SMC, HVC, ERET
+            3                             Secure virtual FF-A                                    SMC, ERET
+Chapter 12. Status reporting interfaces
+12.3. FFA_SUCCESS
+                                                                                    Table 12.7: FFA_SUCCESS function syntax
+            Parameter                                 Register         Value
+            uint32 Function ID                        w0                   • 0x84000061.
+                                                                           • 0xC4000061.
+                                                                                – This function ID, also denoted as
+                                                                                   FFA_SUCCESS64, is used only if:
+                                                                                     * Any result register encodes a 64-bit
+                                                                                        parameter
+                                                                                     * caller only implements SMC64 FIDs as
+                                                                                        A
+                                                                                        described in 11.1.2 Parameter Register
+                                                                                        Preservation.
+            uint32 Target information                 w1                   • Information to identify target SP/VM.
+                                                                                – Valid only when SMC conduit is used at the
+                                                                                   Non-secure virtual FF-A instance. MBZ
+                                                                                   otherwise.
+                                                                                – Bits[31:16]: ID of SP/VM.
+                                                                                – Bits[15:0]: ID of vCPU of SP/VM to deliver
+                                                                                   results to.
+            uint32/uint64 Result registers            w2-w7                • FF-A function specific return results. See function
+                                                      x2-x17                 definition for result encoding. Reserved (SBZ) if not
+                                                                             explicitly specified.
+Chapter 13
+Setup and discovery interfaces
+Chapter 13. Setup and discovery interfaces
+13.1. Compliance requirements

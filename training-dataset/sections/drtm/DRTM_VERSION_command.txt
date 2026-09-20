@@ -1,0 +1,32 @@
+3.2 DRTM_VERSION
+Returns the version of the DRTM implementation.
+ Parameter                   Register         Value
+ uint32 Function ID             W0            0xC400_0110
+ Return
+                                              On success
+                                              Bit[31] Must be zero.
+                                              Bits[30:16] DRTM Major version
+                                                        Must be 1 for this revision of the DRTM architecture for Arm.
+ uint32
+                                W0            Bits[15:0] DRTM Minor version
+                                                        Must be 4 for this revision of the DRTM architecture for Arm.
+                                              On error:
+                                                                                      DRTM is not supported.
+                                              NOT_SUPPORTED
+3.2.1 DRTM_VERSION usage
+This function returns the version of the DRTM implementation. Each DRTM implementation must support this
+call and return its implementation version. For this revision of the DRTM interface, the major version is 1 and the
+minor version is 4.
+The version number is a 31-bit unsigned integer. The upper 15 bits denote the major revision, and the lower 16
+bits denote the minor revision. The following rules apply to the version numbering:
+    •     Different major revision values indicate possibly incompatible functions. A newer major revision might:
+              o Introduce new functions
+              o Deprecate older functions
+              o Change behavior of existing functions
+    •     For two revisions, A and B, for which the major revision values are identical, if the minor revision value of
+          revision B is greater than the minor revision value of revision A, then every function in revision A must
+          work in a compatible way with revision B. However, revision B can have a higher function count than
+          revision A.
+3.2.2 DRTM_VERSION implementation responsibilities
+If this function returns a valid version number, all DRTM functions defined in this specification must be
+implemented, unless it is explicitly stated that a function is optional.

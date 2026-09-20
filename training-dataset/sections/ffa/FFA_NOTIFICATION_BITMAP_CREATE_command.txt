@@ -1,0 +1,45 @@
+16.1 FFA_NOTIFICATION_BITMAP_CREATE
+           Description
+               • This ABI is invoked by the Hypervisor at the Non-secure physical FF-A instance with the SMC conduit to
+                 request the SPMC to create the SP and SPM framework notifications bitmap for the VM specified in the VM
+                 ID input parameter. Also see 10.3 Notification bitmap setup.
+               • Valid FF-A instances and conduits are listed in Table 16.2.
+               • Syntax of this function is described in Table 16.3.
+               • Encoding of result parameters in the FFA_SUCCESS function is described in Table 16.4.
+               • Encoding of error codes in the FFA_ERROR function is described in Table 16.5.
+                                           Table 16.2: FFA_NOTIFICATION_BITMAP_CREATE instances and conduits
+           Config No.                  FF-A instance                                           Valid conduits
+           1                           Non-secure physical                                     SMC
+           2                           Secure physical                                         ERET
+                                                     Table 16.3: FFA_NOTIFICATION_BITMAP_CREATE function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x8400007D.
+           uint32 VM ID                             w1                   • ID of VM for which a bitmap must be created in the
+                                                                           Secure world to enable SPs to send notifications to this
+                                                                           VM.
+                                                                              – Bits[31:16]: Reserved (MBZ).
+                                                                              – Bits[15:0]: VM ID.
+           uint32 vCPU count                        w2                   • Number of vCPUs implemented by the VM.
+           uint32 Notification Count                w3                   • Bits[32:9]: Reserved (SBZ).
+                                                                         • Bits[8:0]: Number of SP notifications i requested for
+                                                                           the VM where,
+                                                                              – Total notification count = i + 64.
+           Other Parameter registers                w4-w7                • Reserved (SBZ).
+                                                                                          Table 16.4: FFA_SUCCESS encoding
+           Parameter                                Register         Value
+           uint32 Notification Count                w2                   • Bits[32:9]: Reserved (SBZ).
+                                                                         • Bits[8:0]: Number of SP notifications i allocated for
+                                                                           the VM where,
+                                                                              – Total notification count = i + 64.
+Chapter 16. Notification interfaces
+16.1. FFA_NOTIFICATION_BITMAP_CREATE
+                                                                                       Table 16.5: Encoding of return codes
+           Parameter                              Register         Value
+           int32 Error code                       w2                   • INVALID_PARAMETERS: Unrecognized VM ID.
+                                                                       • NOT_SUPPORTED: This function is not implemented
+                                                                         at this FF-A instance.
+                                                                       • DENIED: Notification bitmap is already created.
+                                                                       • NO_MEMORY: There is not enough memory to
+                                                                         allocate notification bitmap.
+Chapter 16. Notification interfaces
+16.2. FFA_NOTIFICATION_BITMAP_DESTROY

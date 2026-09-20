@@ -1,0 +1,8 @@
+6.5.1 DRTM_DYNAMIC_LAUNCH
+The following are hardware-backed requirements for the DRTM_DYNAMIC_LAUNCH function:
+                  Table 68, Hardware-backed requirements for DRTM_DYNAMIC_LAUNCH
+ ID             Requirement
+ R65000         The dynamic launch request must be proxied to the D-CRTM in the coprocessor using an
+                implementation-specific method.
+ R65010         The DMA protections put in place by the caller must prevent DMA accesses from both Non-
+                secure and Secure devices.

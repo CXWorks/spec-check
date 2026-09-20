@@ -1,0 +1,68 @@
+15.1 FFA_MSG_SEND2
+            Overview
+                • This ABI is invoked at a virtual FF-A instance with the SMC, HVC or SVC conduits to,
+                     – Transmit a partition message from the TX buffer of the caller endpoint to the RX buffer of the Receiver
+                        endpoint as described in 8.2 Indirect messaging.
+                     – Notify the Receiver’s scheduler that the Receiver endpoint must be run to process the partition message
+                        as described in 10.8.1 RX buffer full notification.
+                • An invocation of this ABI at a physical FF-A instance with a valid conduit is used to request the SPMC to
+                  transmit the message to a SP.
+                • A partition message is encoded as described in Table 8.1.
+                • Valid FF-A instances and conduits are listed in Table 15.2.
+                • Syntax of this function is described in Table 15.3.
+                • Returns FFA_SUCCESS without any further parameters on successful completion.
+                • Encoding of error code in the FFA_ERROR function is described in Table 15.4.
+                                                                        Table 15.2: FFA_MSG_SEND2 instances and conduits
+           Config No.                     FF-A instance                              Valid conduits
+           1                              Non-secure physical                        SMC
+           2                              Secure physical                            ERET
+           3                              Non-secure virtual                         SMC, HVC
+           4                              Secure virtual                             SMC, HVC, SVC
+                                                                                  Table 15.3: FFA_MSG_SEND2 function syntax
+           Parameter                                   Register         Value
+           uint32 Function ID                          w0                   • 0x84000086.
+           uint32 Sender VM ID                         w1                   • Sender VM ID from whose TX buffer the message
+                                                                              must be copied into the RX buffer of the target SP.
+                                                                                – Bit[31:16]: Sender VM ID at the Non-secure
+                                                                                   physical instance. MBZ otherwise.
+                                                                                – Bit[15:0]: Reserved (SBZ).
+           uint32 Flags                                w2                   • Message flags.
+                                                                                – Must be ignored by callee when SVC conduit is
+                                                                                   used.
+                                                                                – Bit[0]: Reserved (SBZ).
+                                                                                – Bit[1]: Delay Schedule Receiver interrupt flag.
+                                                                                   Guidance in. 16.5.1 Delay Schedule Receiver
+                                                                                   interrupt flag applies to the FFA_MSG_SEND2
+                                                                                   ABI.
+                                                                                – Bit[31:2]: Reserved (SBZ).
+           Other Parameter registers                   w3-w7                • Reserved (SBZ).
+Chapter 15. Messaging interfaces
+15.1. FFA_MSG_SEND2
+                                                                                                Table 15.4: FFA_ERROR encoding
+           Parameter                                   Register         Value
+           int32 Error code                            w2                   • INVALID_PARAMETERS:
+                                                                                  – w1 is not 0 at a virtual FF-A or a Secure physical
+                                                                                    FF-A instance.
+                                                                                  – w1 contains an invalid Sender VM ID when
+                                                                                    called at a Non-secure physical instance.
+                                                                                  – Invalid Sender or Receiver ID in the partition
+                                                                                    message header.
+                                                                                  – Offset in the partition message header is smaller
+                                                                                    than the header size.
+                                                                                  – Message payload does not fit in the TX buffer of
+                                                                                    caller.
+                                                                                  – Unrecognized UUID specified in the partition
+                                                                                    message header.
+                                                                            • BUSY: Receiver RX buffer is not free.
+                                                                            • DENIED:
+                                                                                  – Callee is not in a state to handle this request.
+                                                                                  – Caller is not allowed to invoke this ABI.
+                                                                                  – Receiver endpoint does not support receipt of
+                                                                                    partition messages through Indirect messaging.
+                                                                            • NO_MEMORY:
+                                                                                  – Insufficient space in the Receiver’s RX buffer to
+                                                                                    receive the Sender’s message.
+                                                                            • NOT_SUPPORTED: This function is not implemented
+                                                                              at this FF-A instance.
+Chapter 15. Messaging interfaces
+15.2. FFA_MSG_SEND_DIRECT_REQ

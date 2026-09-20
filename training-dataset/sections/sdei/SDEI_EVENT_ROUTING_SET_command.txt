@@ -1,0 +1,45 @@
+5.1.11 SDEI_EVENT_ROUTING_SET
+                Description                          Sets the routing information of a shared event.
+                Parameters
+                uint32 Function ID                   0xC400_002A
+                int32 event                          Event number.
+                                                     Event routing mode
+                                                     Bits [63:1]: Reserved for future use. Must be zero.
+                                                     Bit [0]: Routing mode Possible values are :
+                uint64 routing_mode
+                                                          •    0: RM_ANY (Route to any PE in the system)
+                                                          •    1: RM_PE (Route to the PE specified by affinity)
+                                                     see SDEI_EVENT_REGISTER on page 22.
+                                                     When routing_mode is RM_PE, this field follows the MPIDR format,
+                uint64 affinity
+                                                     see SDEI_EVENT_REGISTER on page 22.
+                Return
+                                                     SUCCESS                                     Event routing information set
+                                                                                                 successfully.
+                                                     NOT_SUPPORTED                               SDEI is not supported.
+                int64
+                                                     INVALID_PARAMETERS                          Invalid parameters.
+                                                     DENIED                                      Inappropriate event handler
+                                                                                                 state.
+5.1.11.1        Usage
+                        This call is used to change the routing information of a shared event.
+                        SDEI_EVENT_ROUTING_SET is allowed only when the event handler is in handler-registered
+                        state, see Event handler states and properties on page 46.
+5.1.11.2        Parameters
+                        routing_mode denotes the routing mode information. This field follows the same format as
+                        described in SDEI_EVENT_REGISTER on page 22.
+                        affinity denotes the affinity of the event. Currently this is used to specify the PE when the
+                        routing_mode is RM_PE, see SDEI_EVENT_REGISTER on page 22.
+5.1.11.3        Client responsibilities
+                        Before this call, the client must register the event using SDEI_EVENT_REGISTER.
+                        The client must also handle the following potential return error codes,
+                            •     INVALID_PARAMETERS is returned if,
+                                       •     Invalid event number.
+                                       •     Event is not a shared event.
+                                       •     Invalid routing mode or invalid affinity specified for routing mode.
+                            •     DENIED is returned if,
+                                       •     Event handler is in a state other than: handler-registered.
+Interface
+5.1.11.4    Dispatcher responsibilities
+                    The implementation must support the routing_mode and affinity combination as permitted
+                    in SDEI_EVENT_REGISTER.

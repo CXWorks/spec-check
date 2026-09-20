@@ -1,0 +1,67 @@
+15.2 FFA_MSG_SEND_DIRECT_REQ
+           Description
+               • Send a Partition or Framework message in parameter registers as a request to a Receiver endpoint, run the
+                 endpoint and block until a response is available. Also see 8.3 Direct messaging.
+               • Valid FF-A instances and conduits are listed in Table 15.6.
+               • Syntax of this function is described in Table 15.7.
+               • Successful completion of this function is indicated through an invocation of the following interfaces by the
+                 callee:
+                    – FFA_MSG_SEND_DIRECT_RESP to provide a response to the Direct request.
+                    – FFA_INTERRUPT to indicate that the Direct request was interrupted and must be resumed through the
+                       FFA_RUN interface.
+                    – FFA_YIELD to indicate that the Receiver endpoint has transitioned to the blocked runtime state and must
+                       be resumed through the FFA_RUN interface.
+                    – FFA_SUCCESS to indicate completion of the Direct request without a corresponding Direct response.
+                       All other parameter registers MBZ.
+               • Encoding of error code in the FFA_ERROR function is described in Table 15.8.
+                                                    Table 15.6: FFA_MSG_SEND_DIRECT_REQ instances and conduits
+           Config No.                  FF-A instance                              Valid conduits
+           1                           Non-secure physical                        SMC
+           2                           Secure physical                            SMC, ERET
+           3                           Non-secure virtual                         SMC, HVC, ERET
+           4                           Secure virtual                             SMC, HVC, SVC, ERET
+                                                              Table 15.7: FFA_MSG_SEND_DIRECT_REQ function syntax
+           Parameter                                Register         Value
+           uint32 Function ID                       w0                   • 0x8400006F.
+                                                                         • 0xC400006F.
+           uint32 Sender/Receiver IDs               w1                   • Sender and Receiver endpoint IDs.
+                                                                             – Bit[31:16]: Sender endpoint ID.
+                                                                             – Bit[15:0]: Receiver endpoint ID.
+Chapter 15. Messaging interfaces
+15.2. FFA_MSG_SEND_DIRECT_REQ
+           Parameter                              Register         Value
+           uint32 Flags                           w2                   • Message flags.
+                                                                           – Bit[31]: Message type.
+                                                                               * b’0: Message encoded in parameter registers
+                                                                                  is a partition message.
+                                                                               * b’1: Message encoded in parameter registers
+                                                                                  is a framework message.
+                                                                           – Bit[30:8]: Reserved (SBZ).
+                                                                           – Bit[7:0]:
+                                                                               * Reserved (MBZ) if bit[31] = b’0.
+                                                                               * Framework message type if bit[31] = b’1.
+                                                                                     · See Table 18.6 & Table 18.7 in 18.2.4
+                                                                                       Power Management messages.
+           IMPLEMENTATION DEFINED values          w3-w7                • IMPLEMENTATION DEFINED values.
+                                                  x3-x17
+           Other Parameter registers when         x8-x17               • IMPLEMENTATION DEFINED values.
+           using the SMC64, HVC64 or
+           SVC64 convention.
+                                                                                           Table 15.8: FFA_ERROR encoding
+           Parameter                              Register         Value
+           int32 Error code                       w2                   • INVALID_PARAMETERS: Invalid endpoint ID or
+                                                                         message flags.
+                                                                       • DENIED:
+                                                                             – Callee is not in a state to handle this request.
+                                                                             – Receiver endpoint does not support receipt of
+                                                                               Direct request messages.
+                                                                       • NOT_SUPPORTED: This function is not implemented
+                                                                         at this FF-A instance.
+                                                                       • BUSY: Receiver endpoint is in a running, blocked or
+                                                                         preempted state.
+                                                                       • ABORTED: Receiver endpoint ran into an unexpected
+                                                                         error and has aborted.
+                                                                       • NOT_READY: Receiver endpoint is not ready to
+                                                                         handle this request.
+Chapter 15. Messaging interfaces
+15.3. FFA_MSG_SEND_DIRECT_RESP

@@ -1,0 +1,65 @@
+14.4 FFA_INTERRUPT
+            Description
+               • Returns control from the caller to the callee in response to an interrupt. See 14.4.1 Usage for details.
+               • Valid FF-A instances and conduits are listed in Table 14.16.
+               • Syntax of this function is described in Table 14.17.
+                                                                     Table 14.16: FFA_INTERRUPT instances and conduits
+           Config No.                   FF-A instance                                           Valid conduits
+           1                            Non-secure physical                                     ERET
+           2                            Secure and Non-secure virtual                           ERET
+           3                            Secure physical                                         SMC, ERET
+                                                                               Table 14.17: FFA_INTERRUPT function syntax
+           Parameter                                 Register         Value
+           uint32 Function ID                        w0                   • 0x84000062.
+                                                                          • 0xC4000062 (see 11.1.2 Parameter Register
+                                                                            Preservation).
+           uint32 Endpoint/vCPU IDs                  w1                   • Endpoint and vCPU IDs of the caller in a valid usage
+                                                                            scenario described in 14.4.1 Usage. MBZ otherwise.
+                                                                               – Bits[31:16]: Endpoint ID.
+                                                                               – Bits[15:0]: vCPU ID.
+           uint32 Interrupt ID                       w2                   • Interrupt ID in a valid usage scenario described in
+                                                                            14.4.1 Usage. MBZ otherwise.
+           Other Parameter registers                 w3-w7                • Reserved (SBZ).
+                                                     x3-x17
+14.4.1 Usage
+               1. FFA_INTERRUPT is used with the SMC conduit at the Secure physical FF-A instance only by the S-EL1 or
+                  S-EL2 SPMC to inform the SPMD that a Non-secure interrupt has preempted execution of an SP and the
+                  NS-Endpoint on this physical PE must be resumed so that the interrupt can be handled.
+                    1. The SPMC returns the ID of the SP and its execution context that was doing work on behalf of the
+                       NS-Endpoint. The NS-Endpoint is expected to resume execution of the SP execution context once the
+                       interrupt is handled.
+                    2. The interrupt ID field is invalid and MBZ. It must be ignored by the SPMD.
+                    3. An example of this usage is illustrated in Figure 9.3.
+               2. FFA_INTERRUPT is used with the ERET conduit by the Hypervisor, SPMC or the SPMD to inform a callee
+                  in the blocked runtime state that its request was preempted by an interrupt.
+Chapter 14. CPU cycle management interfaces
+14.4. FFA_INTERRUPT
+                    1. The callee had entered the blocked runtime state after requesting a partition to do work on its behalf e.g
+                       through an invocation of a Direct request interface.
+                    2. The partition manager returns the ID of the partition and its vCPU or execution context that was doing
+                       work on behalf of the callee. The callee is expected to resume execution of the partition vCPU or
+                       execution context once the interrupt is handled. This is applicable only if the callee runs in a privileged
+                       exception level i.e. not in S-EL0. Also see 9.2.1 Secure interrupt signaling mechanisms.
+                    3. The interrupt ID field is invalid and MBZ. It must be ignored by the callee.
+                    4. Valid caller and callee combinations at specific FF-A instances are listed below.
+                        1. SPMD and an NS-Endpoint at the Non-secure physical FF-A instance.
+                        2. Hypervisor and a VM at the Non-secure virtual FF-A instance.
+                        3. SPMC and an SP at the Secure virtual FF-A instance.
+                    5. An example of this usage is illustrated in Figure 9.3.
+               3. FFA_INTERRUPT is used with the ERET conduit by the Hypervisor, SPMC or the SPMD to delegate
+                  interrupt handling to a callee in the waiting runtime state.
+                    1. The callee had entered the waiting runtime state after finishing work requested by another partition e.g
+                       through an invocation of FFA_MSG_SEND_DIRECT_RESP.
+                    2. The partition manager returns the ID of the pending interrupt to the callee. This is applicable only if the
+                       callee is a partition that runs in a privileged exception level i.e. not in S-EL0. It is also not applicable
+                       if the callee is an SPMC and the caller is the SPMD. This is because the SPMD is not expected to
+                       determine the identity of the pending interrupt by querying the GIC. Also see 9.2.1 Secure interrupt
+                       signaling mechanisms.
+                    3. The endpoint and vCPU ID fields are invalid and MBZ. They must be ignored by the callee.
+                    4. Valid caller and callee combinations at specific FF-A instances are listed below.
+                        1. SPMD and the S-EL1 or S-EL2 SPMC at the Secure physical FF-A instance.
+                        2. EL3 SPMC and a logical S-EL1 SP at the Secure physical FF-A instance.
+                        3. Hypervisor and a VM at the Non-secure virtual FF-A instance.
+                        4. SPMC and an SP at the Secure virtual FF-A instance.
+Chapter 14. CPU cycle management interfaces
+14.5. FFA_NORMAL_WORLD_RESUME

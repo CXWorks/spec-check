@@ -1,0 +1,41 @@
+5.1.13 SDEI_PE_UNMASK
+                Description                         Unmask the PE to receive SDEI events.
+                Parameters
+                uint32 Function ID                   0xC400_002C
+                Return
+                                                     SUCCESS                                     Unmasked PE successfully.
+                int64
+                                                     NOT_SUPPORTED                               SDEI is not supported.
+5.1.13.1        Usage
+                        This call enables the calling PE to participate in SDEI event handling for the client. The call
+                        unmasks the PE from receiving SDEI events of both normal and critical priority for the
+                        client, analogous to unmasking the IRQ for the PE to enable interrupt exceptions. This is
+                        independent of any event status (see SDEI_EVENT_STATUS on page 30) and only affects
+                        the client PE making this call. This call can be invoked by the client to unmask the PE
+                        irrespective of whether the PE is already masked. The initial state for every PE is to have
+                        events masked.
+                        A PE can receive a triggered event only if the following
+                            •     The client has registered and enabled the SDEI event.
+                            •     The client has unmasked the PE from receiving an event.
+                        The unmask operation is per client and per PE. Each client executes this call from each PE
+                        that is ready to participate in event handling. If SDEI implementation is present for the
+                        client, then this call must always succeed.
+5.1.13.2        Client responsibilities
+                        If the client disabled the preemption before executing SDEI_PE_MASK, then the client will
+                        have to enable the preemption after calling SDEI_PE_UNMASK.
+                        The client calls SDEI_PE_UNMASK mainly for two reasons:
+                            1. Powerup or resume from powerdown state
+                                  During powerup or resume from powerdown state, the PE will be masked from
+                                  receiving any SDEI events. The powerup and resume from powerdown state
+                                  follows the definition as per the Power State Coordination Interface specification.
+                                  The client is required to unmask the PE using this call from each PE that needs to
+                                  participate in the SDEI event handling soon after it has done initial setup. This
+                                  typically means that the client executes SDEI_PE_UNMASK from the client powerup
+                                  entry point, when it is ready for handling the SDEI events. See Power-on sequence
+                                  on page 51 for more details on this.
+                            2. Unmask from a previous masking
+Interface
+                            If the client masked SDEI events for a PE using SDEI_PE_MASK and the call
+                            returned a masked state, then the client does SDEI_PE_UNMASK to unmask the PE.
+5.1.13.3    Dispatcher responsibilities
+                    The dispatcher implementation must dispatch any pending events for the calling PE.

@@ -1,0 +1,195 @@
+13.9 FFA_PARTITION_INFO_GET_REGS
+            Description
+                • Returns information about FF-A components implemented in the system as described in 13.9.1 Overview.
+                • Valid FF-A instances and conduits are listed in Table 13.39.
+                • Syntax of this function is described in Table 13.40.
+                • Encoding of result parameters in the FFA_SUCCESS function is described in Table 13.41.
+                • Encoding of error code in the FFA_ERROR function is described in Table 13.42.
+                                               Table 13.39: FFA_PARTITION_INFO_GET_REGS instances and conduits
+            Config                       FF-A Instance                             Valid Conduits
+            1                            Non-secure Physical                       SMC
+            2                            Secure physical                           SMC, ERET
+            3                            Non-secure virtual                        SMC, HVC
+            4                            Secure virtual                            SMC, HVC, SVC
+                                                          Table 13.40: FFA_PARTITION_INFO_GET_REGS function syntax
+            Parameter                                Register         Value
+            uint32 Function ID                       w0               0xC400008B
+            uint64 UUID Lo                           x1                   • Bytes[0. . . 7] of UUID with byte 0 in the low-order
+                                                                            bits. As specified in 6.2.3.2 UUID encodings.
+            uint64 UUID Hi                           x2                   • Bytes[8. . . 15] of UUID with byte 8 in the low-order
+                                                                            bits. As specified in 6.2.3.2 UUID encodings.
+            uint32 Start index and tag               x3                   • Bits[15:0]: Start index.
+                                                                               – Index into an array of partition information
+                                                                                  maintained by the callee from where information
+                                                                                  must be returned.
+                                                                                    * E.g. if there are 10 partitions corresponding
+                                                                                        to a UUID, this value could be any number
+                                                                                        in the range (0-9).
+                                                                          • Bits[31:16]: Information tag for the queried UUID.
+                                                                               – MBZ if Start Index = 0.
+                                                                               – Information tag known to the caller if Start Index
+                                                                                  > 0.
+                                                                          • Bits[63:32]: Reserved (SBZ).
+            Other Parameter registers                x4-x17               • Reserved (SBZ).
+Chapter 13. Setup and discovery interfaces
+13.9. FFA_PARTITION_INFO_GET_REGS
+                                                                                         Table 13.41: FFA_SUCCESS encoding
+            Parameter                                Register         Value
+            uint32 Function ID                       w0               FFA_SUCCESS64
+            uint64 Information metadata              x2                   • Bits[15:0]: Last index
+                                                                               – Maximum index of array of partition information
+                                                                                  maintained by the callee relative to the Start
+                                                                                  index specified by the caller.
+                                                                                    * E.g. if there are 10 partitions corresponding
+                                                                                       to a UUID, this value will be 9.
+                                                                               – Total number of entries = Last index + 1
+                                                                          • Bits[31:16]: Current Index.
+                                                                               – Maximum index of array of partition information
+                                                                                  returned by the callee relative to the Start index
+                                                                                  specified by the caller.
+                                                                                    * E.g. If there are 10 partitions corresponding
+                                                                                       to a UUID, each invocation of this ABI
+                                                                                       returns 2 array entries and the caller
+                                                                                       specifies 0 as the start index, this value
+                                                                                       would be 1.
+                                                                               – Number of entries returned by the callee in this
+                                                                                 ABI invocation = (Current index - Start index) +
+                                                                          • Bits[47:32]:
+                                                                               – Information tag for the queried UUID known to
+                                                                                  the callee.
+                                                                          • Bits[63:48]:
+                                                                               – Size in bytes of each partition information entry
+                                                                                  descriptor.
+Chapter 13. Setup and discovery interfaces
+13.9. FFA_PARTITION_INFO_GET_REGS
+            Parameter                                Register         Value
+            uint64 Partition information             x3-x17               • Partition information descriptor.
+                                                                               – Size of each descriptor is 48 bytes as per the
+                                                                                  FF-A v1.3 spec.
+                                                                               – Each descriptor is encoded in 6 registers in little
+                                                                                  endian format as described below.
+                                                                          • Registers N=3,9
+                                                                               – xN
+                                                                                    * Bits[15:0]: 16-bit ID of the partition, stream
+                                                                                       or auxiliary endpoint.
+                                                                                    * Bits[31:16]: Number of execution contexts
+                                                                                       implemented by this partition (also see 4.7
+                                                                                       Execution context).
+                                                                                    * Bits[63:32]: Partition properties as encoded
+                                                                                       in Table 6.2
+                                                                               – xN + 1
+                                                                                    * MBZ if a non-Nil protocol UUID is
+                                                                                       specified as input.
+                                                                                    * If the Nil UUID is specified as input.
+                                                                                          · Bytes[0. . . 7] of the protocol UUID with
+                                                                                            byte 0 in the low-order bits.
+                                                                               – xN + 2
+                                                                                    * MBZ if a non-Nil protocol UUID is
+                                                                                       specified as input.
+                                                                                    * If the Nil UUID is specified as input.
+                                                                                          · Bytes[8. . . 15] of the protocol UUID
+                                                                                            with byte 0 in the low-order bits.
+                                                                               – xN + 3
+                                                                                    * Bytes[0. . . 7] of the Image UUID with byte 0
+                                                                                       in the low-order bits.
+                                                                                    * MBZ if the partition has not specified an
+                                                                                       image UUID.
+                                                                               – xN + 4
+                                                                                    * Bytes[0. . . 7] of the Image UUID with byte 0
+                                                                                       in the low-order bits.
+                                                                                    * MBZ if the partition has not specified an
+                                                                                       image UUID.
+                                                                               – xN + 5
+                                                                                    * Bits[63:31]: Reserved (MBZ).
+                                                                                    * Bits[30:16]: Partition FF-A Major version.
+                                                                                    * Bits[15:0]: Partition FF-A Minor version.
+                                                                          • Unused registers are Reserved (MBZ).
+                                                                                         Table 13.42: Encoding of return codes
+            Parameter                                Register         Value
+            uint32 Function ID                       w0               FFA_ERROR
+Chapter 13. Setup and discovery interfaces
+13.9. FFA_PARTITION_INFO_GET_REGS
+            Parameter                                Register         Value
+            int32 Error code                         w2                   • INVALID_PARAMETERS:
+                                                                                – Invalid UUID.
+                                                                                – Invalid start index.
+                                                                          • NOT_SUPPORTED: This function is not implemented
+                                                                            at this FF-A instance.
+                                                                          • DENIED: Callee is not in a state to handle this request.
+                                                                          • RETRY: The provided tag is not valid.
+                                                                          • NOT_READY: Callee is not ready to handle this
+                                                                            request.
+13.9.1 Overview
+I0233         FFA_PARTITION_INFO_GET_REGS can be used by FF-A components for the following purposes.
+                 • To discover the ID (see Chapter 6 Identification and Discovery) and other properties of partitions. This
+                   information is,
+                      – Requested by specifying a UUID as an input parameter as described in Table 13.40.
+                      – Returned in registers as encoded in a partition information descriptor as described in Table 13.41.
+13.9.2 Usage
+I0234         The result of an invocation of this ABI depends upon the version of the Framework, specified UUID, and the FF-A
+              instance where the ABI is invoked. This is described in 6.2.2 Partition discovery ABI usage.
+U0235         At the Secure physical FF-A instance, an S-EL1 or S-EL2 SPMC is unable to distinguish whether an invocation of
+              the FFA_PARTITION_INFO_GET_REGS ABI with the ERET conduit originates from the SPMD or the Normal
+              world.
+              As a result, the SPMC treats all invocations of this ABI received at the Secure physical FF-A instance as originating
+              from the SPMD (see also 13.2.2.1 Version negotiation).
+              If the FFA_PARTITION_INFO_GET_REGS ABI is invoked at the Non-secure physical FF-A instance with the
+              SMC conduit, the SPMD is responsible for issuing the corresponding query to the SPMC on behalf of the caller
+              and for forwarding the response back to the original requester.
+              This implies that whether information for LSPs co-resident with the SPMD is returned to the caller at the
+              Non-secure physical FF-A instance depends upon the SPMD and SPMC implementations as follows:
+                 • The SPMC discovers the LSPs co-resident with the SPMD via an invocation of the
+                   FFA_PARTITION_INFO_GET_REGS ABI at the Secure physical instance via the SMC conduit. The SPMC
+                   includes this information in response to an invocation of the same ABI by the SPMD at the same instance
+                   via the ERET conduit. The caller at the Non-secure physical FF-A instance receives information for LSPs
+                   managed by the SPMD.
+                 • The SPMC does not include information for LSPs co-resident with the SPMD in response to an invocation of
+                   the FFA_PARTITION_INFO_GET_REGS ABI by the SPMD at the Non-Secure physical instance via the
+                   ERET conduit and one of the following is true:
+                      – The SPMD adds this information to the response from the SPMC. The caller at the Non-secure physical
+                        FF-A instance receives information for LSPs managed by the SPMD.
+                      – The SPMD does not add this information to the response from the SPMC. The caller at the Non-secure
+                        physical FF-A instance does not receive information for LSPs managed by the SPMD.
+Chapter 13. Setup and discovery interfaces
+13.9. FFA_PARTITION_INFO_GET_REGS
+S0236            To cater for the scenario where the full list of descriptors does not fit in a single invocation, the callee exports an
+                 abstraction to the caller in which the partition information corresponding to the queried UUID is organized in an
+                 array. If the array cannot be returned in a single response to the caller, the callee must encode an IMPLEMENTATION
+                 DEFINED tag as part of the response that is used to identify the version of the information being provided as part of
+                 the call. The mechanism is described as follows,
+                    1. The caller starts retrieval of partition information by specifying the start index 0 of the array.
+                    2. The callee returns the last index of the array to inform the caller about the number of entries in the array.
+                       Total number of entries = last index + 1.
+                    3. The callee also returns the current index which identifies the last array entry that could fit in the returned
+                       partition information.
+                    4. The number of entries returned in a single invocation = (current index - start index) + 1.
+                    5. If all the partition information cannot fit into the available register space, current index < last index. The
+                       caller invokes the ABI again with start index = current index + 1.
+                    6. All partition information entries in the array have been returned when last index == current index.
+                           • last index >= start index.
+                           • current index >= start index.
+                    7. The ABI needs to be invoked only once if start_index == 0 && last_index == current_index.
+                    8. The callee returns the tag of the partition information in response to an invocation of this ABI with start_index
+                       = 0.
+                    9. The caller encodes this tag in every invocation of this ABI with start_index > 0.
+                  10. The callee must return the RETRY error if tag(callee) != tag(caller).
+                 Figure 13.2 illustrates an example where an SP uses the above mechanism to discover the presence of 10 SPs by
+                 using the Nil UUID.
+                          SPMC                                                                                                          SP
+                                                               SP requests information via the Nil UUID
+                                 1 SMC(FFA_PARTITION_INFO_GET_REGS, Nil UUID, Start Index=0, Tag=0)
+ Return partition information for all 10 SPs in the system
+                                                                  SPMC returns descriptors for SP0-3
+                              2 ERET(FFA_SUCCESS64, Last index=9, Current index=3, Tag=X, Descriptor Size=24, Descriptor entries 0-3)
+                                                             SP requests the next descriptors from index 4
+                                 3 SMC(FFA_PARTITION_INFO_GET_REGS, Nil UUID, Start index=4, Tag=X
+                                                                 SPMC Returns descriptors for SP4-7
+                              4 ERET(FFA_SUCCESS64, Last index=9, Current index=7, Tag=X, Descriptor Size=24, Descriptor entries 4-7)
+                                                             SP requests the next descriptors from index 8
+                                 5 SMC(FFA_PARTITION_INFO_GET_REGS, Nil UUID, Start index = 8, Tag=X
+                                                             SPMC Returns the last descriptors for SP8-9
+                              6 ERET(FFA_SUCCESS64, Last index=9, Current index=9, Tag=X, Descriptor Size=24, Descriptor entries 8-9)
+                          SPMC                                                                                                          SP
+                                                    Figure 13.2: Example usage of FFA_PARTITION_INFO_GET_REGS by an SP.
+Chapter 13. Setup and discovery interfaces
+13.10. FFA_ID_GET

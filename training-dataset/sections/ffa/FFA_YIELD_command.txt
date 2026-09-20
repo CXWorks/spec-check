@@ -1,0 +1,129 @@
+14.2 FFA_YIELD
+            Description
+                • This ABI is invoked by an endpoint execution context to yield execution back to the FF-A component that
+                  scheduled it. E.g. SP0 yields execution back to VM0 instead of busy waiting for an IO operation to complete
+                  as illustrated in Figure 14.1.
+                     – The endpoint execution context transitions from the running to the blocked state as described in 7.2.9
+                         Blocked state.
+                     – The endpoint execution context invokes this ABI with the combinations of FF-A instances and conduits
+                         listed in Table 14.7.
+                     – An invocation of this ABI by an endpoint execution context is completed through the following
+                         transitions. The endpoint execution context transitions from the blocked to the running state.
+                            * eret(FFA_RUN). This transition is applicable to all endpoints listed in Table 14.7.
+                            * eret(FFA_INTERRUPT). This transition is not applicable to S-EL0 endpoints (see Table 9.1).
+                     – The endpoint execution context is scheduled by FF-A components as described below,
+                            * An SP or VM is scheduled by an S-Endpoint, NS-Endpoint or Hypervisor via the FFA_RUN or
+                              Direct request ABIs.
+                            * An SP is scheduled by the SPMC in response to a Secure interrupt via the FFA_INTERRUPT ABI.
+                • This ABI is invoked by an SPMC in response to a corresponding invocation by an S-Endpoint execution
+                  context. This is done to yield execution back to the S-Endpoint (via the ERET conduit), Hypervisor or
+                  NS-Endpoint execution context (via the SMC conduit) that originally scheduled the calling S-Endpoint. The
+                  valid combinations of SPMCs, FF-A instances and conduits are listed in Table 14.8.
+                • This ABI is invoked by the SPMD in response to a corresponding invocation by an SPMC on behalf of an
+                  S-Endpoint execution context. This is done to yield execution back to the Hypervisor or NS-Endpoint
+                  execution context (via the ERET conduit) that originally scheduled the calling S-Endpoint. The valid
+                  combinations of FF-A instances and conduits are listed in Table 14.8.
+                • This ABI is invoked by a Hypervisor in response to a corresponding invocation by a VM execution context or
+                  the SPMD on behalf of an S-Endpoint execution context. This is done to yield execution back to the VM (via
+                  the ERET conduit) that originally scheduled the calling endpoint. The valid combinations of FF-A instances
+                  and conduits are listed in Table 14.8.
+                     – An optional 64-bit timeout could be specified by the Hypervisor if the calling execution context is a VM
+                         vCPU.
+                     – The scheduler runs the VM vCPU after the timeout expires.
+                • Syntax of this function is described in Table 14.9.
+                • Encoding of error codes in the FFA_ERROR function is described in Table 14.10.
+                     Table 14.7: Valid combinations of endpoints, instances and conduits for invoking FFA_YIELD
+           Instance/Conduit                        SMC                          HVC                    SVC
+           Secure virtual                          S-EL1 SP                     S-EL1 SP               S-EL0 SP
+           Secure physical                         S-EL1 SP                     NA                     NA
+           Non-secure virtual                      EL1 SP                       EL1 SP                 NA
+Chapter 14. CPU cycle management interfaces
+14.2. FFA_YIELD
+             Table 14.8: Valid combinations of partition managers, instances and conduits for invoking FFA_YIELD
+           Instance/Conduit                          SMC                                                 ERET
+           Secure virtual                            NA                                                  Any SPMC
+           Secure physical                           S-EL1 SPMC, S-EL2 SPMC                              NA
+           Non-secure virtual                        NA                                                  Hypervisor
+           Non-secure physical                       NA                                                  SPMD
+                                                                                        Table 14.9: FFA_YIELD function syntax
+           Parameter                                 Register         Value
+           uint32 Function ID                        w0                   • 0x8400006C.
+                                                                          • 0xC400006C (see 11.1.2 Parameter Register
+                                                                            Preservation).
+           uint32 Endpoint/vCPU IDs                  w1                   • Endpoint and vCPU IDs of the caller endpoint.
+                                                                               – Bit[31:16]: Endpoint ID.
+                                                                               – Bit[15:0]: vCPU ID.
+                                                                          • This parameter is used by the Hypervisor, SPMC and
+                                                                            SPMD at the following combinations of FF-A
+                                                                            instances and conduits. It is Reserved (MBZ) in all
+                                                                            other scenarios.
+                                                                               – By an SPMC at the,
+                                                                                    * Secure physical FF-A instance with the
+                                                                                       SMC conduit.
+                                                                                    * Secure virtual FF-A instance with the ERET
+                                                                                       conduit.
+                                                                               – By the SPMD at the Non-secure physical FF-A
+                                                                                  instance with the ERET conduit.
+                                                                               – By the Hypervisor at the Non-secure virtual
+                                                                                  FF-A instance with the ERET conduit.
+           uint32 TimeoutLo                          w2                   • Bits[31:0] of an interval measured in nanoseconds
+                                                                            after which vCPU of the endpoint specified in w1 must
+                                                                            be run.
+                                                                          • This parameter MBZ if the caller does not specify a
+                                                                            timeout.
+                                                                          • This parameter is used by the Hypervisor at the
+                                                                            following combinations of FF-A instances and
+                                                                            conduits. It is Reserved (MBZ) at in all other
+                                                                            scenarios.
+                                                                               – Non-secure virtual FF-A instance with the ERET
+                                                                                  conduit.
+Chapter 14. CPU cycle management interfaces
+14.2. FFA_YIELD
+                     Parameter                                                             Register                 Value
+                     uint32 TimeoutHi                                                      w3                              • Bits[63:32] of an interval measured in nanoseconds
+                                                                                                                             after which vCPU of the endpoint specified in w1 must
+                                                                                                                             be run.
+                                                                                                                           • This parameter MBZ if the caller does not specify a
+                                                                                                                             timeout.
+                                                                                                                           • This parameter is used by the Hypervisor at the
+                                                                                                                             following combinations of FF-A instances and
+                                                                                                                             conduits. It is Reserved (MBZ) at in all other
+                                                                                                                             scenarios.
+                                                                                                                                – Non-secure virtual FF-A instance with the ERET
+                                                                                                                                   conduit.
+                     Other Parameter registers                                             w4-w7                           • Reserved (SBZ).
+                                                                                           x4-x17
+                                                                                                                                                        Table 14.10: FFA_ERROR encoding
+                     Parameter                                                             Register                 Value
+                     int32 Status                                                          w2                              • INVALID_PARAMETERS: Unrecognized endpoint or
+                                                                                                                             vCPU ID. Only valid with the ERET conduit.
+                                                                                                                           • DENIED: Callee is not in a state to handle this request.
+                                                                                                                           • NOT_SUPPORTED: This function is not implemented
+                                                                                                                             at this FF-A instance.
+               VM0                                         Hypervisor                                    SPMD                                           SPMC                                             SP0
+                  1 SMC(FFA_MSG_SEND_DIRECT_REQ, to SP0)
+                                                                2 SMC(FFA_MSG_SEND_DIRECT_REQ, to SP0)
+                                                                                                              3 ERET(FFA_MSG_SEND_DIRECT_REQ, to SP0)
+                                                                                                                                                           4 ERET(FFA_MSG_SEND_DIRECT_REQ, from VM0)
+                                                                                                                                                                                                  Start some work
+                                                                                                                                                                                     Yield control until work is expected to finish
+                                                                                                                                                               5 SMC(FFA_YIELD)
+                                                                                                                6 SMC(FFA_YIELD, SP0)
+                                                                  7 ERET(FFA_YIELD, SP0)
+                     8 SMC(FFA_YIELD, SP0)
+ Schedule SP0 after IMPDEF period
+                  9 SMC(FFA_RUN, SP0)
+                                                                10 SMC(FFA_RUN, SP0)
+                                                                                                              11 ERET(FFA_RUN, SP0)
+                                                                                                                                                           12 ERET(FFA_RUN)
+                                                                                                                                                                                              Check if work is finished
+                                                                                                                                                                                            Return result of finished work
+                                                                                                                                                               13 SMC(FFA_MSG_SEND_DIRECT_RESP, to VM0)
+                                                                                                                14 SMC(FFA_MSG_SEND_DIRECT_RESP, to VM0)
+                                                                  15 ERET(FFA_MSG_SEND_DIRECT_RESP, to VM0)
+                     16 SMC(FFA_MSG_SEND_DIRECT_RESP, to VM0)
+           Work done
+               VM0                                         Hypervisor                                    SPMD                                           SPMC                                             SP0
+                                                                                                                                   Figure 14.1: SP0 yields execution back to VM0
+Chapter 14. CPU cycle management interfaces
+14.3. FFA_RUN
