@@ -1,0 +1,31 @@
+[09-21 00:08:16] watchdog up (pid 4783), waiting for the current batch
+[09-21 01:05:16] batch clear -- SDEI/DRTM/FFA finished
+[09-21 01:05:16] launched scmi-ft-nopre on gpu0
+[09-21 01:05:16] launched scmi-ft-tail on gpu1
+[09-21 01:05:16] launched scmi-ft-sel on gpu2
+[09-21 01:05:16] launched scmi-base-nopre on gpu3
+[09-21 01:05:16] launched scmi-base-tail on gpu4
+[09-21 01:05:16] launched scmi-base-sel on gpu5
+[09-21 01:05:16] launched sbi-ft-nopre on gpu6
+[09-21 01:05:16] launched sbi-ft-tail on gpu7
+[09-21 01:05:46] launched sbi-ft-sel on gpu0
+[09-21 01:05:46] launched sbi-base-nopre on gpu1
+[09-21 01:05:46] launched sbi-base-tail on gpu2
+[09-21 01:05:46] launched sbi-base-sel on gpu3
+[09-21 01:06:02] ALL DONE -- 36 runs across 6 documents
+[09-21 01:07:24] repo @ 4c9034c
+[09-21 01:07:25] precheck scmi: 153 sections, preamble present
+[09-21 01:07:25] precheck sbi: 72 sections, preamble present
+[09-21 01:07:25] launched scmi-ft-nopre on gpu0
+[09-21 01:07:25] launched scmi-ft-tail on gpu1
+[09-21 01:07:25] launched scmi-ft-sel on gpu2
+[09-21 01:07:25] launched scmi-base-nopre on gpu3
+[09-21 01:07:25] launched scmi-base-tail on gpu4
+[09-21 01:07:25] launched scmi-base-sel on gpu5
+[09-21 01:07:25] launched sbi-ft-nopre on gpu6
+[09-21 01:07:25] launched sbi-ft-tail on gpu7
+[09-21 03:00:23] launched sbi-ft-sel on gpu0
+[09-21 03:00:23] launched sbi-base-nopre on gpu1
+[09-21 03:00:23] launched sbi-base-tail on gpu2
+[09-21 03:00:23] launched sbi-base-sel on gpu3
+[09-21 03:48:18] finished: 12 produced files, 0 empty
