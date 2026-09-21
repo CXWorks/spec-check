@@ -64,3 +64,6 @@ training/sections/
 
 # pdftotext cache produced by scripts/dangling_alp14.py
 .alp14_pdf.txt
+
+# pdftotext caches next to the PDFs
+specs/*.txt
