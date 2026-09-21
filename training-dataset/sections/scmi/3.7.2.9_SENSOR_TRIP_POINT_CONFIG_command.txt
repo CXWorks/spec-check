@@ -1,0 +1,55 @@
+              3.7.2.9    SENSOR_TRIP_POINT_CONFIG
+              This command is used for selecting and configuring a trip-point of interest. Following the successful completion
+              of this command, the platform generates the SENSOR_TRIP_POINT_EVENT event whenever the sensor value
+              crosses the programmed trip point value, provided notifications have been enabled for trip-points globally using the
+              SENSOR_TRIP_POINT_NOTIFY command.
+              Sensors which report values along multiple axes can optionally support trip points only if all the axes report the same
+              sensor units. In such a case, the SENSOR_TRIP_POINT_EVENT event is generated when any axis crosses the
+              configured threshold.
+              An agent can use this command for various use-cases. For example:
+                  • The agent can invoke this command twice to program the upper and lower values of a hysteresis band, respectively.
+                  • For a counter-type sensor that is required to fire a notification on reaching a certain count, the agent can issue this
+                    command to program the count value.
+                  message_id: 0x5
+                  protocol_id: 0x15
+                  This command is mandatory if at least one of the implemented sensors in the platform supports trip points.
+                                                                                                   Arm® System Control and Management Interface
+                  Parameters
+                  Name                                           Description
+                  uint32 sensor_id                               Identifier for the sensor.
+                  uint32 trip_point_ev_ctrl                      Bits[31:12]
+                                                                 Reserved.
+                                                                 Bits[11:4]
+                                                                 trip_point_id: Identifier for the selected trip point. This value should
+                                                                 be equal to or less than the total number of trip points that are
+                                                                 supported by this sensor as advertised in its descriptor.
+                                                                 Bits[3:2]
+                                                                 Reserved for future use.
+                                                                 Bits[1:0]
+                                                                 Event control for the trip-point:
+                                                                      • If set to 0, disables event generation for this trip-point (this is
+                                                                        the default state).
+                                                                      • If set to 1, enables event generation when this trip-point value
+                                                                        is reached or crossed in a positive direction.
+                                                                      • If set to 2, enables event generation when this trip-point value
+                                                                        is reached or crossed in a negative direction.
+                                                                      • If set to 3, enables event generation when this trip-point value
+                                                                        is reached or crossed in either direction.
+                  uint32 trip_point_val_low
+                  uint32 trip_point_val_high
+                                                                T0
+                                                                 Lower 32 bits of the sensor value corresponding to this trip-point. The
+                                                                 default value is 0.
+                                                                 Higher 32 bits of the sensor value corresponding to this trip-point.
+                  Return values
+                                                  BE             The default value is 0.
+                  Name                                           Description
+                  int32 status                                   One of, but not limited to, the following:
+                                                                     • SUCCESS: if the sensor trip point was set successfully.
+                                                                     • NOT_FOUND: if sensor_id does not point to an existing
+                                                                       sensor.
+                                                                     • INVALID_PARAMETERS: if the input parameters specify
+                                                                       incorrect or illegal values.
+                                                                     • NOT_SUPPORTED: if the platform does not support trip point
+                                                                       event notifications for the sensor.
+                                                                 See Section 3.1.4 for more status code definitions.

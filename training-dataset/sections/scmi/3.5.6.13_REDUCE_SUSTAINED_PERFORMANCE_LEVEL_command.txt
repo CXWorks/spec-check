@@ -1,0 +1,35 @@
+                 3.5.6.13   REDUCE_SUSTAINED_PERFORMANCE_LEVEL
+                 This command enables an agent to voluntarily request a reduction in the sustained performance level of a domain
+                 below the level specified by the sustained_perf_level field of the PERFORMANCE_DOMAIN_ATTRIBUTES command
+                 as specified in Section 3.5.6.5. The platform provisions the reduced sustained performance level for the domain
+                 allowing to free up performance headroom to allocate to other domains. If Level Indexing Mode is used, this level
+                 must be specified in level index instead of the corresponding performance level. This command can return before
+                 the new sustained performance level has been set. The platform simply has to acknowledge that it has received the
+                 command. It is illegal to specify a sustained performance level which is higher than the platform specified sustained
+                 performance level. This command does not change the value returned in the sustained_perf_level field of the
+                 PERFORMANCE_DOMAIN_ATTRIBUTES command as specified in Section 3.5.6.5, allowing the agent can revert back
+                 to the platform specified sustained performance level at any time.
+                 The request to reduce the sustained performance level is not supported for QoS only domains, indicated by Bit[23] of
+                 attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES command, as specified in Section 3.5.6.5.
+                                                                                                      Arm® System Control and Management Interface
+                    message_id: 0xF
+                    protocol_id: 0x13
+                    This command is optional.
+                    Parameters
+                    Name                                   Description
+                    uint32 domain_id                       Identifier for the performance domain.
+                    uint32 sustained_level                 Requested sustained performance level, or level index.
+                    Return values
+                    Name                                   Description
+                    int32 status                           One of, but not limited to, the following:
+                                                               • SUCCESS: if the platform has accepted the command and scheduled it
+                                                                 for processing.
+                                                               • NOT_FOUND: if the domain_id parameter does not point to a valid
+                                                                 domain.
+                                                               • NOT_SUPPORTED: if the command is not supported.
+                                                               • DENIED: if the agent is not permitted to request a reduction of the
+                                                                 sustained performance level for the domain.
+                                                               • OUT_OF_RANGE: if the requested level is outside the currently
+                                                                 allowed range.
+                                                                   T0
+                                                           See Section 3.1.4 for more status code definitions.

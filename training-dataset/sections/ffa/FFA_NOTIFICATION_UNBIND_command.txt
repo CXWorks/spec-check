@@ -37,8 +37,6 @@
                                                                               – b’1: The Sender endpoint cannot signal this
                                                                                  notification.
                                                                               – b’0: Has no effect.
-Chapter 16. Notification interfaces
-16.4. FFA_NOTIFICATION_UNBIND
            Parameter                                Register         Value
            Other Parameter registers                w5-w7                • Reserved (SBZ).
                                                                                         Table 16.17: Encoding of return codes
@@ -53,5 +51,3 @@ Chapter 16. Notification interfaces
                                                                                – Caller is not allowed to invoke this ABI.
                                                                          • ABORTED: Sender partition ran into an unexpected
                                                                            error and has aborted.
-Chapter 16. Notification interfaces
-16.5. FFA_NOTIFICATION_SET

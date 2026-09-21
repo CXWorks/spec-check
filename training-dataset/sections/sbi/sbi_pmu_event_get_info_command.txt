@@ -1,0 +1,3 @@
+11.14. Function: Get PMU Event info (FID #8)
+  struct sbiret sbi_pmu_event_get_info(unsigned long shmem_phys_lo,
+                                       unsigned long shmem_phys_hi,

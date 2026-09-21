@@ -29,8 +29,6 @@
                     This rule ensures that an invocation of this ABI is handled entirely in EL3 firmware before returning to the
                     calling Exception level in the Secure state. This helps preserve the FF-A programming model where an exit
                     to another Security state is always explicitly requested by software in the Secure state in S-EL1 or S-EL2.
-Chapter 17. Interrupt management interfaces
-17.1. FFA_EL3_INTR_HANDLE
               Figure 17.1 illustrates how a Group 0 interrupt can be handled by TF-A at EL3 in coordination with an SPMC at
               S-EL1 or S-EL2 via the use of this ABI when SCR_EL3.FIQ=0 in the Secure state.
                    S-EL1 or S-EL2                                                   EL3 firmware

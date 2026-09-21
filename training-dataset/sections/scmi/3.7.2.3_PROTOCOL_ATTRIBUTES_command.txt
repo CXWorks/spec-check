@@ -1,0 +1,31 @@
+                  3.7.2.3   PROTOCOL_ATTRIBUTES
+                  This command returns the implementation details associated with this protocol.
+                                                                                                    Arm® System Control and Management Interface
+                  message_id: 0x1
+                  protocol_id: 0x15
+                  This command is mandatory.
+                  Return values
+                  Name                                  Description
+                  int32 status                          See Section 3.1.4 for status code definitions.
+                  uint32 attributes                     Bits[31:24]
+                                                        Reserved, must be zero.
+                                                        Bits[23:16]
+                                                        Maximum number of outstanding asynchronous commands that are supported
+                                                        by the platform.
+                                                        Bits[15:0]
+                                                        Number of sensors that are present.
+                  uint32                                This value indicates the lower 32 bits of the physical address where the sensor
+                  sensor_reg_address_low                shared memory region is located. This value should be 64-bit aligned. The
+                                                        address must be in the memory map of the calling agent. If the sensor_reg_len
+                                                        field is 0, then this field is invalid and must be ignored by the agent.
+                  uint32                                This value indicates the upper 32 bits of the physical address where the
+                  sensor_reg_address_high               shared memory region is located. The address must be in the memory map of
+                                                        the calling agent. If the sensor_reg_len field is 0, then this field is invalid and
+                  uint32 sensor_reg_len
+                                                                 T0
+                                                        must be ignored by the agent.
+                                                        This value indicates the length in bytes of the shared memory region. A value
+                                                        of 0 in this field indicates that the platform does not implement the sensor
+                                                   BE   shared memory.
+              Note: Statistics capability has been marked for deprecation and is being replaced by system telemetry.
+              The sensor shared memory region is described in Section 3.7.5.

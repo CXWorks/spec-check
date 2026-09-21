@@ -1,0 +1,48 @@
+              3.8.2.6    RESET
+              This command allows an agent to reset the specified reset domain. If the reset request is issued as an asynchronous call,
+              the platform must return immediately upon receipt of the request. The platform might need to ensure that the domain and
+              all dependent logic have reached a state of quiescence before performing the actual reset, although this is not mandatory.
+              When the reset is done, the platform should then send a RESET_COMPLETE delayed response, described in
+              Section 3.8.3.1. The platform has the option to inform agents other than the caller of the reset incident, using the
+              RESET_ISSUED notification that is described in Section 3.8.4.1.
+                  message_id: 0x4
+                  protocol_id: 0x16
+                  This command is mandatory.
+                  Parameters
+                  Name                                   Description
+                  uint32 domain_id                       Identifier for the reset domain.
+                                                                                                 Arm® System Control and Management Interface
+                  uint32 flags                        This parameter allows the agent to specify additional conditions and
+                                                      requirements specific to the request, and has the following format:
+                                                      Bits[31:3]
+                                                      Reserved, must be zero.
+                                                      Bit[2]
+                                                      Async flag. Only valid if Bit[0] is set to 1.
+                                                           • Set to 1 if the reset must complete asynchronously.
+                                                           • Set to 0 if the reset must complete synchronously.
+                                                      Bit[1]
+                                                      Explicit signal. This flag is ignored when Bit[0] is set to 1.
+                                                           • Set to 1 to explicitly assert reset signal.
+                                                           • Set to 0 to explicitly de-assert reset signal.
+                                                      Bit[0]
+                                                      Autonomous Reset action.
+                                                           • Set to 1 if the reset must be performed autonomously by the platform.
+                                                           • Set to 0 if the reset signal shall be explicitly asserted and de-asserted
+                                                             by the caller.
+                  uint32 reset_state                  The reset state being requested. The format of this parameter is specified in
+                                                      Table 22.
+                  Return values
+                  Name                                Description
+                  int32 status
+                                                              T0
+                                                      One of, but not limited to, the following:
+                                                          • SUCCESS: if the operation was successful.
+                                                          • NOT_FOUND: if the reset domain identified by domain_id does not
+                                                BE          exist.
+                                                          • INVALID_PARAMETERS: if an illegal or unsupported reset state is
+                                                            specified or if the flags field is invalid.
+                                                          • GENERIC_ERROR: if the operation failed, for example if there are
+                                                            other active users of the reset domain.
+                                                          • DENIED: if the calling agent is not allowed to reset the specified reset
+                                                            domain.
+                                                      See Section 3.1.4 for more status code definitions.

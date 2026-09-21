@@ -1,0 +1,22 @@
+              3.10.3.9   POWERCAP_MAI_GET
+              This command can be used by an agent to get the value of the currently enforced power measurement averaging interval
+              for a domain.
+              ─── Note ─────
+              It is possible for the MAI value returned by this command to be stale by the time the command completes, as another
+              MAI change request could have been initiated and completed in the interim.
+              ─────────────
+                                                                                                Arm® System Control and Management Interface
+                  message_id: 0x6
+                  protocol_id: 0x18
+                  This command is mandatory if any domain supports reading the MAI.
+                  Parameters
+                  Name                               Description
+                  uint32 domain_id                   Identifier for the power capping domain.
+                  Return values
+                  Name                               Description
+                  int32 status                       One of, but not limited to, the following:
+                                                         • SUCCESS: if the MAI setting was successfully returned.
+                                                         • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                         • NOT_SUPPORTED: if the request is not supported.
+                                                     See Section 3.1.4 for more status code definitions.
+                  uint32 mai                         The power measurement averaging interval set for the domain.

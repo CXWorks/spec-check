@@ -1,0 +1,27 @@
+11.9. Function: Start a set of counters (FID #3)
+  struct sbiret sbi_pmu_counter_start(unsigned long counter_idx_base,
+                                      unsigned long counter_idx_mask,
+                                      unsigned long start_flags,
+                                      uint64_t initial_value)
+Start or enable a set of counters on the calling hart with the specified initial value. The counter_idx_base
+and counter_idx_mask parameters represent the set of counters whereas the initial_value parameter
+specifies the initial value of the counter.
+The bit definitions of the start_flags parameter are shown in the Table 39 below.
+                                                Table 39. PMU Counter Start Flags
+       Flag Name                                                    Bits               Description
+       SBI_PMU_START_SET_INIT_VALUE                                 0:0                Set the value of counters based on
+                                                                                       the initial_value parameter
+       SBI_PMU_START_FLAG_INIT_SNAPSHOT                             1:1                Initialize the given counters from
+                                                                                       shared memory if available.
+       RESERVED                                                     2:(XLEN-1)         Reserved for future use and must
+                                                                                       be zero.
+                   When SBI_PMU_START_SET_INIT_VALUE or SBI_PMU_START_FLAG_INIT_SNAPSHOT is not set
+                  in start_flags, the counter value will not be modified and the event counting will start from
+                   the current counter value.
+The shared memory address must be set during boot via sbi_pmu_snapshot_set_shmem before the
+SBI_PMU_START_FLAG_INIT_SNAPSHOT flag may be used. The SBI implementation must initialize all the
+given valid counters (to be started) from the value set in the shared snapshot memory.
+                   SBI_PMU_START_SET_INIT_VALUE and SBI_PMU_START_FLAG_INIT_SNAPSHOT are mutually
+                  exclusive as the former is only valid for a single counter.
+The possible error codes returned in sbiret.error are shown in the Table 40 below.
+                                                Table 40. PMU Counter Start Errors

@@ -1,0 +1,8 @@
+17.13. Function: Complete software event handling (FID #6)
+  struct sbiret sbi_sse_complete(void)
+Complete the supervisor event handling for the highest priority event in RUNNING state on the calling hart.
+If there were no events in RUNNING state on the calling hart then this function does nothing and returns
+SBI_SUCCESS otherwise it moves the highest priority event in RUNNING state to:
+ ⚫ REGISTERED if the event is configured as one-shot (see the CONFIG attribute in Table 80.)
+ ⚫ ENABLED state otherwise
+It then resumes the interrupted supervisor state as described in Section 17.6.

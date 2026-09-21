@@ -1,0 +1,35 @@
+              3.9.2.9    VOLTAGE_LEVEL_SET
+                                                              T0
+              This command allows an agent to set the voltage level of a voltage domain.
+                  message_id: 0x7
+                  protocol_id: 0x17
+                  This command is mandatory.
+                                                BE
+                  Parameters
+                  Name                                Description
+                  uint32 domain_id                    Identifier for the voltage domain.
+                  uint32 flags                        Bits[31:1]
+                                                      Reserved, must be zero.
+                                                      Bit[0]
+                                                      Async flag:
+                                                           • Set to 1 if the voltage level is to be set asynchronously. In this case the
+                                                             call is completed with VOLTAGE_LEVEL_SET_COMPLETE message.
+                                                             For more details, see Section 3.9.3.1. A SUCCESS return code in this
+                                                             case indicates that the platform has successfully queued this command
+                                                           • Set 0 to if the voltage level is to be set synchronously. In this case, the
+                                                             call will return when the voltage level has been set.
+                  int32 voltage_level                 The voltage level, in microvolts (uV), to set the domain to.
+                  Return values
+                  Name                                Description
+                                                                                                 Arm® System Control and Management Interface
+                  int32 status                        One of, but not limited to, the following:
+                                                          • SUCCESS: if the voltage domain has been set to the desired level.
+                                                          • NOT_FOUND: if the voltage domain identified by domain_id does not
+                                                            exist.
+                                                          • INVALID_PARAMETERS: if the requested voltage level is not
+                                                            supported by the voltage domain.
+                                                          • NOT_SUPPORTED: if the request is not supported.
+                                                          • DENIED: if the calling agent is not allowed to set the voltage level of
+                                                            this voltage domain. An example would be if this voltage domain is
+                                                            exclusive to another agent.
+                                                      See Section 3.1.4 for more status code definitions.

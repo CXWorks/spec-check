@@ -1,0 +1,43 @@
+                 3.5.7.1    PERFORMANCE_QOS_CONFIG_COMPLETE
+                 If an agent has changed the QoS configuration for a QoS capability of a performance domain asynchronously through
+                 PERFORMANCE_QOS_CONFIG_SET, the platform sends this delayed response to the agent when the QoS setting
+                 request has been completed.
+                    message_id: 0x20
+                    protocol_id: 0x13
+                    This command is optional.
+                    Parameters
+                    Name                                Description
+                                                                                                      Arm® System Control and Management Interface
+                    int32 status                           One of, but not limited to, the following:
+                                                               • SUCCESS: if the QoS configuration was set or reset successfully.
+                                                           See Section 3.1.4 for more status code definitions.
+                    uint32 domain_id                       Identifier for the performance domain whose QoS configuration was set or
+                                                           reset. This is set to 0xFFFFFFFF if Bit[4] in the flags field is set to 1.
+                    uint32 capability                      QoS capability, as described by Table 14.
+                    uint32 flags                           Bits[31:5]
+                                                           Reserved, must be zero.
+                                                           Bit[4]
+                                                           Platform QoS configuration reset
+                                                                • If set to 1, all QoS values for the specified QoS capability for all
+                                                                  domains have been reset to the platform default.
+                                                                • If set to 0, the QoS values for the specified QoS capability have not
+                                                                  been reset to the platform default for all domains.
+                                                           Bit[3]
+                                                           Sibling domains QoS configuration reset. Sibling domains are defined as
+                                                           domains which have the same parent.
+                                                                • If set to 1, all QoS values for the specified QoS capability for this
+                                                                  domain and its sibling domains have been reset to the platform default.
+                                                                • If set to 0, the QoS values of the specified QoS capability have not been
+                                                                  reset to the platform default for this domain and its sibling domains.
+                                                           Bit[2]
+                                                                   T0
+                                                           Domain QoS configuration reset
+                                                                • If set to 1, the QoS value of the specified QoS capability of this domain
+                                                                  has been reset to the platform default.
+                                                     BE         • If set to 0, the QoS value of the specified QoS capability of this domain
+                                                                  has not been reset to the platform default.
+                                                           Bits[1:0]
+                                                           Reserved, must be zero.
+                    uint32 qos_value                       The QoS configuration that the domain has been set to, for the given QoS
+                                                           capability. This field should be ignored by the agent if any of Bit[2], Bit[3], or
+                                                           Bit[4] of the flags field is set to 1.

@@ -1,0 +1,27 @@
+              3.7.4.2    SENSOR_UPDATE
+              The SENSOR_UPDATE notification is issued by the platform to provide a sensor reading.
+              This notification is sent to an agent which had requested continuous update notifications from a sensor using
+              SENSOR_CONTINUOUS_UPDATE_NOTIFY command.
+              The SENSOR_UPDATE notification is sent only when the sensor is enabled. This notification could be generated at
+              every sensor update interval or whenever the sensor values change by a specific margin depending on the sensor
+              characteristics.
+              The notification is generated at a rate no faster than the configured sensor update period. The platform is allowed to
+              generate the notification at a rate slower than the configured sensor update period if the agent or the platform cannot cope
+              with the rate of generation of notifications due to hardware constraints. However, the platform should always provide the
+              latest sensor values in the SENSOR_UPDATE notification.
+              The platform does not need to implement this notification if no sensors support continuous update notifications.
+                                                                                                   Arm® System Control and Management Interface
+                  message_id: 0x1
+                  protocol_id: 0x15
+                  This notification is mandatory if at least one sensor supports continuous update notifications.
+                  Return Values
+                  Name                                           Description
+                  uint32 agent_id                                Refers to the agent that caused this event. For the current version of
+                                                                 the specification, this field is set to 0 to indicate that the platform is
+                                                                 the generator of all sensor events.
+                  uint32 sensor_id                               Identifier for the sensor.
+                  SENSOR_READING readings[N]                     An array of sensor readings of format described in Sensor Reading
+                                                                 Descriptor, where N is:
+                                                                     • 1 for sensors which measure scalar values.
+                                                                     • the number of sensor axes for sensors which report values
+                                                                       along axes. All axes should be reported in order.

@@ -1,0 +1,19 @@
+8.7. Function: Remote HFENCE.VVMA (FID #6)
+  struct sbiret sbi_remote_hfence_vvma(unsigned long hart_mask,
+                                       unsigned long hart_mask_base,
+                                       unsigned long start_addr,
+                                       unsigned long size)
+Instruct the remote harts to execute one or more HFENCE.VVMA instructions, covering the range of guest
+virtual addresses between start_addr and start_addr + size for current VMID (in hgatp CSR) of calling
+hart. This function call is only valid for harts implementing hypervisor extension.
+The possible error codes returned in sbiret.error are shown in the Table 15 below.
+                                     Table 15. RFENCE Remote HFENCE.VVMA Errors
+      Error code                                     Description
+      SBI_SUCCESS                                    IPI was sent to all the targeted harts successfully.
+      SBI_ERR_NOT_SUPPORTED                          This function is not supported as it is not implemented or one
+                                                     of the target hart doesn’t support hypervisor extension.
+      SBI_ERR_INVALID_ADDRESS                        start_addr or size is not valid.
+      SBI_ERR_INVALID_PARAM                          At least one hartid constructed from hart_mask_base and
+                                                     hart_mask, is not valid, i.e. either the hartid is not enabled by
+                                                     the platform or is not available to the supervisor.
+      SBI_ERR_FAILED                                 The request failed for unspecified or unknown other reasons.

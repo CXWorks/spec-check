@@ -21,5 +21,3 @@
                                                      x3-x17
 Chapter 14
 CPU cycle management interfaces
-Chapter 14. CPU cycle management interfaces
-14.1. FFA_MSG_WAIT

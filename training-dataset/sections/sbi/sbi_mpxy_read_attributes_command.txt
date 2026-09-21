@@ -1,0 +1,6 @@
+20.8. Function: Read Channel Attributes (FID #3)
+  struct sbiret sbi_mpxy_read_attributes(uint32_t channel_id,
+                                         uint32_t base_attribute_id,
+                                         uint32_t attribute_count)
+Read message channel attributes. The channel_id parameter specifies the message channel whereas
+base_attribute_id and attribute_count parameters specify the range of attribute ids to be read.

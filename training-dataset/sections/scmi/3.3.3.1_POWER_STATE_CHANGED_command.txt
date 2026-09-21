@@ -1,0 +1,20 @@
+                 3.3.3.1   POWER_STATE_CHANGED
+                 If an agent has registered to receive power state change notifications for the power domain that is identified by domain_id,
+                 the platform sends these notifications to that agent when the power domain state changes, including transitions to an
+                 ON state.
+                 Note that notified power states might not match those requested by the agent that is notified. The power state that is
+                 finally selected by the platform might differ from that requested by an agent, due to coordination with other requests on
+                 the same domain.
+                    message_id: 0x0
+                    protocol_id: 0x11
+                    This command is optional.
+                    Parameters
+                    Name
+                    uint32 agent_id
+                                                                 T0
+                                                         Description
+                                                         Identifier of the agent that caused the power transition.
+                    uint32 domain_id
+                    uint32 power_state             BE    Identifier of the power domain whose power state was changed.
+                                                         The power state that the power domain transitioned to. These notifications
+                                                         take place when the transition has completed.

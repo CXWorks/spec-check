@@ -1,0 +1,17 @@
+13.1. Function: System Suspend (FID #0)
+  struct sbiret sbi_system_suspend(uint32_t sleep_type,
+                                   unsigned long resume_addr,
+                                   unsigned long opaque)
+A return from a sbi_system_suspend() call implies an error and an error code from Table 56 will be in
+sbiret.error. A successful suspend and wake up, results in the hart which initiated the suspend, resuming
+from the STOPPED state. To resume, the hart will jump to supervisor-mode, at the address specified by
+resume_addr, with the specific register values described in Table 55.
+                                     Table 55. SUSP System Resume Register State
+             Register Name                                   Register Value
+             satp                                            0
+             sstatus.SIE                                     0
+             a0                                              hartid
+             a1                                              opaque parameter
+             All other registers remain in an undefined state.
+                    A single unsigned long parameter is sufficient for resume_addr, because the hart will
+                   resume execution in supervisor-mode with the MMU off, hence resume_addr must be less

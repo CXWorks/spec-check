@@ -1,0 +1,40 @@
+                 3.4.2.5   SYSTEM_POWER_STATE_SET
+                                                                   T0
+                                                     BE
+                 This command is used to power down or reset the system.
+                 System power-up must only be available to agents other than a PSCI implementation on systems that implement OSPM
+                 system view, as discussed in the Section 3.4.1.
+                    message_id: 0x3
+                    protocol_id: 0x12
+                    This command is mandatory.
+                    Parameters
+                    Name                                   Description
+                    uint32 flags                           This parameter has the following format:
+                                                           Bits[31:1]
+                                                           Reserved, must be zero.
+                                                           Bit[0]
+                                                           Graceful request. This flag is ignored for power up requests.
+                                                                • Set to 1 if the request is a graceful request.
+                                                                • Set to 0 if the request is a forceful request.
+                                                                                                  Arm® System Control and Management Interface
+                    uint32 system_state                Can be one of:
+                                                       0x0 System shutdown.
+                                                       0x1 System cold reset.
+                                                       0x2 System warm reset.
+                                                       0x3 System power-up.
+                                                       0x4 System suspend.
+                                                       0x5 – 0x7FFFFFFF
+                                                       Reserved, must not be used.
+                                                       0x80000000 – 0xFFFFFFFF
+                                                       Might be used for vendor-defined implementations of system power state.
+                                                       These can include additional parameters. The prototype for vendor-defined
+                                                       calls is beyond the scope of this specification.
+                    Return values
+                    Name                               Description
+                    int32 status                       One of, but not limited to, the following:
+                                                           • INVALID_PARAMETERS: if the requested power state is not valid.
+                                                           • NOT_SUPPORTED: if the requested state is not supported for the
+                                                             calling agent.
+                                                           • DENIED: for system suspend requests when there are application
+                                                             processors, other than the caller, in a running or idle state.
+                                                       See Section 3.1.4 for more status code definitions.

@@ -1,0 +1,64 @@
+              3.10.3.8    POWERCAP_CAP_SET
+              This command allows an agent to specify a power cap on a specific power capping domain to be enforced over the
+              Capping Averaging Interval (CAI).
+                                                             T0
+              The actual power consumption of the domain might be different from the power cap value specified by an agent due to
+              the following reasons:
+                                               BE
+                  • There is a lower cap set by another agent for the same domain. In this case the platform enforces the lower power
+                    cap.
+                  • The domain might be running a workload whose power consumption is below the cap value.
+                  • Transient power oversubscription. A power oversubscription occurs when the power consumption of a domain is
+                    above the maximum sustainable power of that domain for a short duration of time without causing system damage
+                    or shutdown, while still maintaining the overall power cap over the Power Averaging Interval.
+                  message_id: 0x5
+                  protocol_id: 0x18
+                  This command is mandatory if any domain supports configuring the power cap.
+                  Parameters
+                  Name                                Description
+                  uint32 domain_id                    Identifier for the power capping domain.
+                  uint32 cpli                         Concurrent power limit identifier. Must be set to 0 if the domain does not
+                                                      support CPC.
+                                                                                                Arm® System Control and Management Interface
+                  uint32 flags                        Bits[31:2]
+                                                      Reserved, must be zero.
+                                                      Bit[1]
+                                                      Async flag:
+                                                            • Set to 1 if power cap is to be set asynchronously. In this case the call
+                                                              is completed with POWERCAP_CAP_SET_COMPLETE message if
+                                                              bit[0] is set to 0. If bit[0] is set to 1,
+                                                              POWERCAP_CAP_SET_COMPLETE response is not sent. A
+                                                              SUCCESS return code indicates that the platform has successfully
+                                                              queued this command. For more details, see Section 3.10.4.1.
+                                                            • Set 0 to if the power cap is to be set synchronously. In this case, the
+                                                              call will return when the setting has been completed.
+                                                      Bit[0]
+                                                      Ignore delayed response:
+                                                            • If the Async flag (bit[1]) is set to 1 when this bit is set to 1, the platform
+                                                              does not send a POWERCAP_CAP_SET_COMPLETE delayed
+                                                              response.
+                                                            • If the Async flag (bit[1]) is set to 1 and this bit is set to 0, the platform
+                                                              sends a POWERCAP_CAP_SET_COMPLETE delayed response.
+                                                      If the Async flag (bit[1]) is set to 0, then this bit field is ignored by the platform.
+                  uint32 power_cap                    The power cap to set for the domain.
+                                                      This field should be set to 0 if the agent wishes to disable power capping for
+                                                             T0
+                                                      the domain. The platform might still choose to apply a power cap for the
+                                                      domain due to requests from other agents or due to platform specific
+                                                      reasons.
+                  Return values
+                  Name
+                  int32 status
+                                               BE     Description
+                                                      One of, but not limited to, the following:
+                                                          • SUCCESS: if the power cap was set successfully for a synchronous
+                                                            request or if the command was successfully enqueued for an
+                                                            asynchronous request.
+                                                          • NOT_FOUND: if the domain_id or cpli are not valid.
+                                                          • NOT_SUPPORTED: if the request is not supported.
+                                                          • INVALID_PARAMETERS: if the requested cap is not supported, or the
+                                                            flags parameter specifies invalid or illegal options.
+                                                          • DENIED: if the calling agent is not allowed to set the power cap for
+                                                            this domain. An example would be if this domain is exclusive to
+                                                            another agent.
+                                                      See Section 3.1.4 for more status code definitions.

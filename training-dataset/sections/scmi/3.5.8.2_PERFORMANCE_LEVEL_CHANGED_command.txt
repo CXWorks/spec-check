@@ -1,0 +1,24 @@
+                 3.5.8.2   PERFORMANCE_LEVEL_CHANGED
+                 This notification is sent by the platform to an agent which has subscribed to receive performance level change notifications
+                 for the domain that is identified by domain_id. The platform sends this notification to a subscribing agent:
+                    • when the performance level of the domain is changed by a different agent or entity in the system, including the
+                      platform itself.
+                    • when the performance level of the domain is changed as a result of the subscribing agent issuing a
+                      PERFORMANCE_LEVEL_SET or PERFORMANCE_LIMITS_SET command.
+                 The platform might autonomously change the performance level of the domain in order to apply thermal or power
+                 constraints. An external agent, such as a system management agent, can also request the platform to change the
+                 performance level. In each of these occurrences, the subscribing agent will be notified so that it can become aware of
+                 the change.
+                    message_id: 0x1
+                    protocol_id: 0x13
+                    This command is optional.
+                    Parameters
+                                                                 T0
+                    Name
+                    uint32 agent_id
+                    uint32 domain_id
+                                                   BE              Description
+                                                                   Identifier for the agent that caused the performance level change.
+                                                                   Identifier for the performance domain whose level was changed.
+                    uint32 performance_level                       The new performance level, or level index of the domain as a result
+                                                                   of the change.

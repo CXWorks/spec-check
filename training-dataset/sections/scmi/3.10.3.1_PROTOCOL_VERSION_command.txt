@@ -1,0 +1,11 @@
+              3.10.3.1   PROTOCOL_VERSION
+              On success, this command returns the protocol version. For this version of the specification, the return value must be
+              0x30000, which corresponds to version 3.0.
+                                                                                                 Arm® System Control and Management Interface
+                  message_id: 0x0
+                  protocol_id: 0x18
+                  This command is mandatory.
+                  Return values
+                  Name                                Description
+                  int32 status                        See Section 3.1.4 for status code definitions.
+                  uint32 version                      For this revision of the specification, this value must be 0x30000.

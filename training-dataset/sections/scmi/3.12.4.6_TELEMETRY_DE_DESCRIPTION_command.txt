@@ -1,0 +1,229 @@
+              3.12.4.6    TELEMETRY_DE_DESCRIPTION
+                                                               T0
+                                                 BE
+              This command can be used for Data Event discovery on the platform. On success, it returns an array of DE Descriptors
+              as described in DE Descriptor.
+              For an example of using this kind of API, see Section 3.5.6.8.
+                  message_id: 0x4
+                  protocol_id: 0x1B
+                  This command is mandatory.
+                  Parameters
+                  Name                                 Description
+                  uint32 desc_index                    Index of the first DE descriptor to be read in the DE descriptor array.
+                  Return values
+                  Name                                 Description
+                  int32 status                         See Section 3.1.4 for more status code definitions.
+                  uint32 num_desc                      Bits[31:16]
+                                                       Number of remaining DE descriptors.
+                                                       Bits[15:0]
+                                                       Number of DE descriptors that are returned by this current call.
+                  DE_DESC desc[N]                      An array of DE descriptors, of format described in DE Descriptor.
+                                                                                                  Arm® System Control and Management Interface
+              DE Descriptor
+              The DE_DESC structure describes the DE properties, such as the unique identifier for the DE, timestamping support and
+              other characteristics.
+                  uint32 de_id                         Identifier for the DE. Each DE is identified by a unique 32-bit integer identifier.
+                  uint32 group_id                      Event group identifier for the DE.
+                                                       Set to 0xFFFFFFFF if this DE does not belong to any event group.
+                  uint32 de_data_size                  Actual size of the DE data in bytes.
+                                                       The space allocated for the DE data depends on the telemetry interface used,
+                                                       and is a multiple of 8 bytes for SHMTI, and a multiple of 4 bytes for
+                                                       FastChannels. The space allocated must be sufficient to accommodate the
+                                                       maximum and minimum measurable DE values accounting for sign-extension.
+                  uint32 de_attributes_1               Bit[31]
+                                                       Named specified.
+                                                            • If set to 1, the DE name is specified by the name field.
+                                                            • If set to 0, the name field is not present. The DE name is not specified.
+                                                       Bit[30]
+                                                       FastChannel support.
+                                                            • If this flag is set to 1, the DE values are returned using FastChannels.
+                                                              The fields fastchannel_address_low, fastchannel_address_high and
+                                                              fastchannel_address_size are present in this DE descriptor.
+                                                            • If this flag is set to 0, no FastChannel is provisioned for this DE. The
+                                                               T0
+                                                              fields fastchannel_address_low, fastchannel_address_high and
+                                                              fastchannel_address_size are not present in this DE descriptor.
+                                                       Bits[29:22]
+                                                 BE    DE type: The type of Data Event as described in Table 30.
+                                                       Bit[21]
+                                                       Persistent: The DE data values are persistent across all reboot cycles, except
+                                                       cold reboot. In this case the DE ID must not change across reboot cycles
+                                                       where the DE data value persists.
+                                                       Bits[20:13]
+                                                       DE unit Exponent: The power-of-10 multiplier in two's complement format that
+                                                       is applied to the unit specified by the DE unit field.
+                                                       Bits[12:5]
+                                                       DE unit: The measurement system the DE implements, as described in
+                                                       Table 19.
+                                                       Bits[4:2]
+                                                       Reserved, must be zero.
+                                                       Bits[1:0]
+                                                       Timestamp support:
+                                                            • If this flag is set to 0, the DE cannot provide timestamped values.
+                                                            • If this flag is set to 1, the DE provides timestamped values using its line
+                                                              timestamp.
+                                                            • If this flag is set to 2, the DE provides timestamped values using a
+                                                              block timestamp line.
+                                                              All other values are reserved and must not be used.
+                                                       Timestamps should be derived from a monotonic time base. The selection of
+                                                       a time base is beyond the scope of this specification and should be agreed
+                                                       between the agent and the platform by other standard mechanisms.
+                                                                                                 Arm® System Control and Management Interface
+                  uint32 de_attributes_2              Bits[31:24]
+                                                      DE Instance ID: Identifies DEs which measure the same DE unit, as specified
+                                                      by Bits[12:5] of de_attributes_1 field, associated with the same Component
+                                                      Instance. Component Instance is specified by Bits[23:8].
+                                                      DE instance IDs are unsigned sequential integers starting from 0.
+                                                      For example, if there are 3 DEs within the same CPU which measure
+                                                      temperature at different locations within the CPU, their DE Instance IDs are 0,
+                                                      1 and 2.
+                                                      This field is set to 0 if there is only one instance of the DE within a component
+                                                      ID.
+                                                      Bits[23:8]
+                                                      Component Instance: Instance of the component this DE is associated with.
+                                                      Component Instances are sequential unsigned integers starting from 0.
+                                                      For example if Bits[7:0] is set to 0x0, then this field identifies the CPU instance
+                                                      this DE is associated with.
+                                                      If the component type is a CPU, then this field is recommended to be ordered
+                                                      according to the numeric order of the values read from the architecture
+                                                      specific CPU identifier registers in the system. For example, MPIDR_EL1 is
+                                                      the CPU identifier register in Arm A-Profile CPUs.
+                                                      This field is set to 0 if there is only one instance of the component.
+                                                      Bits[7:0]
+                                                      Component Type: The component type this DE is associated with, as
+                                                      described in Table 31.
+                  uint32 de_attributes_3
+                  uint32 line_ts_rate
+                                                              T0
+                                                      Reserved, must be zero.
+                                                      The clock rate in kHz used to generate the line timestamp.
+                                                BE    This clock rate should not change.
+                                                      This field is not present if the DE does not use line timestamps. Line
+                                                      timestamp support is discovered using Bits[1:0] of the de_attributes_1 field.
+                  uint32                              Lower 32 bits of the FastChannel address.
+                  fastchannel_address_low             This field is not present if there is no FastChannel provisioned for this DE.
+                                                      FastChannel support is discovered using Bit[30] of the de_attributes_1 field.
+                  uint32                              Higher 32 bits of the FastChannel address.
+                  fastchannel_address_high            This field is not present if there is no FastChannel provisioned for this DE.
+                                                      FastChannel support is discovered using Bit[30] of the de_attributes_1 field.
+                  uint32                              Size of the FastChannel in bytes.
+                  fastchannel_address_size            The FastChannel size must be sufficient to accommodate the DE data along
+                                                      with timestamps if supported.
+                                                      This field is not present if there is no FastChannel provisioned for this DE.
+                                                      FastChannel support is discovered using Bit[30] of the de_attributes_1 field.
+                  uint8 name[16]                      A NULL terminated UTF-8 format string with the DE name, of up to 16 bytes.
+                                                      This field is not present if there is no name specified for this DE. Whether the
+                                                      name is specified can be discovered using Bit[31] of de_attributes_1 field.
+                                                                                              Arm® System Control and Management Interface
+                                                                                               Table 30: Data Event Type
+                  DE Type            Description                                    Interpretation and associated fields
+                  0x0                Unspecified
+                  0x1                Accumulating - Idle/Sleep State                The total time spent in the idle state for the
+                                     residency                                      component specified by the Component Type
+                                                                                    and Component instance fields.
+                                                                                    The DE Instance ID field is used to identify the
+                                                                                    idle state type for the component specified by the
+                                                                                    Component Type and Component instance fields.
+                                                                                    The idle states are unsigned sequential integer
+                                                                                    values starting from 0, where 0 indicates active
+                                                                                    state. Successive higher values indicate
+                                                                                    increasingly deeper power saving state. It is
+                                                                                    recommended to align the values according to
+                                                                                    the idle states as presented to the agent.
+                  0x2                Accumulating - Idle/Sleep State                The total time count of idle state transitions for
+                                     count                                          the component specified by the Component Type
+                                                                                    and Component instance fields.
+                                                                                    The DE Instance ID field is used to identify the
+                                                                                    idle state type for the component specified by the
+                                                                                    Component Type and Component instance fields.
+                                                           T0                       The idle states are unsigned sequential integer
+                                                                                    values starting from 0, where 0 indicates active
+                                                                                    state. Successive higher values indicate
+                                              BE                                    increasingly saving state. It is recommended to
+                                                                                    align the values according to the idle states as
+                                                                                    presented to the agent.
+                  0x3                Accumulating - others
+                  0x4                Instantaneous - Idle/Sleep State               The current idle state of the component specified
+                                                                                    by the Component Type and Component
+                                                                                    instance fields.
+                                                                                    The idle states are unsigned sequential integer
+                                                                                    values starting from 0, where 0 indicates active
+                                                                                    state. Successive higher values indicate
+                                                                                    increasingly deeper power saving state. It is
+                                                                                    recommended to align the values according to
+                                                                                    the idle states as presented to the agent.
+                                                                                    The DE Instance ID field is ignored.
+                  0x5                Instantaneous - others                         N/A
+                  0x6                Averaging                                      N/A
+                  0x7                Status                                         N/A
+                  0x8 - 0xEF         Reserved for future use                        N/A
+                  0xF0 - 0xFF        OEM specified                                  OEM specified
+              Table 31 describes DE component types.
+                                                                                               Arm® System Control and Management Interface
+                                                                                 Table 31: Data Event Component Type
+                  Component                                                     Component
+                  Type              Description                                 Type                  Description
+                  0x00              Unspecified                                 0x10                  SoC
+                  0x01              CPU                                         0x11                  System
+                  0x02              Cluster                                     0x12                  Streaming Mode Compute Unit
+                                                                                                      (SMCU)
+                  0x03              GPU                                         0x13                  Accelerator
+                  0x04              NPU                                         0x14                  Battery
+                  0x05              Interconnect                                0x15                  Battery Charger
+                  0x06              Memory Controller                           0x16                  PMIC
+                  0x07              L1 Cache                                    0x17                  Board
+                  0x08              L2 Cache                                    0x18                  Memory
+                  0x09              L3 Cache                                    0x19                  Device or Peripheral
+                  0x0A              Last Level Cache                            0x1A                  Subcomponent (of a device or
+                                                                                                      peripheral)
+                  0x0B
+                  0x0C
+                  0x0D
+                                    System Cache
+                                    Display Controller
+                                                            T0
+                                    Image Processing Unit (Camera)
+                                                                                0x1B
+                                                                                0x1C
+                                                                                0x1D
+                                                                                                      Lid
+                                                                                                      Display
+                                                                                                      Die
+                  0x0E
+                  0x0F
+                                    Chiplet
+                                    Package
+                                               BE                               0x1E - 0xDF
+                                                                                0xE0 - 0xFF
+                                                                                                      Reserved for future use
+                                                                                                      OEM specified
+              Table 32 describes the DE ID ranges.
+                                                                                    Table 32: Data Event ID Reservation
+                  DE ID                        Description                                                          Measurement unit
+                  0x0000 – 0x9FFF              Implementation specified                                             -
+                  0xA000                       SoC Energy                                                           microjoules
+                  0xA001                       Total CPU energy across all CPUs                                     microjoules
+                  0xA002                       DRAM energy                                                          microjoules
+                  0xA003                       GPU energy                                                           microjoules
+                  0xA004                       SoC temperature                                                      millidegree C
+                  0xA005                       Max. CPU temperature measured across all CPUs                        millidegree C
+                  0xA006                       GPU temperature                                                      millidegree C
+                  0xA007                       DRAM temperature                                                     millidegree C
+                  0xA008                       Interconnect frequency                                               kHz
+                                                                                                 Arm® System Control and Management Interface
+                  DE ID                         Description                                                        Measurement unit
+                  0xA009                        GPU frequency                                                      kHz
+                  0xA00A                        Memory bandwidth                                                   Kilobytes per second
+                  0xA00B                        DRAM speed                                                         kHz
+                  0xA00C                        Number of throttling events - all CPU total                        Counts
+                  0xA00D                        Number of throttling events - GPU                                  Counts
+                  0xA00E                        Number of throttling events - DRAM                                 Counts
+                  0xA00F                        Number of throttling events - SoC                                  Counts
+                  0xA010                        Throttling active - any CPU                                        State (binary)
+                  0xA011                        Throttling active - GPU                                            State (binary)
+                  0xA012                        Throttling active - DRAM                                           State (binary)
+                  0xA013                        Throttling active - SoC                                            State (binary)
+                  0xA014 – 0xAFFF               Reserved for future architected ID allocation by this              -
+                                                specification.
+                  0xB000 – 0xFFFF               Reserved for future use                                            -
+                  0x10000 – 0xFFFFFFFF          Implementation specified                                           -

@@ -1,0 +1,23 @@
+              3.7.2.4    PROTOCOL_MESSAGE_ATTRIBUTES
+              On success, this command returns the implementation details associated with a specific message in this protocol.
+              If the message is not supported or implemented by the platform, then this command returns a NOT_FOUND status
+              code. This allows calling agents to comprehend which commands are supported on a platform and configure themselves
+              accordingly.
+                  message_id: 0x2
+                  protocol_id: 0x15
+                  This command is mandatory.
+                  Parameters
+                  Name                                     Description
+                  uint32 message_id                        message_id of the message.
+                  Return values
+                  Name                                     Description
+                                                                                                    Arm® System Control and Management Interface
+                  int32 status                             One of, but not limited to, the following:
+                                                                • SUCCESS: in case the message is implemented and available to
+                                                                  use.
+                                                                • NOT_FOUND: if the message identified by message_id is not
+                                                                  provided by this platform implementation.
+                                                           Other status codes according to Section 3.1.4 might be returned for general
+                                                           error or status reporting.
+                  uint32 attributes                        Attributes that are associated with the message that is specified by
+                                                           message_id. Currently, this field returns the value of 0.

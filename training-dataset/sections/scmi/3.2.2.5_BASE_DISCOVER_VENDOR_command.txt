@@ -1,0 +1,12 @@
+                 3.2.2.5   BASE_DISCOVER_VENDOR
+                 This command provides a vendor identifier ASCII string.
+                    message_id: 0x3
+                    protocol_id: 0x10
+                    This command is mandatory.
+                    Return values
+                    Name
+                    int32 status
+                                                                   T0
+                                                                   Description
+                                                                   See Section 3.1.4 for status code definitions.
+                    uint8 vendor_identifier [16]

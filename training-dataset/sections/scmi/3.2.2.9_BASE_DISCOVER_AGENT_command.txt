@@ -1,0 +1,35 @@
+                 3.2.2.9   BASE_DISCOVER_AGENT
+                 This optional command allows the caller to discover the name of an agent, described through an ASCII string of up to
+                 16 bytes. A caller can discover if this command is implemented by issuing the PROTOCOL_MESSAGE_ATTRIBUTES
+                 command and passing the message_id of this command.
+                 If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES returns SUCCESS (0).
+                                                                 T0
+                 Agent identifiers, agent_id, describe agents in the system that can use the SCMI protocols. Not every agent can use all
+                 protocols, and some protocols can offer different views to different agents. An agent_id of 0 is reserved to identify the
+                 platform itself. If the command is not implemented, the caller does not interpret agent identifiers in notifications, and the
+                                                   BE
+                 platform sets agent_id to zero in notifications. Where supported, agent_id values are sequential, start from one, and are
+                 limited by the number of agents that is reported through PROTOCOL_ATTRIBUTES.
+                 If called with an agent_id of 0, the string returned in the name parameter must start with “platform”.
+                 An agent can discover its own agent_id and name by passing agent_id of 0xFFFFFFFF. In this case, the command
+                 returns the agent_id and name of the calling agent.
+                    message_id: 0x7
+                    protocol_id: 0x10
+                    This command is optional.
+                    Parameters
+                    Name                                 Description
+                    uint32 agent_id                      Identifier of the agent whose identification is requested.
+                    Return values
+                    Name                                 Description
+                    int32 status                         One of, but not limited to, the following:
+                                                             • SUCCESS: If a valid agent identifier is found.
+                                                             • NOT_FOUND: if agent_id does not point to a valid agent.
+                                                         See Section 3.1.4 for more status code definitions.
+                                                                                                    Arm® System Control and Management Interface
+                    uint32 agent_id                      ID of the agent whose identity is requested.
+                                                         This field is:
+                                                              • populated with the agent_id of the calling agent, when the agent_id
+                                                                 parameter passed via the command is 0xFFFFFFFF.
+                                                              • identical to the agent_id field passed via the calling parameters, in all
+                                                                 other cases.
+                    uint8 name[16]                       Null terminated ASCII string of up to 16 bytes in length.

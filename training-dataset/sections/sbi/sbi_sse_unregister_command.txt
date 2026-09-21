@@ -1,0 +1,9 @@
+17.10. Function: Unregister a software event (FID #3)
+  struct sbiret sbi_sse_unregister(uint32_t event_id)
+Unregister the event handler for given event_id.
+For local events, the event is unregistered only for the calling hart. For global events, the event is
+unregistered for all the harts.
+The event MUST be in REGISTERED state otherwise this function will fail.
+Upon success, the event state moves from REGISTERED to UNUSED. In case of an error, possible error codes
+are listed in Table 84 below.
+                                             Table 84. SSE Event Unregister Errors

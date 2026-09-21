@@ -1,0 +1,33 @@
+                 3.4.2.7   SYSTEM_POWER_STATE_NOTIFY
+                 This command is used to request notification of system power state requests. This command might be used:
+                    • By the OSPM to receive notifications of graceful system power state requests.
+                    • By a management agent or a privileged agent to be notified that the OSPM requested a forceful transition.
+                                                                                                    Arm® System Control and Management Interface
+                 On initial boot of an agent, these notifications must be disabled by default to that agent.
+                    message_id: 0x5
+                    protocol_id: 0x12
+                    This command is mandatory in an OSPM view implementation.
+                    Parameters
+                    Name                                 Description
+                    uint32 notify_enable                 Bits[31:1]
+                                                         Reserved, must be zero.
+                                                         Bit[0]
+                                                         Notify enable:
+                                                              • If this value is set to 0, the platform does not send any
+                                                                 SYSTEM_POWER_STATE_NOTIFIER messages to the calling agent.
+                                                              • If this value is set to 1, the platform does send
+                                                                 SYSTEM_POWER_STATE_NOTIFIER messages commands to the
+                                                                 calling agent.
+                                                         See Section 3.4.3.1 for details about SYSTEM_POWER_STATE_NOTIFIER
+                                                         notifications.
+                    Return values
+                    Name                                 Description
+                    int32 status
+                                                                 T0
+                                                         One of, but not limited to, the following:
+                                                             • SUCCESS
+                                                             • NOT_SUPPORTED: if notifications are not supported or available to
+                                                               the calling agent.
+                                                   BE        • INVALID_PARAMETERS: if notify_enable specifies invalid or
+                                                               impermissible values.
+                                                         See Section 3.1.4 for more status code definitions.

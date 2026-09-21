@@ -1,0 +1,81 @@
+                 3.6.2.5   CLOCK_ATTRIBUTES
+                 This command returns the attributes that are associated with a specific clock. An agent might be allowed access to only
+                                                                   T0
+                 a subset of the clocks available in the system. The platform must thus guarantee that clocks that an agent cannot access
+                 are not visible to it.
+                 ─── Note ───────────────
+                                                     BE
+                 Even if this command reports that a clock is enabled, an agent which requires the clock to be enabled must explicitly
+                 request for it using the CLOCK_CONFIG_SET command as specified in Section 3.6.2.9. If CLOCK_CONFIG_SET is not
+                 called by the agent, the platform can disable the clock at any time due to power saving or other reasons. This rule is not
+                 applicable if the clock state cannot be controlled by the agent. CLOCK_GET_PERMISSIONS command, as specified in
+                 Section 3.6.2.17, can be used to discover if the clock state can be controlled by the agent.
+                 ──────────────────────
+                    message_id: 0x3
+                    protocol_id: 0x14
+                    This command is mandatory.
+                    Parameters
+                    Name                                   Description
+                    uint32 clock_id                        Identifier for the clock device.
+                    Return values
+                    Name                                   Description
+                    int32 status                           One of, but not limited to, the following:
+                                                               • SUCCESS: if valid clock attributes are returned.
+                                                               • NOT_FOUND: if clock_id does not point to a valid clock device.
+                                                           See Section 3.1.4 for more status code definitions.
+                                                                                                   Arm® System Control and Management Interface
+                 uint32 attributes                      Bit[31]
+                                                        Clock rate change notifications support.
+                                                             • Set to 1 if clock rate change notifications are supported for this clock.
+                                                             • Set to 0 if clock rate change notifications are not supported for this
+                                                               clock.
+                                                        Bit[30]
+                                                        Clock rate change requested notifications support.
+                                                             • Set to 1 if clock rate change requested notifications are supported for
+                                                               this clock.
+                                                             • Set to 0 if clock rate change requested notifications are not supported
+                                                               for this clock.
+                                                        Bit[29]
+                                                        Extended Clock name.
+                                                             • If set to 1, the clock name is greater than 16 bytes. The extended clock
+                                                               name is provided by CLOCK_NAME_GET command which is
+                                                               described in Section 3.6.2.10.
+                                                             • If set to 0, extended clock name is not supported.
+                                                        Bit[28]
+                                                        Parent clock identifier support.
+                                                             • Set to 1 if parent clock identifiers are advertised for this clock.
+                                                             • Set to 0 if parent clock identifiers are not advertised for this clock.
+                                                        Bit[27]
+                                                        Extended configuration support.
+                                                                T0
+                                                             • Set to 1 if extended configurations are supported for this clock.
+                                                               Extended configurations can be accessed using the
+                                                               CLOCK_CONFIG_SET and the CLOCK_CONFIG_GET command, as
+                                                               specified by Section 3.6.2.9 and Section 3.6.2.10 respectively.
+                                                  BE         • Set to 0 if extended configurations are not supported for this clock.
+                                                        Bits[26:2]
+                                                        Reserved, must be zero.
+                                                        Bit[1]
+                                                        Restricted clock.
+                                                             • Set to 1 if the clock has restrictions on changing some of its
+                                                               configuration or settings, and the CLOCK_GET_PERMISSIONS
+                                                               command, as specified in Section 3.6.2.17, can be used to discover the
+                                                               restrictions in place.
+                                                             • Set to 0 if either of the following are true:
+                                                                   – The clock’s restrictions cannot be discovered because
+                                                                      CLOCK_GET_PERMISSIONS is not implemented.
+                                                                   – The clock has no restrictions on changing its configuration or
+                                                                      setting.
+                                                        Attempts to change a restricted clock configuration or setting returns DENIED.
+                                                        Bit[0]
+                                                        Enabled/disabled.
+                                                             • If set to 1, the clock device is enabled.
+                                                             • If set to 0, the clock device is disabled.
+                 uint8 clock_name[16]                   A NULL terminated ASCII string with the clock name, of up to 16 bytes. When
+                                                        Bit[29] of attributes field is set to 1, this field contains the lower 15 bytes of the
+                                                        NULL terminated clock name.
+                                                                                                     Arm® System Control and Management Interface
+                    uint32 clock_enable_delay            The worst-case delay incurred by the platform to enable the clock in response
+                                                         to a clock enable request from an agent. This field is specified in
+                                                         microseconds.
+                                                         If set to 0, this field is not supported by the platform.

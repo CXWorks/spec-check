@@ -1,0 +1,9 @@
+17.12. Function: Disable a software event (FID #5)
+  struct sbiret sbi_sse_disable(uint32_t event_id)
+Disable the software event specified by the event_id parameter.
+For local events, the event is disabled only for the calling hart. For global events, the event is disabled for all
+the harts.
+The event MUST be in ENABLED state otherwise this function will fail.
+Upon success, the event state moves from ENABLED to REGISTERED. In case of an error, possible error codes
+are listed in Table 86 below.
+                                        Table 86. SSE Event Disable Errors

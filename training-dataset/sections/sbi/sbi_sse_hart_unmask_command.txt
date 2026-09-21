@@ -1,0 +1,12 @@
+17.15. Function: Unmask software events on a hart (FID #8)
+  struct sbiret sbi_sse_hart_unmask(void)
+Start receiving (or unmask) software events on the calling hart. In other words, the calling hart is ready to
+receive software events from the SBI implementation.
+The software events are masked initially on all harts so the supervisor software must explicitly unmask
+software events on relevant harts at boot-time.
+In case of an error, possible error codes are listed in Table 88 below.
+                                        Table 88. SSE Hart Unmask Errors
+      Error code                              Description
+      SBI_SUCCESS                             Software events unmasked successfully on the calling hart.
+      SBI_ERR_ALREADY_STARTED                 Software events were already unmasked on the calling hart.
+      SBI_ERR_FAILED                          The request failed for unspecified or unknown other reasons.

@@ -1,0 +1,21 @@
+                 3.5.6.12   PERFORMANCE_LEVEL_GET
+                 On success, this command returns the current performance level of a domain, or level index when Level Indexing Mode
+                 is used by the platform. Note the performance level that is returned by this command might be stale by the time the
+                 command completes, as a subsequent performance change might have been initiated in the meantime.
+                    message_id: 0x8
+                    protocol_id: 0x13
+                    This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES
+                    command is set to 0 for any domain.
+                    Parameters
+                    Name
+                                                                T0
+                                                        Description
+                    uint32 domain_id
+                    Return values
+                                                  BE    Identifier for the performance domain.
+                    Name                                Description
+                    int32 status                        One of, but not limited to, the following:
+                                                            • SUCCESS: if the performance level is returned successfully
+                                                            • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                        See Section 3.1.4 for more status code definitions.
+                    uint32 performance_level            Current performance level, or level index, of the domain.

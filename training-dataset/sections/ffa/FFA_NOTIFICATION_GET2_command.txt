@@ -28,8 +28,6 @@
             uint32 Receiver ID                       w1                   • Receiver endpoint and vCPU ID.
                                                                               – Bit[31:16]: Receiver vCPU ID.
                                                                               – Bit[15:0]: Receiver endpoint ID.
-Chapter 16. Notification interfaces
-16.10. FFA_NOTIFICATION_GET2
             Parameter                                Register         Value
             uint64 Flags                             x2                   • Bit[0]: Receiver’s SP notifications bitmap identifier.
                                                                                – b’1: Return bitmap for notifications pended by
@@ -73,8 +71,6 @@ Chapter 16. Notification interfaces
                                                                                – M = (i / 64) + 3.
                                                                                – N = i % 64.
                                                                           • Reserved (SBZ) if Bit[0] in the Flags field was not set.
-Chapter 16. Notification interfaces
-16.10. FFA_NOTIFICATION_GET2
             Parameter                                Register         Value
             uint64 VM Notification bitmask           x9-x14               • Bits[b:0] of a bitmask with one or more set bits to
                                                                             identify the notifications which are not to be retrieved
@@ -115,8 +111,6 @@ Chapter 16. Notification interfaces
                                                                                       Table 16.42: FFA_SUCCESS64 encoding
             Parameter                                Register         Value
             uint64 Reserved                          x2                   • Reserved (MBZ).
-Chapter 16. Notification interfaces
-16.10. FFA_NOTIFICATION_GET2
             Parameter                                Register         Value
             uint64 SP Notification bitmap            x3-x8                • Bits[b:0] of the SP notifications bitmap with one or
                                                                             more set bits to identify the notifications which are
@@ -167,8 +161,6 @@ Chapter 16. Notification interfaces
                                                                                   position is not pending for the Receiver.
                                                                           • Caller must ignore this field if Bit[2] in the Flags field
                                                                             was not set.
-Chapter 16. Notification interfaces
-16.10. FFA_NOTIFICATION_GET2
             Parameter                                Register         Value
             uint64 Hypervisor Notification           x16                  • Bits[63:0] of the Framework notifications bitmap with
             bitmap                                                          one or more set bits to identify the notifications which
@@ -195,5 +187,3 @@ Chapter 16. Notification interfaces
                                                                           • DENIED: Caller is not allowed to invoke this ABI.
                                                                           • NOT_SUPPORTED: This function is not implemented
                                                                             at this FF-A instance.
-Chapter 16. Notification interfaces
-16.11. FFA_NOTIFICATION_INFO_GET

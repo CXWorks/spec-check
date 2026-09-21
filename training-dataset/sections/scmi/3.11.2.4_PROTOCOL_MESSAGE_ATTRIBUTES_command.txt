@@ -1,0 +1,22 @@
+              3.11.2.4   PROTOCOL_MESSAGE_ATTRIBUTES
+              On success, this command returns the implementation details associated with a specific message in this protocol.
+              This command can be used to inquire if optional commands are supported, by passing their respective message identifiers
+              to the call. If the platform returns SUCCESS, then it supports the corresponding commands. Otherwise, if the platform
+              returns NOT_FOUND, then it is an indication that the commands are not implemented or not available to the calling
+              agent.
+                  message_id: 0x2
+                  protocol_id: 0x19
+                  This command is mandatory.
+                  Parameters
+                  Name                                Description
+                  uint32 message_id                   message_id of the message.
+                  Return values
+                                                                                                    Arm® System Control and Management Interface
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: in case the message is implemented and available to use.
+                                                             • NOT_FOUND: if the message identified by message_id is invalid or not
+                                                               implemented.
+                                                         See Section 3.1.4 for more status code definitions.
+                  uint32 attributes                      Flags that are associated with a specific command in the protocol. In the
+                                                         current version of the specification, this value is always 0.

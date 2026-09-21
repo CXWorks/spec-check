@@ -1,0 +1,99 @@
+                 3.5.6.14   PERFORMANCE_QOS_CONFIG_SET
+                                                     BE
+                 This command allows the agent to set or reset the QoS configuration for a domain or group of domains, for a specified
+                 QoS capability.
+                    message_id: 0x20
+                    protocol_id: 0x13
+                    This command is mandatory if QoS capabilities are supported by the platform.
+                    Parameters
+                    Name                                   Description
+                    uint32 domain_id                       Identifier for the performance domain.
+                    uint32 capability                      QoS capability, as described by Table 14. Only one QoS capability Type bit
+                                                           can be set. At most one QoS capability Subtype bit can be set.
+                                                                                                  Arm® System Control and Management Interface
+                 uint32 flags                          Bits[31:5]
+                                                       Reserved, must be zero.
+                                                       Bit[4]
+                                                       Platform QoS configuration reset
+                                                            • If set to 1, all QoS values for the specified QoS capability for all
+                                                              domains will be reset to the platform default. The domain_id and
+                                                              qos_value fields are ignored, if this flag is set to 1.
+                                                            • If set to 0, the QoS values for the specified QoS capability will not be
+                                                              reset to the platform default for all domains.
+                                                       Bit[3]
+                                                       Sibling domains QoS configuration reset. Sibling domains are defined as
+                                                       domains which have the same parent.
+                                                            • If set to 1, all QoS values for the specified QoS capability for this
+                                                              domain and its sibling domains will be reset to the platform default. The
+                                                              qos_value field is ignored, if this flag is set to 1.
+                                                            • If set to 0, the QoS values of the specified QoS capability will not be
+                                                              reset to the platform default for this domain and its sibling domains.
+                                                       Bit[2]
+                                                       Domain QoS configuration reset
+                                                            • If set to 1, the QoS value of the specified QoS capability of this domain
+                                                              will be reset to the platform default. The qos_value field is ignored if
+                                                              this flag is set to 1.
+                                                            • If set to 0, the QoS value of the specified QoS capability of this domain
+                                                       Bit[1]  T0
+                                                              will not be reset to the platform default.
+                                                       Async flag
+                                                            • If set to 1, the specified QoS configuration must be set or reset
+                                                 BE           asynchronously.
+                                                                   – If the ignore delayed response Bit[0] is set to 0, the call is
+                                                                     completed with the
+                                                                     PERFORMANCE_QOS_CONFIG_COMPLETE message.
+                                                                   – If the ignore delayed response Bit[0] is set to 1, the
+                                                                     PERFORMANCE_QOS_CONFIG_COMPLETE response is not
+                                                                     sent. A SUCCESS return code indicates that the platform has
+                                                                     successfully queued this command.
+                                                              For details see Section 3.5.7.1.
+                                                            • Set to 0 if the QoS configuration must be set or reset synchronously. In
+                                                              this case the call will return when the action has been completed.
+                                                       Bit[0]
+                                                       Ignore delayed response
+                                                            • If the Async flag Bit[1] is set to 1 when this bit is set to 1, the platform
+                                                              does not send a PERFORMANCE_QOS_CONFIG_COMPLETE
+                                                              delayed response.
+                                                            • If the Async flag Bit[1] is set to 0, then this bit field is ignored by the
+                                                              platform.
+                 uint32 qos_value                      Requested QoS value for the specified QoS capability. This value is ignored if
+                                                       any of Bit[2], Bit[3], or Bit[4] in the flags field is set to 1.
+                 Return values
+                 Name                                  Description
+                                                                                                   Arm® System Control and Management Interface
+                    int32 status                        One of, but not limited to, the following:
+                                                            • SUCCESS: if the QoS configuration was set or reset successfully for a
+                                                              synchronous request or if the command was successfully enqueued for
+                                                              an asynchronous request.
+                                                            • NOT_FOUND: if the domain_id parameter does not point to a valid
+                                                              domain or if the capability descriptor does not point to a valid QoS
+                                                              capability of this domain.
+                                                            • INVALID_PARAMETERS:
+                                                                 – If the capability field has multiple Type or Subtype bits set,
+                                                                 – If the flags parameter specifies invalid or illegal options,
+                                                                 – If the requested QoS value is not supported.
+                                                            • DENIED: if the calling agent is not permitted to change the QoS
+                                                              configuration of the domain for the specified QoS capability.
+                                                        See Section 3.1.4 for more status code definitions.
+                 The QoS capability descriptor has the following format:
+                                                                                         Table 14: QoS capability descriptor
+                    Field                  Description
+                    Bit [31]
+                                                                T0
+                                           QoS capability Type range.
+                                              • If set to 0, it indicates the architected range of Types.
+                                              • If set to 1, it indicates the OEM range of Types.
+                    Bits [30:24]
+                    Bits [23:16]
+                                                  BE
+                                           Reserved, must be zero.
+                                           QoS capability Type bitmap.
+                                           Each bit indicates a capability Type. Only one bit must be set. The allocation of bits for
+                                           architected Types is described in Table 13.
+                    Bit [15]               QoS capability Subtype range.
+                                              • If set to 0, it indicates the architected range of Subtypes.
+                                              • If set to 1, it indicates the OEM range of Subtypes.
+                    Bits [14:8]            Reserved, must be zero.
+                    Bits [7:0]             QoS capability Subtype bitmap.
+                                           Each bit indicates a capability Subtype. At most one bit can be set. The allocation of bits
+                                           for architected Subtypes is described in Table 13.

@@ -1,0 +1,12 @@
+14.1. Function: Probe CPPC register (FID #0)
+  struct sbiret sbi_cppc_probe(uint32_t cppc_reg_id)
+Probe whether the CPPC register as specified by the cppc_reg_id parameter is implemented or not by the
+platform.
+If the register is implemented, sbiret.value will contain the register width. If the register is not
+implemented, sbiret.value will be set to 0.
+The possible error codes returned in sbiret.error are shown in Table 59.
+                                                  Table 59. CPPC Probe Errors
+Error code                                  Description
+SBI_SUCCESS                                 Probe completed successfully.
+SBI_ERR_INVALID_PARAM                       cppc_reg_id is reserved.
+SBI_ERR_FAILED                              The probe request failed for unspecified or unknown other reasons.

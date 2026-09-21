@@ -1,0 +1,24 @@
+              3.10.5.2   POWERCAP_MEASUREMENTS_CHANGED
+              If an agent has registered to receive MAI or power measurement change notifications for the power capping domain that
+              is identified by domain_id, the platform sends these notifications to that agent when such changes take place.
+              The platform sends this notification to an agent when either the MAI changes or the average power measurement of the
+              domain, over the MAI, is outside the lower and higher power thresholds specified when registering for the notification.
+                  message_id: 0x1
+                  protocol_id: 0x18
+                  This command is optional if no domain supports MAI and power measurements change notifications.
+                  Parameters
+                  Name                                 Description
+                  uint32 agent_id                      Identifier of the agent that caused this change event. For the current version
+                                                       of the specification, this field is set to 0 to indicate that the platform is the
+                                                       generator of all power consumption change events.
+                  uint32 domain_id                     Identifier for the power capping domain.
+                  uint32 power                         The average power consumption of the domain when either the upper or the
+                                                       lower power threshold was breached.
+                                                       If this notification was sent as a result of the MAI changing, the field contains
+                                                       the value of the average power consumption of the domain when the MAI
+                                                       changed.
+                  uint32 mai
+                                                               T0
+                                                       The power measurement averaging interval set for the domain.
+                                                 BE
+                                                                                                 Arm® System Control and Management Interface

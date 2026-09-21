@@ -28,5 +28,3 @@
                                                                            at this FF-A instance.
                                                                          • DENIED: Notification bitmap is not registered or is
                                                                            registered but not in a masked and non-pending state.
-Chapter 16. Notification interfaces
-16.3. FFA_NOTIFICATION_BIND

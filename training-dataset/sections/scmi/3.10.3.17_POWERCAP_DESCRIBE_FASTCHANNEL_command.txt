@@ -1,0 +1,79 @@
+              3.10.3.17    POWERCAP_DESCRIBE_FASTCHANNEL
+              This command allows the agent to discover the attributes of the FastChannel for the specified power capping domain
+              and the specified message.
+              The POWERCAP_DOMAIN_ATTRIBUTES command can be used to discover if a power capping domain supports
+              FastChannels. The PROTOCOL_MESSAGE_ATTRIBUTES command can be used to discover if a command, specified
+              by message_id, supports FastChannels.
+                  message_id: 0xC
+                  protocol_id: 0x13
+                  This command is optional.
+                  Parameters
+                  Name
+                                                             T0
+                                                          Description
+                  uint32 domain_id
+                  uint32 message_id
+                                               BE         Identifier for the power capping domain for which the FastChannel is
+                                                          allocated.
+                                                          Message-id for which the FastChannel is allocated.
+                  uint32 cpli                             Concurrent power limit identifier for which the FastChannel is allocated.
+                                                          Must be set to 0 if the domain does not support CPC, or if the
+                                                          message_id does not require cpli as an input parameter.
+                  Return values
+                  Name                                    Description
+                  int32 status                            One of, but not limited to, the following:
+                                                              • SUCCESS: If a valid FastChannel is found.
+                                                              • NOT_FOUND: if domain_id does not point to a valid domain or
+                                                                message_id does not point to a valid message, or cpli does not
+                                                                point to a valid Concurrent Power Limit Identifier.
+                                                              • NOT_SUPPORTED: if FastChannel is not supported for this
+                                                                domain or this message.
+                                                          See Section 3.1.4 for more status code definitions.
+                                                                                                    Arm® System Control and Management Interface
+                  uint32 attributes                           Bits[31:3]
+                                                              Reserved. Should be zero in this version of the specification.
+                                                              Bits[2:1]
+                                                              Doorbell Register width. This field is only valid if Doorbell Support is set
+                                                              to 1.
+                                                                    • If 0, then doorbell register is 8bits wide.
+                                                                    • If 1, then doorbell register is 16bits wide.
+                                                                    • If 2, then doorbell register is 32bits wide.
+                                                                    • If 3, then doorbell register is 64bits wide.
+                                                              Bit[0]
+                                                              Doorbell Support.
+                                                                    • If 0, then the FastChannel does not have a doorbell register
+                                                                    • If 1, then the FastChannel has a doorbell register.
+                  uint32 rate_limit                           Bits[31:20]
+                                                              Reserved and set to zero.
+                                                              Bits[19:0]
+                                                              Rate Limit in microseconds, indicating the minimum time required
+                                                              between successive requests. A value of 0 indicates that this field is not
+                                                              applicable or supported on the platform.
+                  uint32 chan_addr_low                        Lower 32 bits of the FastChannel address.
+                  uint32 chan_addr_high                       Higher 32 bits of the FastChannel address.
+                  uint32 chan_size                               T0
+                                                              Size of the FastChannel in bytes.
+                                                              The value of this field should be sufficient to accomodate the payload of
+                                                              the message this FastChannel is used for. For more details on payload
+                  uint32 doorbell_addr_low
+                                                   BE         requirements please refer to Section 3.5.5.1.
+                                                              Lower 32 bits of the doorbell address. This field is not used if doorbell is
+                                                              not supported.
+                  uint32 doorbell_addr_high                   Higher 32 bits of the doorbell address. This field is not used if doorbell is
+                                                              not supported.
+                  uint32 doorbell_set_mask_low                Contains a mask of lower 32 bits to set when writing to the doorbell
+                                                              register. If the doorbell register width, n, is less than 32 bits, then only n
+                                                              lower bits are considered from this mask. This field is not used if doorbell
+                                                              is not supported.
+                  uint32 doorbell_set_mask_high               Contains a mask of higher 32 bits to set when writing to the doorbell
+                                                              register. This field is only valid if the doorbell register width is 64 bits. This
+                                                              field is not used if doorbell is not supported.
+                  uint32                                      Contains a mask of lower 32 bits to preserve when writing to the doorbell
+                  doorbell_preserve_mask_low                  register. If the doorbell register width, n, is less than 32 bits, then only n
+                                                              lower bits are considered from this mask. This field is not used if doorbell
+                                                              is not supported.
+                  uint32                                      Contains a mask of higher 32 bits to preserve when writing to the doorbell
+                  doorbell_preserve_mask_high                 register. This field is only valid if the doorbell register width is 64 bits. This
+                                                              field is not used if doorbell is not supported.
+              Bits which are set neither in set_mask nor in preserve_mask are to be cleared.
+                                                                                                  Arm® System Control and Management Interface

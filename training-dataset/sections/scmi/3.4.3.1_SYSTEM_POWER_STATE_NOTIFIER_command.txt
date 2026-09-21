@@ -1,0 +1,58 @@
+                 3.4.3.1   SYSTEM_POWER_STATE_NOTIFIER
+                 If an agent has registered for system power state notifications with SYSTEM_POWER_STATE_NOTIFY, the platform
+                 sends this notification to the agent. Typically, the agent is either:
+                    • The OSPM that initiates a system power state transition in response to this notification. The OSPM needs this
+                      notification to become aware that a remote entity such as the management agent or the privileged agent is
+                      requesting a graceful power state transition.
+                    • A management agent or a privileged agent that initiated a graceful power state transition and is waiting for the
+                      OSPM to perform a power state transition in response. The management agent or privileged agent needs this
+                      notification to confirm that the platform controller has successfully received the power state transition request from
+                      the PSCI agent, or from the OSPM for non-PSCI compliant systems.
+                    message_id: 0x0
+                    protocol_id: 0x12
+                    This command is optional.
+                    Parameters
+                    Name                                 Description
+                                                                                                 Arm® System Control and Management Interface
+                 uint32 agent_id                      Identifier for the agent that caused the system power state transition.
+                 uint32 flags                         This parameter has the following format:
+                                                      Bits[31:1]
+                                                      Reserved, must be zero.
+                                                      Bit[0]
+                                                      Graceful request.
+                                                           • Set to 1 if the notification indicates that a system power state transition
+                                                             has been gracefully requested.
+                                                           • Set to 0 if the notification indicates that a system power state has been
+                                                             forcibly requested. When sent to the management agent, it could also
+                                                             indicate that the PSCI agent has requested a system power state
+                                                             transition in response to an initial graceful request from the
+                                                             management agent.
+                 uint32 system_state                  System power state that the system has transitioned to, or which has been
+                                                      requested.
+                                                      Can be one of:
+                                                      0x0 System shutdown.
+                                                      0x1 System cold reset.
+                                                      0x2 System warm reset.
+                                                      0x3 System power-up.
+                                                      0x4 System suspend.
+                                                      0x5 – 0x7FFFFFFF
+                                                              T0
+                                                      Reserved, must not be used.
+                                                      0x80000000 – 0xFFFFFFFF
+                                                      Available for vendor-defined implementations of system power state. These
+                 uint32 timeout
+                                                BE    can include additional parameters. The prototype for vendor-defined call is
+                                                      beyond the scope of this specification.
+                                                      This field is valid only when both the following conditions are satisfied:
+                                                            • the system_state field is system shutdown (0x0), and
+                                                            • Bit[0] of flags field is set to 1 (graceful request).
+                                                      This field indicates the platform-imposed timeout, specified in milliseconds,
+                                                      enforced from the point at which the platform sends a graceful system
+                                                      shutdown notification to OSPM. It indicates how long the platform waits for
+                                                      OSPM to gracefully shutdown the system. On timeout expiry, if the platform
+                                                      has not received the system shutdown request from the PSCI agent, or from
+                                                      OSPM for non-PSCI compliant systems, the platform can proceed to forcefully
+                                                      shutdown the system.
+                                                      If the platform does not impose any timeout, then this field is unused and must
+                                                      be set to zero.
+                                                                                                   Arm® System Control and Management Interface

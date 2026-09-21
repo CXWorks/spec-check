@@ -38,8 +38,6 @@
                                                                                   * Framework message type if bit[31] = b’1.
                                                                                        · See Table 18.8 in 18.2.4 Power
                                                                                          Management messages.
-Chapter 15. Messaging interfaces
-15.3. FFA_MSG_SEND_DIRECT_RESP
            Parameter                              Register         Value
            IMPLEMENTATION DEFINED values          w3-w7                • IMPLEMENTATION DEFINED values.
                                                   x3-x7
@@ -59,5 +57,3 @@ Chapter 15. Messaging interfaces
                                                                          at this FF-A instance.
                                                                        • ABORTED: Receiver endpoint ran into an unexpected
                                                                          error and has aborted.
-Chapter 15. Messaging interfaces
-15.4. FFA_MSG_SEND_DIRECT_REQ2

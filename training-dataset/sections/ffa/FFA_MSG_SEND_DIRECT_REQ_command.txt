@@ -27,8 +27,6 @@
            uint32 Sender/Receiver IDs               w1                   • Sender and Receiver endpoint IDs.
                                                                              – Bit[31:16]: Sender endpoint ID.
                                                                              – Bit[15:0]: Receiver endpoint ID.
-Chapter 15. Messaging interfaces
-15.2. FFA_MSG_SEND_DIRECT_REQ
            Parameter                              Register         Value
            uint32 Flags                           w2                   • Message flags.
                                                                            – Bit[31]: Message type.
@@ -63,5 +61,3 @@ Chapter 15. Messaging interfaces
                                                                          error and has aborted.
                                                                        • NOT_READY: Receiver endpoint is not ready to
                                                                          handle this request.
-Chapter 15. Messaging interfaces
-15.3. FFA_MSG_SEND_DIRECT_RESP

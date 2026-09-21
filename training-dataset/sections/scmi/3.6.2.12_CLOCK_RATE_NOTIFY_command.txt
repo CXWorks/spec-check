@@ -1,0 +1,34 @@
+              3.6.2.12   CLOCK_RATE_NOTIFY
+              This command allows the caller to request notifications from the platform for clock rate changes on a specific clock device.
+              These notifications are sent using the CLOCK_RATE_CHANGED notification, which is described in Section 3.6.4.1.
+              Notification support is optional, and PROTOCOL_MESSAGE_ATTRIBUTES must be used to discover whether this
+              command is implemented.
+                                                               T0
+              These notifications must be disabled by default during initial boot of the platform.
+                  message_id: 0x9
+                  protocol_id: 0x14
+                  This command is optional.
+                                                 BE
+                  Parameters
+                  Name                                 Description
+                  uint32 clock_id                      Identifier for the clock device.
+                  uint32 notify_enable                 Bits[31:1]
+                                                       Reserved must be zero.
+                                                       Bit[0]
+                                                       Notify enable. This bit can have one of the following values:
+                                                            • 0, which indicates that the platform does not send any
+                                                               CLOCK_RATE_CHANGED messages to the calling agent.
+                                                            • 1, which indicates that the platform sends CLOCK_RATE_CHANGED
+                                                               messages to the calling agent when the clock rate for the clock device
+                                                               is changed.
+                                                       See Section 3.6.4.1 for details about the CLOCK_RATE_CHANGED
+                                                       notification.
+                  Return values
+                  Name                                 Description
+                                                                                                  Arm® System Control and Management Interface
+                  int32 status                         One of, but not limited to, the following:
+                                                           • SUCCESS.
+                                                           • NOT_FOUND: if clock_id does not point to a valid clock device.
+                                                           • INVALID_PARAMETERS: if notify_enable specifies values that are
+                                                             either illegal or incorrect.
+                                                       See Section 3.1.4 for more status code definitions.

@@ -1,0 +1,20 @@
+              3.6.3.1    CLOCK_RATE_SET_COMPLETE
+              If the agent has changed the clock rate asynchronously through CLOCK_RATE_SET, the platform sends this delayed
+              response to the agent when the clock rate changes.
+                  message_id: 0x5
+                  protocol_id: 0x14
+                  This command is optional.
+                  Parameters
+                  Name                                 Description
+                  int32 status                         One of, but not limited to, the following:
+                                                           • SUCCESS: if clock rate was set successfully.
+                                                           • DENIED: if the request was denied because there are other users of
+                                                             the clock.
+                                                       Other vendor-specific errors can also be generated depending on the
+                                                       implementation.
+                                                       See Section 3.1.4 for more status code definitions.
+                  uint32 clock_id                      Identifier for the clock device.
+                                                                                                  Arm® System Control and Management Interface
+                  uint32 rate[2]                       Value of the rate that the clock transitioned to.
+                                                       Lower word: Lower 32 bits of the physical rate in Hertz.
+                                                       Upper word: Upper 32 bits of the physical rate in Hertz.

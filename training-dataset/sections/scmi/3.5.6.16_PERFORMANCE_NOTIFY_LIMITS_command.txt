@@ -1,0 +1,35 @@
+                 3.5.6.16   PERFORMANCE_NOTIFY_LIMITS
+                                                     BE
+                 This command allows the agent to request notifications from the platform for changes in the allowed maximum and
+                 minimum performance levels. These notifications are sent using the PERFORMANCE_LIMITS_CHANGED command
+                 which is described in Section 3.5.8.1.
+                 If no domain supports limit notifications, the command can be omitted. The PROTOCOL_MESSAGE_ATTRIBUTES
+                 command, that is described in Section 3.5.6.5, can be used to determine whether this command is implemented.
+                 On initial boot of an agent, by default, these notifications must be disabled from being sent to that agent.
+                    message_id: 0x9
+                    protocol_id: 0x13
+                    This command is optional.
+                    Parameters
+                    Name                                   Description
+                    uint32 domain_id                       Identifier for the performance domain.
+                                                                                                    Arm® System Control and Management Interface
+                    uint32 notify_enable                 Bits[31:1]
+                                                         Reserved, must be zero.
+                                                         Bit[0]
+                                                         Notify enable:
+                                                              • If this value is 0, the platform does not send any
+                                                                PERFORMANCE_LIMITS_CHANGED messages to the agent.
+                                                              • If this value is set to 1, the platform does send
+                                                                PERFORMANCE_LIMITS_CHANGED messages to the agent.
+                                                         See Section 3.5.8.1 for more details about
+                                                         PERFORMANCE_LIMITS_CHANGED notifications.
+                    Return values
+                    Name                                 Description
+                    int32 status                         One of, but not limited to, the following:
+                                                             • SUCCESS.
+                                                             • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                             • NOT_SUPPORTED: if notifications are not supported for the indicated
+                                                               performance domain.
+                                                             • INVALID_PARAMETERS: if notify_enable specifies values that are not
+                                                               legal or valid.
+                                                         See Section 3.1.4 for more status code definitions.

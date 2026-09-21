@@ -1,0 +1,50 @@
+              3.10.3.16    POWERCAP_MEASUREMENTS_NOTIFY
+              This command allows the caller to request notifications from the platform when either the MAI of a domain changes, or
+              the average power consumption of a domain is outside the configured upper or lower power threshold. The average
+              power consumption is measured over the latest power measurement averaging interval. The platform notifies the agent
+              using the POWERCAP_MEASUREMENTS_CHANGED notification, which is described in Section 3.10.5.2.
+              Notification support is optional, and PROTOCOL_MESSAGE_ATTRIBUTES must be used to discover whether this
+              command is implemented.
+              These notifications must be disabled by default during initial boot of the platform.
+                  message_id: 0xB
+                  protocol_id: 0x18
+                  This command is mandatory if any domain supports MAI or power measurements change notifications.
+                  Parameters
+                  Name
+                  uint32 domain_id
+                                                              T0
+                                                      Description
+                                                      Identifier for the power capping domain.
+                  uint32 notify_enable          BE    Bits[31:1]
+                                                      Reserved must be zero.
+                                                      Bit[0]
+                                                      Notify enable. This bit can have one of the following values:
+                                                           • 0, which indicates that the platform does not send any
+                                                             POWERCAP_MEASUREMENTS_CHANGED messages to the calling
+                                                             agent.
+                                                           • 1, which indicates that the platform sends
+                                                             POWERCAP_MEASUREMENTS_CHANGED messages to the calling
+                                                             agent when either the MAI of the domain changes, or the average
+                                                             power consumption of the domain is outside the configured upper or
+                                                             lower power threshold.
+                                                      See Section 3.10.5.2 for more details about the
+                                                      POWERCAP_MEASUREMENTS_CHANGED notification.
+                  uint32 power_thresh_low             The lower threshold specified in power units which are in use by this domain.
+                                                      This value replaces any lower threshold previously configured by the calling
+                                                      agent. The platform sends a notification to the agent when the average power
+                                                      consumption of the power capping domain, measured over MAI, falls below
+                                                      this threshold.
+                  uint32 power_thresh_high            The upper threshold specified in power units which are in use by this domain.
+                                                      This value replaces any upper threshold previously configured by the calling
+                                                      agent. The platform sends a notification to the agent when the average power
+                                                      consumption of the power capping domain, measured over MAI, rises above
+                                                      this threshold.
+                                                                                                Arm® System Control and Management Interface
+                  Return values
+                  Name                               Description
+                  int32 status                       One of, but not limited to, the following:
+                                                         • SUCCESS.
+                                                         • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                         • INVALID_PARAMETERS: if any of the parameters specify values that
+                                                           are either illegal or incorrect.
+                                                     See Section 3.1.4 for more status code definitions.

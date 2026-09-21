@@ -25,8 +25,6 @@
                                                                 -6                    DENIED
                                                                 -7                    RETRY
                                                                 -8                    ABORTED
-Chapter 12. Status reporting interfaces
-12.2. FFA_ERROR
                                                                 Status code           Description
                                                                 -9                    NO_DATA
                                                                 -10                   NOT_READY
@@ -52,5 +50,3 @@ Chapter 12. Status reporting interfaces
             int32 Error code                          w2                   • FF-A function specific error code. See function
                                                                              definition for applicable error codes.
             Other Parameter registers                 w3-w7                • Reserved (SBZ).
-Chapter 12. Status reporting interfaces
-12.3. FFA_SUCCESS

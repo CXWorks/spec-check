@@ -1,0 +1,84 @@
+              3.11.2.5    PINCTRL_ATTRIBUTES
+              This command returns the attributes associated with a specific function, pin, or a group of pins.
+                  message_id: 0x3
+                  protocol_id: 0x19
+                  This command is mandatory.
+                  Parameters
+                  Name                                   Description
+                  uint32 identifier                      Identifier for the pin, group, or function.
+                  uint32 flags
+                                                                 T0
+                                                         Identifiers are limited to 16 bits, and the upper 16 bits of this field are ignored
+                                                         by the platform.
+                                                         Bits[31:2]
+                                                   BE    Reserved, must be zero.
+                                                         Bits[1:0]
+                                                         Selector: Whether the identifier field selects a pin, a group, or a function.
+                                                             • 0 – Pin
+                                                             • 1 – Group
+                                                             • 2 – Function
+                                                               All other values are reserved for future use.
+                  Return values
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: if valid attributes were returned.
+                                                             • NOT_FOUND: if the identifier field pertains to a non-existent pin, group,
+                                                               or function.
+                                                         See Section 3.1.4 for more status code definitions.
+                                                                                Arm® System Control and Management Interface
+                                     The attributes of the pin, group, or function identified by the identifier field in
+                                     combination with Bits[1:0] of the flag field in the command.
+                                     Bit[31]
+                                     Extended name.
+                                          • If set to 1, the name is greater than 16 bytes. The extended name is
+                                            provided by PINCTRL_NAME_GET command which is described in
+                                            Section 3.11.2.11.
+                                          • If set to 0, extended name is not supported.
+                                     Bits[30:18]
+                                     Reserved, must be zero.
+                                     Bit[17]
+                                     GPIO function descriptor
+                                          • Set to 0 if Bits[1:0] of the flags field in the command is set to 2, and the
+                                            function does not support GPIO functionality.
+                                          • Set to 1 if Bits[1:0] of the flags field in the command is set to 2, and the
+                                            function supports GPIO functionality.
+                                            The value of this bit must not be 1 for more than one function
+                                            associated with a pin or a group.
+                                     The agent should ignore the value of this bit if Bits[1:0] of flags field in the
+                                     command is set to 0 or 1.
+                                     Bit[16]
+                                     Pin-only function descriptor.
+                                          • Set to 0 if Bits[1:0] of the flags field in the command is set to 2, and the
+                                             T0
+                                            function is only supported by groups.
+                                          • Set to 1 if Bits[1:0] of the flags field in the command is set to 2, the
+                                            function is a single-pin function, and it is not supported by any group.
+                                            The function is only supported by individual pins.
+                               BE    The agent should ignore the value of this bit if Bits[1:0] of flags field in the
+                                     command is set to 0 or 1.
+                                     Bits[15:0]
+                                     Number of pins or groups.
+                                          • Set to 1, if Bits[1:0] of flags field in the command is set to 0.
+                                          • Set to the number of pins in the group, if Bits[1:0] of flags field in the
+                                            command is set to 1.
+                                          • Set to the number of pins which can support the function, if Bits[1:0] of
+                                            flags field in the command is set to 2 and Bit[16] of attributes field is set
+                                            to 1.
+                                          • Set to the number of groups which can support the function in all other
+                                            cases.
+                                                                                                    Arm® System Control and Management Interface
+                  uint8 name[16]                         Null-terminated ASCII string of up to 16 bytes in length describing the pin,
+                                                         group, or function name. When Bit[31] of attributes field is set to 1, this field
+                                                         contains the lower 15 bytes of the NULL terminated name.
+                                                         Recommended convention if names are used:
+                                                              • Pins names start with “pin_”, and end with the pin identification in
+                                                                alphanumeric format. An example of a pin name is “pin_x1”.
+                                                              • Group names start with “grp_”, followed by a brief description of the
+                                                                group in alphanumeric format interspersed by ‘_’. An example of a
+                                                                group name is “grp_uart_a_rxtx_1”.
+                                                              • Function names start with “f_”, followed by a brief description of the
+                                                                function in alphanumeric format interspersed by ‘_’. An example of a
+                                                                function name is “f_uart_a”.
+                                                                NOTE: General purpose IO (GPIO) function and group names
+                                                                should include 'gpio' in the descriptive literal. An example is
+                                                                “f_gpio”.

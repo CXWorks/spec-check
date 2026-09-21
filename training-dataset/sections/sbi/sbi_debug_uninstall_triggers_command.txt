@@ -1,0 +1,19 @@
+19.6. Function: Uninstall a set of triggers (FID #5)
+  struct sbiret sbi_debug_uninstall_triggers(unsigned long trig_idx_base,
+                                             unsigned long trig_idx_mask)
+Uninstall a set of debug triggers specified by the trig_idx_base and trig_idx_mask parameters on the
+calling hart. The trig_idx_base specifies the starting trigger index, while the trig_idx_mask is a bitmask
+indicating which triggers, relative to the base, are to be uninstalled. Each bit in the mask corresponds to a
+specific trigger, allowing for batch operations on multiple triggers simultaneously.
+For each debug trigger in the specified set of debug triggers, the SBI implementation MUST:
+ 1. Clear the tdata1, tdata2, and tdata3 CSRs of the mapped HW debug trigger.
+ 2. Clear the trig_state of the debug trigger.
+ 3. Unmap and free the HW debug trigger and corresponding trig_idx for re-use in the future trigger
+    installations.
+The possible error codes returned in sbiret.error are shown in Table 103.
+                                            Table 103. Debug Triggers Uninstall Errors
+Error code                                    Description
+SBI_SUCCESS                                   Triggers uninstalled successfully.
+SBI_ERR_INVALID_PARAM                         One of the debug triggers with index trig_idx in the specified set of debug
+                                              triggers either not mapped to any HW debug trigger OR has trig_idx >=
+                                              trig_max.

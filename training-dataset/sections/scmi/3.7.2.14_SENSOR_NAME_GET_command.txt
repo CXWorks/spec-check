@@ -1,0 +1,21 @@
+              3.7.2.14   SENSOR_NAME_GET
+              This command returns the extended name associated with a specific sensor.
+                                                                                                   Arm® System Control and Management Interface
+                  message_id: 0xC
+                  protocol_id: 0x15
+                  This command is mandatory only if extended sensor name is supported.
+                  Extended sensor name is supported when Bit[29] of sensor_attributes_low field of
+                  SENSOR_DESCRIPTION_GET command is set to 1. Refer to Section 3.7.2.5 for more details.
+                  Parameters
+                  Name                                  Description
+                  uint32 sensor_id                      Identifier for the sensor.
+                  Return values
+                  Name                                  Description
+                  int32 status                          One of, but not limited to, the following:
+                                                            • SUCCESS: if valid sensor extended name is returned.
+                                                            • NOT_FOUND: if sensor_id pertains to a non-existent sensor.
+                                                        See Section 3.1.4 for more status code definitions.
+                  uint32 flags                          Bits[31:0]
+                                                        Reserved, must be zero.
+                  uint8 name[64]                        Null-terminated UTF-8 format string of up to 64 bytes in length describing the
+                                                        sensor extended name.

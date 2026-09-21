@@ -1,0 +1,40 @@
+              3.7.2.10   SENSOR_CONFIG_GET
+              This command is used to read the sensor configuration. It returns the configured sensor update interval, the sensor state
+              and if timestamping is enabled.
+                  message_id: 0x9
+                  protocol_id: 0x15
+                  This command is mandatory.
+                  Parameters
+                  Name                                        Description
+                                                                                                   Arm® System Control and Management Interface
+                  uint32 sensor_id                            Identifier for the sensor.
+                  Return values
+                  Name                                        Description
+                  int32 status                                One of, but not limited to, the following:
+                                                                  • SUCCESS: if the sensor configuration was returned successfully.
+                                                                  • NOT_FOUND: if sensor_id does not point to an existing sensor.
+                                                              See Section 3.1.4 for more status code definitions.
+                  uint32 sensor_config                        Bits[31:11]
+                                                                      sensor_update_interval:
+                                                                      Bits[31:16]
+                                                                            sec – Seconds.
+                                                                      Bits[15:11]
+                                                                            exponent – two’s complement format representing the
+                                                                            power-of-10 multiplier that is applied to the sec field.
+                                                              The time duration between successive updates of sensor value. The
+                                                              representation is in the [sec] x 10[exponent] format, in units of seconds.
+                                                              This field is set to 0 if the sensor does not require or support an update
+                                                              interval.
+                                                              Bits[10:2]
+                                                              Reserved.
+                                                              Bit[1]
+                                                                T0
+                                                              Timestamp reporting:
+                                                                   • Set to 1 if the sensor value provided by the platform is
+                                                                      timestamped.
+                                                  BE               • Set to 0 if the sensor value provided by the platform is not
+                                                              Bit[0]
+                                                                      timestamped.
+                                                              Sensor State:
+                                                                   • Set to 1 if the sensor is enabled.
+                                                                   • Set to 0 if the sensor is disabled.

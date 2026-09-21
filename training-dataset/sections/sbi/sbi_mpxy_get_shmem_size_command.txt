@@ -1,0 +1,11 @@
+20.5. Function: Get shared memory size (FID #0)
+  struct sbiret sbi_mpxy_get_shmem_size(void)
+Get the shared memory size in number of bytes for sending and receiving messages.
+The shared memory size returned by the SBI implementation MUST satisfy the following requirements:
+ 1. The shared memory size MUST be same for all HARTs
+ 2. The shared memory size MUST be at least 4096 bytes
+ 3. The shared memory size MUST be multiple of 4096 bytes
+ 4. The shared memory size MUST not be less than the biggest MSG_DATA_MAX_LEN attribute value
+    across all MPXY channels
+This function always returns SBI_SUCCESS in sbiret.error and it will return the shared memory size in
+sbiret.uvalue.

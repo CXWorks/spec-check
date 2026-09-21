@@ -1,0 +1,57 @@
+              3.9.2.6    VOLTAGE_DESCRIBE_LEVELS
+              This command allows the agent to ascertain the voltage levels supported by a voltage domain. On success, the command
+              returns an array, which contains a number of voltage level entries. Sometimes it might not be possible to return the whole
+              array with just one call. To solve this problem, the interface allows multiple calls. It also returns the number of remaining
+              voltage levels. The size of the array returned depends on the number of return values a given transport can support.
+              Voltage domains can support many voltage levels and sometimes individually describing each voltage level might be too
+              onerous. In such cases, the command can return only the lowest voltage level, the highest voltage level and the step
+              size between two successive voltage levels that the voltage domain supports.
+              The voltage levels returned by this call should be in numeric ascending order.
+              For an example of using this kind of API, see Section 3.5.6.8.
+                  message_id: 0x4
+                  protocol_id: 0x17
+                  This command is mandatory.
+                  Parameters
+                  Name                                 Description
+                  uint32 domain_id                     Identifier for the voltage domain.
+                  uint32 level_index                   Index of the first voltage level to be described in the return voltage array.
+                  Return values
+                  Name
+                  int32 status
+                                                              T0
+                                                       Description
+                                                       One of, but not limited to, the following:
+                                                BE         • SUCCESS: if the voltage levels are returned successfully.
+                                                           • NOT_FOUND: if the domain identified by domain_id does not exist.
+                                                           • OUT_OF_RANGE: if the level_index is outside of valid range.
+                                                           • NOT_SUPPORTED: if the request is not supported.
+                                                           • DENIED: if the calling agent is not allowed to get the voltage levels
+                                                             supported for this voltage domain. An example would be if this voltage
+                                                             domain is exclusive to another agent.
+                                                       See Section 3.1.4 for more status code definitions.
+                  uint32 flags                         Descriptor for the voltage levels supported by this domain.
+                                                       Bits[31:16]
+                                                       Number of remaining voltage levels. This field should be 0 if Bit[12] is 1.
+                                                       Bits[15:13]
+                                                       Reserved, must be zero.
+                                                       Bit[12]
+                                                       Return format:
+                                                             • If this bit is set to 1, the Voltage Array is a triplet that constitutes a
+                                                               segment in the following form:
+                                                                    – voltage[0] is the lowest voltage level that the domain supports.
+                                                                    – voltage[1] is the highest voltage level that the domain supports.
+                                                                    – voltage[2] is the step size between two successive voltage levels
+                                                                       that the domain supports.
+                                                             • If this bit is set to 0, each element of the Voltage Array represents a
+                                                               discrete voltage level that the voltage domain supports.
+                                                       Bits[11:0]
+                                                       Number of voltage levels that are returned by this call. This field should be 3
+                                                       if Bit[12] is 1.
+                                                                                                    Arm® System Control and Management Interface
+                  int32 voltage [N]                       Voltage Array expressed in microvolts (uV):
+                                                          If Bit[12] of the flags field is set to 0, each array entry represents a discrete
+                                                          voltage level.
+                                                          If Bit[12] of the flags field is set to 1, then each entry is a member of a
+                                                          segment {lowest voltage level, highest voltage level, step size} as described
+                                                          above.
+                                                          N is specified by Bits[11:0] of flags field.

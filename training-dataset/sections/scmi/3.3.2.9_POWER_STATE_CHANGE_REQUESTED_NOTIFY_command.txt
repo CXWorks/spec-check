@@ -1,0 +1,46 @@
+                 3.3.2.9   POWER_STATE_CHANGE_REQUESTED_NOTIFY
+                 This command allows the caller to receive notifications from the platform, when the platform receives a request from
+                 another agent to change the state of a power domain.
+                 These notifications are sent using POWER_STATE_CHANGE_REQUESTED notification described in Section 3.3.3.2.
+                 POWER_STATE_CHANGE_REQUESTED notifications are useful for the co-operative management of power domains
+                 that are shared among agents. When a power domain is shared among agents, the platform maintains the power domain
+                 in a state that meets the requirements of all the agents that are sharing it.
+                 For example, the POWER_STATE_CHANGE_REQUESTED notification can be used when a request is made by one
+                 agent to turn off a shared power domain. The platform will not act on this request if other agents have requested
+                 the same power domain to be active. The platform will notify the other agents sharing the power domain through the
+                 POWER_STATE_CHANGE_REQUESTED notification, if the other agents have subscribed to it. This notification enables
+                 the other agents to allow the power state transition of the shared power domain, by voluntarily relinquishing the use of
+                 the shared power domain. The decision to voluntarily relinquish the use of a shared power domain is based on an
+                 implementation-defined policy.
+                 Notification support is optional, and PROTOCOL_MESSAGE_ATTRIBUTES must be used to discover whether this
+                 command is implemented.
+                 These notifications must be disabled by default during initial boot of the platform.
+                                                                                                  Arm® System Control and Management Interface
+                    message_id: 0x7
+                    protocol_id: 0x11
+                    This command is optional.
+                    Parameters
+                    Name                               Description
+                    uint32 domain_id                   Identifier for the power domain.
+                    uint32 notify_enable               Bits[31:1]
+                                                       Reserved must be zero.
+                                                       Bit[0]
+                                                       Notify enable. This bit can have one of the following values:
+                                                            • 0, which indicates that the platform does not send
+                                                              POWER_STATE_CHANGE_REQUESTED messages to the calling
+                                                              agent.
+                                                            • 1, which indicates that the platform sends
+                                                              POWER_STATE_CHANGE_REQUESTED messages to the calling
+                                                              agent when another agent requests for a change in the state of the
+                                                              power domain.
+                                                              See Section 3.3.3.2 for the details on
+                                                              POWER_STATE_CHANGE_REQUESTED notification.
+                    Return values
+                    Name
+                    int32 status
+                                                               T0
+                                                       Description
+                                                       One of, but not limited to, the following:
+                                                           • SUCCESS.
+                                                 BE        • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                       See Section 3.1.4 for more status code definitions.

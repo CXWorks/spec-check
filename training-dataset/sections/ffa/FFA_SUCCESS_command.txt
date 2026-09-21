@@ -18,8 +18,6 @@
             1                             Secure and Non-secure physical                         SMC, ERET
             2                             Non-secure virtual FF-A                                SMC, HVC, ERET
             3                             Secure virtual FF-A                                    SMC, ERET
-Chapter 12. Status reporting interfaces
-12.3. FFA_SUCCESS
                                                                                     Table 12.7: FFA_SUCCESS function syntax
             Parameter                                 Register         Value
             uint32 Function ID                        w0                   • 0x84000061.
@@ -44,5 +42,3 @@ Chapter 12. Status reporting interfaces
                                                                              explicitly specified.
 Chapter 13
 Setup and discovery interfaces
-Chapter 13. Setup and discovery interfaces
-13.1. Compliance requirements

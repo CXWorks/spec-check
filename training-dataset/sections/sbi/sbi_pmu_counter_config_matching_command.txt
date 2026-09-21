@@ -1,0 +1,37 @@
+11.8. Function: Find and configure a matching counter (FID #2)
+  struct sbiret sbi_pmu_counter_config_matching(unsigned long counter_idx_base,
+                                                unsigned long counter_idx_mask,
+                                                unsigned long config_flags,
+                                                unsigned long event_idx,
+                                                uint64_t event_data)
+Find and configure a counter from a set of counters which is not started (or enabled) and can monitor the
+specified event. The counter_idx_base and counter_idx_mask parameters represent the set of counters
+whereas event_idx represents the event to be monitored and event_data represents any additional event
+configuration.
+The config_flags parameter represents additional counter configuration and filter flags. The bit
+definitions of the config_flags parameter are shown in the Table 37 below.
+                                  Table 37. PMU Counter Config Match Flags
+     Flag Name                                          Bits                Description
+     SBI_PMU_CFG_FLAG_SKIP_MATCH                        0:0                 Skip the counter matching
+     SBI_PMU_CFG_FLAG_CLEAR_VALUE                       1:1                 Clear (or zero) the counter value
+                                                                            in counter configuration
+     SBI_PMU_CFG_FLAG_AUTO_START                        2:2                 Start the counter after configuring
+                                                                            a matching counter
+     SBI_PMU_CFG_FLAG_SET_VUINH                         3:3                 Event counting inhibited
+                                                                            in VU-mode
+     SBI_PMU_CFG_FLAG_SET_VSINH                         4:4                 Event counting inhibited
+                                                                            in VS-mode
+     SBI_PMU_CFG_FLAG_SET_UINH                          5:5                 Event counting inhibited
+                                                                            in U-mode
+     SBI_PMU_CFG_FLAG_SET_SINH                          6:6                 Event counting inhibited
+                                                                            in S-mode
+     SBI_PMU_CFG_FLAG_SET_MINH                          7:7                 Event counting inhibited
+                                                                            in M-mode
+     RESERVED                                           8:(XLEN-1)          Reserved for future use and must
+                                                                            be zero.
+               When SBI_PMU_CFG_FLAG_SKIP_MATCH is set in config_flags, the SBI
+              implementation will unconditionally select the first counter from the set of counters specified
+               by the counter_idx_base and counter_idx_mask.
+               The SBI_PMU_CFG_FLAG_AUTO_START flag in config_flags has no impact on the
+              counter value.
+              The config_flags[3:7] bits are event filtering hints so these can be ignored or overridden by

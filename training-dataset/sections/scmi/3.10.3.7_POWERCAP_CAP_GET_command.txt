@@ -1,0 +1,24 @@
+              3.10.3.7    POWERCAP_CAP_GET
+              This command can be used by an agent to get the value of the currently enforced power cap for a domain.
+              ─── Note ─────
+              It is possible for the power cap value returned by this command to be stale by the time the command completes, as
+              another power cap change request could have been initiated and completed in the interim.
+              ─────────────
+                  message_id: 0x4
+                  protocol_id: 0x18
+                  This command is mandatory.
+                                                                                                Arm® System Control and Management Interface
+                  Parameters
+                  Name                               Description
+                  uint32 domain_id                   Identifier for the power capping domain.
+                  uint32 cpli                        Concurrent power limit identifier. Must be set to 0 if the domain does not
+                                                     support CPC.
+                  Return values
+                  Name                               Description
+                  int32 status                       One of, but not limited to, the following:
+                                                        • SUCCESS: if the power cap setting was successfully returned.
+                                                        • NOT_FOUND: if domain_id or cpli are not valid.
+                                                        • NOT_SUPPORTED: if the request is not supported.
+                                                           See Section 3.1.4 for more status code definitions.
+                  uint32 power_cap                   The power cap set for the domain and CPLi.
+                                                     A value of 0 indicates that power capping for this domain has been disabled.

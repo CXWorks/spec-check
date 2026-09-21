@@ -1,0 +1,54 @@
+              3.7.2.11   SENSOR_CONFIG_SET
+              This command is used to configure the sensor update interval and to enable the timestamping of sensor values. This
+              command can also be used to enable or disable the sensor.
+              If the sensor has been enabled, sensor values can be read using the SENSOR_READING_GET command or notified
+              by the platform through the SENSOR_UPDATE notification. The platform generates the SENSOR_UPDATE notification
+              only if the agent subscribes to this notification by calling SENSOR_CONTINUOUS_UPDATE_NOTIFY as described in
+              Section 3.7.2.13. The platform generates this notification only for sensors which support continuous update notifications.
+                  message_id: 0xA
+                  protocol_id: 0x15
+                  This command is mandatory.
+                  Parameters
+                  Name                                        Description
+                  uint32 sensor_id                            Identifier for the sensor.
+                                                                                                Arm® System Control and Management Interface
+                  uint32 sensor_config                     Bits[31:11] sensor_update_interval:
+                                                                   Bits[31:16] sec – Seconds.
+                                                                   Bits[15:11] exponent – two’s complement format representing
+                                                                           the power-of-10 multiplier that is applied to the sec field.
+                                                           The time duration between successive updates of the sensor value. The
+                                                           representation is in the [sec] x 10[exponent] format, in units of seconds.
+                                                           This field should be set to 0 if the sensor update interval does not need
+                                                           to be updated or if the sensor does not support configuring the sensor
+                                                           update interval.
+                                                           Bits[10:9]
+                                                           Round up/down:
+                                                                 • If Bit[10] is set to 1, the platform rounds up/down autonomously to
+                                                                   choose a sensor update interval closest to the requested update
+                                                                   interval, and Bit[9] is ignored.
+                                                                 • If Bit[10] is set to 0, then the platform rounds up if Bit[9] is set to 1,
+                                                                   and rounds down if Bit[9] is set to 0.
+                                                           Bits[8:2]
+                                                           Reserved.
+                                                           Bit[1]
+                                                           Timestamp reporting:
+                                                                 • Set to 1 if the sensor value provided by the platform should be
+                                                                   timestamped.
+                                                                 • Set to 0 if the sensor value provided by the platform should not be
+                                                             T0    timestamped.
+                                                           If the sensor does not support timestamp reporting or its configuration,
+                                                           this bit should be set to 0.
+                                                           Bit[0]
+                                               BE          Sensor State:
+                                                                 • Set to 1 if the sensor should be enabled.
+                                                                 • Set to 0 if the sensor should be disabled.
+                  Return values
+                  Name                                     Description
+                  int32 status                             One of, but not limited to, the following:
+                                                               • SUCCESS: if the sensor configuration was set successfully.
+                                                               • NOT_FOUND: if sensor_id does not point to an existing sensor.
+                                                               • INVALID_PARAMETERS: if the input parameters specify
+                                                                 incorrect or illegal values.
+                                                               • NOT_SUPPORTED: if the configuration requested by this
+                                                                 command is not supported by the sensor.
+                                                           See Section 3.1.4 for more status code definitions.

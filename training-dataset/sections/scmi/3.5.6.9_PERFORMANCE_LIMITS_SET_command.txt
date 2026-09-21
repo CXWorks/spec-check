@@ -1,0 +1,41 @@
+                 3.5.6.9    PERFORMANCE_LIMITS_SET
+                 This command allows the caller to set limits on the performance level of a domain. If Level Indexing Mode is used by the
+                 platform, the limits must be specified in level index instead of the corresponding performance level.
+                    message_id: 0x5
+                    protocol_id: 0x13
+                    This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES
+                    command is set to 0 for any domain.
+                    Parameters
+                    Name                                Description
+                    uint32 domain_id                    Identifier for the performance domain.
+                    uint32 range_max                    Maximum allowed performance level, or level index.
+                                                        If the performance level specified by this field is set to 0, the platform ignores
+                                                        it. Any pre-existing limit on the maximum allowed performance level is left
+                                                        unchanged. The performance levels specified by range_max and range_min
+                                                        cannot be zero at the same time.
+                    uint32 range_min                    Minimum allowed performance level, or level index.
+                                                        If the performance level specified by this field is set to 0, the platform ignores
+                                                                T0
+                                                        it. Any pre-existing limit on the minimum allowed performance level is left
+                                                        unchanged. The performance levels specified by range_max and range_min
+                                                        cannot be zero at the same time.
+                    Return values
+                    Name
+                    int32 status
+                                                  BE    Description
+                                                        One of, but not limited to, the following:
+                                                            • SUCCESS: if the command successfully set the limits of operation. If
+                                                              setting a limit requires modifying the current performance level of the
+                                                              domain, the command can return before this change has been
+                                                              completed. However, the change in performance level must still take
+                                                              place.
+                                                            • NOT_FOUND: if the performance domain identified by domain_id does
+                                                              not exist.
+                                                            • OUT_OF_RANGE: if the limits set lie outside the highest and lowest
+                                                              performance levels that are described by
+                                                              PERFORMANCE_DESCRIBED_LEVELS, or if range_max and
+                                                              range_min are both zero.
+                                                            • DENIED: if the calling agent is not permitted to change the
+                                                              performance limits for the domain, as described by
+                                                              PERFORMANCE_DOMAIN_ATTRIBUTES.
+                                                        See Section 3.1.4 for more status code definitions.

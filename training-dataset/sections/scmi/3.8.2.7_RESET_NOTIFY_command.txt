@@ -1,0 +1,30 @@
+              3.8.2.7    RESET_NOTIFY
+              This command allows the caller to request notifications from the platform when a reset domain has been reset. If reset
+              has been explicitly signaled, the platform generates this notification when the reset signal has been asserted. These
+              notifications are sent using the RESET_ISSUED notification, which is described in Section 3.8.4.1.
+              Notification support is optional, and PROTOCOL_MESSAGE_ATTRIBUTES must be used to discover whether this
+              command is implemented.
+              These notifications must be disabled by default during initial boot of the platform.
+                  message_id: 0x5
+                  protocol_id: 0x16
+                  This command is optional.
+                  Parameters
+                  Name                                Description
+                                                                                                 Arm® System Control and Management Interface
+                  uint32 domain_id                    Identifier for the reset domain.
+                  uint32 notify_enable                Bits[31:1]
+                                                      Reserved must be zero.
+                                                      Bit[0]
+                                                      Notify enable. This bit can have one of the following values:
+                                                           • 1, which indicates that the platform should send RESET_ISSUED
+                                                             notifications to the calling agent when the domain is reset.
+                                                           • 0, which indicates that the platform should not send any
+                                                             RESET_ISSUED notifications to the calling agent.
+                  Return values
+                  Name                                Description
+                  int32 status                        One of, but not limited to, the following:
+                                                          • SUCCESS.
+                                                          • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                          • INVALID_PARAMETERS: if notify_enable specifies values that are
+                                                            either illegal or incorrect.
+                                                      See Section 3.1.4 for more status code definitions.

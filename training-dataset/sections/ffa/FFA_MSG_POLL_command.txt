@@ -23,5 +23,3 @@
                                                                           • DENIED: Callee is not in a state to handle this request.
                                                                           • NOT_SUPPORTED: This function is not implemented
                                                                             at this FF-A instance.
-Chapter 18. Appendix
-18.5. Changes to FF-A v1.0 data structures for forward compatibility

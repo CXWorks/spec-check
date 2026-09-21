@@ -38,6 +38,7 @@ COMMON_NOISE = [
     r'^Page\s+\d+\s+of\s+\d+',
     r'\.{4,}\s*\d+\s*$',          # table-of-contents dot leaders
     r'^\d+\s*$',                  # a lone page number
+    r'^Chapter \d+\.',            # running header
 ]
 
 DOCS = {
@@ -59,7 +60,34 @@ DOCS = {
         pdf="DEN0077A_Firmware_Framework_Arm_A-profile_1.3_ALP4.pdf",
         heading=r'(?m)^\s*(\d+\.\d+(?:\.\d+)?)\s+(FFA_[A-Za-z0-9_/ ]*[A-Z0-9_])\s*$',
         stop=r'(?m)^\s*(?:Appendix|Glossary)\b',
-        noise=[r'^DEN0077', r'^Arm Firmware Framework'],
+        # The running footer is "13.14. FFA_ABORT" -- section number, a dot,
+        # a command name. A real FF-A heading has no dot after the number
+        # ("13.2 FFA_VERSION"), so the dot is what tells them apart. Without
+        # this the footer reads as a same-depth boundary and truncates every
+        # section: FFA_VERSION came out at 37 lines instead of ~180.
+        noise=[r'^DEN0077', r'^Arm Firmware Framework',
+               r'^\s*\d+\.\d+\.\s+FFA_[A-Z0-9_]+\s*$'],
+    ),
+    "scmi": dict(
+        pdf="DEN0056F_System_Control_and_Management_Interface_v4.0-bet0.pdf",
+        # Four levels: "3.2.2.1   PROTOCOL_VERSION".
+        heading=r'(?m)^\s*(\d+(?:\.\d+){2,3})\s+([A-Z][A-Z0-9_]{2,})\s*$',
+        stop=None,
+        noise=[r'^DEN0056', r'^System Control and Management Interface'],
+        # SCMI repeats command names across protocols -- every protocol has its
+        # own PROTOCOL_VERSION -- so the bare name is not unique. Qualify with
+        # the section number, which is.
+        qualify=True,
+    ),
+    "sbi": dict(
+        pdf="riscv-sbi.pdf",
+        # "4.1. Function: Get SBI specification version (FID #0)". The real
+        # name is the C declaration on the next non-blank line, so the heading
+        # only has to be located; name_from does the naming.
+        heading=r'(?m)^(\d+\.\d+)\.\s+Function:.*\(FID #\d+\)\s*$',
+        stop=None,
+        noise=[r'^RISC-V', r'^\s*Chapter \d'],
+        name_from=r'\b(sbi_[a-z0-9_]+)\s*\(',
     ),
     # psci_13 is not listed: it keeps its original extractor. It is the fixture
     # --selftest rebuilds, so giving it a second definition here would make the
@@ -105,10 +133,13 @@ def names_in(title):
     return [n for n in out if IDENT.fullmatch(n)]
 
 
-ANY_HEADING = re.compile(r'(?m)^\s*(\d+(?:\.\d+)+)\s+\S')
+# The trailing dot is optional: Arm writes "3.14 Title", RISC-V SBI writes
+# "16.2. Title". Requiring no dot let sbi_steal_time_set_shmem run 346 lines
+# into the next chapter, because nothing matched as a same-depth boundary.
+ANY_HEADING = re.compile(r'(?m)^\s*(\d+(?:\.\d+)+)\.?\s+\S')
 
 
-def split(text, heading, stop):
+def split(text, heading, stop, name_from=None, qualify=False):
     """{command: section text}, bounded by three things.
 
     The next command heading is not enough on its own: the last command of a
@@ -136,8 +167,16 @@ def split(text, heading, stop):
             s = stop_pat.search(text, m.end())
             if s:
                 hard = min(hard, s.start())
-        for nm in names_in(m.group(2)):
-            out[nm] = text[m.start():hard]
+        body = text[m.start():hard]
+        if name_from:
+            # The heading is a human title; the identifier lives in the body.
+            got = re.search(name_from, body)
+            found = [got.group(1)] if got else []
+        else:
+            found = names_in(m.group(2))
+        for nm in found:
+            key = f"{m.group(1)}_{nm}" if qualify else nm
+            out[key] = body
     return out
 
 
@@ -149,7 +188,8 @@ def run(name, cfg, out_dir=None, write=True):
     raw = subprocess.run(["pdftotext", "-layout", str(pdf), "-"],
                          capture_output=True, text=True, check=True).stdout
     cmds = split(preprocess(raw, cfg.get("noise", [])),
-                 cfg["heading"], cfg.get("stop"))
+                 cfg["heading"], cfg.get("stop"),
+                 cfg.get("name_from"), cfg.get("qualify", False))
     if write:
         d = Path(out_dir) if out_dir else OUT_ROOT / name
         d.mkdir(parents=True, exist_ok=True)

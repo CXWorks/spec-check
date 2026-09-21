@@ -1,0 +1,12 @@
+12.3. Function: Console Write Byte (FID #2)
+  struct sbiret sbi_debug_console_write_byte(uint8_t byte)
+Write a single byte to the debug console.
+This is a blocking SBI call and it will only return after writing the specified byte to the debug console. It will
+also return, with SBI_ERR_FAILED, if there are I/O errors.
+The sbiret.uvalue is set to zero and the possible error codes returned in sbiret.error are shown in Table
+52 below.
+                                    Table 52. Debug Console Write Byte Errors
+      Error code                                Description
+      SBI_SUCCESS                               Byte written successfully.
+      SBI_ERR_DENIED                            Write to the debug console is not allowed.
+      SBI_ERR_FAILED                            Failed to write the byte due to I/O errors.

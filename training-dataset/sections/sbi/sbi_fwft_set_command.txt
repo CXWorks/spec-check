@@ -1,0 +1,15 @@
+18.1. Function: Firmware Features Set (FID #0)
+  struct sbiret sbi_fwft_set(uint32_t feature,
+                             unsigned long value,
+                             unsigned long flags)
+A successful return from sbi_fwft_set() results in the requested firmware feature to be set according to
+the value and flags parameters for which per feature supported values are described in Table 93 and flags
+in Table 94.
+                 The set operation will succeed if requested value matches the existing value.
+                                        Table 94. FWFT Firmware Features Set Flags
+       Name                   Encoding                Description
+       LOCK                   BIT[0]                  If provided, once set, the feature value can no longer be
+                                                      modified until:
+                                                      - hart reset for feature with local scope
+                                                      - system reset for feature with global scope
+                              BIT[XLEN-1:1]           Reserved for future use and must be zero.

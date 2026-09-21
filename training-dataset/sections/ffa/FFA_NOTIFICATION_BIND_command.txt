@@ -31,8 +31,6 @@
                                                                                      * b’0: All notifications in the bitmap are
                                                                                         global notifications.
                                                                                – Bit[31:1]: Reserved (SBZ).
-Chapter 16. Notification interfaces
-16.3. FFA_NOTIFICATION_BIND
             Parameter                                 Register         Value
             uint32 Notification bitmap                w3                   • Bits[31:0] of a bitmap with one or more set bits to
                                                                              identify the notifications which the Sender endpoint is
@@ -64,5 +62,3 @@ Chapter 16. Notification interfaces
                                                                                  – Caller is not allowed to invoke this ABI.
                                                                            • ABORTED: Sender partition ran into an unexpected
                                                                              error and has aborted.
-Chapter 16. Notification interfaces
-16.4. FFA_NOTIFICATION_UNBIND

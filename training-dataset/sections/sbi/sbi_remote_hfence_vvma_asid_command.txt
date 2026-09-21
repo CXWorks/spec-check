@@ -1,0 +1,8 @@
+8.6. Function: Remote HFENCE.VVMA with ASID (FID #5)
+  struct sbiret sbi_remote_hfence_vvma_asid(unsigned long hart_mask,
+                                            unsigned long hart_mask_base,
+                                            unsigned long start_addr,
+                                            unsigned long size,
+                                            unsigned long asid)
+Instruct the remote harts to execute one or more HFENCE.VVMA instructions, covering the range of guest
+virtual addresses between start_addr and start_addr + size for the given ASID and current VMID (in

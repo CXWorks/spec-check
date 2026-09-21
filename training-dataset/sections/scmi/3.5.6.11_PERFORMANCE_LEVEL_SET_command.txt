@@ -1,0 +1,32 @@
+                 3.5.6.11   PERFORMANCE_LEVEL_SET
+                                                                T0
+                 This command allows the agent to set the performance level of a domain. If Level Indexing Mode is used, the limits
+                 must be specified in level index instead of the corresponding performance level. This command can return before the
+                 domain has transitioned to the required performance level. The platform simply has to acknowledge that it has received
+                 the command. The agent can register for performance level notifications to ascertain whether a performance transition
+                                                  BE
+                 has taken place. For further details, see Section 3.5.8.2.
+                    message_id: 0x7
+                    protocol_id: 0x13
+                    This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES
+                    command is set to 0 for any domain.
+                    Parameters
+                    Name                                Description
+                    uint32 domain_id                    Identifier for the performance domain.
+                    uint32 performance_level            Requested performance level, or level index. If this field indicates
+                                                        performance level and if it is set to 0, platform policy determines the
+                                                        performance level of this domain.
+                    Return values
+                    Name                                Description
+                                                                                                   Arm® System Control and Management Interface
+                    int32 status                        One of, but not limited to, the following:
+                                                            • SUCCESS: if the platform has accepted the command and scheduled it
+                                                              for processing.
+                                                            • NOT_FOUND: if the domain_id parameter does not point to a valid
+                                                              domain.
+                                                            • OUT_OF_RANGE: if the requested performance level is outside the
+                                                              currently allowed range.
+                                                            • DENIED: if the calling agent is not permitted to change the
+                                                              performance level for a domain, as described by
+                                                              PERFORMANCE_DOMAIN_ATTRIBUTES.
+                                                        See Section 3.1.4 for more status code definitions.

@@ -1,0 +1,24 @@
+                 3.5.6.19   PERFORMANCE_DOMAIN_NAME_GET
+                 This command returns the extended name associated with a specific performance domain.
+                    message_id: 0xC
+                    protocol_id: 0x13
+                    This command is mandatory only if extended performance domain name is supported.
+                    Extended performance domain name is supported when Bit[26] of attributes field of
+                    PERFORMANCE_DOMAIN_ATTRIBUTES command is set to 1. Refer to Section 3.5.6.5 for more details.
+                    Parameters
+                    Name                                Description
+                    uint32 domain_id
+                    Return values
+                                                                T0
+                                                        Identifier for the performance domain.
+                    Name
+                    int32 status
+                                                  BE    Description
+                                                        One of, but not limited to, the following:
+                                                            • SUCCESS: if valid performance domain extended name is returned.
+                                                            • NOT_FOUND: if domain_id pertains to a non-existent domain.
+                                                        See Section 3.1.4 for more status code definitions.
+                    uint32 flags                        Bits[31:0]
+                                                        Reserved, must be zero.
+                    uint8 name[64]                      Null-terminated ASCII string of up to 64 bytes in length describing the
+                                                        performance domain extended name.

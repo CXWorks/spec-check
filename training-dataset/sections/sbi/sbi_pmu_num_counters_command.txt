@@ -1,0 +1,4 @@
+11.6. Function: Get number of counters (FID #0)
+  struct sbiret sbi_pmu_num_counters()
+Returns the number of counters (both hardware and firmware) in sbiret.value and always returns
+SBI_SUCCESS in sbiret.error.

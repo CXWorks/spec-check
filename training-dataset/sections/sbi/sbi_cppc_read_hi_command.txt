@@ -1,0 +1,13 @@
+14.3. Function: Read CPPC register high bits (FID #2)
+  struct sbiret sbi_cppc_read_hi(uint32_t cppc_reg_id)
+Reads the upper 32-bit value of the register specified in the cppc_reg_id parameter and returns the value
+in sbiret.value. This function always returns zero in sbiret.value when supervisor mode XLEN is 64 or
+higher.
+The possible error codes returned in sbiret.error are shown in Table 61.
+                                        Table 61. CPPC Read Hi Errors
+Error code                          Description
+SBI_SUCCESS                         Read completed successfully.
+SBI_ERR_INVALID_PARAM               cppc_reg_id is reserved.
+SBI_ERR_NOT_SUPPORTED               cppc_reg_id is not implemented by the platform.
+SBI_ERR_DENIED                      cppc_reg_id is a write-only register.
+SBI_ERR_FAILED                      The read request failed for unspecified or unknown other reasons.

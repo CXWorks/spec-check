@@ -1,0 +1,11 @@
+15.7. Function: Synchronize shared memory CSRs (FID #2)
+  struct sbiret sbi_nacl_sync_csr(unsigned long csr_num)
+Synchronize CSRs in the nested acceleration shared memory. This is an optional function which is only
+available if the SBI_NACL_FEAT_SYNC_CSR feature is available. The parameter csr_num specifies the
+set of RISC-V H-extension CSRs to be synchronized.
+If csr_num is all-ones bitwise then all RISC-V H-extension CSRs implemented by the SBI implementation
+(or L0 hypervisor) are synchronized as described in the Section 15.1.
+If (csr_num & 0x300) == 0x200 and csr_num < 0x1000 then only a single RISC-V H-extension CSR
+specified by the csr_num parameter is synchronized as described in the Section 15.1.
+The possible error codes returned in sbiret.error are shown in Table 72.
+                                   Table 72. NACL Synchronize CSR Errors

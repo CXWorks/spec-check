@@ -31,8 +31,6 @@
                                                                                   > 0.
                                                                           • Bits[63:32]: Reserved (SBZ).
             Other Parameter registers                x4-x17               • Reserved (SBZ).
-Chapter 13. Setup and discovery interfaces
-13.9. FFA_PARTITION_INFO_GET_REGS
                                                                                          Table 13.41: FFA_SUCCESS encoding
             Parameter                                Register         Value
             uint32 Function ID                       w0               FFA_SUCCESS64
@@ -60,8 +58,6 @@ Chapter 13. Setup and discovery interfaces
                                                                           • Bits[63:48]:
                                                                                – Size in bytes of each partition information entry
                                                                                   descriptor.
-Chapter 13. Setup and discovery interfaces
-13.9. FFA_PARTITION_INFO_GET_REGS
             Parameter                                Register         Value
             uint64 Partition information             x3-x17               • Partition information descriptor.
                                                                                – Size of each descriptor is 48 bytes as per the
@@ -107,8 +103,6 @@ Chapter 13. Setup and discovery interfaces
                                                                                          Table 13.42: Encoding of return codes
             Parameter                                Register         Value
             uint32 Function ID                       w0               FFA_ERROR
-Chapter 13. Setup and discovery interfaces
-13.9. FFA_PARTITION_INFO_GET_REGS
             Parameter                                Register         Value
             int32 Error code                         w2                   • INVALID_PARAMETERS:
                                                                                 – Invalid UUID.
@@ -150,8 +144,6 @@ U0235         At the Secure physical FF-A instance, an S-EL1 or S-EL2 SPMC is un
                         FF-A instance receives information for LSPs managed by the SPMD.
                       – The SPMD does not add this information to the response from the SPMC. The caller at the Non-secure
                         physical FF-A instance does not receive information for LSPs managed by the SPMD.
-Chapter 13. Setup and discovery interfaces
-13.9. FFA_PARTITION_INFO_GET_REGS
 S0236            To cater for the scenario where the full list of descriptors does not fit in a single invocation, the callee exports an
                  abstraction to the caller in which the partition information corresponding to the queried UUID is organized in an
                  array. If the array cannot be returned in a single response to the caller, the callee must encode an IMPLEMENTATION
@@ -191,5 +183,3 @@ S0236            To cater for the scenario where the full list of descriptors do
                               6 ERET(FFA_SUCCESS64, Last index=9, Current index=9, Tag=X, Descriptor Size=24, Descriptor entries 8-9)
                           SPMC                                                                                                          SP
                                                     Figure 13.2: Example usage of FFA_PARTITION_INFO_GET_REGS by an SP.
-Chapter 13. Setup and discovery interfaces
-13.10. FFA_ID_GET

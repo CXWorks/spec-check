@@ -1,0 +1,4 @@
+14.2. Function: Read CPPC register (FID #1)
+  struct sbiret sbi_cppc_read(uint32_t cppc_reg_id)
+Reads the register as specified in the cppc_reg_id parameter and returns the value in sbiret.value. When
+supervisor mode XLEN is 32, the sbiret.value will only contain the lower 32 bits of the CPPC register

@@ -1,0 +1,48 @@
+                 3.2.2.8   BASE_DISCOVER_LIST_PROTOCOLS
+                 This command allows the agent to discover which protocols it is allowed to access. The protocol list returned by this call
+                 should be in numeric ascending order.
+                    message_id: 0x6
+                    protocol_id: 0x10
+                    This command is mandatory.
+                    Parameters
+                    Name                                               Description
+                    uint32 skip
+                    Return values               BE                     Number of protocols to skip.
+                    Name
+                    int32 status                  T0                   Description
+                                                                       One of, but not limited to, the following:
+                                                                           • SUCCESS: if a valid list of protocols is found.
+                                                                           • INVALID_PARAMETERS: if skip field is invalid.
+                                                                       See Section 3.1.4 for more status code definitions.
+                    uint32 num_protocols                               Number of protocols that are returned by this call.
+                    uint32                                             Array of protocol identifiers that are implemented, excluding the
+                    protocols[1+(num_protocols-1)/4]                   Base protocol, with four protocol identifiers packed into each
+                                                                       array element. The PROTOCOL_ATTRIBUTES command can
+                                                                       be used to determine the number of protocols implemented.
+                 The following pseudocode illustrates how this command can be used.
+                 int status = 0;
+                 int skip = 0;
+                 int total_protocols = 0;
+                 int num_protocols = 0;
+                 uint32 attributes = 0;
+                 uint32* protocols = NULL;
+                 invoke_PROTOCOL_ATTRIBUTES(&status,&attributes);
+                 if (status)
+                      goto clean_up_and_return;
+                 total_protocols = (attributes & NUM_PROTOCOLS_MASK) >>
+                                         NUM_PROTOCOLS_SHIFT;
+                                                                                                    Arm® System Control and Management Interface
+                 if (!total_protocols)
+                      goto clean_up_and_return;
+                 do {
+                        invoke_BASE_DISCOVER_LIST_PROTOCOLS(skip,
+                            &status, &num_protocols, protocols);
+                        if (status)
+                            goto clean_up_and_return;
+                     for (int ix = 0; ix < num_protocols; ix++)
+                     {
+                         uint8 prot = protocols[ix/4] >> ((ix % 4) * 8);
+                         add_to_protocol_database(prot);
+                         skip++;
+                     }
+                 } while (skip < total_protocols);

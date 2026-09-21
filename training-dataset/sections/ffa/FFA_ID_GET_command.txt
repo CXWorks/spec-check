@@ -24,5 +24,3 @@
             Parameter                                Register         Value
             int32 Error code                         w2                   • NOT_SUPPORTED: This function is not implemented
                                                                             at this FF-A instance.
-Chapter 13. Setup and discovery interfaces
-13.11. FFA_SPM_ID_GET

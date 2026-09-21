@@ -1,0 +1,16 @@
+19.7. Function: Enable a set of triggers (FID #6)
+  struct sbiret sbi_debug_enable_triggers(unsigned long trig_idx_base,
+                                          unsigned long trig_idx_mask)
+Enable a set of debug triggers specified by the trig_idx_base and trig_idx_mask parameters on the calling
+hart. The trig_idx_base specifies the starting trigger index, while the trig_idx_mask is a bitmask
+indicating which triggers, relative to the base, are to be enabled. Each bit in the mask corresponds to a
+specific trigger, allowing for batch operations on multiple triggers simultaneously.
+To enable a debug trigger in the specified set of debug triggers, the SBI implementation MUST restore the
+vs, vu, s, and u bits of the mapped HW debug trigger from their saved copy in trig_state.
+The possible error codes returned in sbiret.error are shown in Table 104.
+                                   Table 104. Debug Triggers Enable Errors
+Error code                          Description
+SBI_SUCCESS                         Triggers enabled successfully.
+SBI_ERR_INVALID_PARAM               One of the debug triggers with index trig_idx in the specified set of debug
+                                    triggers either not mapped to any HW debug trigger OR has trig_idx >=
+                                    trig_max.

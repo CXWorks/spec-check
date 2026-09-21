@@ -1,0 +1,16 @@
+17.14. Function: Inject a software event (FID #7)
+  struct sbiret sbi_sse_inject(uint32_t event_id, unsigned long hart_id)
+The supervisor software can inject a software event with this function. The event_id paramater refers to
+the ID of the event to be injected.
+For local events, the hart_id parameter refers to the hart on which the event is to be injected. For global
+events, the hart_id parameter is ignored.
+An event can only be injected if it is allowed by the event attribute as described in Table 80.
+If an event is injected from within an SSE event handler, if it is ready to be run, it will be handled according
+to the priority rules described in Section 17.3:
+ ⚫ If it has a higher priority than the one currently running, then it will be handled immediately,
+   effectively preempting the currently running one.
+ ⚫ If it has a lower priority, it will be run after the one that is currently running completes.
+In case of an error, possible error codes are listed in Table 87 below.
+                                               Table 87. SSE Event Inject Errors
+       Error code                                    Description
+       SBI_SUCCESS                                   Event is successfully injected.

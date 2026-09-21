@@ -1,0 +1,46 @@
+              3.7.2.15   SENSOR_AXIS_NAME_GET
+                                                                T0
+                                                  BE
+              This command returns the extended name associated with a specific sensor axis. On success, it returns an array of axis
+              name descriptors for the sensor as described in Axis Name Descriptor.
+              Sometimes it might not be possible to return all the axis name descriptors with just one call. The size of the array returned
+              depends on the number of return values a given transport can support. To solve this problem, the interface allows multiple
+              calls. It also returns the number of remaining axis name descriptors.
+              The sensor axis name descriptors returned by this call should be reported in the normative order of axes. For example,
+              a triaxial accelerometer should return its axis name descriptors ordered as x, y, and z.
+                  message_id: 0xD
+                  protocol_id: 0x15
+                  This command is mandatory only if extended sensor axis name is supported.
+                  Extended sensor axis name is supported when Bit[9] of axis_attributes_low field of
+                  SENSOR_AXIS_DESCRIPTION_GET command is set to 1. Refer to Section 3.7.2.6 for more details.
+                  Parameters
+                  Name                                  Description
+                  uint32 sensor_id                      Identifier for the sensor.
+                  uint32 axis_id                        Index of the first sensor axis to be read in the sensor axis name descriptor
+                                                        array.
+                  Return values
+                  Name                                  Description
+                                                                                                   Arm® System Control and Management Interface
+                  int32 status                          One of, but not limited to, the following:
+                                                            • SUCCESS: if valid axis name descriptors were returned.
+                                                            • NOT_FOUND: if sensor_id does not point to a valid sensor or axis_id
+                                                              does not point to a valid axis.
+                                                            • NOT_SUPPORTED: if the sensor does not report values along axis.
+                                                        See Section 3.1.4 for more status code definitions.
+                  uint32 flags                          Bits[31:26]
+                                                        Number of remaining axis name descriptors.
+                                                        Bits[25:6]
+                                                        Reserved, must be zero.
+                                                        Bits[5:0]
+                                                        Number of axis name descriptors that are returned by this current call.
+                  AXIS_NAME_DESC desc[N]                An array of axis name descriptors, of format described in Axis Name
+                                                        Descriptor.
+              Axis Name Descriptor
+              The AXIS_NAME_DESC structure describes the sensor axis extended names.
+                  uint32 axis_id                                     Identifier for the axis of the sensor.
+                  uint8 name[64]
+                                                                T0   A NULL terminated UTF-8 format string of up to 64 bytes in length
+                                                                     describing the axis extended name.
+                                                                     It is recommended that the name ends with ‘_’ followed by the
+                                                                     axis of the sensor in uppercase. For example, the name for the
+                                                  BE                 x-axis of a triaxial accelerometer could be “acc_X” or “_X”.

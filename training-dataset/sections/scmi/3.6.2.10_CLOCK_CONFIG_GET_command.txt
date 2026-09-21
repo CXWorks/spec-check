@@ -1,0 +1,43 @@
+              3.6.2.10    CLOCK_CONFIG_GET
+              This command allows the calling agent to get the configuration of a clock device.
+              ─── Note ───────────────
+              Even if this command reports that a clock is enabled, an agent which requires the clock to be enabled must explicitly
+              request for it using the CLOCK_CONFIG_SET command as specified in Section 3.6.2.9. If CLOCK_CONFIG_SET is not
+              called by the agent, the platform can disable the clock at any time due to power saving or other reasons. This rule is not
+                                                                                                    Arm® System Control and Management Interface
+              applicable if the clock state cannot be controlled by the agent. CLOCK_GET_PERMISSIONS command, as specified in
+              Section 3.6.2.17, can be used to discover if the clock state can be controlled by the agent.
+              ──────────────────────
+                  message_id: 0xB
+                  protocol_id: 0x14
+                  This command is mandatory.
+                  Parameters
+                  Name                                   Description
+                  uint32 clock_id                        Identifier for the clock device.
+                  uint32 flags                           Bits[31:8]
+                                                         Reserved, must be zero.
+                                                         Bits[7:0]
+                                                         Extended config type, as specified in Table 18.
+                                                         A value of 0 indicates that this field is unused.
+                  Return values
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: if the clock configuration has been successfully returned.
+                                                             • NOT_FOUND: if the clock identified by clock_id does not exist.
+                                                                 T0
+                                                             • INVALID_PARAMETERS, if the input attributes field of the command
+                                                               specifies unsupported or invalid configurations.
+                                                         See Section 3.1.4 for more status code definitions.
+                  uint32 attributes
+                  uint32 config
+                                                   BE    Reserved, must be zero.
+                                                         Bits[31:1]
+                                                         Reserved, must be zero.
+                                                         Bit[0]
+                                                         Enable/Disable
+                                                              • If set to 1, the clock device is enabled.
+                                                              • If set to 0, the clock device is disabled.
+                  uint32 extended_config_val             The configuration value corresponding to the extended configuration type
+                                                         specified by Bits[7:0] of the attributes field of the command.
+                                                         This field is ignored if the extended config type field specified by Bits[7:0] of
+                                                         the attributes field of the command is set to 0.

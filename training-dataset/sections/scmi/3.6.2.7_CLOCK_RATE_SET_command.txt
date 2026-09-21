@@ -1,0 +1,59 @@
+                 3.6.2.7   CLOCK_RATE_SET
+                 This command allows the caller to select the clock rate of a clock synchronously or asynchronously.
+                 The command returns when the clock rate has been changed. If a clock is in disabled state, the new rate takes effect
+                 when the clock has been re-enabled.
+                    message_id: 0x5
+                    protocol_id: 0x14
+                    This command is mandatory.
+                    Parameters
+                    Name                                 Description
+                                                                                                    Arm® System Control and Management Interface
+                    uint32 flags                         Bits[31:4]
+                                                         Reserved, must be zero.
+                                                         Bits[3:2]
+                                                         Round up/down:
+                                                              • If Bit[3] is set to 1, the platform rounds up/down autonomously to
+                                                                choose a physical rate closest to the requested rate, and Bit[2] is
+                                                                ignored.
+                                                              • If Bit[3] is set to 0, the platform:
+                                                                     – rounds up if Bit[2] is set to 1.
+                                                                     – rounds down if Bit[2] is set to 0.
+                                                         Bit[1]
+                                                         Ignore delayed response:
+                                                              • If the Async flag, bit[0], is set to 1 and this bit is set to 1, the platform
+                                                                does not send a CLOCK_RATE_SET delayed response.
+                                                              • If the Async flag, bit[0], is set to 1 and this bit is set to 0, the platform
+                                                                does send a CLOCK_RATE_SET delayed response.
+                                                              • If the Async flag, bit[0], is set to 0, then this bit field is ignored by the
+                                                                platform.
+                                                         Bit[0]
+                                                         Async flag:
+                                                              • Set to 1 if clock rate is to be set asynchronously. In this case the call is
+                                                                completed with CLOCK_RATE_SET_COMPLETE message if bit[1] is
+                                                                set to 0. A SUCCESS return code in this case indicates that the
+                                                                 T0
+                                                                platform has successfully queued this command. For more information,
+                                                                see Section 3.6.3.1.
+                                                              • Set 0 to if the clock rate is to be set synchronously. In this case, the call
+                                                                will return when the clock rate setting has been completed.
+                    uint32 clock_id
+                    uint32 rate[2]
+                                                   BE    Identifier for the clock device.
+                                                         Lower word: Lower 32 bits of the physical rate in Hertz.
+                                                         Upper word: Upper 32 bits of the physical rate in Hertz.
+                    Return values
+                    Name                                 Description
+                    int32 status                         One of, but not limited to, the following:
+                                                             • SUCCESS: if the clock rate was set successfully for a synchronous
+                                                               request or if the command was successfully enqueued for an
+                                                               asynchronous request.
+                                                             • NOT_FOUND: if the clock identified by clock_id does not exist.
+                                                             • INVALID_PARAMETERS: if the requested rate is not supported by the
+                                                               clock, or the flags parameter specifies invalid or illegal options.
+                                                             • BUSY: if there are too many asynchronous clock rate changes pending.
+                                                               The PROTOCOL_ATTRIBUTES command provides the maximum
+                                                               number of pending asynchronous clock rate changes supported by the
+                                                               platform.
+                                                             • DENIED: if the clock rate cannot be set because of dependencies, e.g.,
+                                                               if there are other users of the clock.
+                                                         See Section 3.1.4 for more status code definitions.

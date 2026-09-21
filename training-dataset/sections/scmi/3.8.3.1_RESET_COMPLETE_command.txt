@@ -1,0 +1,17 @@
+              3.8.3.1    RESET_COMPLETE
+              The platform sends this delayed response to the caller that requested an asynchronous reset of the specified domain.
+                                                                                                  Arm® System Control and Management Interface
+                  message_id: 0x4
+                  protocol_id: 0x16
+                  This command is optional.
+                  Parameters
+                  Name                                 Description
+                  int32 status                         One of, but not limited to, the following:
+                                                           • SUCCESS: if reset was successful.
+                                                           • GENERIC_ERROR: if the operation failed, for example if there were
+                                                             other users of the reset domain, or if the domain could not be brought
+                                                             to a state of quiescence preparatory to the reset.
+                                                       Other vendor-specific errors can also be generated depending on the
+                                                       implementation.
+                                                       See Section 3.1.4 for more status code definitions.
+                  uint32 domain_id                     Identifier for the reset domain.

@@ -1,0 +1,16 @@
+17.11. Function: Enable a software event (FID #4)
+  struct sbiret sbi_sse_enable(uint32_t event_id)
+Enable the software event specified by the event_id parameter.
+For local events, the event is enabled only for the calling hart. For global events, the event is enabled for all
+the harts.
+The event MUST be in REGISTERED state otherwise this function will fail.
+Upon success, the event state moves from REGISTERED to ENABLED. In case of an error, possible error codes
+are listed in Table 85 below.
+                                         Table 85. SSE Event Enable Errors
+      Error code                               Description
+      SBI_SUCCESS                              Event is successfully enabled.
+      SBI_ERR_NOT_SUPPORTED                    event_id is not reserved and valid, but the platform does not
+                                               support it due to one or more missing dependencies (Hardware
+                                               or SBI implementation).
+      SBI_ERR_INVALID_PARAM                    event_id is not valid.
+      SBI_ERR_INVALID_STATE                    event_id is valid but the event is not in REGISTERED state.

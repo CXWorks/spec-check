@@ -1,0 +1,31 @@
+11.10. Function: Stop a set of counters (FID #4)
+  struct sbiret sbi_pmu_counter_stop(unsigned long counter_idx_base,
+                                     unsigned long counter_idx_mask,
+                                     unsigned long stop_flags)
+Stop or disable a set of counters on the calling hart. The counter_idx_base and counter_idx_mask
+parameters represent the set of counters. The bit definitions of the stop_flags parameter are shown in the
+Table 41 below.
+                                     Table 41. PMU Counter Stop Flags
+     Flag Name                                         Bits                 Description
+     SBI_PMU_STOP_FLAG_RESET                           0:0                  Reset the counter to event
+                                                                            mapping.
+     SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT                   1:1                  Save a snapshot of the given
+                                                                            counter’s values in the shared
+                                                                            memory if available.
+     RESERVED                                          2:(XLEN-1)           Reserved for future use and must
+                                                                            be zero.
+The shared memory address must be set during boot via sbi_pmu_snapshot_set_shmem before the
+SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT flag may be used. The SBI implementation must save the current value
+of all the stopped counters in the shared memory if SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT is set. The values
+corresponding to all other counters must not be modified. The SBI implementation must additionally
+update the overflown counter bitmap in the shared memory.
+The possible error codes returned in sbiret.error are shown in the Table 42 below.
+                                     Table 42. PMU Counter Stop Errors
+     Error code                             Description
+     SBI_SUCCESS                            counter stopped successfully.
+     SBI_ERR_INVALID_PARAM                  set of counters has at least one invalid counter or the given flag
+                                            parameter has a reserved bit set.
+     SBI_ERR_ALREADY_STOPPED                set of counters includes at least one counter which is already
+                                            stopped.
+     SBI_ERR_NO_SHMEM                       the snapshot shared memory is not available and
+                                            SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT is set in the flags.

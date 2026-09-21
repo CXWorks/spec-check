@@ -1,0 +1,153 @@
+              3.10.3.5    POWERCAP_DOMAIN_ATTRIBUTES
+              This command returns the attributes associated with a specific power capping domain.
+                  message_id: 0x3
+                  protocol_id: 0x18
+                  This command is mandatory.
+                  Parameters
+                  Name                                   Description
+                  uint32 domain_id                       Identifier for the domain. Domain identifiers are limited to 16 bits, and the
+                                                         upper 16 bits of this field are ignored by the platform.
+                  Return values
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: if valid domain attributes were returned.
+                                                             • NOT_FOUND: if domain_id pertains to a non-existent domain.
+                                                         See Section 3.1.4 for more status code definitions.
+                  uint32 attributes                      Bit[31]
+                                                         MAI change notifications support.
+                                                              • Set to 1 if MAI change notifications are supported for this power
+                                                                 T0
+                                                                capping domain.
+                                                              • Set to 0 if MAI change notifications are not supported for this power
+                                                         Bit[30]
+                                                                capping domain.
+                                                   BE    Power measurements change notification support.
+                                                              • Set to 1 if power measurements change notification is supported for
+                                                                this power capping domain.
+                                                              • Set to 0 if power measurements change notification is not supported for
+                                                                this power capping domain.
+                                                         Bit[29]
+                                                         Asynchronous power cap set support.
+                                                              • Set to 1 if the power cap of this domain can be set asynchronously.
+                                                              • Set to 0 if the power cap of this domain can only be set synchronously.
+                                                         Bit[28]
+                                                         Extended domain name.
+                                                              • If set to 1, the power capping domain name is greater than 16 bytes.
+                                                                The extended domain name is provided by
+                                                                POWERCAP_DOMAIN_NAME_GET command which is described in
+                                                                Section 3.10.3.13.
+                                                              • If set to 0, extended power capping domain name is not supported.
+                                                         Bit[27]
+                                                         Power Cap configuration support.
+                                                              • If set to 1, this domain supports changing power caps.
+                                                              • If set to 0, this domain does not support changing power caps.
+                                                         Bit[26] cannot be zero when this bit is zero.
+                                                                                                 Arm® System Control and Management Interface
+                                                      Bit[26]
+                                                      Power Monitoring support.
+                                                           • If set to 1, this domain supports power monitoring.
+                                                           • If set to 0, this domain does not support power monitoring.
+                                                      Bit[27] cannot be zero when this bit is zero.
+                                                      Bit[25]
+                                                      MAI configuration support.
+                                                           • If set to 1, this domain supports changing the MAI.
+                                                           • If set to 0, this domain does not support changing the MAI.
+                                                      Bits[24:23]
+                                                      Power unit used for capping and monitoring.
+                                                           • If set to 0x2, the power unit is in milliwatts (mW).
+                                                           • If set to 0x1, the power unit is in microwatts(uW).
+                                                           • If set to 0x0, the power unit is in an abstract linear integer scale.
+                                                      All other values are reserved and must not be used.
+                                                      Bit[22]
+                                                      FastChannel Support.
+                                                           • Set to 1 if there is at least one FastChannel available for this domain.
+                                                           • Set to 0 if there are no FastChannels available for this domain.
+                                                      Bit[21]
+                                                      Power cap change notifications support.
+                                                           • Set to 1 if power cap change notifications are supported for this power
+                                                             capping domain.
+                                                              T0
+                                                           • Set to 0 if power cap change notifications are not supported for this
+                                                      Bit[20]
+                                                             power capping domain.
+                                                      CAI configuration support.
+                                                BE         • If set to 1, this domain supports changing the CAI
+                                                           • If set to 0, this domain does not support changing the CAI
+                                                      Bit[19]
+                                                      CAI change notifications support.
+                                                           • Set to 1 if CAI change notifications are supported for this power
+                                                             capping domain.
+                                                           • Set to 0 if CAI change notifications are not supported for this power
+                                                             capping domain.
+                                                      Bit[18:15]
+                                                      Number of concurrent power limits supported by this domain.
+                                                           • This field must be greater than 0 if Bit[27] is set to 1
+                                                           • CPC is supported if this field is greater than 1.
+                                                      Bits[14:0]
+                                                      Reserved, must be zero.
+                  uint8 name[16]                      Null-terminated ASCII string of up to 16 bytes in length describing the power
+                                                      capping domain name. When Bit[28] of attributes field is set to 1, this field
+                                                      contains the lower 15 bytes of the NULL terminated domain name.
+                  uint32 min_mai                      The minimum supported power measurement averaging interval (MAI),
+                                                      expressed in microseconds.
+                                                      When min_mai and max_mai fields return the same value, it indicates that
+                                                      MAI is not configurable. This field is set to zero if the platform does not report
+                                                      this value.
+                                                                                                   Arm® System Control and Management Interface
+                  uint32 max_mai                        The maximum supported power measurement averaging interval (MAI),
+                                                        expressed in microseconds.
+                                                        When min_mai and max_mai fields return the same value, it indicates that
+                                                        MAI is not configurable. This field is set to zero if the platform does not report
+                                                        this value.
+                  uint32 mai_step                       The step size between two consecutive MAI supported by this power capping
+                                                        domain.
+                                                        This field must not be zero if min_mai and max_mai fields report different
+                                                        values.
+                  uint32 min_power_cap                  The minimum power value that can be set as the power cap for this domain. It
+                                                        is illegal for this field to be zero.
+                                                        If CPC is supported, this field references CPL0.
+                                                        When min_power_cap and max_power_cap fields return the same value, it
+                                                        indicates that power cap is not configurable.
+                  uint32 max_power_cap                  The maximum power value that can be set as a power cap for this domain. It
+                                                        is illegal for this field to be zero.
+                                                        If CPC is supported, this field references CPL0.
+                                                        When min_power_cap and max_power_cap fields return the same value, it
+                                                        indicates that power cap is not configurable.
+                  uint32 power_cap_step                 The step size between two consecutive power cap values supported by this
+                                                        power capping domain.
+                                                                T0
+                                                        If CPC is supported, this field references CPL0.
+                                                        This field must not be zero if min_power_cap and max_power_cap fields
+                                                        report different values.
+                  uint32 sustainable_power
+                                                  BE    The maximum sustainable power consumption for this domain under normal
+                                                        conditions considering all known external factors like thermal constraints.
+                                                        All power capping domains should be able to maintain their sustained power
+                                                        level simultaneously. In exceptional circumstances, such as thermal runaway,
+                                                        the platform might not be able to guarantee this level.
+                  uint32 accuracy                       The accuracy with which the power is measured and reported in integral
+                                                        multiples of 0.001 percent. For example, a value of 10 means 0.01 percent
+                                                        accuracy.
+                                                        A value of zero indicates that the platform does not report this value.
+                  uint32 parent_id                      This field identifies the parent power capping domain. This field is useful in
+                                                        constructing a power capping domain topology when the power capping
+                                                        domain, identified by domain_id, is contained within a parent power capping
+                                                        domain, identified by parent_id.
+                                                        A value of 0xFFFFFFFF implies that this power capping domain is contained
+                                                        within no parent domains.
+                  uint32 min_cai                        The minimum supported power capping averaging interval (CAI), expressed
+                                                        in microseconds. If CPC is supported, this field references CPL0.
+                                                        When min_cai and max_cai fields return the same value, it indicates that CAI
+                                                        is not configurable. This field is set to zero if the platform does not report this
+                                                        value.
+                                                                                                  Arm® System Control and Management Interface
+                  uint32 max_cai                       The maximum supported power capping averaging interval (CAI), expressed
+                                                       in microseconds. If CPC is supported, this field references CPL0.
+                                                       When min_cai and max_cai fields return the same value, it indicates that CAI
+                                                       is not configurable. This field is set to zero if the platform does not report this
+                                                       value.
+                  uint32 cai_step                      The step size between two consecutive CAI supported by this power capping
+                                                       domain.
+                                                       If CPC is supported, this field references CPL0.
+                                                       This field must not be zero if min_cai and max_cai fields report different
+                                                       values.

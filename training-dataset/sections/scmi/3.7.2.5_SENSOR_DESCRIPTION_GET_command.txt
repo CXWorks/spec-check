@@ -1,0 +1,234 @@
+              3.7.2.5    SENSOR_DESCRIPTION_GET
+              This command can be used for sensor discovery on the platform. On success, it returns an array of Sensor Descriptors
+              as described in Sensor Descriptor.
+                  message_id: 0x3
+                  protocol_id: 0x15
+                  This command is mandatory.
+                  Parameters
+                  Name                                       Description
+                  uint32 desc_index
+                  Return values
+                                                                 T0
+                                                             Index of the first sensor descriptor to be read in the sensor descriptor
+                                                             array.
+                  Name
+                  int32 status
+                                                   BE        Description
+                                                             See Section 3.1.4 for status code definitions.
+                  uint32 num_sensor_flags                    Bits[31:16]
+                                                             Number of remaining sensor descriptors.
+                                                             Bits[15:12]
+                                                             Reserved, must be zero.
+                                                             Bits[11:0]
+                                                             Number of sensor descriptors that are returned by this current call.
+                  SENSOR_DESC desc[N]                        An array of sensor descriptors of format described in Sensor Descriptor.
+              Sensor Descriptor
+              The SENSOR_DESC structure describes the sensor properties, such as the unique identifier for the sensor, its name,
+              number of axes, reading types and other characteristics.
+                  uint32 sensor_id                       Identifier for the sensor.
+                                                                                                Arm® System Control and Management Interface
+                  uint32 sensor_attributes_low       Bit[31]
+                                                     Asynchronous sensor read support:
+                                                           • If this flag is set to 1, then this sensor can be read asynchronously
+                                                             through the SENSOR_READING_GET command, and its value is
+                                                             returned in the SENSOR_READING_COMPLETE delayed response.
+                                                           • If this flag is set to 0, the sensor must only be read using a
+                                                             synchronous call to SENSOR_READING_GET command.
+                                                     Bit[30]
+                                                     Continuous sensor update notification support:
+                                                           • If this flag is set to 1, the sensor supports continuous update
+                                                             notifications. The platform sends the SENSOR_UPDATE notification
+                                                             when an updated sensor value is available. The platform sends this
+                                                             notification only if the sensor is enabled and the agent has subscribed
+                                                             to the notification by calling
+                                                             SENSOR_CONTINUOUS_UPDATE_NOTIFY command.
+                                                           • If this flag is set to 0, the sensor does not support continuous update
+                                                             notifications. The SENSOR_CONTINUOUS_UPDATE_NOTIFY
+                                                             command is not available for this sensor. The sensor values need to
+                                                             be read using the SENSOR_READING_GET command.
+                                                     Bit[29]
+                                                     Extended sensor name.
+                                                           • If set to 1, the sensor name is greater than 16 bytes. The extended
+                                                             sensor name is provided by SENSOR_NAME_GET command which is
+                                                             T0
+                                                             described in Section 3.7.2.14.
+                                                           • If set to 0, extended sensor name is not supported.
+                                                     Bits[28:15]
+                                                     Reserved for future use.
+                                                 BE  Bit[14:10]
+                                                     Timestamp exponent:
+                                                     This field is represented in two’s complement format. It is the power-of-10
+                                                     multiplier that is applied to the sensor timestamps (timestamp x
+                                                     10[timestamp exponent] ) to represent it in seconds.
+                                                     This field is only valid if Bit[9] is set to 1.
+                                                     Bit[9]
+                                                     Timestamp support:
+                                                           • If this flag is set to 1, the sensor can provide timestamped values.
+                                                           • If this flag is set to 0, the sensor cannot provide timestamped values.
+                                                     Timestamps should be derived from a monotonic time base. The selection of
+                                                     a time base is beyond the scope of this specification and should be agreed
+                                                     between the agent and the platform by other standard mechanisms.
+                                                     Bit[8]
+                                                     Extended attributes support:
+                                                           • If this flag is set to 1, the sensor reports extended attributes after the
+                                                             sensor_name field.
+                                                           • If this flag is set to 0, the sensor does not report extended attributes.
+                                                             Fields beyond sensor_name are not allocated by the platform.
+                                                     Bits[7:0]
+                                                     Number of trip points supported.
+                                                                                                Arm® System Control and Management Interface
+                  uint32 sensor_attributes_high      Bits[31:22]
+                                                     Reserved for future use.
+                                                     Bits[21:16]
+                                                     Number of axes: The number of axes of measurement the sensor supports.
+                                                          • This field is valid only if Bit[8] is set to 1.
+                                                          • This field must not be 0 if Bit[8] is set to 1.
+                                                     Bits[15:11]
+                                                     Exponent: The power-of-10 multiplier in two’s- complement format that is
+                                                     applied to the sensor unit specified by the SensorType field.
+                                                     This field is valid only if Bit[8] is set to 0.
+                                                     To obtain this field for sensors which report values along axes refer to
+                                                     Section 3.7.2.6.
+                                                     Bits[10:9]
+                                                     Reserved.
+                                                     Bit[8]
+                                                     Axis support:
+                                                          • If this flag is set to 1, the sensor reports values along one or more axes.
+                                                          • If this flag is set to 0, the sensor reports a scalar value like temperature.
+                                                     Bits[7:0]
+                                                     SensorType: The type of sensor and the measurement system it implements,
+                                                     as described in Table 19.
+                                                     This field is valid only if Bit[8] is set to 0.
+                                                     To obtain this field for sensors which report values along axes refer to
+                  uint8 sensor_name[16]
+                                                             T0
+                                                     Section 3.7.2.6.
+                                                     A NULL terminated UTF-8 format string with the sensor name, of up to 16
+                                                     bytes. When Bit[29] of sensor_attributes_low field is set to 1, this field
+                  uint32 sensor_power
+                                               BE    contains the lower 15 bytes of the NULL terminated sensor name.
+                                                     This is an extended attribute field. It reports the average power consumed by
+                                                     the sensor in microwatts (uW) when it is active.
+                                                     Vendors are not obliged to report sensor power or be accurate in reporting it.
+                                                     If the power consumed is not reported, this field must be set to 0.
+                                                     This field is present only if Bit[8] of sensor_attributes_low is set to 1.
+                                                     This field reports the specification of the sensor and must not be used to
+                                                     return the actual measured power consumption of the sensor at runtime.
+                                                     Repeated calls to SENSOR_DESCRIPTION_GET for the same sensor must
+                                                     return the same values.
+                  uint32                             Bits[31:27]
+                  sensor_resolution                  Exponent: The power-of-10 multiplier in two’s- complementformat that is
+                                                     applied to the Res field.
+                                                     Bits[26:0]
+                                                     Res: The resolution of the sensor.
+                                                     This is an extended attribute field. It reports the resolution of the sensor. The
+                                                     representation is in [res] x 10[exponent] format, in units specified by SensorType.
+                                                     SensorType is reported by Bits[7:0] of sensor_attributes_high field.
+                                                     If the sensor does not report its resolution, this field must be set to 0x0.
+                                                     This field is present only if:
+                                                           • Bit[8] of sensor_attributes_high is set to 0 which indicates that the
+                                                                   sensor reports scalar values, and
+                                                           • Bit[8] of sensor_attributes_low is set to 1.
+                                                     To obtain this field for sensors which report values along axes refer to
+                                                     Section 3.7.2.6.
+                                                                                                 Arm® System Control and Management Interface
+                  int32                               This is an extended attribute field. It reports the lower 32 bits of the minimum
+                  sensor_min_range_low                sensor value that can be measured by the sensor.
+                                                      If the sensor does not report its minimum range, this field must be set to 0x0.
+                                                      This field is present only if:
+                                                            • Bit[8] of sensor_attributes_high is set to 0 which indicates that the
+                                                                    sensor reports scalar values, and
+                                                            • Bit[8] of sensor_attributes_low is set to 1.
+                                                      To obtain this field for sensors which report values along axes refer to
+                                                      Section 3.7.2.6.
+                  int32                               This is an extended attribute field. It reports the higher 32 bits of the minimum
+                  sensor_min_range_high               sensor value that can be measured by the sensor.
+                                                      If the sensor does not report its minimum range, this field must be set to
+                                                      0x80000000.
+                                                      This field is present only if:
+                                                            • Bit[8] of sensor_attributes_high is set to 0 which indicates that the
+                                                                    sensor reports scalar values, and
+                                                            • Bit[8] of sensor_attributes_low is set to 1.
+                                                      To obtain this field for sensors which report values along axes refer to
+                                                      Section 3.7.2.6.
+                  int32                               This is an extended attribute field. It reports the lower 32 bits of the maximum
+                  sensor_max_range_low                sensor value that can be measured by the sensor.
+                                                      If the sensor does not report its maximum range, this field must be set to
+                                                              T0
+                                                      0xFFFFFFFF.
+                                                      This field is present only if:
+                                                            • Bit[8] of sensor_attributes_high is set to 0 which indicates that the
+                                                BE                  sensor reports scalar values, and
+                                                            • Bit[8] of sensor_attributes_low is set to 1.
+                                                      To obtain this field for sensors which report values along axes refer to
+                                                      Section 3.7.2.6.
+                  int32                               This is an extended attribute field. It reports the higher 32 bits of the
+                  sensor_max_range_high               maximum sensor value that can be measured by the sensor.
+                                                      If the sensor does not report its maximum range, this field must be set to
+                                                      0x7FFFFFFF.
+                                                      This field is present only if:
+                                                            • Bit[8] of sensor_attributes_high is set to 0 which indicates that the
+                                                                    sensor reports scalar values, and
+                                                            • Bit[8] of sensor_attributes_low is set to 1.
+                                                      To obtain this field for sensors which report values along axes refer to
+                                                      Section 3.7.2.6.
+                                                                                   Table 19: Sensor Type Enumerations1:
+                            Sensor Unit                                  Sensor Unit                              Sensor Unit
+                  Enum      Description                    Enum          Description                    Enum      Description
+                  0         None                           33            Cubic Meters                   66        Pascals
+                  1         Unspecified                    34            Liters                         67        Counts
+                  2         Degrees C                      35            Fluid Ounces                   68        Grams
+                                                                                               Arm® System Control and Management Interface
+                         Sensor Unit                                   Sensor Unit                              Sensor Unit
+                  Enum   Description                     Enum          Description                    Enum      Description
+                  3      Degrees F                       36            Radians                        69        Newton-meters
+                  4      Degrees K                       37            Steradians                     70        Hits
+                  5      Volts                           38            Revolutions                    71        Misses
+                  6      Amps                            39            Cycles                         72        Retries
+                  7      Watts                           40            Gravities                      73        Overruns/Overflows
+                  8      Joules                          41            Ounces                         74        Underruns
+                  9      Coulombs                        42            Pounds                         75        Collisions
+                  10     VA                              43            Foot-Pounds                    76        Packets
+                  11     Nits                            44            Ounce-Inches                   77        Messages
+                  12     Lumens                          45            Gauss                          78        Characters
+                  13     Lux                             46            Gilberts                       79        Errors
+                  14     Candelas                        47            Henries                        80        Corrected Errors
+                  15     kPa                             48            Farads                         81        Uncorrectable Errors
+                  16     PSI                             49            Ohms                           82        Square Mils
+                         Newtons
+                         CFM
+                                                            T0         Siemens
+                                                                       Moles
+                                                                                                                Square Inches
+                                                                                                                Square Feet
+                         RPM
+                         Hertz
+                         Seconds
+                                              BE         52
+                                                                       Becquerels
+                                                                       PPM (parts/million)
+                                                                       Decibels
+                                                                                                                Square Centimeters
+                                                                                                                Square Meters
+                                                                                                                Radians per second
+                  22     Minutes                         55            DbA                            88        Beats per Minute
+                  23     Hours                           56            DbC                            89        Meters per second
+                                                                                                                squared
+                  24     Days                            57            Grays                          90        Meters per second
+                  25     Weeks                           58            Sieverts                       91        Cubic meter per second
+                  26     Mils                            59            Color Temperature              92        Millimeters of Mercury
+                                                                       Degrees K
+                  27     Inches                          60            Bits                           93        Radians per second
+                                                                                                                squared
+                  28     Feet                            61            Bytes                          94        State (binary):
+                                                                                                                1: enabled/on
+                                                                                                                0: disabled/off
+                  29     Cubic Inches                    62            Words (data)                   95        Bytes per second
+                  30     Cubic Feet                      63            Doublewords                    -         All others – reserved
+                  31     Meters                          64            Quadwords
+                  32     Cubic Centimeters               65            Percentage                     255       OEM Unit
+                                                                                                    Arm® System Control and Management Interface
+                    1:
+                      This table is derived from the sensorUnits enumeration Table of Distributed Management Task Force
+                    (DMTF) specification number DSP 0248 (Platform Level Data Model for Platform Monitoring and Control
+                    Specification). It is however not an exact replica of the sensorUnits enumeration Table.

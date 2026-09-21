@@ -1,0 +1,12 @@
+              3.11.2.1   PROTOCOL_VERSION
+              On success, this command returns the protocol version. For this version of the specification, the return value must be
+              0x10000, which corresponds to version 1.0.
+                  message_id: 0x0
+                                                              T0
+                  protocol_id: 0x19
+                  This command is mandatory.
+                  Return values
+                                                BE
+                  Name                                Description
+                  int32 status                        See Section 3.1.4 for status code definitions.
+                  uint32 version                      For this revision of the specification, this value must be 0x10000.

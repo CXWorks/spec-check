@@ -1,0 +1,27 @@
+              3.11.2.10    PINCTRL_RELEASE
+              This command is used by an agent to release exclusive control of a pin or group.
+              A caller can discover if this command is implemented by issuing the PROTOCOL_MESSAGE_ATTRIBUTES command
+              and passing the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES
+              returns SUCCESS.
+                  message_id: 0x8
+                  protocol_id: 0x19
+                  This command is optional.
+                  Parameters
+                  Name                                   Description
+                  uint32 identifier                      Identifier for the pin or group.
+                                                                                                    Arm® System Control and Management Interface
+                  uint32 flags                           Bits[31:2]
+                                                         Reserved, must be zero.
+                                                         Bits[1:0]
+                                                         Selector: Whether the identifier field refers to a pin or a group.
+                                                              • 0 – Pin
+                                                              • 1 – Group
+                                                         All other values are reserved for future use.
+                  Return values
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: if the pin or group was successfully released.
+                                                             • NOT_FOUND: if the identifier field does not point to a valid pin or group.
+                                                             • INVALID_PARAMETERS: if the input parameters specify incorrect or
+                                                               illegal values.
+                                                         See Section 3.1.4 for more status code definitions.

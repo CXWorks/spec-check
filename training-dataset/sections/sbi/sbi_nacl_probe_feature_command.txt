@@ -1,0 +1,7 @@
+15.5. Function: Probe nested acceleration feature (FID #0)
+  struct sbiret sbi_nacl_probe_feature(uint32_t feature_id)
+Probe a nested acceleration feature. This is a mandatory function of the SBI nested acceleration extension.
+The feature_id parameter specifies the nested acceleration feature to probe. Table 64 provides a list of
+possible feature IDs.
+This function always returns SBI_SUCCESS in sbiret.error. It returns 0 in sbiret.value if the given
+feature_id is not available, or 1 in sbiret.value if it is available.

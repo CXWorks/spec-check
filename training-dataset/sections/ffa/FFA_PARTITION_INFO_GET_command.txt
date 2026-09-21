@@ -24,8 +24,6 @@
                                                                                  buffer of the caller (see Table 6.1).
                                                                           • Bit[31:1]: Reserved (SBZ).
             Other Parameter registers                w6-w7                • Reserved (SBZ).
-Chapter 13. Setup and discovery interfaces
-13.8. FFA_PARTITION_INFO_GET
                                                                                           Table 13.36: FFA_SUCCESS encoding
             Parameter                                 Register         Value
             uint32 Count                              w2                   • If Bit[0] = b’0 in the Flags input parameter, this field
@@ -67,8 +65,6 @@ Chapter 13. Setup and discovery interfaces
                  • To discover the count of partitions of a particular type. This information is,
                       – Requested by specifying a UUID as an input parameter as described in Table 13.35.
                            * The Return information type flag is set to b’1 to indicate that a partition count is being requested.
-Chapter 13. Setup and discovery interfaces
-13.8. FFA_PARTITION_INFO_GET
                       – Returned in w2 (see Table 13.36).
 13.8.2 Usage
               The result of an invocation of this ABI depends upon the version of the Framework, specified UUID, Flags
@@ -76,5 +72,3 @@ Chapter 13. Setup and discovery interfaces
               usage.
               If this ABI is invoked with the Return information type flag in Flags input parameter = b’0, the caller transfers
               ownership of the RX buffer back to the producer through a mechanism described in 4.10 RX/TX buffers.
-Chapter 13. Setup and discovery interfaces
-13.9. FFA_PARTITION_INFO_GET_REGS

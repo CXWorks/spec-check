@@ -1,0 +1,13 @@
+7.1. Function: Send IPI (FID #0)
+  struct sbiret sbi_send_ipi(unsigned long hart_mask,
+                             unsigned long hart_mask_base)
+Send an inter-processor interrupt to all the harts defined in hart_mask. Interprocessor interrupts manifest
+at the receiving harts as the supervisor software interrupts.
+The possible error codes returned in sbiret.error are shown in the Table 7 below.
+                                                   Table 7. IPI Send Errors
+       Error code                                    Description
+       SBI_SUCCESS                                   IPI was sent to all the targeted harts successfully.
+       SBI_ERR_INVALID_PARAM                         At least one hartid constructed from hart_mask_base and
+                                                     hart_mask, is not valid, i.e. either the hartid is not enabled by
+                                                     the platform or is not available to the supervisor.
+       SBI_ERR_FAILED                                The request failed for unspecified or unknown other reasons.

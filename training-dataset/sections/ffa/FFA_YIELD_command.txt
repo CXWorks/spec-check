@@ -37,8 +37,6 @@
            Secure virtual                          S-EL1 SP                     S-EL1 SP               S-EL0 SP
            Secure physical                         S-EL1 SP                     NA                     NA
            Non-secure virtual                      EL1 SP                       EL1 SP                 NA
-Chapter 14. CPU cycle management interfaces
-14.2. FFA_YIELD
              Table 14.8: Valid combinations of partition managers, instances and conduits for invoking FFA_YIELD
            Instance/Conduit                          SMC                                                 ERET
            Secure virtual                            NA                                                  Any SPMC
@@ -77,8 +75,6 @@ Chapter 14. CPU cycle management interfaces
                                                                             scenarios.
                                                                                – Non-secure virtual FF-A instance with the ERET
                                                                                   conduit.
-Chapter 14. CPU cycle management interfaces
-14.2. FFA_YIELD
                      Parameter                                                             Register                 Value
                      uint32 TimeoutHi                                                      w3                              • Bits[63:32] of an interval measured in nanoseconds
                                                                                                                              after which vCPU of the endpoint specified in w1 must
@@ -125,5 +121,3 @@ Chapter 14. CPU cycle management interfaces
            Work done
                VM0                                         Hypervisor                                    SPMD                                           SPMC                                             SP0
                                                                                                                                    Figure 14.1: SP0 yields execution back to VM0
-Chapter 14. CPU cycle management interfaces
-14.3. FFA_RUN

@@ -1,0 +1,33 @@
+                 3.3.2.8   POWER_STATE_NOTIFY
+                 This command allows the caller to request notifications from the platform for state changes in a specific power domain.
+                 These notifications are sent using the POWER_STATE_CHANGED notification, which is described in Section 3.3.3.1.
+                 Notification support is optional, and PROTOCOL_MESSAGE_ATTRIBUTES must be used to discover whether this
+                 command is implemented.
+                                                                                                    Arm® System Control and Management Interface
+                 These notifications must be disabled by default during initial boot of the platform.
+                    message_id: 0x6
+                    protocol_id: 0x11
+                    This command is optional.
+                    Parameters
+                    Name                                 Description
+                    uint32 domain_id                     Identifier for the power domain.
+                    uint32 notify_enable                 Bits[31:1]
+                                                         Reserved must be zero.
+                                                         Bit[0]
+                                                         Notify enable. This bit can have one of the following values:
+                                                              • 0, which indicates that the platform does not send any
+                                                                POWER_STATE_CHANGED messages to the calling agent.
+                                                              • 1, which indicates that the platform does send
+                                                                POWER_STATE_CHANGED messages to the calling agent when a
+                                                                domain changes power state.
+                                                         See Section 3.3.3.1 for POWER_STATE_CHANGED notification.
+                    Return values
+                    Name                                 Description
+                    int32 status
+                                                                 T0
+                                                         One of, but not limited to, the following:
+                                                             • SUCCESS.
+                                                             • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                   BE        • INVALID_PARAMETERS: if notify_enable specifies values that are
+                                                               either illegal or incorrect.
+                                                         See Section 3.1.4 for more status code definitions.

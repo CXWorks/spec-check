@@ -1,0 +1,30 @@
+20.12. Function: Get Notifications (FID #7)
+  struct sbiret sbi_mpxy_get_notification_events(uint32_t channel_id)
+Get the message protocol specific notification events on the MPXY channel specified by the channel_id
+parameter. The events are message protocol specific and MUST be defined in the respective message
+protocol specification. The SBI implementation may support indication mechanisms like MSI or SSE to
+inform the supervisor software about the availability of events.
+               If the message channel does not support or is not configured for an indication mechanism,
+              such as MSI or SSE, the supervisor software can periodically invoke the poll operation
+               sbi_mpxy_get_notification_events.
+               Notifications are asynchronous from the perspective of the supervisor software. Any caching or
+               buffering mechanism is specific to the SBI implementation. The supervisor software may
+              periodically poll for notification events using this function, provided that the polling frequency
+               is sufficient to prevent the loss of events due to potential buffer limitations in the SBI
+               implementation.
+Depending on the message protocol implementation, a channel may support events state which includes
+data like number of events RETURNED, REMAINING and LOST. Events state data is optional, and if the message
+protocol implementation supports it, then the channel will have the corresponding bit set in the
+CHANNEL_CAPABILITY attribute. By default the events state is disabled and supervisor software can explicitly
+enable it through the EVENTS_STATE_CONTROL attribute.
+               Only after enabling the events state reporting through EVENTS_STATE_CONTROL attribute, the
+               events state data will start getting accumulated by the SBI implementation. The supervisor
+              software may enable the EVENTS_STATE_CONTROL attribute in the initialization phase if it is
+               supported.
+In the shared memory, 16 bytes starting from offset 0x0 are used to return this state data.
+Shared memory layout with events state data (each field is of 4 bytes):
+  Offset 0x0: REMAINING
+  Offset 0x4: RETURNED
+  Offset 0x8: LOST
+  Offset 0xC: RESERVED
+  Offset 0x10: Start of message protocol specific notification events data

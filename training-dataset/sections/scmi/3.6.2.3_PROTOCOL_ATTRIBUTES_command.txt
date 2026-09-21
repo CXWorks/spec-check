@@ -1,0 +1,17 @@
+                 3.6.2.3   PROTOCOL_ATTRIBUTES
+                                                                   T0
+                 This command returns the implementation details associated with this protocol.
+                    message_id: 0x1
+                    protocol_id: 0x14
+                    This command is mandatory.
+                                                     BE
+                    Return values
+                    Name                                   Description
+                    int32 status                           See Section 3.1.4 for status code definitions.
+                    uint32 attributes                      Bits[31:24]
+                                                           Reserved, must be zero.
+                                                           Bits[23:16]
+                                                           Maximum number of pending asynchronous clock rate changes supported by
+                                                           the platform.
+                                                           Bits[15:0]
+                                                           Number of clocks.

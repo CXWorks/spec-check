@@ -1,0 +1,33 @@
+                 3.4.2.4   PROTOCOL_MESSAGE_ATTRIBUTES
+                 On success, this command returns the implementation details associated with a specific message in this protocol.
+                    message_id: 0x2
+                    protocol_id: 0x12
+                    This command is mandatory.
+                    Parameters
+                    Name                                   Description
+                    uint32 message_id                      message_id of the message.
+                    Return values
+                    Name                                   Description
+                                                                                                      Arm® System Control and Management Interface
+                    int32 status                           One of, but not limited to, the following:
+                                                               • SUCCESS: in case the message is implemented and available to use.
+                                                               • NOT_FOUND: if the message identified by message_id is invalid or not
+                                                                 provided by this platform implementation.
+                                                               • NOT_SUPPORTED: when message_id is set to the
+                                                                 SYSTEM_POWER_STATE_NOTIFY command identifier and
+                                                                 notifications are not supported.
+                                                           See Section 3.1.4 for more status code definitions.
+                    uint32 attributes                      Flags associated with a specific command in the protocol.
+                                                           If message_id is for SYSTEM_POWER_STATE_SET, the attributes have the
+                                                           following format:
+                                                           Bit[31]
+                                                           System warm reset support.
+                                                                • Set to 1 if system warm reset is supported.
+                                                                • Set to 0 if system warm reset is not supported.
+                                                           Bit[30]
+                                                           System suspend support.
+                                                                • Set to 1 if system suspend is supported.
+                                                                • Set to 0 if system suspend is not supported.
+                                                           Bits[29:0]
+                                                           Reserved, must be zero.
+                                                           For all values of message_id, this value is zero.

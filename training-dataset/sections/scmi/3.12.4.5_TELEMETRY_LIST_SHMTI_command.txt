@@ -1,0 +1,46 @@
+              3.12.4.5    TELEMETRY_LIST_SHMTI
+                                                                 T0
+              This command returns the details of the shared-memory based telemetry interfaces (SHMTI) available.
+                                                   BE
+              On success, the command returns an array, which contains several SHMTI descriptors. Sometimes it might not be
+              possible to return all the descriptors with just one call. To solve this problem, the interface allows multiple calls. It also
+              returns the number of remaining descriptors. The size of the array returned depends on the number of return values a
+              given transport can support.
+              For an example of using this kind of API, see Section 3.5.6.8.
+                  message_id: 0x3
+                  protocol_id: 0x1B
+                  This command is mandatory if SHMTIs are supported as indicated by Bits[15:0] of attributes_high field in
+                  PROTOCOL_ATTRIBUTES command. Refer to Section Section 3.1.4 for more details.
+                  Parameters
+                  Name                                   Description
+                  uint32 index                           Index of the first SHMTI descriptor to be described in the return array.
+                  Return values
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: if the SHMTI list was returned succesfully.
+                                                             • NOT_FOUND: if no SHMTI is available.
+                                                             • NOT_SUPPORTED: if the request is not supported.
+                                                         See Section 3.1.4 for more status code definitions.
+                                                                                                  Arm® System Control and Management Interface
+                  uint32 num_SHMTI                     Bits[31:16]
+                                                       Number of remaining SHMTIs.
+                                                       Bits[15:0]
+                                                       Number of SHMTIs that are returned by this call.
+                  {uint32, uint32, uint32, uint32      SHMTI descriptor.
+                  uint32} SHMTI_desc [N]               Array of descriptors. N is specified by Bits[15:0] of num_SHMTI field. Each
+                                                       descriptor entry is composed of 5 32-bit words with the following format:
+                                                       uint32 entry[0] SHMTI ID.
+                                                              Each SHMTI is identified by a unique 32-bit integer identifier.
+                                                       uint32 entry[1] SHMTI address low.
+                                                             The lower 32 bits of the physical address where the SHMTI memory
+                                                              region starts. This value should be 64-bit aligned. The address must
+                                                              be in the memory map of the calling agent.
+                                                       uint32 entry[2] SHMTI address high.
+                                                             The higher 32 bits of the physical address where the SHMTI memory
+                                                              region starts. The address must be in the memory map of the calling
+                                                              agent.
+                                                       uint32 entry[3] SHMTI length.
+                                                             The length in bytes of the SHMTI region.
+                                                       uint32 entry[4] SHMTI flags.
+                                                              Bits[31:0]
+                                                              Reserved, must be zero.

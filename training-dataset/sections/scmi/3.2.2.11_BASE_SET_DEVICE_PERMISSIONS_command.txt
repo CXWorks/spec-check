@@ -1,0 +1,40 @@
+                 3.2.2.11   BASE_SET_DEVICE_PERMISSIONS
+                 This command is used to indicate to the platform whether an agent has permissions to access devices, as specified by a
+                 device identifier. An agent can only operate on devices to which it has access, and by extension can only operate on the
+                 power, performance, clock, sensor, reset and voltage domains that are associated with that device. At system boot, the
+                 default device-specific access permission of an agent is IMPLEMENTATION defined. Arm recommends that only trusted
+                 agents in the system are given permission to invoke this command.
+                                                                                                     Arm® System Control and Management Interface
+                 The Base protocol does not cover the discovery of device identifiers for devices in a platform. This information is provided
+                 to the caller by way of firmware tables in FDT or ACPI.
+                 A caller can discover if this command is implemented by issuing the PROTOCOL_MESSAGE_ATTRIBUTES command
+                 and passing the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES
+                 returns SUCCESS.
+                    message_id: 0x9
+                    protocol_id: 0x10
+                    This command is optional.
+                    Parameters
+                    Name                                  Description
+                    uint32 agent_id                       Identifier of the Agent.
+                    uint32 device_id                      Identifier of the device.
+                    uint32 flags                          Bits[31:1]
+                                                          Reserved, must be zero.
+                                                          Bit[0]
+                                                          Access Type:
+                                                          This bit defines the permissions of the agent to access platform resources
+                                                          associated with the device.
+                                                               • If set to 0, deny agent access to the device.
+                                                               • If set to 1, allow agent access to the device.
+                    Return values
+                    Name
+                                                                  T0
+                                                          Description
+                    int32 status                    BE    One of, but not limited to, the following:
+                                                              • SUCCESS: in case the device permissions was set successfully for the
+                                                                agent specified by agent_id.
+                                                              • NOT_FOUND: if agent_id or device_id does not exist.
+                                                              • INVALID_PARAMETERS: if flags field is invalid.
+                                                              • NOT_SUPPORTED: if the command is not supported.
+                                                              • DENIED: if the calling agent is not allowed to set the permissions of the
+                                                                agent specified by agent_id.
+                                                          See Section 3.1.4 for more status code definitions.

@@ -1,0 +1,67 @@
+              3.12.4.3   PROTOCOL_ATTRIBUTES
+                                                BE
+              This command returns the implementation details associated with this protocol.
+                  message_id: 0x1
+                  protocol_id: 0x1B
+                  This command is mandatory.
+                  Return values
+                  Name                               Description
+                  int32 status                       See Section 3.1.4 for status code definitions.
+                  uint32 de_num                      Total number of Data Events supported by this protocol.
+                  uint32 groups_num                  Total number of event groups supported by this protocol.
+                  uint32                       Bits[31:0] of the primary 128-bit DE implementation revision.
+                  de_implementation_rev_dword0 Refer to Section 3.12.2.2 for more information about the DE implementation
+                                               revision.
+                  uint32                       Bits[63:32] of the primary 128-bit DE implementation revision.
+                  de_implementation_rev_dword1
+                  uint32                       Bits[95:64] of the primary 128-bit DE implementation revision.
+                  de_implementation_rev_dword2
+                                                                                                 Arm® System Control and Management Interface
+                  uint32                       Bits[127:96] of the primary 128-bit DE implementation revision.
+                  de_implementation_rev_dword3
+                  uint32 attributes_1                Bit[31]
+                                                     Single-sample asynchronous read support.
+                                                          • If this flag is set to 1, then the protocol supports single-sample
+                                                             asynchronous telemetry DE reads through the
+                                                             TELEMETRY_CONFIG_SET command. The platform indicates data
+                                                             availability through the TELEMETRY_READING_COMPLETE delayed
+                                                             response.
+                                                          • If this flag is set to 0, this protocol does not support single-sample
+                                                             asynchronous reads.
+                                                     Bit[30]
+                                                     Continuous update notification support.
+                                                          • If this flag is set to 1, the protocol supports continuous update
+                                                             notifications. The platform sends the TELEMETRY_UPDATE
+                                                             notification at the configured sampling interval, when new data samples
+                                                             are available over the telemetry interface.
+                                                          • If this flag is set to 0, the protocol does not support continuous update
+                                                             notifications.
+                                                     Bits[29:19]
+                                                     Reserved, must be zero.
+                                                     Bit[18]
+                                                     Event group specific sampling rate and collection support.
+                                                              T0
+                                                          • If set to 1, each event group can be configured to a different sampling
+                                                             rate and collection mode using the TELEMETRY_CONFIG_SET
+                                                             command, as specified in Section 3.12.4.10. All DEs which are not a
+                                                BE           part of any event group must be configured to the same sampling rate
+                                                             and collection mode.
+                                                          • If set to 0, the same sampling rate and collection mode must be
+                                                             configured for all DEs and event groups across the platform using the
+                                                             TELEMETRY_CONFIG_SET command, as specified in
+                                                             Section 3.12.4.10.
+                                                     Bit[17]
+                                                     Telemetry Reset support.
+                                                     If set to 1, the platform supports full reset of telemetry infrastructure which
+                                                     includes all configuration and accumulated DE data.
+                                                     Bit[16]
+                                                     FastChannel support.
+                                                          • If set to 1, FastChannels are supported. At least one DE uses a
+                                                             FastChannel.
+                                                          • If set to 0, no FastChannels are supported.
+                                                     Bits[15:0]
+                                                     Number of SHMTIs supported by this protocol.
+                  uint32 default_blk_ts_rate         The default clock rate in kHz used to generate block timestamps.
+                                                     This clock rate should not change.
+                                                     When the ID field of a block timestamp line is set to 0, the agent will assume
+                                                     that the clock rate used for that block timestamp is the value of this field.

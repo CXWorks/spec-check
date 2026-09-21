@@ -1,0 +1,22 @@
+                 3.3.2.7   POWER_STATE_GET
+                 This command allows the calling agent to request the current power state of a power domain.
+                 ─── Note ───────────────
+                 It is possible for the power_state value returned by this command to be stale by the time the command completes, as
+                                                                T0
+                 another state change request could have been initiated and completed in the interim.
+                 ──────────────────────
+                    message_id: 0x5
+                    protocol_id: 0x11
+                    This command is mandatory.
+                                                  BE
+                    Parameters
+                    Name                                Description
+                    uint32 domain_id                    Identifier for the power domain.
+                    Return values
+                    Name                                Description
+                    int32 status                        One of, but not limited to, the following:
+                                                            • SUCCESS: if the current power state is returned successfully.
+                                                            • NOT_FOUND: if domain_id does not point to a valid power domain.
+                                                        Ses Section 3.1.4 for more status code definitions.
+                    uint32 power_state                  Platform-specific parameter identifying the power state of this domain. For
+                                                        device power domains, this parameter is encoded as described in Table 6.

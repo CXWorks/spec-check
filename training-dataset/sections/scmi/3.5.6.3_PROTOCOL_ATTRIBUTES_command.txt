@@ -1,0 +1,38 @@
+                 3.5.6.3   PROTOCOL_ATTRIBUTES
+                 This command returns the attributes associated with this protocol.
+                    message_id: 0x1
+                    protocol_id: 0x13
+                    This command is mandatory.
+                    Return values
+                    Name                                       Description
+                    int32 status                               See Section 3.1.4 for status code definitions.
+                                                                                                      Arm® System Control and Management Interface
+                    uint32 attributes                             Bits[31:18]
+                                                                  Reserved, must be zero.
+                                                                  Bits[17:16]
+                                                                  Power Unit:
+                                                                      • Set to 2 if the power consumption of performance levels is
+                                                                        expressed in uW.
+                                                                      • Set to 1 if the power consumption of performance levels is
+                                                                        expressed in mW.
+                                                                      • Set to 0 if the power consumption of performance levels is
+                                                                        expressed in an abstract linear scale.
+                                                                      • All other values are reserved and must not be used.
+                                                                  Bits[15:0]
+                                                                  Number of performance domains.
+                    uint32 statistics_address_low                 The lower 32 bits of the physical address where the statistics shared
+                                                                  memory region is located. This value should be 64-bit aligned. The
+                                                                  address must be in the memory map of the calling agent. If the
+                                                                  statistics_len field is 0, then this field is invalid and must be ignored.
+                                                                  The statistics shared memory region is described in Section 3.5.9.
+                    uint32 statistics_address_high                The upper 32 bit of the physical address where the shared memory
+                                                                  region is located. The address must be in the memory map of the
+                                                                  calling agent. If the statistics_len field is 0, then this field is invalid and
+                                                                  must be ignored. The statistics shared memory region is described in
+                    uint32 statistics_len
+                                                                   T0
+                                                                  Section 3.5.9.
+                                                                  The length in bytes of the shared memory region. A value of 0 in this
+                                                                  field indicates that the platform doesn’t support the statistics shared
+                                                     BE           memory region.
+                 Note: Statistics capability has been marked for deprecation and is being replaced by system telemetry.

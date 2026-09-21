@@ -1,0 +1,35 @@
+              3.10.3.15    POWERCAP_CAP_NOTIFY
+              This command allows the caller to request notifications from the platform when either power cap or CAI changes for a
+              specific power capping domain. These notifications are sent using the POWERCAP_CAP_CHANGED notification, which
+              is described in Section 3.10.5.1.
+                                                              T0
+              Notification support is optional, and PROTOCOL_MESSAGE_ATTRIBUTES must be used to discover whether this
+              command is implemented.
+                                                BE
+              These notifications must be disabled by default during initial boot of the platform.
+                  message_id: 0xA
+                  protocol_id: 0x18
+                  This command is mandatory if any domain supports power cap or CAI change notifications.
+                  Parameters
+                  Name                                Description
+                  uint32 domain_id                    Identifier for the power capping domain.
+                  uint32 notify_enable                Bits[31:1]
+                                                      Reserved must be zero.
+                                                      Bit[0]
+                                                      Notify enable. This bit can have one of the following values:
+                                                           • 0, which indicates that the platform does not send any
+                                                             POWERCAP_CAP_CHANGED messages to the calling agent.
+                                                           • 1, which indicates that the platform sends
+                                                             POWERCAP_CAP_CHANGED messages to the calling agent when
+                                                             the power cap or CAI for the domain is changed.
+                                                             See Section 3.10.5.1 for more details about
+                                                             POWERCAP_CAP_CHANGED notification.
+                  Return values
+                  Name                                Description
+                                                                                                 Arm® System Control and Management Interface
+                  int32 status                        One of, but not limited to, the following:
+                                                          • SUCCESS.
+                                                          • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                          • INVALID_PARAMETERS: if notify_enable specifies values that are
+                                                            either illegal or incorrect.
+                                                      See Section 3.1.4 for more status code definitions.

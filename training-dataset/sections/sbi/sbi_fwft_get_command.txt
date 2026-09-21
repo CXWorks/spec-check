@@ -1,0 +1,13 @@
+18.2. Function: Firmware Features Get (FID #1)
+  struct sbiret sbi_fwft_get(uint32_t feature)
+A successful return from sbi_fwft_get() results in the firmware feature configuration value to be
+returned in sbiret.value. Possible sbiret.value values are described in Table 93 for each feature ID.
+In case of failure, the content of sbiret.value is zero and the possible error codes returned in
+sbiret.error are shown in Table 96.
+                                   Table 96. FWFT Firmware Features Get Errors
+Error code                            Description
+SBI_SUCCESS                           Feature status was retrieved successfully.
+SBI_ERR_NOT_SUPPORTED                 feature is not reserved and valid, but the platform does not support it due to
+                                      one or more missing dependencies (Hardware or SBI implementation).
+SBI_ERR_DENIED                        feature is reserved or is platform-specific and unimplemented.
+SBI_ERR_FAILED                        The get operation failed for unspecified or unknown other reasons.

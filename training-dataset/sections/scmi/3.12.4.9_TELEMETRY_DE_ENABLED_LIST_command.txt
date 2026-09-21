@@ -1,0 +1,36 @@
+              3.12.4.9   TELEMETRY_DE_ENABLED_LIST
+              This command lists the DEs or groups which have been enabled.
+                  message_id: 0x7
+                  protocol_id: 0x1B
+                  This command is mandatory.
+                  Parameters
+                  Name                                Description
+                  uint32 index                        Index of the first enabled element to be described in the return array.
+                                                                                                  Arm® System Control and Management Interface
+                  uint32 flags                        Bits[31:1]
+                                                      Reserved, must be zero.
+                                                      Bit[0]
+                                                      Selector. Whether the index field refers to a DE or an event group.
+                                                      0 – DE (including DEs which are associated with event groups)
+                                                      1 – Event group
+                  Return values
+                  Name                                Description
+                  int32 status                        One of, but not limited to, the following:
+                                                         • SUCCESS: if update intervals were returned successfully.
+                                                         • OUT_OF_RANGE: if the index specified is outside of valid range.
+                  uint32 flags                        Bits[31:16]
+                                                      Number of remaining enabled DE array elements.
+                                                      Bits[15:0]
+                                                      Number of DE array elements that are returned by this call.
+                  {uint32, uint32} array[N]           Enabled Array.
+                                                      Array of enabled DEs or event groups along with their mode.
+                                                      N is specified by Bits[15:0] of flags field.
+                                                      Each array entry is composed of 2 32-bit words with the following format:
+                                                      uint32 entry[0] DE or event group ID
+                                                               T0
+                                                      uint32 entry[1] Bits[31:2] Reserved, must be zero.
+                                                                       Bits[1:0] Mode
+                                                                                   If set to 1, enabled without timestamps.
+                                                 BE                                If set to 2, enabled with timestamps.
+                                                                                   All other values are reserved.
+              For an example of using this kind of API, see Section 3.5.6.8.

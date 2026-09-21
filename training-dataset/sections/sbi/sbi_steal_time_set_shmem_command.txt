@@ -1,0 +1,23 @@
+16.1. Function: Set Steal-time Shared Memory Address (FID #0)
+  struct sbiret sbi_steal_time_set_shmem(unsigned long shmem_phys_lo,
+                                         unsigned long shmem_phys_hi,
+                                         unsigned long flags)
+Set the shared memory physical base address for steal-time accounting of the calling virtual hart and
+enable the SBI implementation’s steal-time information reporting.
+If shmem_phys_lo and shmem_phys_hi are not all-ones bitwise, then shmem_phys_lo specifies the lower
+XLEN bits and shmem_phys_hi specifies the upper XLEN bits of the shared memory physical base address.
+shmem_phys_lo MUST be 64-byte aligned. The size of the shared memory must be at least 64 bytes. The SBI
+implementation MUST zero the first 64 bytes of the shared memory before returning from the SBI call.
+If shmem_phys_lo and shmem_phys_hi are all-ones bitwise, the SBI implementation will stop reporting steal-
+time information for the virtual hart.
+The flags parameter is reserved for future use and MUST be zero.
+It is not expected for the shared memory to be written by the supervisor-mode software while it is in use for
+steal-time accounting. However, the SBI implementation MUST not misbehave if a write from supervisor-
+mode software occurs, however, in that case, it MAY leave the shared memory filled with inconsistent data.
+The SBI implementation MUST stop writing to the shared memory when the supervisor-mode software is
+not runnable, such as upon system reset or system suspend.
+                  Not writing to the shared memory when the supervisor-mode software is not runnable avoids
+                 unnecessary work and supports repeatable capture of a system image while the supervisor-
+                  mode software is suspended.
+The shared memory layout is defined in Table 76
+                                          Table 76. STA Shared Memory Structure

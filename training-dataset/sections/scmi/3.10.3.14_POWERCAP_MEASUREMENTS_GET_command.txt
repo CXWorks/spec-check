@@ -1,0 +1,23 @@
+              3.10.3.14    POWERCAP_MEASUREMENTS_GET
+              This command allows the calling agent to request the measurement data, like average power consumption and MAI, for
+              the power capping domain.
+                  message_id: 0x9
+                  protocol_id: 0x18
+                  This command is mandatory if any domain supports reading power measurements.
+                  Parameters
+                  Name                                Description
+                                                                                                 Arm® System Control and Management Interface
+                  uint32 domain_id                    Identifier for the power capping domain.
+                  Return values
+                  Name                                Description
+                  int32 status                        One of, but not limited to, the following:
+                                                          • SUCCESS: if the measurements were successfully returned.
+                                                          • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                          • NOT_SUPPORTED: if the request is not supported.
+                                                          • DENIED: if the calling agent is not allowed to get the measurements for
+                                                            this domain. An example would be if this domain is exclusive to
+                                                            another agent.
+                                                      See Section 3.1.4 for more status code definitions.
+                  uint32 power                        The average power consumption of the power capping domain measured
+                                                      over the latest power measurement averaging interval.
+                  uint32 mai                          The power measurement averaging interval set for the domain.

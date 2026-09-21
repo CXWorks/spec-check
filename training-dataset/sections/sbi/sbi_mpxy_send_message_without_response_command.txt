@@ -1,0 +1,27 @@
+20.11. Function: Send Message without Response (FID #6)
+  struct sbiret
+  sbi_mpxy_send_message_without_response(uint32_t channel_id,
+                                         uint32_t message_id,
+                                         unsigned long message_data_len)
+Send a message to the MPXY channel specified by the channel_id parameter without waiting for a message
+response from the MPXY channel. The message_id parameter specifies the message protocol specific
+identification of the message to be sent whereas the message_data_len parameter represents the length of
+message data in bytes which is located at the offset 0x0 in the shared memory setup by the calling hart.
+This function does not wait for message response from the channel and returns after successful message
+transmission. In cases where complete data transfer requires multiple transmissions, the supervisor
+software shall send multiple messages as necessary. Details of such cases can be found in the respective
+message protocol specification.
+                  The messages which do not have an expected response as per the underlying message protocol
+                  specification are also referred to as posted messages. This function should be only used for
+                 such posted messages. The respective message protocol specification should define a
+                  mechanism to track the status of posted messages using notification events or some other
+                  message with response if required.
+This function is optional. If this function is implemented, the corresponding bit in the
+CHANNEL_CAPABILITY attribute is set to 1.
+The possible error codes returned in sbiret.error are below.
+                                 Table 116. MPXY Send Message without Response Errors
+Error code                                 Description
+SBI_SUCCESS                                Message sent successfully.
+SBI_ERR_INVALID_PARAM                      The message_data_len > MSG_DATA_MAX_LEN for specified channel_id.
+                                           Or the message_data_len is greater than the size of shared memory on the
+                                           calling hart.

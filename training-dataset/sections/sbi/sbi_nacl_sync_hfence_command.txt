@@ -1,0 +1,17 @@
+15.8. Function: Synchronize shared memory HFENCEs (FID #3)
+  struct sbiret sbi_nacl_sync_hfence(unsigned long entry_index)
+Synchronize HFENCEs in the nested acceleration shared memory. This is an optional function which is
+only available if the SBI_NACL_FEAT_SYNC_HFENCE feature is available. The parameter entry_index
+specifies the set of nested HFENCE entries to be synchronized.
+If entry_index is all-ones bitwise then all nested HFENCE entries are synchronized as described in the
+Section 15.2.
+If entry_index < (3840 / XLEN) then only a single nested HFENCE entry specified by the entry_index
+parameter is synchronized as described in the Section 15.2.
+The possible error codes returned in sbiret.error are shown in Table 73.
+                                       Table 73. NACL Synchronize HFENCE Errors
+Error code                                 Description
+SBI_SUCCESS                                HFENCEs synchronized successfully.
+SBI_ERR_NOT_SUPPORTED                      SBI_NACL_FEAT_SYNC_HFENCE feature is not available.
+SBI_ERR_INVALID_PARAM                      entry_index is not all-ones bitwise and
+                                           entry_index >= (3840 / XLEN).
+SBI_ERR_NO_SHMEM                           Nested acceleration shared memory not available.

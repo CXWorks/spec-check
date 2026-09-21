@@ -1,0 +1,12 @@
+8.1. Function: Remote FENCE.I (FID #0)
+  struct sbiret sbi_remote_fence_i(unsigned long hart_mask,
+                                   unsigned long hart_mask_base)
+Instructs remote harts to execute FENCE.I instruction.
+The possible error codes returned in sbiret.error are shown in the Table 9 below.
+                                   Table 9. RFENCE Remote FENCE.I Errors
+      Error code                             Description
+      SBI_SUCCESS                            IPI was sent to all the targeted harts successfully.
+      SBI_ERR_INVALID_PARAM                  At least one hartid constructed from hart_mask_base and
+                                             hart_mask, is not valid, i.e. either the hartid is not enabled by
+                                             the platform or is not available to the supervisor.
+      SBI_ERR_FAILED                         The request failed for unspecified or unknown other reasons.

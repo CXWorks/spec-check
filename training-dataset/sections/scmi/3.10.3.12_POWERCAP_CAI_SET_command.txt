@@ -1,0 +1,27 @@
+              3.10.3.12    POWERCAP_CAI_SET
+              This command allows an agent to specify the power capping averaging interval for the power capping domain.
+                  message_id: 0xF
+                  protocol_id: 0x18
+                  This command is mandatory if any domain supports configuring the CAI.
+                  Parameters
+                  Name                                Description
+                  uint32 domain_id                    Identifier for the power capping domain.
+                  uint32 flags                        Bits[31:0]
+                                                      Reserved, must be zero.
+                  uint32 cai                          The power averaging interval to set for the domain. This field must not be
+                                                      zero.
+                  uint32 cpli                         Concurrent power limit identifier. Must be set to 0 if the domain does not
+                                                      support CPC.
+                  Return values
+                                                                                                 Arm® System Control and Management Interface
+                  Name                                 Description
+                  int32 status                         One of, but not limited to, the following:
+                                                           • SUCCESS: if the CAI was set successfully.
+                                                           • NOT_FOUND: if the domain_id or cpli are not valid.
+                                                           • NOT_SUPPORTED: if the request is not supported.
+                                                           • INVALID_PARAMETERS: if the requested CAI is not supported, or the
+                                                             flags parameter specifies invalid or illegal options.
+                                                           • DENIED: if the calling agent is not allowed to set the CAI for this
+                                                             domain. An example would be if this domain is exclusive to another
+                                                             agent.
+                                                       See Section 3.1.4 for more status code definitions.

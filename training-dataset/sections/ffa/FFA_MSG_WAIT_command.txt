@@ -32,8 +32,6 @@
                                                                          • 0xC400006B (see 11.1.2 Parameter Register
                                                                            Preservation).
            Reserved                                 w1/x1                • Reserved (SBZ).
-Chapter 14. CPU cycle management interfaces
-14.1. FFA_MSG_WAIT
            Parameter                                Register         Value
            uint32 Flags                             w2                   • Flags.
                                                                               – Bit[0]: Retain RX Buffer Ownership flag.
@@ -75,10 +73,6 @@ Chapter 14. CPU cycle management interfaces
                                                                            be run.
                                                                          • This parameter MBZ if the caller does not specify a
                                                                            timeout.
-Chapter 14. CPU cycle management interfaces
-14.1. FFA_MSG_WAIT
            Parameter                               Register         Value
            Other Parameter registers               w4-w7                • Reserved (MBZ).
                                                    x4-x17
-Chapter 14. CPU cycle management interfaces
-14.2. FFA_YIELD

@@ -1,0 +1,129 @@
+                 3.5.6.5   PERFORMANCE_DOMAIN_ATTRIBUTES
+                 This command returns attributes that are specific to a given domain.
+                    message_id: 0x3
+                    protocol_id: 0x13
+                    This command is mandatory.
+                    Parameters
+                    Name
+                                                                   T0
+                                                                Description
+                    uint32 domain_id
+                    Return values
+                                                     BE         Identifier for the performance domain.
+                    Name                                        Description
+                    int32 status                                One of, but not limited to, the following:
+                                                                    • SUCCESS: if valid performance domain attributes are found.
+                                                                    • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                                See Section 3.1.4 for more status code definitions.
+                                                                                                   Arm® System Control and Management Interface
+                 uint32 attributes                           Bit[31]
+                                                             Can set limits.
+                                                                  • Set to 1 if calling agent is allowed to set the performance limits on
+                                                                    the domain.
+                                                                  • Set to 0 if a calling agent is not allowed to set limits on the
+                                                                    performance limits on the domain.
+                                                             Bit[30]
+                                                             Can set performance level.
+                                                                  • Set to 1 if calling agent is allowed to set performance of a domain.
+                                                                  • Set to 0 if a calling agent is not allowed to set the performance of a
+                                                                    domain.
+                                                             Bit[29]
+                                                             Performance limits change notifications support.
+                                                                  • Set to 1 if performance limits change notifications are supported for
+                                                                    this domain.
+                                                                  • Set to 0 if performance limits change notifications are not
+                                                                    supported for this domain.
+                                                             Bit[28]
+                                                             Performance level change notifications support.
+                                                                  • Set to 1 if performance level change notifications are supported for
+                                                                    this domain.
+                                                                  • Set to 0 if performance level change notifications are not supported
+                                                                    for this domain.
+                                                                T0
+                                                             Bit[27]
+                                                             FastChannel Support.
+                                                                  • Set to 1 if there is at least one FastChannel available for this
+                                                                    domain
+                                                  BE              • Set to 0 if there are no FastChannels available for this domain.
+                                                             Bit[26]
+                                                             Extended performance domain name.
+                                                                  • If set to 1, the performance domain name is greater than 16 bytes.
+                                                                    The extended performance domain name is provided by
+                                                                    PERFORMANCE_DOMAIN_NAME_GET command which is
+                                                                    described in Section 3.5.6.19.
+                                                                  • If set to 0, extended performance domain name is not supported.
+                                                             Bit[25]
+                                                             Level Indexing Mode
+                                                                  • If set to 1, it indicates that the domain uses Level Indexing Mode.
+                                                                    All commands which utilize performance level as a parameter need
+                                                                    to specify the corresponding level index instead of the performance
+                                                                    level when Level Indexing Mode is used.
+                                                                  • If set to 0, Level Indexing Mode is not used.
+                                                             Bit[24]
+                                                             Asynchronous QoS configuration support
+                                                                  • If set to 1, all QoS capabilities of this domain can be configured
+                                                                    asynchronously.
+                                                                  • If set to 0, the QoS capabilities of this domain can only be
+                                                                    configured synchronously.
+                                                             Bit[23]
+                                                             QoS only domain
+                                                                  • If set to 1, this domain does not support performance levels and
+                                                                    their visibility to the agent. If this bit is set to 1, Bits[31:28] must be
+                                                                    0.
+                                                                  • If set to 0, this domain supports agent visible performance levels.
+                                                                    Bits[31:28] specify the performance controls available.
+                                                                                                   Arm® System Control and Management Interface
+                                                             Bit[22]
+                                                             Sustained performance reduction support
+                                                                  • If set to 1, the calling agent can voluntarily request a reduction of
+                                                                    the sustained performance level of the domain through the
+                                                                    REDUCE_SUSTAINED_PERFORMANCE_LEVEL command. See
+                                                                    Section 3.5.6.13 for more details.
+                                                                  • If set to 0, the domain does not support reducing the sustained
+                                                                    performance level.
+                                                             This bit must be 0 if Bit[23] of the attributes field is set to 1.
+                                                             Bits[21:0]
+                                                             Reserved and set to zero.
+                 uint32 rate_limit                           Bits[31:20]
+                                                             Reserved and set to zero.
+                                                             Bits[19:0]
+                                                             Rate Limit in microseconds, indicating the minimum time required
+                                                             between successive requests. A value of 0 indicates that this field is not
+                                                             supported by the platform. This field does not apply to FastChannels.
+                 uint32 sustained_freq                       Base frequency corresponding to the sustained performance level.
+                                                             Expressed in units of kHz. This field can be set to 0 by the platform, if
+                                                             Bit[23] of the attributes field is set to 1.
+                 uint32 sustained_perf_level                 The performance level value that corresponds to the maximum sustained
+                                                                T0
+                                                             performance level for the domain. This field can be set to 0 by the
+                                                             platform, if Bit[23] of the attributes field is set to 1. This field is a platform
+                                                             specific value, and is unchanged when an agent voluntarily reduces the
+                                                             domain’s sustained performance requirement through the
+                                                  BE         REDUCE_SUSTAINED_PERFORMANCE_LEVEL command, as
+                                                             specified in Section 3.5.6.13
+                 uint8 name[16]                              Null terminated ASCII string of up to 16 bytes in length describing a
+                                                             domain name. When Bit[26] of attributes field is set to 1, this field contains
+                                                             the lower 15 bytes of the NULL terminated performance domain name.
+                 uint32 guaranteed_perf_level                The performance level value that corresponds to the guaranteed
+                                                             performance delivered by the platform. This field can be set to 0 if the
+                                                             platform does not wish to specify the guaranteed performance level.
+                 uint32 qos_capability_types                 Bitmap of supported QoS capability Types
+                                                             Bits[31:24]
+                                                             Reserved, must be zero.
+                                                             Bits[23:16]
+                                                             OEM QoS capability Type bitmap where each bit indicates support for an
+                                                             OEM capability Type. This field may have multiple bits set.
+                                                             Bits[15:8]
+                                                             Reserved, must be zero.
+                                                             Bits[7:0]
+                                                             Architected QoS capability Type bitmap where each bit indicates support
+                                                             for an architected capability Type. The bit offsets and the Type
+                                                             descriptions are provided in Section 3.5.4.1 and Table 13. This field might
+                                                             have multiple bits set.
+                                                                                                   Arm® System Control and Management Interface
+                    uint32 qos_parent_id                     This field identifies the parent of the domain. This is useful in constructing
+                                                             a QoS topology when the current domain, identified by domain_id, is
+                                                             contained within a parent domain, identified by parent_id. A value of
+                                                             0xFFFFFFFF implies that this domain is not contained within any parent
+                                                             domain. This field is valid for QoS capabilities only and can be ignored if
+                                                             the capability_types field is set to 0.

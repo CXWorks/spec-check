@@ -1,0 +1,56 @@
+                 3.3.2.6   POWER_STATE_SET
+                 This command allows an agent to set the power state of a power domain. Power domains can be managed synchronously
+                 or asynchronously:
+                    • Synchronous Mode
+                      A call with valid parameters completes and frees the channel when the domain has transitioned to the desired
+                      power state.
+                    • Asynchronous Mode
+                      The call completes immediately, and the caller can register for notifications if it wishes to observe the power state
+                      transition. These notifications are described in Section 3.3.3.1.
+                 When this command is used for power domains that include application processors, the Async flag is ignored. This call
+                 must return to the calling AP before that AP is powered down. Following this call, the AP executes some instructions
+                 before invoking a Wait for Interrupt (WFI) instruction [ARM]. The platform controller that implements SCMI begins the
+                 transition to the required power state when it observes the WFI. The method used by the platform controller to observe
+                 the WFI is IMPLEMENTATION DEFINED. For these power domains, this protocol can be used to implement PSCI
+                 CPU_SUSPEND, CPU_ON, CPU_FREEZE, CPU_DEFAULT_SUSPEND and CPU_OFF functions.
+                 A power domain can contain other power domains. If the caller wants to change the state of a power domain and
+                 one of its parents, the power domain parameter must identify the child. The required power state for the child domain,
+                 and its parents, must be encoded in the power state parameter. How this is encoded in the power_state parameter is
+                 IMPLEMENTATION DEFINED.
+                    message_id: 0x4
+                    protocol_id: 0x11
+                    This command is mandatory.
+                    Parameters
+                                                                T0
+                    Name
+                    uint32 flags
+                                                  BE    Description
+                                                        Bits[31:1]
+                                                        Reserved, must be zero.
+                                                        Bit[0]
+                                                        Async flag.
+                                                             • Set to 1 if power transition must be done asynchronously.
+                                                             • Set to 0 if power state transition must be done synchronously.
+                                                        The async flag is ignored for application processor domains.
+                    uint32 domain_id                    Identifier for the power domain.
+                    uint32 power_state                  Platform-specific parameter identifying the power state of the domain. For
+                                                        device power domains, this parameter is encoded as described in Table 6.
+                    Return values
+                    Name                                Description
+                                                                                                   Arm® System Control and Management Interface
+                    int32 status                        One of, but not limited to, the following:
+                                                            • SUCCESS: for a power domain that can only be set synchronously, this
+                                                              status is returned after the power domain has transitioned to the
+                                                              desired state. For a power domain that is managed asynchronously,
+                                                              this status is returned if the command parameters are valid, and the
+                                                              power state change has been scheduled.
+                                                            • NOT_FOUND: if the power domain identified by domain_id does not
+                                                              exist.
+                                                            • INVALID_PARAMETERS: if the requested power state does not
+                                                              represent a valid state for the power domain that is identified by
+                                                              domain_id.
+                                                            • NOT_SUPPORTED: if the request is not supported.
+                                                            • DENIED: if the calling agent is not allowed to set the state of this power
+                                                              domain. An example would be if this power domain is exclusive to
+                                                              another agent.
+                                                        See Section 3.1.4 for more status code definitions.

@@ -1,0 +1,10 @@
+11.11. Function: Read a firmware counter (FID #5)
+  struct sbiret sbi_pmu_counter_fw_read(unsigned long counter_idx)
+Provide the current firmware counter value in sbiret.value. On RV32 systems, the sbiret.value will only
+contain the lower 32 bits of the current firmware counter value.
+The possible error codes returned in sbiret.error are shown in the Table 43 below.
+                                        Table 43. PMU Counter Firmware Read Errors
+       Error code                                      Description
+       SBI_SUCCESS                                     firmware counter read successfully.
+       SBI_ERR_INVALID_PARAM                           counter_idx points to a hardware counter or an invalid
+                                                       counter.

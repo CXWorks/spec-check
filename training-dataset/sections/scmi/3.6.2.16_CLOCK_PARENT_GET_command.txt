@@ -1,0 +1,23 @@
+              3.6.2.16   CLOCK_PARENT_GET
+              This command allows the calling agent to get the current parent of a clock device.
+                  message_id: 0xE
+                  protocol_id: 0x14
+                  This command is mandatory if for any clock device, Bit[28] of the attributes field as returned by the
+                  CLOCK_ATTRIBUTES command is set to 1.
+                  Parameters
+                  Name
+                  uint32 clock_id
+                                                                T0
+                                                        Description
+                                                        Identifier for the clock device.
+                  Return values
+                  Name
+                  int32 status
+                                                  BE    Description
+                                                        One of, but not limited to, the following:
+                                                            • SUCCESS: if the clock parent has been successfully returned.
+                                                            • NOT_FOUND: if the clock identified by clock_id does not exist.
+                                                            • NOT_SUPPORTED: if the request is not supported.
+                                                            • DENIED: if the calling agent is not allowed to get the parent.
+                                                        See Section 3.1.4 for more status code definitions.
+                  uint32 parent_id                      Identifier for the parent clock device.

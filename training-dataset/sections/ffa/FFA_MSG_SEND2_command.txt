@@ -36,8 +36,6 @@
                                                                                    ABI.
                                                                                 – Bit[31:2]: Reserved (SBZ).
            Other Parameter registers                   w3-w7                • Reserved (SBZ).
-Chapter 15. Messaging interfaces
-15.1. FFA_MSG_SEND2
                                                                                                 Table 15.4: FFA_ERROR encoding
            Parameter                                   Register         Value
            int32 Error code                            w2                   • INVALID_PARAMETERS:
@@ -64,5 +62,3 @@ Chapter 15. Messaging interfaces
                                                                                     receive the Sender’s message.
                                                                             • NOT_SUPPORTED: This function is not implemented
                                                                               at this FF-A instance.
-Chapter 15. Messaging interfaces
-15.2. FFA_MSG_SEND_DIRECT_REQ

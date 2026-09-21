@@ -22,8 +22,6 @@
             uint32 Sender/Receiver IDs                w1                   • Sender and Receiver endpoint IDs.
                                                                                – Bit[31:16]: Sender endpoint ID.
                                                                                – Bit[15:0]: Receiver endpoint ID.
-Chapter 16. Notification interfaces
-16.5. FFA_NOTIFICATION_SET
             Parameter                                 Register         Value
             uint32 Flags                              w2                   • Flags.
                                                                                 – Bit[0]: Per-vCPU notification flag (see 10.4.2
@@ -59,8 +57,6 @@ Chapter 16. Notification interfaces
                                                                                 – b’0: The notification corresponding to this bit
                                                                                    position must not be signaled to the Receiver.
             Other Parameter registers                 w5-w7                • Reserved (SBZ).
-Chapter 16. Notification interfaces
-16.5. FFA_NOTIFICATION_SET
                                                                                           Table 16.21: Encoding of return codes
             Parameter                                 Register         Value
             int32 Error code                          w2                   • INVALID_PARAMETERS:
@@ -102,5 +98,3 @@ Chapter 16. Notification interfaces
                this interrupt. This flag is only used at the Secure virtual FF-A instance. It MBZ at all other FF-A instances.
                The above guidance for this flag applies to the FFA_MSG_SEND2 ABI described in 15.1 FFA_MSG_SEND2 as
                well.
-Chapter 16. Notification interfaces
-16.6. FFA_NOTIFICATION_GET

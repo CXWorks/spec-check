@@ -1,0 +1,46 @@
+                 3.5.6.6   PERFORMANCE_QOS_CAPABILITY_SUBTYPES
+                 This command returns the QoS capability Subtypes supported for a specified QoS capability Type.
+                    message_id: 0xD
+                    protocol_id: 0x13
+                    This command is mandatory if QoS capabilities are supported by the platform.
+                    Parameters
+                    Name                                Description
+                    uint32 domain_id                    Identifier for the performance domain.
+                    uint32 capability_type              QoS capability Type bitmap.
+                                                        Bits[31:16]
+                                                        Reserved, must be zero.
+                                                        Bit[15]
+                                                                T0
+                                                        QoS capability Type range.
+                                                             • If set to 0, it indicates the architected range of QoS capability Types.
+                                                  BE         • If set to 1, it indicates the OEM range of QoS capability Types
+                                                        Bits[14:8]
+                                                        Reserved, must be zero.
+                                                        Bits[7:0]
+                                                        QoS capability Type bitmap where each bit indicates a capability Type. Only
+                                                        one bit must be set, indicating the target QoS capability Type. The architected
+                                                        QoS capability Types and their bit offsets are provided in Section 3.5.4.1 and
+                                                        Table 13.
+                    Return values
+                    Name                                Description
+                    int32 status                        One of, but not limited to, the following:
+                                                            • SUCCESS: if valid QoS Subtypes are returned.
+                                                            • NOT_FOUND: if the domain_id parameter does not point to a valid
+                                                              domain or if the capability_type does not point to a valid capability Type
+                                                              of that domain.
+                                                            • INVALID_PARAMETERS: if the capability_type field has multiple Type
+                                                              bits set.
+                                                        See Section 3.1.4 for more status code definitions.
+                                                                                                      Arm® System Control and Management Interface
+                    uint32 capability_subtypes             Supported QoS capability Subtypes bitmap.
+                                                           Bits[31:24]
+                                                           Reserved, must be zero.
+                                                           Bit[23:16]
+                                                           OEM QoS capability Subtype bitmap where each bit indicates a QoS
+                                                           capability Subtype. This field may have multiple bits set.
+                                                           Bits[15:8]
+                                                           Reserved, must be zero.
+                                                           Bits[7:0]
+                                                           Architected QoS capability Subtype bitmap where each bit indicates a QoS
+                                                           capability Subtype. The bit offsets and the Subtype description are provided
+                                                           in Table 13 and Section 3.5.4.2. This field may have multiple bits set.

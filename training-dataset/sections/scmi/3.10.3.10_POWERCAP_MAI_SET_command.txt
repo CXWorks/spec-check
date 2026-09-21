@@ -1,0 +1,27 @@
+              3.10.3.10    POWERCAP_MAI_SET
+              This command allows an agent to specify the power measurement averaging interval for the power capping domain.
+                  message_id: 0x7
+                  protocol_id: 0x18
+                                                             T0
+                  This command is mandatory if any domain supports configuring the MAI.
+                  Parameters
+                  Name
+                                               BE     Description
+                  uint32 domain_id                    Identifier for the power capping domain.
+                  uint32 flags                        Bits[31:0]
+                                                      Reserved, must be zero.
+                  uint32 mai                          The power measurement averaging interval to set for the domain. This field
+                                                      must not be zero.
+                  Return values
+                  Name                                Description
+                  int32 status                        One of, but not limited to, the following:
+                                                          • SUCCESS: if the MAI was set successfully.
+                                                          • NOT_FOUND: if the domain identified by domain_id does not exist.
+                                                          • NOT_SUPPORTED: if the request is not supported.
+                                                          • INVALID_PARAMETERS: if the requested MAI is not supported, or the
+                                                            flags parameter specifies invalid or illegal options.
+                                                          • DENIED: if the calling agent is not allowed to set the MAI for this
+                                                            domain. An example would be if this domain is exclusive to another
+                                                            agent.
+                                                      See Section 3.1.4 for more status code definitions.
+                                                                                                Arm® System Control and Management Interface

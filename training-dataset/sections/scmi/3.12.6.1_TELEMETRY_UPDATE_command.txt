@@ -1,0 +1,47 @@
+              3.12.6.1    TELEMETRY_UPDATE
+              The TELEMETRY_UPDATE notification is sent to an agent which had requested continuous update notifications using the
+              TELEMETRY_CONFIG_SET command. The platform might also nominate special agents which receive this notification
+              by default since they were auto configured to receive telemetry. The exact mechanism and policy of autoconfiguration is
+              beyond the scope of this specification.
+              This notification is used as a trigger by the agent to read telemetry data associated with DEs which are enabled and
+              available over SHMTIs and FastChannels. In addition, this notification includes multiple telemetry payload lines for DEs
+              which are enabled but not available using SHMTI or FastChannels.
+              The notification is generated at an average rate no faster than the configured sampling period. The platform is allowed
+              to generate the notification at a rate slower than the configured update period if the agent or the platform cannot cope
+              with the rate of generation of notifications due to hardware constraints. However, the platform should always provide
+              the latest DE values when the TELEMETRY_UPDATE notification is generated. The status field can be used to indicate
+              error conditions resulting in non-availability or corruption of telemetry samples. When the platform determines that there
+              are certain failure conditions in the sensor itself, such as a fault in the DE hardware or related circuitry or logic, it returns
+              HARDWARE_ERROR to report that condition to the caller. The platform returns PARTIAL_ERROR to indicate that some
+              of the telemetry data could not be collected.
+                  message_id: 0x0
+                  protocol_id: 0x1B
+                  This notification is mandatory if the platform supports continuous update notifications, as specified by Bit[30] of
+                  attributes_1 field of PROTOCOL_ATTRIBUTES command.
+                  Return values
+                  Name
+                                                               T0
+                                                      Description
+                  uint32 agent_id
+                                                 BE   Refers to the agent that caused this event. For the current version of the
+                                                      specification, this field is set to 0 to indicate that the platform is the generator
+                                                      of all telemetry notification events.
+                  int32 status                        An appropriate status code, as described in Section 3.1.4.
+                                                      If this field is non-zero, the agent is recommended to ignore the rest of the
+                                                      fields in this notification and re-configure telemetry. However in case of
+                                                      PARTIAL_ERROR, some data-lines, as indicated by Bit[0] of Line-Metadata,
+                                                      might still be valid and therefore consumable.
+                  uint32 num_dwords                   The size of the returned array specified in DWORDS, where DWORD is
+                                                      defined as 4 bytes.
+                                                      The value specified by this field must not be an odd number.
+                                                      This field is set to 0 if all the enabled DEs are collected using SHMTI or
+                                                      FastChannels.
+                  uint32 array[N]                     The returned telemetry payload section. The prologue and epilogue are not
+                                                      provided.
+                                                      N is specified by num_dwords field.
+                                                                                                  Arm® System Control and Management Interface
+4 Transports
+              Transport describes how messages are exchanged between agents and the platform. The transport should allow
+              the agent and the platform to exchange the largest possible message described in this specification. If the platform
+              supports messages which return data elements iteratively, like SENSOR_LIST_UPDATE_INTERVALS as described in
+              Section 3.7.2.7, the transport should allow at least one data element to be returned.

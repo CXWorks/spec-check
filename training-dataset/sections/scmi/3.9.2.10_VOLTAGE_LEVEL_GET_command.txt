@@ -1,0 +1,26 @@
+              3.9.2.10   VOLTAGE_LEVEL_GET
+              This command allows the calling agent to request the current voltage level of a voltage domain.
+              ─── Note ─────
+              It is possible for the voltage_level value returned by this command to be stale by the time the command completes, as
+              another voltage level change request could have been initiated and completed in the interim.
+              ─────────────
+                  message_id: 0x8
+                  protocol_id: 0x17
+                  This command is mandatory.
+                                                              T0
+                  Parameters
+                  Name
+                  uint32 domain_id
+                                                BE    Description
+                                                      Identifier for the voltage domain.
+                  Return values
+                  Name                                Description
+                  int32 status                        One of, but not limited to, the following:
+                                                          • SUCCESS: if the voltage level of the domain was returned successfully.
+                                                          • NOT_FOUND: if domain_id does not point to a valid voltage domain.
+                                                          • NOT_SUPPORTED: if the request is not supported.
+                                                          • DENIED: if the calling agent is not allowed to get the voltage level of
+                                                            this voltage domain. An example would be if this voltage domain is
+                                                            exclusive to another agent.
+                                                      See Section 3.1.4 for more status code definitions.
+                  int32 voltage_level                 The voltage level, in microvolts (uV), that the domain is set to.

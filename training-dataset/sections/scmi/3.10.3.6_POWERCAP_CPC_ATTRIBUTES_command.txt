@@ -1,0 +1,70 @@
+              3.10.3.6   POWERCAP_CPC_ATTRIBUTES
+              This command returns the CPC attributes associated with a domain. On success, the command returns an array, which
+              contains several CPLi descriptors. Sometimes it might not be possible to return all the descriptors with just one call. To
+              solve this problem, the interface allows multiple calls. It also returns the number of remaining descriptors. The size of
+              the array returned depends on the number of return values a given transport can support. The CPL Identifiers returned
+              by this call should be in numeric ascending order. For an example of using this kind of API, see Section 3.5.6.8.
+                  message_id: 0xD
+                  protocol_id: 0x18
+                  This command is mandatory if CPC is supported for any domain.
+                  Parameters
+                  Name
+                                                               T0
+                                                       Description
+                  uint32 domain_id
+                  uint32 desc_index
+                                                 BE    Identifier for the power capping domain.
+                                                       Index of the first CPLi descriptor to be returned in the CPLi descriptor array.
+                                                       Note: This field does not refer to the CPL Identifier.
+                  Return values
+                  Name                                 Description
+                  int32 status                         One of, but not limited to, the following:
+                                                           • SUCCESS: if valid domain attributes were returned
+                                                           • NOT_FOUND: if domain_id pertains to a non-existent domain.
+                                                           • OUT_OF_RANGE: if the desc_index is outside of valid range.
+                                                           • NOT_SUPPORTED: if the request is not supported, or the domain
+                                                             does not support CPC.
+                                                       See Section 3.1.4 for more status code definitions.
+                  uint32 num_cpl                       Bits[31:16]
+                                                       Number of remaining CPLi descriptors.
+                                                       Bits[15:0]
+                                                       Number of CPLi descriptors that are returned by this call.
+                  CPLi_DESC desc[N]                    An array of CPLi descriptors, of format described in CPLi Descriptor.
+              CPLi Descriptor
+              The CPLi_DESC structure describes the properties of each CPL identifier.
+                                                                                                  Arm® System Control and Management Interface
+                  uint32 cpli                          Integer identifier associated with the concurrent power limit.
+                  uint32 flags                         Bit[31:1]
+                                                       Reserved, must be zero.
+                                                       Bit[0]
+                                                       Power cap configuration support.
+                                                            • If set to 1, this CPLi supports changing power caps.
+                                                            • If set to 0, this CPLi does not support changing power caps.
+                  uint32 min_power_cap                 The minimum power value that can be set as the power cap for this CPLi. It is
+                                                       illegal for this field to be zero.
+                                                       When min_power_cap and max_power_cap fields return the same value, it
+                                                       indicates that power cap for this CPLi is not configurable.
+                  uint32 max_power_cap                 The maximum power value that can be set as a power cap for this CPLi. It is
+                                                       illegal for this field to be zero.
+                                                       When min_power_cap and max_power_cap fields return the same value, it
+                                                       indicates that power cap is not configurable.
+                  uint32 power_cap_step                The step size between two consecutive power cap values supported by this
+                                                       CPLi.
+                                                       This field must not be zero if min_power_cap and max_power_cap fields
+                                                       report different values.
+                  uint32 min_cai                       The minimum supported power capping averaging interval (CAI) for this CPLi,
+                                                               T0
+                                                       expressed in microseconds.
+                                                       When min_cai and max_cai fields return the same value, it indicates that CAI
+                                                       is not configurable. This field is set to zero if the platform does not report this
+                                                       value.
+                  uint32 max_cai                 BE    The maximum supported power capping averaging interval (CAI) for this
+                                                       CPLi, expressed in microseconds.
+                                                       When min_cai and max_cai fields return the same value, it indicates that CAI
+                                                       is not configurable. This field is set to zero if the platform does not report this
+                                                       value.
+                  uint32 cai_step                      The step size between two consecutive CAI supported by this CPLi.
+                                                       This field must not be zero if min_cai and max_cai fields report different
+                                                       values.
+                  uint8 name[16]                       Null-terminated ASCII string of up to 16 bytes in length describing the CPLi.
+                                                       Table 26 shows the recommended naming convention to be used.

@@ -1,0 +1,16 @@
+              3.7.3.1    SENSOR_READING_COMPLETE
+              This response is the delayed response to an asynchronous SENSOR_READING_GET command issued by an agent.
+              When the platform determines that there are certain failure conditions in the sensor itself, such as a fault in the sensor
+              hardware or related circuitry or logic, it returns HARDWARE_ERROR to report that condition to the caller. Other errors
+              apply to the interface itself and are enumerated in Section 3.1.4.
+                  message_id: 0x6
+                  protocol_id: 0x15
+                  This response is mandatory and is generated if the caller used the asynchronous method to read the sensor.
+                  Return Values
+                  Name                                         Description
+                  int32 status                                 An appropriate status code, as described in Section 3.1.4.
+                  uint32 sensor_id                             Identifier for the sensor.
+                  SENSOR_READING readings[N]                   An array of sensor readings of format described in Sensor Reading
+                                                               Descriptor, where N is the number of sensor axes. All axes should be
+                                                               reported in order.
+                                                                                                   Arm® System Control and Management Interface

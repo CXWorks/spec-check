@@ -1,0 +1,15 @@
+                 3.5.8.1   PERFORMANCE_LIMITS_CHANGED
+                 If an agent has registered for limit change notifications for the domain that is identified by domain_id, the platform sends
+                 this notification to the agent when the performance limits for that domain change.
+                    message_id: 0x0
+                    protocol_id: 0x13
+                    This command is optional.
+                    Parameters
+                    Name                                   Description
+                    uint32 agent_id                        Identifier for the agent that caused the performance limit change.
+                    uint32 domain_id                       Identifier for the performance domain whose limit was changed.
+                                                                                                    Arm® System Control and Management Interface
+                    uint32 range_max                     Maximum allowed performance level, or level index when Level Indexing
+                                                         Mode is used.
+                    uint32 range_min                     Minimum allowed performance level, or level index when Level Indexing
+                                                         Mode is used.

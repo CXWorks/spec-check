@@ -1,0 +1,49 @@
+                 3.2.2.12   BASE_SET_PROTOCOL_PERMISSIONS
+                 An agent can have access to multiple devices. The agent uses commands to access platform resources that are
+                 associated with those devices. The command BASE_SET_PROTOCOL_PERMISSIONS is used to indicate to the
+                 platform whether an agent has permissions to use a protocol to access the platform resources that are associated with
+                 a specific device. This command cannot be used to change the agent’s permissions to access a device. This command
+                 only affects the protocols which the agent can use to access the platform resources that are associated with a particular
+                 device. At system boot, the default per-device protocol specific access permissions of an agent are IMPLEMENTATION
+                 defined.
+                 Arm recommends that only trusted agents in the system are given permissions to invoke this command.
+                 A caller can discover if this command is implemented by issuing the PROTOCOL_MESSAGE_ATTRIBUTES command
+                 and passing the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES
+                 returns SUCCESS.
+                                                                                                     Arm® System Control and Management Interface
+                    message_id: 0xA
+                    protocol_id: 0x10
+                    This command is optional.
+                    Parameters
+                    Name                                  Description
+                    uint32 agent_id                       Identifier of the Agent.
+                    uint32 device_id                      Identifier of the device.
+                    uint32 command_id                     Bits[31:8]
+                                                          Reserved, must be zero.
+                                                          Bits[7:0]
+                                                          Protocol ID.
+                                                              • This field should not be set to 0x10, since it is mandatory to implement
+                                                                the Base protocol for all agents.
+                    uint32 flags                          Bits[31:1]
+                                                          Reserved, must be zero.
+                                                          Bit[0]
+                                                          Access Type.
+                                                          This bit defines the permissions of the agent to use the protocol specified by
+                                                          command_id, to access platform resources that are a part of the device
+                                                          specified by device_id.
+                                                                  T0
+                                                               • If set to 0, deny agent access to the protocol.
+                                                               • If set to 1, allow agent access to the protocol.
+                    Return values
+                    Name
+                    int32 status
+                                                    BE    Description
+                                                          One of, but not limited to, the following:
+                                                              • SUCCESS: in case the command permissions were set successfully.
+                                                              • NOT_FOUND: if any of agent_id, device_id or protocol_id does not
+                                                                exist.
+                                                              • INVALID_PARAMETERS: if flags field is invalid.
+                                                              • NOT_SUPPORTED: if the command is not supported.
+                                                              • DENIED: if the calling agent is not allowed to set the protocol
+                                                                permissions for the agent specified by agent_id.
+                                                          See Section 3.1.4 for more status code definitions.

@@ -1,0 +1,22 @@
+              3.10.5.1    POWERCAP_CAP_CHANGED
+                                                 BE
+              If an agent has registered to receive power cap or CAI change notifications for the power capping domain that is identified
+              by domain_id, the platform sends these notifications to that agent when such changes take place.
+              The platform sends this notification to a subscribing agent when the power cap or CAI of the domain is changed by a
+              different agent or entity in the system, including the platform itself. The platform might autonomously change the power
+              cap of the domain to apply thermal or other constraints. In each of these occurrences, the subscribing agent will be
+              notified so that it can become aware of the change. These notifications are sent after the power cap or CAI transition
+              has completed. Even if either the power cap or the CAI changes, this notification is sent with the latest power cap and
+              CAI settings for the domain.
+                  message_id: 0x0
+                  protocol_id: 0x18
+                  This command is optional if no domain supports power cap and CAI change notifications.
+                  Parameters
+                  Name                                 Description
+                  uint32 agent_id                      Identifier of the agent that caused the power cap and CAI change.
+                  uint32 domain_id                     Identifier for the power capping domain.
+                  uint32 power_cap                     The power cap set for the domain.
+                  uint32 cai                           The power capping averaging interval set for the domain.
+                  uint32 cpli                          Concurrent power limit identifier for the power capping domain. Must be set to
+                                                       0 if the domain does not support CPC.
+                                                                                                  Arm® System Control and Management Interface

@@ -1,0 +1,22 @@
+15.6. Function: Set nested acceleration shared memory (FID #1)
+  struct sbiret sbi_nacl_set_shmem(unsigned long shmem_phys_lo,
+                                   unsigned long shmem_phys_hi,
+                                   unsigned long flags)
+Set and enable the shared memory for nested acceleration on the calling hart. This is a mandatory function
+of the SBI nested acceleration extension.
+If both shmem_phys_lo and shmem_phys_hi parameters are not all-ones bitwise then shmem_phys_lo
+specifies the lower XLEN bits and shmem_phys_hi specifies the upper XLEN bits of the shared memory
+physical base address. shmem_phys_lo MUST be 4096 bytes (i.e. page) aligned and the size of the shared
+memory must be 4096 + (XLEN * 128) bytes.
+If both shmem_phys_lo and shmem_phys_hi parameters are all-ones bitwise then the nested acceleration
+features are disabled.
+The flags parameter is reserved for future use and must be zero.
+The possible error codes returned in sbiret.error are shown in Table 71.
+                                  Table 71. NACL Set Shared Memory Errors
+Error code                          Description
+SBI_SUCCESS                         Shared memory was set or cleared successfully.
+SBI_ERR_INVALID_PARAM               The flags parameter is not zero or or the shmem_phys_lo parameter is not
+                                    4096 bytes aligned.
+SBI_ERR_INVALID_ADDRESS             The shared memory pointed to by the shmem_phys_lo and shmem_phys_hi
+                                    parameters does not satisfy the requirements described in Section 3.2.
+SBI_ERR_FAILED                      The request failed for unspecified or unknown other reasons.

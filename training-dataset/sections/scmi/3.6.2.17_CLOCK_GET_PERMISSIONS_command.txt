@@ -1,0 +1,37 @@
+              3.6.2.17   CLOCK_GET_PERMISSIONS
+              An agent might be restricted from changing certain configuration or settings of a clock. This command returns the
+              restrictions that are associated with a specific clock.
+                  message_id: 0xF
+                  protocol_id: 0x14
+                  This command is mandatory if Bit[1] of the attributes field returned by the CLOCK_ATTRIBUTES command, as
+                  specified in Section 3.6.2.5, is set to 1 for any clock. This command is optional in all other cases.
+                  Parameters
+                  Name                                  Description
+                  uint32 clock_id                       Identifier for the clock device.
+                                                                                                  Arm® System Control and Management Interface
+                  Return values
+                  Name                                 Description
+                  int32 status                         One of, but not limited to, the following:
+                                                           • SUCCESS: if valid clock permissions are returned.
+                                                           • NOT_FOUND: if clock_id does not point to a valid clock device.
+                                                           • NOT_SUPPORTED: if the request is not supported.
+                                                       See Section 3.1.4 for more status code definitions.
+                  uint32 permissions                   Bit[31]
+                                                       Clock state control
+                                                            • Set to 1 if the clock can be disabled or enabled by the agent.
+                                                            • Set to 0 if the clock state cannot be changed by the agent. Attempts to
+                                                              change the clock state using CLOCK_CONFIG_SET command returns
+                                                              DENIED.
+                                                       Bit[30]
+                                                       Clock parent control
+                                                            • Set to 1 if the clock parent can be changed by the agent.
+                                                            • Set to 0 if the clock parent cannot be changed by the agent.
+                                                              CLOCK_PARENT_SET command returns DENIED.
+                                                       Bit[29]
+                                                       Clock rate control
+                                                            • Set to 1 if the clock rate can be changed by the agent.
+                                                               T0
+                                                            • Set to 0 if the clock rate cannot be changed by the agent.
+                                                              CLOCK_RATE_SET command returns DENIED.
+                                                       Bits[28:0]
+                                                       Reserved, must be zero.

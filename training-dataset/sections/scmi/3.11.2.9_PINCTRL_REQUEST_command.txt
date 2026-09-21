@@ -1,0 +1,32 @@
+              3.11.2.9   PINCTRL_REQUEST
+              This command is used by an agent to request exclusive control of a pin or group. This would make the pin or group
+              unavailable for any other agent until PINCTRL_RELEASE has been called by the controlling agent.
+                                                                                                    Arm® System Control and Management Interface
+              A caller can discover if this command is implemented by issuing the PROTOCOL_MESSAGE_ATTRIBUTES command
+              and passing the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES
+              returns SUCCESS.
+                  message_id: 0x7
+                  protocol_id: 0x19
+                  This command is optional.
+                  Parameters
+                  Name                                   Description
+                  uint32 identifier                      Identifier for the pin or group.
+                  uint32 flags                           Bits[31:2]
+                                                         Reserved, must be zero.
+                                                         Bits[1:0]
+                                                         Selector: Whether the identifier field refers to a pin or a group.
+                                                              • 0 – Pin
+                                                              • 1 – Group
+                                                         All other values are reserved for future use.
+                  Return values
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                                 T0
+                                                             • SUCCESS: if exclusive control of the pin or group was granted.
+                                                             • NOT_FOUND: if the identifier field does not point to a valid pin or group.
+                                                             • INVALID_PARAMETERS: if the input parameters specify incorrect or
+                                                   BE          illegal values.
+                                                             • DENIED: if the calling agent is not allowed to request this pin or group.
+                                                             • IN_USE: if the pin or group is currently under exclusive control of
+                                                               another agent.
+                                                         See Section 3.1.4 for more status code definitions.

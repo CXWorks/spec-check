@@ -28,5 +28,3 @@
                                                                             registered by the Hypervisor on behalf of the VM.
                                                                           • NOT_SUPPORTED: This function is not implemented
                                                                             at this FF-A instance.
-Chapter 13. Setup and discovery interfaces
-13.6. FFA_RXTX_MAP

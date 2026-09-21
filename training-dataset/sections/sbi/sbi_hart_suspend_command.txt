@@ -1,0 +1,14 @@
+9.4. Function: Hart suspend (FID #3)
+  struct sbiret sbi_hart_suspend(uint32_t suspend_type,
+                                 unsigned long resume_addr,
+                                 unsigned long opaque)
+Request the SBI implementation to put the calling hart in a platform specific suspend (or low power) state
+specified by the suspend_type parameter. The hart will automatically come out of suspended state and
+resume normal execution when it receives an interrupt or platform specific hardware event.
+The platform specific suspend states for a hart can be either retentive or non-retentive in nature. A
+retentive suspend state will preserve hart register and CSR values for all privilege modes whereas a non-
+retentive suspend state will not preserve hart register and CSR values.
+Resuming from a retentive suspend state is straight forward and the supervisor-mode software will see SBI
+suspend call return without any failures. The resume_addr parameter is unused during retentive suspend.
+Resuming from a non-retentive suspend state is relatively more involved and requires software to restore
+various hart registers and CSRs for all privilege modes. Upon resuming from non-retentive suspend state,

@@ -1,0 +1,10 @@
+                 3.2.2.6   BASE_DISCOVER_SUB_VENDOR
+                                                     BE            Null terminated ASCII string of up to 16 bytes with a vendor name.
+                 On success, this optional command provides a sub vendor identifier ASCII string.
+                    message_id: 0x4
+                    protocol_id: 0x10
+                    This command is optional.
+                    Return values
+                    Name                                                Description
+                    int32 status                                        See Section 3.1.4 for status code definitions.
+                    uint8 vendor_identifier [16]                        Null terminated ASCII string of up to 16 bytes with a vendor name.

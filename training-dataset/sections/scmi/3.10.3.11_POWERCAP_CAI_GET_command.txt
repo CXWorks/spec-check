@@ -1,0 +1,26 @@
+              3.10.3.11    POWERCAP_CAI_GET
+              This command can be used by an agent to get the value of the currently enforced power capping measurement averaging
+              interval for a domain.
+              ─── Note ─────
+              It is possible for the CAI value returned by this command to be stale by the time the command completes, as another
+              CAI change request could have been initiated and completed in the interim.
+              ─────────────
+                  message_id: 0xE
+                  protocol_id: 0x18
+                  This command is mandatory if any domain supports reading the CAI.
+                  Parameters
+                  Name                               Description
+                  uint32 domain_id                   Identifier for the power capping domain.
+                  uint32 cpli                        Concurrent power limit identifier. Must be set to 0 if the domain does not
+                                                     support CPC.
+                  Return values
+                  Name                               Description
+                  int32 status
+                                                             T0
+                                                     One of, but not limited to, the following:
+                                                         • SUCCESS: if the CAI setting was successfully returned.
+                                                         • NOT_FOUND: if domain_id or cpli are not valid.
+                                                         • NOT_SUPPORTED: if the request is not supported.
+                  uint32 cai
+                                               BE    See Section 3.1.4 for more status code definitions.
+                                                     The power capping averaging interval set for the domain and cpli.

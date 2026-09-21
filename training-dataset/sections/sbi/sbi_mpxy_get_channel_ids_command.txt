@@ -1,0 +1,29 @@
+20.7. Function: Get Channel IDs (FID #2)
+  struct sbiret sbi_mpxy_get_channel_ids(uint32_t start_index)
+Get channel IDs of the message channels accessible to the supervisor software in the shared memory of the
+calling hart. The channel IDs are returned as an array of 32 bits unsigned integers where the start_index
+parameter specifies the array index of the first channel ID to be returned in the shared memory.
+The SBI implementation will return channel IDs in the shared memory of the calling hart as specified by
+the table below:
+                             Table 111. MPXY Channel IDs Shared Memory Layout
+   Offset               Field                                  Description
+   0x0                  REMAINING                              Remaining number of channel IDs.
+   0x4                  RETURNED                               Number of channel IDs (N) returned in the
+                                                               shared memory.
+   0x8                  CHANNEL_ID [start_index + 0]           Channel ID
+   0xC                  CHANNEL_ID [start_index + 1]           Channel ID
+   0x8 + ((N-1) * 4)    CHANNEL_ID [start_index + N - 1]       Channel ID
+The number of channel IDs returned in the shared memory are specified by the RETURNED field whereas the
+REMAINING field specifies the number of remaining channel IDs. If the REMAINING is not 0 then supervisor
+software can call this function again to get remaining channel IDs with start_index passed accordingly.
+The supervisor software may require multiple SBI calls to get the complete list of channel IDs depending
+on the RETURNED and REMAINING fields.
+The sbiret.uvalue is always set to zero whereas the possible error codes returned in sbiret.error are
+below.
+                                  Table 112. MPXY Get Channel IDs Errors
+Error code                         Description
+SBI_SUCCESS                        The channel ID array has been written successfully.
+SBI_ERR_INVALID_PARAM              start_index is invalid.
+SBI_ERR_NO_SHMEM                   The shared memory setup is not done or disabled for the calling hart.
+SBI_ERR_DENIED                     Getting channel ID array is not allowed on the calling hart.
+SBI_ERR_FAILED                     Failed due to other unspecified errors.

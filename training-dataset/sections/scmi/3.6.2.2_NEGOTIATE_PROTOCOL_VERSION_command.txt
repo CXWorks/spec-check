@@ -1,0 +1,23 @@
+                 3.6.2.2   NEGOTIATE_PROTOCOL_VERSION
+                 This command is used to negotiate the protocol version that the agent intends to use, if it does not support the version
+                 returned by the PROTOCOL_VERSION command.
+                 There is no limit on the number of negotiations which can be attempted by the agent. All commands, responses, and
+                 notifications must comply with the protocol version which was last negotiated successfully. Using protocol versions
+                                                                                                      Arm® System Control and Management Interface
+                 different from the version returned by PROTOCOL_VERSION without successful negotiation is considered best effort,
+                 and functionality is not guaranteed.
+                    message_id: 0x10
+                    protocol_id: 0x14
+                    This command is optional but is strongly recommended to be implemented for platforms that intend to support
+                    agents compliant with older versions of this protocol.
+                    Parameters
+                    Name                                   Description
+                    uint32 version                         The negotiated protocol version the agent intends to use.
+                    Return values
+                    Name                                   Description
+                    int32 status                           One of, but not limited to, the following:
+                                                               • SUCCESS: if the negotiated protocol version is supported by the
+                                                                 platform. All commands, responses, and notifications post successful
+                                                                 return of this command must comply with the negotiated version.
+                                                               • NOT_SUPPORTED: if the protocol version is not supported.
+                                                           See Section 3.1.4 for more status code definitions.

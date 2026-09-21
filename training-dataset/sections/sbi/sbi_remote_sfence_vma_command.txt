@@ -1,0 +1,12 @@
+8.2. Function: Remote SFENCE.VMA (FID #1)
+  struct sbiret sbi_remote_sfence_vma(unsigned long hart_mask,
+                                      unsigned long hart_mask_base,
+                                      unsigned long start_addr,
+                                      unsigned long size)
+Instructs the remote harts to execute one or more SFENCE.VMA instructions, covering the range of virtual
+addresses between start_addr and start_addr + size.
+The possible error codes returned in sbiret.error are shown in the Table 10 below.
+                                Table 10. RFENCE Remote SFENCE.VMA Errors
+      Error code                             Description
+      SBI_SUCCESS                            IPI was sent to all the targeted harts successfully.
+      SBI_ERR_INVALID_ADDRESS                start_addr or size is not valid.

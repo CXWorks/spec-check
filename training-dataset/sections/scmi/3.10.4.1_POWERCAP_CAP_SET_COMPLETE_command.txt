@@ -1,0 +1,17 @@
+              3.10.4.1    POWERCAP_CAP_SET_COMPLETE
+              If the agent has changed the power cap asynchronously through POWERCAP_CAP_SET, the platform sends this delayed
+              response to the agent when the power cap setting request has been completed.
+                  message_id: 0x5
+                  protocol_id: 0x18
+                  This command is optional if no domain supports asynchronously setting the power cap.
+                  Parameters
+                  Name                                 Description
+                  int32 status                         One of, but not limited to, the following:
+                                                           • SUCCESS: if power cap was set successfully.
+                                                       Other vendor-specific errors can also be generated depending on the
+                                                       implementation.
+                                                       See Section 3.1.4 for more status code definitions.
+                  uint32 domain_id                     Identifier for the power capping domain.
+                  uint32 power_cap                     The power cap set for the domain.
+                  uint32 cpli                          Concurrent power limit identifier. Must be set to 0 if the domain does not
+                                                       support CPC.

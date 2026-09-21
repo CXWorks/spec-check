@@ -1,0 +1,19 @@
+                 3.4.2.6   SYSTEM_POWER_STATE_GET
+                                                               T0
+                                                 BE
+                 This command must only be available to agents other than a PSCI implementation on systems that implement OSPM
+                 view, as discussed in Section 3.4.1. The command is to get the power state of the system.
+                    message_id: 0x4
+                    protocol_id: 0x12
+                    This command is mandatory in an OSPM view implementation.
+                    Return values
+                    Name                               Description
+                    int32 status                       See Section 3.1.4 for status code definitions.
+                    uint32 system_state                Can be one of:
+                                                       0x0 – System shutdown.
+                                                       0x3 – System power-up.
+                                                       0x4 – System suspend.
+                                                       0x5 – 0x7FFFFFFF
+                                                       Reserved, must not be used.
+                                                       0x80000000 – 0xFFFFFFFF
+                                                       Available for vendor-defined states.

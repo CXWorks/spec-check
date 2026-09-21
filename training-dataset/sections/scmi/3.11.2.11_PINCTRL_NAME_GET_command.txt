@@ -1,0 +1,47 @@
+              3.11.2.11    PINCTRL_NAME_GET
+              This command returns the extended name associated with a pin, group, or function.
+              A caller can discover if this command is implemented by issuing the PROTOCOL_MESSAGE_ATTRIBUTES command
+                                                                 T0
+              and passing the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES
+              returns SUCCESS.
+                  message_id: 0x9
+                  protocol_id: 0x19                BE
+                  This command is mandatory only if extended name is supported.
+                  Extended name is supported when Bit[31] of attributes field of the response to PINCTRL_ATTRIBUTES
+                  command is set to 1. Refer to Section 3.11.2.5 for more details.
+                  Parameters
+                  Name                                   Description
+                  uint32 identifier                      Identifier for the pin, group, or function.
+                                                         Identifiers are limited to 16 bits, and the upper 16 bits of this field are ignored
+                                                         by the platform.
+                  uint32 flags                           Bits[31:2]
+                                                         Reserved, must be zero.
+                                                         Bits[1:0]
+                                                         Selector: Whether the identifier field selects a pin, a group, or a function.
+                                                              • 0 – Pin
+                                                              • 1 – Group
+                                                              • 2 – Function
+                                                         All other values are reserved for future use.
+                  Return values
+                  Name                                   Description
+                                                                                                    Arm® System Control and Management Interface
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: if valid extended name is returned.
+                                                             • NOT_FOUND: if the identifier field pertains to a non-existent pin, group,
+                                                               or function.
+                                                         See Section 3.1.4 for more status code definitions.
+                  uint32 flags                           Bits[31:0]
+                                                         Reserved, must be zero.
+                  uint8 name[64]                         Null-terminated ASCII string of up to 64 bytes in length describing the
+                                                         extended pin, group, or function name.
+                                                         Recommended naming convention:
+                                                              • Pins names start with “pin_”, and end with the pin identification in
+                                                                 alphanumeric format. An example of a pin name is “pin_x1”.
+                                                              • Group names start with “grp_”, followed by a constricted description of
+                                                                 the group in alphanumeric format interspersed by ‘_’. An example of a
+                                                                 group name is “grp_uart_a_rxtx_1”.
+                                                              • Function names start with “f_”, followed by a constricted description of
+                                                                 the function in alphanumeric format interspersed by ‘_’. An example of
+                                                                 a function name is “f_uart_a”.
+                                                         NOTE: General purpose IO (GPIO) function and group names should include
+                                                         'gpio' in the descriptive literal. An example is “f_gpio”.

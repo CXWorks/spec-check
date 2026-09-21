@@ -38,8 +38,6 @@
            2                          Secure physical                            ERET
            3                          Non-secure virtual                         SMC, HVC, ERET
            4                          Secure virtual                             SMC, HVC, SVC, ERET
-Chapter 14. CPU cycle management interfaces
-14.3. FFA_RUN
                                                                                         Table 14.13: FFA_RUN function syntax
            Parameter                                Register         Value
            uint32 Function ID                       w0                   • 0x8400006D.
@@ -66,5 +64,3 @@ Chapter 14. CPU cycle management interfaces
                                                                            and has aborted.
                                                                          • NOT_READY: Receiver endpoint is not ready to
                                                                            handle this request.
-Chapter 14. CPU cycle management interfaces
-14.4. FFA_INTERRUPT

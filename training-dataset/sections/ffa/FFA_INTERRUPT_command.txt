@@ -32,8 +32,6 @@
                     3. An example of this usage is illustrated in Figure 9.3.
                2. FFA_INTERRUPT is used with the ERET conduit by the Hypervisor, SPMC or the SPMD to inform a callee
                   in the blocked runtime state that its request was preempted by an interrupt.
-Chapter 14. CPU cycle management interfaces
-14.4. FFA_INTERRUPT
                     1. The callee had entered the blocked runtime state after requesting a partition to do work on its behalf e.g
                        through an invocation of a Direct request interface.
                     2. The partition manager returns the ID of the partition and its vCPU or execution context that was doing
@@ -61,5 +59,3 @@ Chapter 14. CPU cycle management interfaces
                         2. EL3 SPMC and a logical S-EL1 SP at the Secure physical FF-A instance.
                         3. Hypervisor and a VM at the Non-secure virtual FF-A instance.
                         4. SPMC and an SP at the Secure virtual FF-A instance.
-Chapter 14. CPU cycle management interfaces
-14.5. FFA_NORMAL_WORLD_RESUME

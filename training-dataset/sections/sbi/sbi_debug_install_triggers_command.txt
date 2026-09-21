@@ -1,0 +1,23 @@
+19.4. Function: Install triggers (FID #3)
+  struct sbiret sbi_debug_install_triggers(unsigned long trig_count)
+Install debug triggers based on an array of trigger configurations in the shared memory of the calling hart.
+The trig_idx assigned to each installed trigger configuration is written back in the shared memory.
+The trig_count parameter represents the number of trigger configuration entries in the shared memory at
+offset 0x0.
+The i’th trigger configuration at offset = i * (XLEN / 2) in the shared memory consists of four
+consecutive XLEN-bit words in little-endian format which are organized as follows:
+         word[0] = `trig_idx` written back by the SBI implementation
+         word[1] = `trig_tdata1` read by the SBI implementation
+         word[2] = `trig_tdata2` read by the SBI implementation
+         word[3] = `trig_tdata3` read by the SBI implementation
+The SBI implementation MUST consider trigger configurations in the increasing order of the array index
+and starting with array index 0. To install a debug trigger for the trigger configuration at array index i in
+the shared memory, the SBI implementation MUST do the following:
+ 1. Map an unused HW debug trigger which matches the trigger configuration to an an unused trig_idx.
+ 2. Save a copy of the trig_tdata1.vs, trig_tdata1.vu, trig_tdata1.s, and trig_tdata.u bits in
+    trig_state.
+ 3. Update the tdata1, tdata2, and tdata3 CSRs of the HW debug trigger.
+ 4. Write trig_idx at offset = i * (XLEN / 2) in the shared memory.
+Additionally for each trigger configuration chain in the shared memory, the SBI implementation MUST
+assign contiguous trig_idx values and contiguous HW debug triggers when installing the trigger
+configuration chain.

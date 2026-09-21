@@ -1,0 +1,68 @@
+              3.11.2.8        PINCTRL_SETTINGS_CONFIGURE
+              This command can be used by an agent to set the pin or group configuration, and the function selected to be enabled by
+              the pin or group.
+              The command allows multiple configurations for the pin or group to be set in a single call. It might not be possible to set
+              all the configuration associated with the pin or group with just one call due to transport limitations. To solve this problem,
+              the agent should make multiple calls sending as many configurations as the transport allows in each call.
+                  message_id: 0x6
+                  protocol_id: 0x19
+                  This command is mandatory.
+                  Parameters
+                                                                  T0
+                  Name
+                  uint32 identifier
+                                                    BE    Description
+                                                          Identifier for the pin or group.
+                  uint32 function_id                      Identifier for the function selected to be enabled for the selected pin or group.
+                                                          This field is set to 0xFFFFFFFF if no function should be enabled by the pin
+                                                          or group.
+                                                          This value of this field is ignored by the platform if Bit[10] of the attributes field
+                                                          is set to 0.
+                                                                                                    Arm® System Control and Management Interface
+                  uint32 attributes                      Bits[31:11]
+                                                         Reserved, must be zero.
+                                                         Bit[10]
+                                                         function_id valid.
+                                                              • When set to 0, the function selection for the pin or group does not need
+                                                                 to change. The platform ignores the value of the function_id field.
+                                                              • When set to 1, the function selection for the pin or group needs to
+                                                                 change and is specified by the function_id field.
+                                                         Bits[9:2]
+                                                         Number of configurations to set.
+                                                         The maximum value of this field is limited by the transport used. The agent
+                                                         needs to specify this field such that the entire command can be
+                                                         accommodated within the transport chosen.
+                                                         This field is set to 0 if no configurations need to be set. If this field is set to 0,
+                                                         Bit[10] must not be 0.
+                                                         Bits[1:0]
+                                                         Selector: Whether the identifier field refers to a pin or a group.
+                                                              • 0 – Pin
+                                                              • 1 – Group
+                                                         All other values are reserved for future use.
+                  {uint32, uint32} configs [N]           Array of configs to set, sorted in numerically increasing config type order.
+                                                         N is specified by Bits[9:2] of the attributes field.
+                                                         Each array entry is composed of two 32-bit words in the following format:
+                                                                 T0
+                                                         uint32 entry[0] type
+                                                                Bits[31:8]
+                                                                      Reserved, must be zero
+                                                   BE           Bits[7:0] config_type
+                                                                      The type of config as described in Table 27.
+                                                         uint32 entry[1] config_value
+                                                                The configuration value.
+                  Return values
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: if the pin or group configuration, and the function selection
+                                                               was successfully set.
+                                                             • NOT_FOUND: if identifier field does not point to a valid pin or group.
+                                                             • INVALID_PARAMETERS: if the input parameters specify incorrect or
+                                                               illegal values.
+                                                             • NOT_SUPPORTED: if the configuration requested by this command is
+                                                               not supported by the pin or group.
+                                                             • DENIED: if the calling agent is not allowed to set the configuration of
+                                                               this pin or group.
+                                                             • IN_USE: if the pin or group is currently in use by another agent.
+                                                             • PROTOCOL_ERROR: if the platform detects that the number of
+                                                               configurations sent exceeds transport capacity.
+                                                         See Section 3.1.4 for more status code definitions.

@@ -1,0 +1,9 @@
+14.4. Function: Write to CPPC register (FID #3)
+  struct sbiret sbi_cppc_write(uint32_t cppc_reg_id, uint64_t val)
+Writes the value passed in the val parameter to the register as specified in the cppc_reg_id parameter.
+The possible error codes returned in sbiret.error are shown in Table 62.
+                                         Table 62. CPPC Write Errors
+Error code                          Description
+SBI_SUCCESS                         Write completed successfully.
+SBI_ERR_INVALID_PARAM               cppc_reg_id is reserved.
+SBI_ERR_NOT_SUPPORTED               cppc_reg_id is not implemented by the platform.

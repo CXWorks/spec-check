@@ -1,0 +1,68 @@
+              3.12.4.8    TELEMETRY_DE_CONFIGURE
+              This command enables or disables DEs or event groups. If an event group is specified, then the platform must apply the
+              configuration to either all or none of the DEs in the event group. If the agent requests to enable an already enabled DE,
+              or disable an already disabled DE, the platform returns SUCCESS along with the other relevant information.
+                  message_id: 0x6
+                  protocol_id: 0x1B
+                  This command is mandatory.
+                                                                 T0
+                  Parameters
+                  Name
+                                                   BE   Description
+                  uint32 identifier                     Identifier for the DE or the event group.
+                  uint32 flags                          Bits[31:4]
+                                                        Reserved, must be zero.
+                                                        Bit[3]
+                                                        Selector. Whether the identifier field refers to a DE or an event group.
+                                                        0 – DE
+                                                        1 – Event group
+                                                        Bit[2]
+                                                        Disable all DEs and groups.
+                                                             • If set to 1, all DEs and groups should be disabled. The identifier field is
+                                                                ignored by the platform. Any data associated with the DEs or groups
+                                                                might be lost.
+                                                        Bits[1:0]
+                                                        DE Mode
+                                                             • If set to 0, the DE or group specified by the identifier field is disabled.
+                                                             • If set to 1, the DE or group specified by the identifier field is enabled
+                                                               without timestamps.
+                                                             • If set to 2, the DE or group specified by the identifier field is enabled
+                                                               with timestamps.
+                                                        All other values are reserved for future use.
+                                                        This field must be set to 0, if Bit[2] is set to 1.
+                                                                                                  Arm® System Control and Management Interface
+                  Return values
+                  Name                                Description
+                  int32 status                        One of, but not limited to, the following:
+                                                         • SUCCESS: if the DE or event_group was successfully configured.
+                                                         • INVALID_PARAMETERS: if the input parameters specify incorrect or
+                                                            illegal values.
+                                                         • IN_USE: if the DE or event group is already in use. This can happen
+                                                            when trying to enable an event group with an associated DE already
+                                                            enabled, or when trying to disable a DE which had been enabled as
+                                                            part of an event group configuration. The agent should take the
+                                                            necessary corrective action before re-issuing the command.
+                                                            It is IMPLEMENTATION DEFINED whether this error occurs or not.
+                                                         • OUT_OF_RANGE: If the total number of DEs or event groups enabled
+                                                            has reached a maximum limit according to platform capability.
+                  uint32 SHMTI_id                     SHMTI ID where the DE or the event group is allocated upon enabling.
+                                                      This field is optional and is set to 0xFFFFFFFF if any of the following are true:
+                                                          • no DE or event group is being enabled.
+                                                          • No SHMTI is supported.
+                                                          • SHMTI is not used for this DE or event group. This could be the case
+                                                              for example, if this DE is associated with a FastChannel.
+                                                          • the platform does not support returning this information.
+                  uint32 SHMTI_de_offset                       T0
+                                                      Offset, in bytes, from the beginning of the SHMTI (including the Prologue) to
+                                                      the start of the DE Line-Metadata.
+                                                      If an event group was specified, then this field refers to the DE in the event
+                  uint32 blk_ts_offset
+                                                 BE   group which has the smallest offset within the SHMTI.
+                                                      The agent should ignore this field if the SHMTI_id field is set to 0xFFFFFFFF.
+                                                      Offset, in bytes, from the beginning of the SHMTI (including the Prologue) to
+                                                      the start of the Block Timestamp line associated with this DE.
+                                                      This field is set to 0 if either timestamps are not enabled or the DE does not
+                                                      use block timestamps.
+                                                      This field should be compliant with the requirements for block timestamp lines
+                                                      which can be found in Table 28.
+                                                      The agent should ignore this field if the SHMTI_id field is set to 0xFFFFFFFF.

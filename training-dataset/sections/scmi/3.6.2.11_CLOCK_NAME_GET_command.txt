@@ -1,0 +1,21 @@
+              3.6.2.11   CLOCK_NAME_GET
+              This command returns the extended name associated with a specific clock device.
+                  message_id: 0x8
+                  protocol_id: 0x14
+                  This command is mandatory only if extended clock name is supported.
+                  Extended clock name is supported when Bit[29] of attributes field of CLOCK_ATTRIBUTES command is set to 1.
+                  Refer to Section 3.6.2.5 for more details.
+                  Parameters
+                                                                                                  Arm® System Control and Management Interface
+                  Name                                 Description
+                  uint32 clock_id                      Identifier for the clock device.
+                  Return values
+                  Name                                 Description
+                  int32 status                         One of, but not limited to, the following:
+                                                           • SUCCESS: if valid clock extended name is returned.
+                                                           • NOT_FOUND: if clock_id pertains to a non-existent clock.
+                                                       See Section 3.1.4 for more status code definitions.
+                  uint32 flags                         Bits[31:0]
+                                                       Reserved, must be zero.
+                  uint8 name[64]                       Null-terminated ASCII string of up to 64 bytes in length describing the clock
+                                                       extended name.

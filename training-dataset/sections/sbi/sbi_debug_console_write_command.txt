@@ -1,0 +1,21 @@
+12.1. Function: Console Write (FID #0)
+  struct sbiret sbi_debug_console_write(unsigned long num_bytes,
+                                        unsigned long base_addr_lo,
+                                        unsigned long base_addr_hi)
+Write bytes to the debug console from input memory.
+The num_bytes parameter specifies the number of bytes in the input memory. The physical base address of
+the input memory is represented by two XLEN bits wide parameters. The base_addr_lo parameter
+specifies the lower XLEN bits and the base_addr_hi parameter specifies the upper XLEN bits of the input
+memory physical base address.
+This is a non-blocking SBI call and it may do partial/no writes if the debug console is not able to accept
+more bytes.
+The number of bytes written is returned in sbiret.uvalue and the possible error codes returned in
+sbiret.error are shown in Table 50 below.
+                                            Table 50. Debug Console Write Errors
+       Error code                                    Description
+       SBI_SUCCESS                                   Bytes written successfully.
+       SBI_ERR_INVALID_PARAM                         The memory pointed to by the num_bytes, base_addr_lo,
+                                                     and base_addr_hi parameters does not satisfy the
+                                                     requirements described in the Section 3.2
+       SBI_ERR_DENIED                                Writes to the debug console is not allowed.
+       SBI_ERR_FAILED                                Failed to write due to I/O errors.

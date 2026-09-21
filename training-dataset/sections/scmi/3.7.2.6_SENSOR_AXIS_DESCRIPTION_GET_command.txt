@@ -1,0 +1,107 @@
+              3.7.2.6    SENSOR_AXIS_DESCRIPTION_GET
+              This command is used for the discovery of the sensor axis properties. On success, it returns an array of Sensor Axis
+              Descriptors as described in Sensor Axis Descriptor.
+              Sensor axis descriptors should be reported in the normative order of axes. For example, a triaxial accelerometer should
+              return its axis descriptors ordered as x, y, and z.
+                  message_id: 0x7
+                  protocol_id: 0x15
+                  This command is mandatory for sensors providing measurements along axis only.
+                  Parameters
+                  Name                                                 Description
+                  uint32 sensor_id                                     Identifier for the sensor.
+                  uint32 axis_desc_index                               Index of the first sensor axis descriptor to be read in the sensor
+                                                                       axis descriptor array.
+                  Return values
+                  Name                                                 Description
+                  int32 status
+                                                                T0     One of, but not limited to, the following:
+                                                                           • SUCCESS: if valid sensor axis descriptors were returned.
+                                                                           • NOT_FOUND: if sensor_id does not point to a valid
+                                                  BE                         sensor.
+                                                                           • NOT_SUPPORTED: if the sensor does not report values
+                                                                             along axis.
+                                                                       See Section 3.1.4 for more status code definitions.
+                  uint32 num_axis_flags                                Bits[31:26]
+                                                                       Number of remaining sensor axis descriptors.
+                                                                       Bits[25:6]
+                                                                       Reserved, must be zero.
+                                                                       Bits[5:0]
+                                                                       Number of sensor axis descriptors that are returned by this
+                                                                       current call.
+                  SENSOR_AXIS_DESC desc[N]                             An array of sensor axis descriptors of format described in
+                                                                       Sensor Axis Descriptor. N is specified by Bits[5:0] of
+                                                                       num_axis_flags field.
+              Sensor Axis Descriptor
+              The SENSOR_AXIS_DESC structure describes the sensor axis properties, such as the axis identifier for the sensor, its
+              name, reading types and other characteristics.
+                  uint32 axis_id                                     Identifier for the axis of the sensor.
+                                                                                                  Arm® System Control and Management Interface
+                  uint32 axis_attributes_low                        Bits[31:8]
+                                                                    Reserved.
+                                                                    Bit[9]
+                                                                    Extended axis name.
+                                                                         • If set to 1, the axis name is greater than 16 bytes. The
+                                                                           extended axis name is provided by
+                                                                           SENSOR_AXIS_NAME_GET command which is described
+                                                                           in Section 3.7.2.15.
+                                                                         • If set to 0, extended axis name is not supported.
+                                                                    Bit[8]
+                                                                    Extended attributes support:
+                                                                         • If this flag is set to 1, the sensor reports extended attributes
+                                                                           for this axis after the name field.
+                                                                         • If this flag is set to 0, the sensor does not report extended
+                                                                           attributes for this axis. Fields beyond name are not
+                                                                           allocated by the platform.
+                                                                    Bits[7:0]
+                                                                    Reserved.
+                  uint32 axis_attributes_high                       Bits[31:16]
+                                                                    Reserved.
+                                                                    Bits[15:11]
+                                                                    Exponent: The power-of-10 multiplier in two’s-complement format
+                                                                    that is applied to the sensor unit specified by the SensorType field.
+                                                               T0   Bits[10:8]
+                                                                    Reserved.
+                                                                    Bits[7:0]
+                  uint8 name[16]
+                                                 BE                 SensorType: The type of sensor axis and the measurement
+                                                                    system it implements, as described in Table 19.
+                                                                    A NULL terminated UTF-8 format string with the sensor axis
+                                                                    name, of up to 16 bytes. When Bit[9] of axis_attributes_low field is
+                                                                    set to 1, this field contains the lower 15 bytes of the NULL
+                                                                    terminated axis name.
+                                                                    It is recommended that the name ends with ‘_’ followed by the
+                                                                    axis of the sensor in uppercase. For example, the name for the
+                                                                    x-axis of a triaxial accelerometer could be “acc_X” or “_X”.
+                  uint32                                            Bits[31:27]
+                  axis_resolution                                   Exponent: The power-of-10 multiplier in two’s-complement format
+                                                                    that is applied to the Res field.
+                                                                    Bits[26:0]
+                                                                    Res: The resolution of the sensor axis.
+                                                                    This is an extended attribute field. It reports the resolution of the
+                                                                    sensor axis. The representation is in [res] x 10[exponent] format, in
+                                                                    units specified by SensorType. SensorType is reported by
+                                                                    Bits[7:0] of axis_attributes_high field.
+                                                                    If the sensor does not report the resolution for this axis, this field
+                                                                    must be set to 0x0.
+                                                                    This field is present only if Bit[8] of axis_attributes_low is set to 1.
+                                                                                                   Arm® System Control and Management Interface
+                  int32 axis_min_range_low                           Lower 32 bits of the minimum value that can be measured by this
+                                                                     axis.
+                                                                     If the sensor does not report the minimum range for this axis, this
+                                                                     field must be set to 0x0.
+                                                                     This field is present only if Bit[8] of axis_attributes_low is set to 1.
+                  int32 axis_min_range_high                          Higher 32 bits of the minimum value that can be measured by this
+                                                                     axis.
+                                                                     If the sensor does not report the minimum range for this axis, this
+                                                                     field must be set to 0x80000000.
+                                                                     This field is present only if Bit[8] of axis_attributes_low is set to 1.
+                  int32 axis_max_range_low                           Lower 32 bits of the maximum value that can be measured by this
+                                                                     axis.
+                                                                     If the sensor does not report the maximum range for this axis, this
+                                                                     field must be set to 0xFFFFFFFF.
+                                                                     This field is present only if Bit[8] of axis_attributes_low is set to 1.
+                  int32 axis_max_range_high                          Higher 32 bits of the maximum value that can be measured by this
+                                                                     axis.
+                                                                     If the sensor does not report the maximum range for this axis, this
+                                                                     field must be set to 0x7FFFFFFF.
+                                                                     This field is present only if Bit[8] of axis_attributes_low is set to 1.

@@ -1,0 +1,10 @@
+17.16. Function: Mask software events on a hart (FID #9)
+  struct sbiret sbi_sse_hart_mask(void)
+Stop receiving (or mask) software events on the calling hart. In other words, the calling hart will no longer
+be ready to receive software events from the SBI implementation.
+In case of an error, possible error codes are listed in Table 89 below.
+                                         Table 89. SSE Hart Mask Errors
+      Error code                              Description
+      SBI_SUCCESS                             Software events masked successfully on the calling hart.
+      SBI_ERR_ALREADY_STOPPED                 Software events were already masked on the calling hart.
+      SBI_ERR_FAILED                          The request failed for unspecified or unknown other reasons.

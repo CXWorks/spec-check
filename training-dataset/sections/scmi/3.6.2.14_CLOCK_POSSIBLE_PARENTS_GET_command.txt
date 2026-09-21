@@ -1,0 +1,45 @@
+              3.6.2.14   CLOCK_POSSIBLE_PARENTS_GET
+                                                               T0
+              This command allows the calling agent to get all the possible parents of a clock device. However, there can be only one
+              parent actively associated with a clock device at any point in time.
+                                                 BE
+              This command is useful in constructing a clock topology when changing the parent clock of a clock device is sometimes
+              required due to implementation defined considerations like jitter, power, or other factors. Section 3.6.2.15 specifies the
+              command to change the parent of a clock device.
+              Sometimes it might not be possible to return the complete list of all possible parents in one call due to transport size
+              limitations. To solve this problem, the interface allows multiple calls.
+              The call also provides the number of parents which it was unable to return. The size of the array returned depends on
+              the number of return values that a given transport can support.
+              The parents returned by this call should be in numeric ascending order of their identifiers.
+                  message_id: 0xC
+                  protocol_id: 0x14
+                  This command is mandatory if for any clock device, Bit[28] of the attributes field as returned by the
+                  CLOCK_ATTRIBUTES command is set to 1.
+                  Parameters
+                  Name                                 Description
+                  uint32 clock_id                      Identifier for the clock device.
+                  uint32 skip_parents                  The number of parents to skip over, before returning the first possible parent
+                                                       in the return parent array.
+                  Return values
+                  Name                                 Description
+                                                                                                   Arm® System Control and Management Interface
+                  int32 status                          One of, but not limited to, the following:
+                                                            • SUCCESS: if the possible clock parents have been successfully
+                                                              returned.
+                                                            • NOT_FOUND: if the clock identified by clock_id does not exist.
+                                                            • OUT_OF_RANGE: if the skip_parents parameter is outside of the valid
+                                                              range.
+                                                            • NOT_SUPPORTED: if advertising the parents for the clock specified by
+                                                              clock_id is not supported.
+                                                            • DENIED: if the calling agent is not allowed to get the possible parents.
+                                                        See Section 3.1.4 for more status code definitions.
+                  uint32 flags                          Descriptor for the parents supported by this clock device.
+                                                        Bits[31:24]
+                                                        Number of remaining parents.
+                                                        Bits[23:8]
+                                                        Reserved, must be zero.
+                                                        Bits[7:0]
+                                                        Number of parent clock identifiers that are returned by this call.
+                  uint32 possible parents[N]            Array of possible parent clocks listed in numeric ascending order of their
+                                                        identifiers.
+                                                        N is specified by Bits[7:0] of num_parents_flags field.

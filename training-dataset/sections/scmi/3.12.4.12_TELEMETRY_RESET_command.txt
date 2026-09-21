@@ -1,0 +1,16 @@
+              3.12.4.12    TELEMETRY_RESET
+              This command is used to reset the entire telemetry infrastructure, including all configuration and accumulated DE data.
+                                                                                                  Arm® System Control and Management Interface
+                  message_id: 0xA
+                  protocol_id: 0x1B
+                  This command is mandatory if Bit[17] of attributes_1 field in PROTOCOL_ATTRIBUTES command is set to 1.
+                  Parameters
+                  Name                                Description
+                  int32 flags                         Reserved, must be zero.
+                  Return values
+                  Name                                Description
+                  int32 status                        One of, but not limited to, the following:
+                                                         • SUCCESS: if telemetry was succesfully reset.
+                                                         • INVALID_PARAMETERS: if the input parameters specify incorrect or
+                                                            illegal values.
+                                                         • DENIED: If the calling agent is not allowed to perform this action.

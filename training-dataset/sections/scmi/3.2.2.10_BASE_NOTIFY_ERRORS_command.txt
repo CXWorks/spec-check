@@ -1,0 +1,31 @@
+                 3.2.2.10   BASE_NOTIFY_ERRORS
+                 An implementation can optionally provide notifications of errors in the platform to an agent that has registered through this
+                 command. A caller can discover if this command is implemented by issuing the PROTOCOL_MESSAGE_ATTRIBUTES
+                 command and passing the message_id of this command.
+                 If the command is implemented, then the PROTOCOL_MESSAGE_ATTRIBUTES returns SUCCESS.
+                 Error notification is used to notify agents of commands that could not proceed due to unpredictable circumstances,
+                 such as internal hardware errors. Further information on the error notification and associated payload is provided in
+                 Section 3.2.3.1, which describes the BASE_ERROR_EVENT notification.
+                    message_id: 0x8
+                    protocol_id: 0x10
+                    This command is optional.
+                    Parameters
+                    Name
+                                                                 T0
+                                                         Description
+                    uint32 notify_enable           BE    Bits[31:1]
+                                                         Reserved, must be zero.
+                                                         Bit[0]
+                                                         Notify enable:
+                                                              • If this value is 0, the platform does not send any
+                                                                BASE_ERROR_EVENT messages to the calling agent.
+                                                              • If this value is 1, the platform sends BASE_ERROR_EVENT messages
+                                                                to the calling agent when an error is detected.
+                                                         For details on BASE_ERROR_EVENT notification, see Section 3.2.3.1.
+                    Return values
+                    Name                                 Description
+                    int32 status                         One of, but not limited to, the following:
+                                                             • SUCCESS.
+                                                             • INVALID_PARAMETERS: if notify_enable contains illegal or incorrect
+                                                               values.
+                                                         See Section 3.1.4 for more status code definitions.

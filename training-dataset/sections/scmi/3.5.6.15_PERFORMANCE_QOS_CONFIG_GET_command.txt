@@ -1,0 +1,29 @@
+                 3.5.6.15      PERFORMANCE_QOS_CONFIG_GET
+                 This command allows an agent to obtain the current QoS configuration for the domain, associated with one of the domain’s
+                 supported QoS capabilities.
+                 ─── Note ────────────────
+                 It is possible for the qos_value returned by this command to be stale by the time the command completes, as another
+                 QoS value change request could have been initiated and completed in the interim.
+                 ─────────────────────────────────────
+                                                                                                      Arm® System Control and Management Interface
+                    message_id: 0x21
+                    protocol_id: 0x13
+                    This command is mandatory if QoS capabilities are supported by the platform.
+                    Parameters
+                    Name                                   Description
+                    uint32 domain_id                       Identifier for the performance domain.
+                    uint32 capability                      QoS capability, as described by Table 14. Only one QoS capability Type bit
+                                                           can be set. At most one QoS capability Subtype bit can be set.
+                    Return values
+                    Name                                   Description
+                    int32 status                           One of, but not limited to, the following:
+                                                               • SUCCESS: if the QoS value was returned successfully.
+                                                               • NOT_FOUND: if the domain_id parameter does not point to a valid
+                                                                 domain or if the capability does not point to a valid capability of that
+                                                                 domain.
+                                                               • INVALID_PARAMETERS: if the capability field has multiple Type or
+                                                                 Subtype bits set.
+                                                           See Section 3.1.4 for more status code definitions.
+                    uint32 qos_value                       The QoS configuration of the performance domain, associated with the given
+                                                                   T0
+                                                           QoS capability.

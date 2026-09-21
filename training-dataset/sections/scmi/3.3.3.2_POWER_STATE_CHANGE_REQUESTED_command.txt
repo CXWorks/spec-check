@@ -1,0 +1,14 @@
+                 3.3.3.2   POWER_STATE_CHANGE_REQUESTED
+                 An agent might have registered, via POWER_STATE_CHANGE_REQUESTED_NOTIFY, to receive notifications when
+                 the platform receives a request from a different agent to change the power state of a power domain. The platform sends
+                 this notification to the interested agent when such a request is received by it.
+                 For more details on how POWER_STATE_CHANGE_REQUESTED notifications can be used, see Section 3.3.2.9.
+                    message_id: 0x1
+                    protocol_id: 0x11
+                    This command is optional.
+                    Parameters
+                    Name                                 Description
+                    uint32 agent_id                      Identifier of the agent that requested the power transition.
+                    uint32 domain_id                     Identifier of the power domain whose power state change is being requested.
+                    uint32 power_state                   The power state requested.
+                                                                                                   Arm® System Control and Management Interface

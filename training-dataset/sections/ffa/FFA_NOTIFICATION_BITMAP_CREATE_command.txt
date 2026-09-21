@@ -31,8 +31,6 @@
                                                                          • Bits[8:0]: Number of SP notifications i allocated for
                                                                            the VM where,
                                                                               – Total notification count = i + 64.
-Chapter 16. Notification interfaces
-16.1. FFA_NOTIFICATION_BITMAP_CREATE
                                                                                        Table 16.5: Encoding of return codes
            Parameter                              Register         Value
            int32 Error code                       w2                   • INVALID_PARAMETERS: Unrecognized VM ID.
@@ -41,5 +39,3 @@ Chapter 16. Notification interfaces
                                                                        • DENIED: Notification bitmap is already created.
                                                                        • NO_MEMORY: There is not enough memory to
                                                                          allocate notification bitmap.
-Chapter 16. Notification interfaces
-16.2. FFA_NOTIFICATION_BITMAP_DESTROY

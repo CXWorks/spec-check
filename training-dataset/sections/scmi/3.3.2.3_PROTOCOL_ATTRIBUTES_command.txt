@@ -1,0 +1,27 @@
+                 3.3.2.3   PROTOCOL_ATTRIBUTES
+                 This command returns the implementation details associated with this protocol.
+                    message_id: 0x1
+                    protocol_id: 0x11
+                    This command is mandatory.
+                    Return values
+                    Name                                      Description
+                    int32 status                              See Section 3.1.4 for status code definitions.
+                    uint32 attributes                         Bits[31:16]
+                                                              Reserved, must be zero.
+                                                              Bits[15:0]
+                                                              Number of power domains.
+                                                                                                      Arm® System Control and Management Interface
+                    uint32 statistics_address_low             The lower 32 bits of the physical address where the statistics shared
+                                                              memory region is located. This value should be 64-bit aligned. The
+                                                              address must be in the memory map of the calling agent. This field is
+                                                              invalid and must be ignored if the statistics_len field is set to 0. The
+                                                              statistics shared memory region is described in Section 3.3.4.
+                    uint32 statistics_address_high            The upper 32 bits of the physical address where the statistics shared
+                                                              memory region is located. The address must be in the memory map of the
+                                                              calling agent. This field is invalid and must be ignored if the statistics_len
+                                                              field is set to 0. The statistics shared memory region is described in
+                                                              Section 3.3.4.
+                    uint32 statistics_len                     The length in bytes of the statistics shared memory region. A value of 0 in
+                                                              this field indicates that the platform doesn’t support the statistics shared
+                                                              memory region.
+                 Note: Statistics capability has been marked for deprecation and is being replaced by system telemetry.

@@ -23,8 +23,6 @@
             uint32 Receiver ID                        w1                   • Receiver endpoint and vCPU ID.
                                                                                – Bit[31:16]: Receiver vCPU ID.
                                                                                – Bit[15:0]: Receiver endpoint ID.
-Chapter 16. Notification interfaces
-16.6. FFA_NOTIFICATION_GET
             Parameter                                 Register         Value
             uint32 Flags                              w2                   • Bit[0]: Receiver’s SP notifications bitmap identifier.
                                                                                 – b’1: Return bitmap for notifications pended by
@@ -64,8 +62,6 @@ Chapter 16. Notification interfaces
                                                                                    position is not pending for the Receiver.
                                                                            • Caller must ignore this field if Bit[0] in the Flags field
                                                                              was not set.
-Chapter 16. Notification interfaces
-16.6. FFA_NOTIFICATION_GET
             Parameter                                 Register         Value
             uint32 SP Notifications bitmap            w3                   • Bits[63:32] of the SP notifications bitmap with one or
                                                                              more set bits to identify the notifications which are
@@ -113,8 +109,6 @@ Chapter 16. Notification interfaces
                                                                              notifications regarding events in the normal world.
                                                                            • Caller must ignore this field if Bit[3] in the Flags field
                                                                              was not set.
-Chapter 16. Notification interfaces
-16.6. FFA_NOTIFICATION_GET
                                                                                               Table 16.26: FFA_ERROR encoding
             Parameter                                 Register         Value
             int32 Error code                          w2                   • INVALID_PARAMETERS: Unrecognized partition
@@ -122,5 +116,3 @@ Chapter 16. Notification interfaces
                                                                            • DENIED: Caller is not allowed to invoke this ABI.
                                                                            • NOT_SUPPORTED: This function is not implemented
                                                                              at this FF-A instance.
-Chapter 16. Notification interfaces
-16.7. FFA_NOTIFICATION_BIND2

@@ -37,8 +37,6 @@
                                                                              16.5.1 Delay Schedule Receiver interrupt flag.
                                                                            • Bit[15:2]: Reserved (MBZ).
                                                                            • Bit[63:16]: Receiver vCPU ID when Bit[0] is 1.
-Chapter 16. Notification interfaces
-16.9. FFA_NOTIFICATION_SET2
             Parameter                                 Register         Value
             uint64 Notification bitmap                x3-x8                • Bits[b:0] of a bitmap with one or more set bits to
                                                                              identify the notifications which must be signaled to the
@@ -82,5 +80,3 @@ Chapter 16. Notification interfaces
                                                                                  – Receiver does not support receipt of notifications.
                                                                            • ABORTED: Receiver partition ran into an unexpected
                                                                              error and has aborted.
-Chapter 16. Notification interfaces
-16.10. FFA_NOTIFICATION_GET2

@@ -1,0 +1,55 @@
+              3.7.2.12   SENSOR_READING_GET
+              This command requests the platform to provide the current value of the sensor that is represented by sensor_id. The
+              sensor should be in enabled state before using this command. For synchronous mode of access, the platform provides
+              the sensor reading in the response to this command itself. For asynchronous accesses, the platform returns the sensor
+              value in the SENSOR_READING_COMPLETE delayed response.
+              When the platform notices failure or fault conditions in the sensor or its associated logic or circuitry, it returns the
+              HARDWARE_ERROR status. Other errors pertain to the interface itself and are enumerated in Section 3.1.4.
+              Agents should assess the sensor attributes to determine the optimal mode of access for the sensor. A slow sensor like
+                                                                                                   Arm® System Control and Management Interface
+              a temperature sensor can be more optimally read asynchronously, while a shared memory-based sensor can be read
+              synchronously.
+                  message_id: 0x6
+                  protocol_id: 0x15
+                  This command is mandatory.
+                  Parameters
+                  Name                                         Description
+                  uint32 sensor_id                             The identifier for the sensor to be read.
+                  uint32 flags                                 Bits[31:1]
+                                                               Reserved.
+                                                               Bit[0]
+                                                               Async flag:
+                                                                    • Set to 1 if the sensor is to be read asynchronously.
+                                                                    • Set to 0 to if the sensor is to be read synchronously.
+                  Return values
+                  Name                                         Description
+                  int32 status                                 One of, but not limited to, the following:
+                                                                     • SUCCESS: if the reading was successfully returned for a
+                                                                        synchronous request or if the command was successfully
+                                                                T0      enqueued for an asynchronous request.
+                                                                     • NOT_FOUND: if sensor_id does not point to an existing sensor.
+                                                                     • INVALID_PARAMETERS: if the flags input specifies illegal or
+                                                  BE                    invalid settings.
+                                                                     • PROTOCOL_ERROR: if the command is used to read updates
+                                                                        from a disabled sensor.
+                                                               See Section 3.1.4 for more status code definitions.
+                                                               If this is an asynchronous call, then the returned status code pertains to
+                                                               this command itself, and any error that occurs during the actual sensor
+                                                               read operation is reported subsequently with the
+                                                               SENSOR_READING_COMPLETE delayed response.
+                  SENSOR_READING readings[N]                   An array of sensor readings of format described in Sensor Reading
+                                                               Descriptor, where N is:
+                                                                   • 1 for sensors which measure scalar values.
+                                                                   • the number of sensor axes for sensors which report values along
+                                                                     axes. All axes should be reported in order.
+              Sensor Reading Descriptor
+              The SENSOR_READING structure provides the sensor readings and the timestamp when they were collected.
+                  int32 sensor_value_low                             Lower 32 bits of the sensor value. This value is invalid if an error
+                                                                     status is returned.
+                  int32 sensor_value_high                            Higher 32 bits of the sensor value. This value is invalid if an error
+                                                                     status is returned.
+                  uint32 timestamp_low                               Lower 32 bits of the timestamp when the sample was captured. If
+                                                                     no timestamp is collected, this field should be set to 0.
+                                                                                                   Arm® System Control and Management Interface
+                  uint32 timestamp_high                              Higher 32 bits of the timestamp when the sample was captured. If
+                                                                     no timestamp is collected, this field should be set to 0.

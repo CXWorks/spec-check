@@ -1,0 +1,49 @@
+                 3.2.2.13   BASE_RESET_AGENT_CONFIGURATION
+                 This command is used to reset platform resource settings that were previously configured by an agent. Platform resource
+                 settings refer to power domain, performance domain, clock, sensors and other settings associated with a device that the
+                 agent has access to. This command can also be used to reset agent-specific permission configurations to access devices
+                 and protocols.
+                 When this command is received, the platform might need to flush all pending requests from the agent that is undergoing
+                 configuration reset. It might also need to wait for requests that are being processed on behalf of the agent to complete.
+                 Alternatively, the platform can choose to abort all agent-related transactions in flight and reset its configuration. The
+                 platform needs to revert the platform resources that are solely dedicated to the agent into their default state. Shared
+                 platform resources need to be moved into a state that continues to meet the requirements of the remaining agents
+                 using that resource. Shared platform resources are those which are shared among and used by multiple agents. Agent
+                 configuration reset should not be confused with the reset of the platform or its components.
+                                                                                                    Arm® System Control and Management Interface
+                 If the Permissions Reset flag is set, the platform resets all the device and protocol access permissions that are configured
+                 for the agent. When permission reset completes, IMPLEMENTATION defined platform-specific default permissions are
+                 restored for that agent.
+                 Arm recommends that only trusted agents in the system are given permissions to invoke this command for other agents.
+                 An agent can invoke this command for itself.
+                 A caller can discover if this command is implemented by issuing the PROTOCOL_MESSAGE_ATTRIBUTES command
+                 and passing the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES
+                 returns SUCCESS.
+                    message_id: 0xB
+                    protocol_id: 0x10
+                    This command is optional.
+                    Parameters
+                    Name                                 Description
+                    uint32 agent_id                      Identifier of the Agent.
+                    uint32 flags                         Bits[31:1]
+                                                         Reserved, must be zero.
+                                                         Bit[0]
+                                                         Permissions Reset:
+                                                              • If set to 0, maintain all access permission settings of the agent.
+                                                              • If set to 1, reset all access permission settings of the agent.
+                                                                 T0
+                                                                This command must always reset the platform resource settings
+                                                                configured by the agent specified by agent_id. Platform resource
+                                                                settings refer to Device, Power Domain, Performance Domain, Clocks,
+                    Return values
+                                                   BE           Sensors and other settings configured by the agent specified by
+                                                                agent_id.
+                    Name                                 Description
+                    int32 status                         One of, but not limited to, the following:
+                                                             • SUCCESS: in case the command is processed successfully.
+                                                             • NOT_FOUND: if the agent specified by agent_id does not exist.
+                                                             • INVALID_PARAMETERS: if the flags field is invalid.
+                                                             • NOT_SUPPORTED: if the command is not supported.
+                                                             • DENIED: if the calling agent is not allowed to reset the agent specified
+                                                               by agent_id.
+                                                         See Section 3.1.4 for more status code definitions.

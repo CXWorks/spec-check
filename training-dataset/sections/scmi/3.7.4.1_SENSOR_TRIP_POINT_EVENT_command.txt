@@ -1,0 +1,30 @@
+              3.7.4.1    SENSOR_TRIP_POINT_EVENT
+              This notification is issued by the platform when a sensor crosses a specific trip point that the agent had requested event
+              notification for, by using the SENSOR_TRIP_POINT_CONFIG command.
+              The platform might read sensors periodically using polling, or program sensors to generate interrupts on trip points,
+              depending on implementation. If the sensor value changes such that it crosses several trip-points between successive
+              reads by the platform, then the platform might minimally send only one notification to the agent to represent the multiple
+              cross-over condition.
+                  Message_id: 0x0
+                  protocol_id: 0x15
+                  This notification is optional.
+                  Return Values
+                  Name                                        Description
+                  uint32 agent_id                             Refers to the agent that caused this event. For the current version of the
+                                                              specification, this field is set to 0 to indicate that the platform is the
+                                                              generator of all sensor events.
+                  uint32 sensor_id                            Identifier for the sensor that has tripped.
+                  uint32 trip_point_desc                      Bits[31:17]
+                                                              Reserved.
+                                                                T0
+                                                              Bit[16]
+                                                              Direction.
+                                                                   • If set to 1, indicates that the trip point was reached or crossed in
+                                                   BE                the positive direction.
+                                                                   • If set to 0, indicates that the trip point was reached or crossed in
+                                                                     the negative direction.
+                                                              Bits[15:8]
+                                                              Reserved for future use.
+                                                              Bits[7:0]
+                                                              trip_point_id.
+                                                              The identifier for the trip point that was crossed or reached.

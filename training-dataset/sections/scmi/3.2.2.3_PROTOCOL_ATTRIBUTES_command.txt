@@ -1,0 +1,18 @@
+                 3.2.2.3   PROTOCOL_ATTRIBUTES
+                 This command returns the implementation details that are associated with this protocol.
+                    message_id: 0x1
+                    protocol_id: 0x10
+                                                                   T0
+                    This command is mandatory.
+                    Return values
+                    Name
+                                                     BE    Description
+                    int32 status                           See Section 3.1.4 for status code definitions.
+                    uint32 attributes                      Bits[31:16]
+                                                           Reserved, must be zero.
+                                                           Bits[15:8]
+                                                           Number of agents in the system.
+                                                           Bits[7:0]
+                                                           Number of protocols that are implemented, excluding the Base protocol.
+                 If the platform does not support agent discovery, then it reports the number of agents in the system as zero, and all
+                 notifications carry a zero in the agent_id field.

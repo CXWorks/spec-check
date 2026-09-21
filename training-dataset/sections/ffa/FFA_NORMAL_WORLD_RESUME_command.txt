@@ -31,8 +31,6 @@
                been handled.
                The SPMD must ensure that the Normal world execution is resumed with exactly the same PE state that was saved
                when it was preempted.
-Chapter 14. CPU cycle management interfaces
-14.5. FFA_NORMAL_WORLD_RESUME
              The SPMD must return DENIED if this function is invoked at the Secure physical FF-A instance and the Normal
              world execution was not preempted.
              The partition manager must return NOT_SUPPORTED if this function is invoked at any other FF-A instance.
@@ -40,5 +38,3 @@ Chapter 14. CPU cycle management interfaces
              of any FF-A function through the ERET conduit.
 Chapter 15
 Messaging interfaces
-Chapter 15. Messaging interfaces
-15.1. FFA_MSG_SEND2

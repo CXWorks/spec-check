@@ -1,0 +1,13 @@
+11.7. Function: Get details of a counter (FID #1)
+  struct sbiret sbi_pmu_counter_get_info(unsigned long counter_idx)
+Get details about the specified counter such as underlying CSR number, width of the counter, type of
+counter hardware/firmware, etc.
+The counter_info returned by this SBI call is encoded as follows:
+        counter_info[11:0] = CSR (12bit CSR number)
+        counter_info[17:12] = Width (One less than number of bits in CSR)
+        counter_info[XLEN-2:18] = Reserved for future use
+        counter_info[XLEN-1] = Type (0 = hardware and 1 = firmware)
+If counter_info.type == 1 then counter_info.csr and counter_info.width should be ignored.
+Returns the counter_info described above in sbiret.value.
+The possible error codes returned in sbiret.error are shown in the Table 36 below.
+                                           Table 36. PMU Counter Get Info Errors

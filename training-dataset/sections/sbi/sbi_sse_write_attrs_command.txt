@@ -1,0 +1,38 @@
+17.8. Function: Write software event attributes (FID #1)
+  struct sbiret sbi_sse_write_attrs(uint32_t event_id,
+                                   uint32_t base_attr_id, uint32_t attr_count,
+                                   unsigned long input_phys_lo,
+                                   unsigned long input_phys_hi)
+Write a range of event attribute values to a software event.
+The event_id parameter specifies the software event ID whereas base_attr_id and attr_count parameters
+specifies the range of event attribute IDs.
+The event attribute values are read from a input shared memory which is specified by the input_phys_lo
+and input_phys_hi parameters where:
+ ⚫ The input_phys_lo parameter MUST be XLEN / 8 bytes aligned
+ ⚫ The size of input shared memory is assumed to be (XLEN / 8) * attr_count
+ ⚫ The value of event attribute with ID base_attr_id + i should be read from offset (XLEN / 8) *
+    (base_attr_id + i)
+For local events, the event attributes are updated only for the calling hart. For global events, the event
+attributes are updated for all the harts.
+The possible error codes returned in sbiret.error are shown in Table 82 below. In case of errors with
+attribute values, the first error encountered (based on attributes ID order) is returned.
+                                   Table 82. SSE Event Attributes Write Errors
+      Error code                              Description
+      SBI_SUCCESS                             Event attribute values written successfully.
+      SBI_ERR_NOT_SUPPORTED                   event_id is not reserved and valid, but the platform does not
+                                              support it due to one or more missing dependencies (Hardware
+                                              or SBI implementation).
+      SBI_ERR_INVALID_PARAM                   Attribute write operation failed because either:
+                                              - event_id is invalid
+                                              - attr_count is zero
+                                              - event_id is valid but one of the attribute values violates the
+                                              legal values described in Table 80.
+      SBI_ERR_DENIED                          event_id is valid but one of the attributes is read-only.
+      SBI_ERR_INVALID_STATE                   event_id is valid but one of the attribute values violates the
+                                              state rules described in Table 80.
+      SBI_ERR_BAD_RANGE                       One of the event attribute IDs in the range specified by
+                                              base_attr_id and attr_count is reserved.
+      SBI_ERR_INVALID_ADDRESS                 The shared memory pointed to by the input_phys_lo and
+                                              input_phys_hi parameters does not satisfy the requirements
+                                              described in Section 3.2.
+      SBI_ERR_FAILED                          The write failed for unspecified or unknown other reasons.

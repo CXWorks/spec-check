@@ -1,0 +1,28 @@
+                 3.5.6.7   PERFORMANCE_QOS_ATTRIBUTES
+                 This command returns the name and attributes associated with a QoS capability.
+                    message_id: 0xE
+                    protocol_id: 0x13
+                    This command is mandatory if QoS capabilities are supported by the platform.
+                    Parameters
+                    Name
+                    uint32 domain_id
+                                                                   T0
+                                                           Description
+                                                           Identifier for the performance domain.
+                    uint32 capability
+                    Return values
+                                                     BE    QoS capability, as described by Table 14. Only one QoS capability Type bit
+                                                           can be set. At most one QoS capability Subtype bit can be set.
+                    Name                                   Description
+                    int32 status                           One of, but not limited to, the following:
+                                                               • SUCCESS: if valid performance domain QoS attributes are found.
+                                                               • NOT_FOUND: if the domain_id parameter does not point to a valid
+                                                                 domain or if the capability does not point to a valid capability of that
+                                                                 domain.
+                                                               • INVALID_PARAMETERS: if the capability field has multiple Type or
+                                                                 Subtype bits set.
+                                                           See Section 3.1.4 for more status code definitions.
+                    uint32 qos_attribute_1                 First attribute of the specified QoS capability of this domain. See
+                                                           Section 3.5.4.1 for attribute details of each QoS capability Type.
+                    uint8 name[16]                         Null-terminated ASCII string of up to 16 bytes in length representing the name
+                                                           of the QoS capability.

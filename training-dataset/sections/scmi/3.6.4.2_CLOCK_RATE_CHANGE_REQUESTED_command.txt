@@ -1,0 +1,16 @@
+              3.6.4.2    CLOCK_RATE_CHANGE_REQUESTED
+              An agent might have registered, via CLOCK_RATE_CHANGE_REQUESTED_NOTIFY, to receive notifications when
+              there is a request from a different agent or entity in the system, including the platform itself, to change the rate of a clock
+              device. The platform sends this notification to the subscribing agent when such a request is received by it.
+              For more details on how CLOCK_RATE_CHANGE_REQUESTED notifications can be used, see Section 3.6.2.13.
+                  message_id: 0x1
+                  protocol_id: 0x14
+                  This command is optional.
+                  Parameters
+                  Name                                 Description
+                  uint32 agent_id                      Identifier of the agent that requested the clock rate change.
+                  uint32 domain_id                     Identifier of the clock device.
+                  uint32 rate[2]                       The clock rate requested.
+                                                       Lower word: Lower 32 bits of the physical rate in Hertz.
+                                                       Upper word: Upper 32 bits of the physical rate in Hertz.
+                                                                                                 Arm® System Control and Management Interface

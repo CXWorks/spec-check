@@ -1,0 +1,24 @@
+              3.9.2.8    VOLTAGE_CONFIG_GET
+              This command allows the calling agent to request the configuration of a voltage domain.
+                  message_id: 0x6
+                  protocol_id: 0x17
+                  This command is mandatory.
+                  Parameters
+                                                                                                 Arm® System Control and Management Interface
+                  Name                                Description
+                  uint32 domain_id                    Identifier for the voltage domain.
+                  Return values
+                  Name                                Description
+                  int32 status                        One of, but not limited to, the following:
+                                                          • SUCCESS: if the voltage domain configuration was successfully
+                                                            returned.
+                                                          • NOT_FOUND: if domain_id does not point to a valid voltage domain.
+                                                          • NOT_SUPPORTED: if the request is not supported.
+                                                          • DENIED: if the calling agent is not allowed to get the configuration of
+                                                            this voltage domain. An example would be if this voltage domain is
+                                                            exclusive to another agent.
+                                                      See Section 3.1.4 for more status code definitions.
+                  uint32 config                       Bits[31:4]
+                                                      Reserved, must be zero.
+                                                      Bits[3:0]
+                                                      Mode: The operating mode of the voltage domain, as described in Table 24.

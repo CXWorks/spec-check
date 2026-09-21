@@ -1,0 +1,5 @@
+9.1. Function: Hart start (FID #0)
+  struct sbiret sbi_hart_start(unsigned long hartid,
+                               unsigned long start_addr,
+                               unsigned long opaque)
+Request the SBI implementation to start executing the target hart in supervisor-mode, at the address

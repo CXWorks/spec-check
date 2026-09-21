@@ -1,0 +1,24 @@
+                 3.6.2.8   CLOCK_RATE_GET
+                 This command allows the calling agent to request the current clock rate
+                                                                                                  Arm® System Control and Management Interface
+              If the clock is in disabled state, this command returns the rate at which the clock device would be subsequently running
+              when it has been re-enabled.
+              ─── Note ───────────────
+              If the clock rate is set asynchronously, the rate value that is returned by this command might be stale by the time the
+              command completes.
+              ──────────────────────
+                  message_id: 0x6
+                  protocol_id: 0x14
+                  This command is mandatory.
+                  Parameters
+                  Name                              Description
+                  uint32 clock_id                   Identifier for the clock device.
+                  Return values
+                  Name                              Description
+                  int32 status                      One of, but not limited to, the following:
+                                                        • SUCCESS: if the current clock rate was successfully returned.
+                                                        • NOT_FOUND: if the clock identified by clock_id does not exist.
+                                                    See Section 3.1.4 for more status code definitions.
+                  uint32 rate[2]                               T0
+                                                    Lower word: Lower 32 bits of the physical rate in Hertz.
+                                                    Upper word: Upper 32 bits of the physical rate in Hertz.

@@ -1,0 +1,19 @@
+19.5. Function: Update triggers (FID #4)
+  struct sbiret sbi_debug_update_triggers(unsigned long trig_count)
+Update already installed debug triggers based on a trigger configuration array in the shared memory of the
+calling hart.
+The trig_count parameter represents the number of trigger configuration entries in the shared memory at
+offset 0x0.
+The i’th trigger configuration at offset = i * (XLEN / 2) in the shared memory consists of four
+consecutive XLEN-bit words in little-endian format as follows:
+       word[0] = `trig_idx` read by the SBI implementation
+       word[1] = `trig_tdata1` read by the SBI implementation
+       word[2] = `trig_tdata2` read by the SBI implementation
+       word[3] = `trig_tdata3` read by the SBI implementation
+The SBI implementation MUST consider trigger configurations in the increasing order of array index and
+starting with array index 0. To update a debug trigger based on trigger configuration at array index i in the
+shared memory, the SBI implementation MUST do the following:
+ 1. Check and fail if any of the following constraints are not satisfied:
+     a. trig_idx represents logical index of a installed debug trigger
+     b. trig_tdata1.type matches with original installed debug trigger
+     c. trig_tdata1.chain matches with original installed debug trigger

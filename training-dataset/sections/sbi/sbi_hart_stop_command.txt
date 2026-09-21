@@ -1,0 +1,4 @@
+9.2. Function: Hart stop (FID #1)
+  struct sbiret sbi_hart_stop(void)
+Request the SBI implementation to stop executing the calling hart in supervisor-mode and return its
+ownership to the SBI implementation. This call is not expected to return under normal conditions. The

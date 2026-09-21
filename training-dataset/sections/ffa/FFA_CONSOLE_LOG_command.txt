@@ -25,8 +25,6 @@
                                                      x2-x17                    – Character i = Bits[M:N]
                                                                                – M = ((8 x i) - 1)
                                                                                – N = (8 x (i - 1))
-Chapter 13. Setup and discovery interfaces
-13.12. FFA_CONSOLE_LOG
                                                                                          Table 13.56: Encoding of return codes
             Parameter                                Register         Value
             int32 Error code                         w2                   • INVALID_PARAMETERS:
@@ -42,5 +40,3 @@ Chapter 13. Setup and discovery interfaces
                                                                             Count starts from the first character.
                                                                                 – Valid only with RETRY error code. MBZ
                                                                                   otherwise.
-Chapter 13. Setup and discovery interfaces
-13.13. FFA_NS_RES_INFO_GET

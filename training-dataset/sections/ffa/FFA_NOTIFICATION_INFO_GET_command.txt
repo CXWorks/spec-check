@@ -23,8 +23,6 @@
            flags
            uint32/uint64 ID lists                   w3-w7                • See 16.11.1 Usage.
                                                     x3-x7
-Chapter 16. Notification interfaces
-16.11. FFA_NOTIFICATION_INFO_GET
                                                                                             Table 16.48: FFA_ERROR encoding
            Parameter                                Register         Value
            int32 Error code                         w2                   • NO_DATA: There is no pending notification
@@ -66,8 +64,6 @@ Chapter 16. Notification interfaces
                            list. Subsequent lists follow in the same or a higher numbered register.
                     6. With the SMC32 calling convention, the ID lists registers can accommodate 10 IDs.
                     7. With the SMC64 calling convention, the ID lists registers can accommodate 20 IDs.
-Chapter 16. Notification interfaces
-16.11. FFA_NOTIFICATION_INFO_GET
                  2. The number of lists and the number of IDs (endpoint and vCPU) in each list is specified in the Pending
                     notification flags parameter in w2/x2 as described in Table 16.49.
                  3. All information about endpoints with pending notifications may not fit in one invocation of this ABI. The
@@ -107,8 +103,6 @@ Chapter 16. Notification interfaces
                This information is encoded by the partition manager of the partition that invokes the SMC32 variant of the
                FFA_NOTIFICATION_INFO_GET ABI as illustrated in Figure 16.1. The encoding in response to an invocation
                of the SMC64 variant of the FFA_NOTIFICATION_INFO_GET ABI is illustrated in Figure 16.2.
-Chapter 16. Notification interfaces
-16.11. FFA_NOTIFICATION_INFO_GET
               Key
                         Partition ID         vCPU ID
               W2
@@ -133,8 +127,6 @@ Chapter 16. Notification interfaces
                         Bits[31:16]          Bits[15:0]
                     1                    3
                                                              Figure 16.1: Encoding of NOTIFICATION_INFO_GET using 32bit ABI
-Chapter 16. Notification interfaces
-16.11. FFA_NOTIFICATION_INFO_GET
          Key
                 Partition ID      vCPU ID
          X2
@@ -161,5 +153,3 @@ Chapter 16. Notification interfaces
                                                          Figure 16.2: Encoding of NOTIFICATION_INFO_GET using 64bit ABI
 Chapter 17
 Interrupt management interfaces
-Chapter 17. Interrupt management interfaces
-17.1. FFA_EL3_INTR_HANDLE

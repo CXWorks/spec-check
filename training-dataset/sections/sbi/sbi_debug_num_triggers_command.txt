@@ -1,0 +1,2 @@
+19.1. Function: Get number of triggers (FID #0)
+  struct sbiret sbi_debug_num_triggers(unsigned long trig_tdata1)

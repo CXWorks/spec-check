@@ -1,0 +1,39 @@
+                 3.2.3.1   BASE_ERROR_EVENT
+                 These notifications are sent to any agent that has registered to receive them, provided the platform implements base
+                 error notifications.
+                 Errors that are reported by the platform are one of two types:
+                    • Fatal error
+                      Indicates that the platform is no longer able to process commands. The error might be accompanied by the list of
+                      messages that were being processed when the failure took place.
+                                                                                                    Arm® System Control and Management Interface
+                    • Non-fatal error
+                      Indicates that the platform was not able to process some commands, but it is still operational. The error notification
+                      is accompanied by the list of commands that could not be processed.
+                 Fatal error notifications cannot be guaranteed, and the platform must not rely on these notifications as a mechanism to
+                 enable recovery.
+                 Error notifications must not be used as mechanism to report that a command cannot be executed as requested due to
+                 constraints that arise in normal operation.
+                 On initial boot of an agent, these notifications must be disabled by default to that agent.
+                    message_id: 0x0
+                    protocol_id: 0x10
+                    This command is optional.
+                    Parameters
+                    Name                                 Description
+                    uint32 agent_id                      Identifier of the agent that caused this notification.
+                    uint32 error_status                  Bit[31]
+                                                         Fatal.
+                                                              • Set if error is fatal and platform cannot continue.
+                                                              • Cleared if error is non-fatal but commands have failed.
+                                                         Bits[30:10]
+                                                                 T0
+                                                         Reserved, must be zero.
+                                                         Bits[9:0]
+                                                         Command count, number of commands in the command list. A value of zero
+                    {uint32 message_header
+                    unit32 status}[N]
+                                                   BE    is possible if the error cannot be attributed.
+                                                         Each entry in the command list is a tuple, where the first entry is the message
+                                                         header of the command, and second is an error status code that is associated
+                                                         with the command. The size of the list is specified by the command count
+                                                         sub-field.
+                                                                                                   Arm® System Control and Management Interface

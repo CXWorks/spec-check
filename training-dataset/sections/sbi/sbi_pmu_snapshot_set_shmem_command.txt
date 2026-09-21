@@ -1,0 +1,12 @@
+11.13. Function: Set PMU snapshot shared memory (FID #7)
+  struct sbiret sbi_pmu_snapshot_set_shmem(unsigned long shmem_phys_lo,
+                                           unsigned long shmem_phys_hi,
+                                           unsigned long flags)
+Set and enable the PMU snapshot shared memory on the calling hart.
+If both shmem_phys_lo and shmem_phys_hi parameters are not all-ones bitwise then shmem_phys_lo
+specifies the lower XLEN bits and shmem_phys_hi specifies the upper XLEN bits of the snapshot shared
+memory physical base address. The shmem_phys_lo MUST be 4096 bytes (i.e. page) aligned and the size of
+the snapshot shared memory must be 4096 bytes. The layout of the snapshot shared memory is described
+in Table 45.
+If both shmem_phys_lo and shmem_phys_hi parameters are all-ones bitwise then the PMU snapshot shared
+memory is cleared and disabled.

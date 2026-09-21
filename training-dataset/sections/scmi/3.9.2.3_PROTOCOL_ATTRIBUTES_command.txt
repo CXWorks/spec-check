@@ -1,0 +1,14 @@
+              3.9.2.3    PROTOCOL_ATTRIBUTES
+                                                                 T0
+                                                   BE
+              This command returns the implementation details associated with this protocol.
+                  message_id: 0x1
+                  protocol_id: 0x17
+                  This command is mandatory.
+                  Return values
+                  Name                                  Description
+                  int32 status                          See Section 3.1.4 for status code definitions.
+                  uint32 attributes                     Bits[31:16]
+                                                        Reserved, must be zero.
+                                                        Bits[15:0]
+                                                        Number of voltage domains.

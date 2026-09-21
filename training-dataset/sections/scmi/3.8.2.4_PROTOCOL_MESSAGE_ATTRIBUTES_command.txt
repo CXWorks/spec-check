@@ -1,0 +1,19 @@
+              3.8.2.4    PROTOCOL_MESSAGE_ATTRIBUTES
+              On success, this command returns the implementation details associated with a specific message in this protocol.
+                  message_id: 0x2
+                  protocol_id: 0x16
+                  This command is mandatory.
+                  Parameters
+                                                                 T0
+                  Name
+                  uint32 message_id
+                  Return values
+                                                   BE    Description
+                                                         message_id of the message.
+                  Name                                   Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: in case the message is implemented and available to use.
+                                                             • NOT_FOUND: if the message identified by message_id is not provided
+                                                               by this platform implementation.
+                                                         See Section 3.1.4 for more status code definitions.
+                  uint32 attributes                      Reserved, must be zero.

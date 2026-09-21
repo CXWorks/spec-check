@@ -1,0 +1,31 @@
+              3.7.2.8   SENSOR_TRIP_POINT_NOTIFY
+              This command is used by the agent to globally control generation of notifications on cross-over events for the trip-points
+              that have been configured using the SENSOR_TRIP_POINT_CONFIG command.
+                                                                                                   Arm® System Control and Management Interface
+                  message_id: 0x4
+                  protocol_id: 0x15
+                  This command is optional.
+                  Parameters
+                  Name                                           Description
+                  uint32 sensor_id                               Identifier for the sensor.
+                  uint32 sensor_event_control                    Bits[31:1]
+                                                                 Reserved.
+                                                                 Bit[0]
+                                                                 Globally controls generation of notifications on crossing of configured
+                                                                 trip-points pertaining to the specified sensor.
+                                                                      • If this bit is set to 1, notifications are sent whenever the sensor
+                                                                        value crosses any of the trip-points that have been configured
+                                                                        using the SENSOR_TRIP_POINT_CONFIG command.
+                                                                      • If this bit is set to 0, no notifications are sent for any of the
+                                                                        trip-points.
+                  Return values
+                  Name                                           Description
+                  int32 status                                   One of, but not limited to, the following:
+                                                                T0   • SUCCESS.
+                                                                     • NOT_FOUND: if sensor_id does not point to an existing
+                                                                       sensor.
+                                                                     • INVALID_PARAMETERS: if the input sensor_event_control
+                                                  BE                   flag contains invalid or illegal settings.
+                                                                     • NOT_SUPPORTED: if the platform does not support trip point
+                                                                       event notifications for the sensor.
+                                                                 See Section 3.1.4 for more status code definitions.

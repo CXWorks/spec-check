@@ -1,0 +1,21 @@
+                 3.5.6.10   PERFORMANCE_LIMITS_GET
+                 This command allows the agent to ascertain the range of allowed performance levels, or level indices when Level Indexing
+                 Mode is used by the platform. The returned value reflects the currently set limits for the performance domain. These
+                 limits might have been set implicitly by the platform, or explicitly by a preceding call to PERFORMANCE_LIMIT_SET.
+                 On success, the range return value provides the minimum and maximum allowed performance level, or level index.
+                                                                                                   Arm® System Control and Management Interface
+                    message_id: 0x6
+                    protocol_id: 0x13
+                    This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES
+                    command is set to 0 for any domain.
+                    Parameters
+                    Name                                         Description
+                    uint32 domain_id                             Identifier for the performance domain.
+                    Return values
+                    Name                                         Description
+                    int32 status                                 One of, but not limited to, the following:
+                                                                     • SUCCESS: if the performance limits are returned successfully.
+                                                                     • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                                 See Section 3.1.4 for more status code definitions.
+                    uint32 range_max                             Maximum allowed performance level, or level index.
+                    uint32 range_min                             Minimum allowed performance level, or level index.

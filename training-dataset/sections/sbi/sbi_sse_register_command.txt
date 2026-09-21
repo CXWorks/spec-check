@@ -1,0 +1,26 @@
+17.9. Function: Register a software event (FID #2)
+17.10. Function: Unregister a software event (FID #3) | Page 76
+  struct sbiret sbi_sse_register(uint32_t event_id,
+                                 unsigned long handler_entry_pc,
+                                 unsigned long handler_entry_arg)
+Register an event handler for the software event.
+The event_id parameter specifies the event ID for which an event handler is being registered. The
+handler_entry_pc parameter MUST be 2-bytes aligned and specifies the ENTRY_PC event attribute of the
+software event whereas the handler_entry_arg parameter specifies the ENTRY_ARG event attribute of the
+software event.
+For local events, the event is registered only for the calling hart. For global events, the event is registered for
+all the harts.
+The event MUST be in UNUSED state otherwise this function will fail.
+                   It is advisable to use different values for handler_entry_arg for different events because
+                  higher priority events preempt lower priority events.
+Upon success, the event state moves from UNUSED to REGISTERED. In case of an error, possible error codes
+are listed in Table 83 below.
+                                              Table 83. SSE Event Register Errors
+       Error code                                      Description
+       SBI_SUCCESS                                     Event handler is registered successfully.
+       SBI_ERR_NOT_SUPPORTED                           event_id is not reserved and valid, but the platform does not
+                                                       support it due to one or more missing dependencies (Hardware
+                                                       or SBI implementation).
+       SBI_ERR_INVALID_STATE                           event_id is valid but the event is not in UNUSED state.
+       SBI_ERR_INVALID_PARAM                           event_id is invalid or handler_entry_pc is not 2-bytes
+                                                       aligned.

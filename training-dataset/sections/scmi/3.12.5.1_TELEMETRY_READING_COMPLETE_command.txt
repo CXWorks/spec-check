@@ -1,0 +1,30 @@
+              3.12.5.1    TELEMETRY_READING_COMPLETE
+              This is a delayed response to a TELEMETRY_CONFIG_SET command issued by an agent which requests a
+              single-sample asynchronous read.
+                                                               T0
+              This delayed response is used as a trigger by the agent to read telemetry data associated with DEs which are enabled
+              and available over SHMTIs and FastChannels. In addition, this response includes multiple telemetry payload lines for
+                                                 BE
+              DEs which are enabled but not available using SHMTI or FastChannels.
+              If the platform determines that there are certain failure conditions in the sensor itself, such as a fault in the DE hardware
+              or related circuitry or logic, it returns HARDWARE_ERROR to report that condition to the caller. The platform returns
+              PARTIAL_ERROR to indicate that some of the telemetry data could not be collected. Other errors apply to the interface
+              itself and are enumerated in Section 3.1.4.
+                  message_id: 0x8
+                  protocol_id: 0x1B
+                  This command is mandatory if the single-sample asynchronous read mode is supported, as specified by Bit[31]
+                  of attributes_1 field of PROTOCOL_ATTRIBUTES command.
+                  Return values
+                  Name                                Description
+                  int32 status                        An appropriate status code, as described in Section 3.1.4.
+                                                      In case of PARTIAL_ERROR, some data-lines, as indicated by Bit[0] of
+                                                      Line-Metadata, might still be valid and therefore consumable.
+                  uint32 num_dwords                   The size of the returned array specified in DWORDS, where DWORD is
+                                                      defined as 4 bytes.
+                                                      The value specified by this field must not be an odd number.
+                                                      This field is set to 0 if all the enabled DEs are collected using SHMTI or
+                                                      FastChannels.
+                  uint32 array[N]                     The returned telemetry payload section. The prologue and epilogue are not
+                                                      provided.
+                                                      N is specified by num_dwords field.
+                                                                                                  Arm® System Control and Management Interface

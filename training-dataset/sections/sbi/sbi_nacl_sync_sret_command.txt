@@ -1,0 +1,9 @@
+15.9. Function: Synchronize shared memory and emulate SRET (FID #4)
+  struct sbiret sbi_nacl_sync_sret(void)
+Synchronize CSRs and HFENCEs in the nested acceleration shared memory and emulate the SRET
+instruction. This is an optional function which is only available if the SBI_NACL_FEAT_SYNC_SRET
+feature is available.
+This function is used by supervisor software (or L1 hypervisor) to do a synchronize SRET request and the
+SBI implementation (or L0 hypervisor) MUST handle it as described in the Section 15.3.
+This function does not return upon success and the possible error codes returned in sbiret.error upon
+failure are shown in Table 74.

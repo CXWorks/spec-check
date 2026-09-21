@@ -1,0 +1,29 @@
+              3.9.2.7    VOLTAGE_CONFIG_SET
+              This command allows an agent to set the configuration of a voltage domain. It allows to enable or disable the domain.
+                  message_id: 0x5
+                  protocol_id: 0x17
+                  This command is mandatory.
+                  Parameters
+                  Name                                   Description
+                  uint32 domain_id                       Identifier for the voltage domain.
+                  uint32 config                          Bits[31:4]
+                                                         Reserved, must be zero.
+                                                                 T0
+                                                         Bits[3:0]
+                                                         Mode: The operating mode the voltage domain should be set to, as described
+                                                         in Table 24.
+                  Return values
+                  Name
+                                                   BE    Description
+                  int32 status                           One of, but not limited to, the following:
+                                                             • SUCCESS: if the voltage domain configuration has been set
+                                                               successfully.
+                                                             • NOT_FOUND: if the voltage domain identified by domain_id does not
+                                                               exist.
+                                                             • INVALID_PARAMETERS: if the requested configuration is not
+                                                               supported by the voltage domain.
+                                                             • NOT_SUPPORTED: if the request is not supported.
+                                                             • DENIED: if the calling agent is not allowed to set the configuration of
+                                                               this voltage domain. An example would be if this voltage domain is
+                                                               exclusive to another agent.
+                                                         See Section 3.1.4 for more status code definitions.

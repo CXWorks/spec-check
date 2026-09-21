@@ -1,0 +1,15 @@
+20.6. Function: Set shared memory (FID #1)
+  struct sbiret sbi_mpxy_set_shmem(unsigned long shmem_phys_lo,
+                                   unsigned long shmem_phys_hi,
+                                   unsigned long flags)
+Set the shared memory for sending and receiving messages on the calling hart.
+If both shmem_phys_lo and shmem_phys_hi parameters are not all-ones bit-wise then the shmem_phys_lo
+parameter specifies the lower XLEN bits and the shmem_phys_hi parameter specifies the upper XLEN bits
+of the shared memory physical base address. The shmem_phys_lo parameter MUST be 4096 bytes aligned
+and the shared memory size is assumed to be same as returned by the Get shared memory size function
+(FID #0).
+If both shmem_phys_lo and shmem_phys_hi parameters are all-ones bit-wise then shared memory is
+disabled.
+The flags parameter specifies configuration for shared memory setup and it is encoded as follows:
+  flags[XLEN-1:2]: Reserved for future use and must be zero.
+  flags[1:0]: Shared memory setup mode (Refer table below).

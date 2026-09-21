@@ -1,0 +1,12 @@
+                 3.2.2.7   BASE_DISCOVER_IMPLEMENTATION_VERSION
+                 This command provides a vendor-specific 32-bit implementation version. The format of the version number is
+                 vendor-specific, but version numbers must be strictly increasing so that a higher number indicates a more recent
+                 implementation.
+                                                                                                   Arm® System Control and Management Interface
+                    message_id: 0x5
+                    protocol_id: 0x10
+                    This command is mandatory.
+                    Return values
+                    Name                                       Description
+                    int32 status                               See Section 3.1.4 for status code definitions.
+                    uint32 implementation_version              Format is vendor specific.

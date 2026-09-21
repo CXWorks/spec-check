@@ -1,0 +1,95 @@
+                 3.5.6.8   PERFORMANCE_DESCRIBE_LEVELS
+                 This command allows the agent to ascertain the discrete performance levels that are supported by the platform, their
+                 respective power costs, transition latency, clock frequency and level index.
+                 On success, the command returns an array that consists of several performance level entries, each of which describes
+                 an expected performance, power cost, transition latency, clock frequency and level index.
+                                                                                                   Arm® System Control and Management Interface
+                 The performance levels returned by this call should be in numerically ascending order of performance level values. The
+                 power cost can be expressed in microwatts, milliwatts or on an abstract scale. How the numbers in that scale convert
+                 to the actual wattage is IMPLEMENTATION DEFINED, but the conversion must be linear, meaning that a power of 2X is
+                 twice the power of X. The size of the array depends on the number of return values that a given transport can support.
+                 It might not be possible to return information for all performance levels with just one call. To solve this problem, the
+                 interface allows multiple calls, with a skip_index used to skip over performance levels which were returned by previous
+                 calls.
+                    message_id: 0x4
+                    protocol_id: 0x13
+                    This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES
+                    command is set to 0 for any domain.
+                    Parameters
+                    Name                                 Description
+                    uint32 domain_id                     Identifier for the performance domain.
+                    uint32 skip_index                    Number of performance levels, in numerically ascending order of level
+                                                         values, to skip over before returning the first performance level in the return
+                                                         performance level array. For more information on how this field is used, refer
+                                                         to the pseudocode below.
+                                                         NOTE: This field is not the same as the level index of a performance level
+                                                         when Level Indexing Mode is used.
+                    Return values
+                    Name
+                                                                T0
+                                                         Description
+                    int32 status
+                                                  BE     One of, but not limited to, the following:
+                                                             • SUCCESS: if valid performance levels are returned.
+                                                             • NOT_FOUND: if domain_id does not point to a valid domain.
+                                                         See Section 3.1.4 for more status code definitions.
+                    uint32 num_levels                    Bits[31:16]
+                                                         Number of remaining performance levels.
+                                                         Bits[15:12]
+                                                         Reserved, must be zero.
+                                                         Bits[11:0]
+                                                         Number of performance levels that are returned by this call.
+                                                                                                   Arm® System Control and Management Interface
+                   {uint32, uint32, uint32, uint32,      Array of performance levels, in numeric ascending order, to be described. N
+                   uint32} perf_levels[N]                is specified by Bits[11:0] of num_levels field. Each array entry is composed
+                                                         of five 32-bit words with the following format:
+                                                         uint32 entry[0] Performance level value.
+                                                         uint32 entry[1] Power cost.
+                                                                 A value of zero indicates that the power cost is not reported by the
+                                                                 platform.
+                                                                 Refer to Section 3.5.2 for more details.
+                                                         uint32 entry[2] Attributes
+                                                                 Bits[31:16] Reserved, must be zero.
+                                                                 Bits[15:0] Worst-case transition latency in microseconds to move
+                                                                        from any supported performance level to the level indicated by
+                                                                        this entry in the array.
+                                                         uint32 entry[3] Indicative Frequency
+                                                                 Clock frequency, in kHz, of the performance domain when operating at
+                                                                 this performance level. When set to 0, it indicates that this field is not
+                                                                 reported by the platform.
+                                                         uint32 entry[4] Level Index
+                                                                 The level index for this performance level. If Bit[25] (Level Indexing
+                                                                 Mode) of the attributes field returned by
+                                                                 PERFORMANCE_DOMAIN_ATTRIBUTES command is set to 0, this
+                                                                 field should be ignored by the agent.
+                                                                 See Section 3.5.6.5 for more details.
+                                                BE
+                 The following pseudocode describes how the command can be used to discover information about every supported
+                                                  T0
+                 performance level for the performance domain:
+                 uint16 skip_index = 0;
+                 int32 status = 0;
+                 struct number_of_perf_levels {
+                     uint perf_levels_array_len:12;
+                     uint reserved: 4;
+                     uint remaining:16;
+                 } num_levels = {0,0,0};
+                 struct perf_level_data {
+                     uint32 perf_value;
+                     uint32 power;
+                     uint16 transition_latency;
+                     uint16 reserved;
+                     uint32 indicative_freq;
+                     uint32 level_index;
+                 };
+                 struct perf_level_data perf_levels[];
+                 do {
+                        invoke_PERFORMANCE_DESCRIBE_LEVELS (domain_id, skip_index,
+                        &status, &num_levels, perf_levels);
+                        if (status)
+                               goto clean_up_and_return;
+                        add_levels_to_database (domain_id, skip_index,
+                                               num_levels.perf_levels_array_len, perf_levels);
+                        skip_index += num_levels.perf_levels_array_len;
+                                                                                                   Arm® System Control and Management Interface
+                 } while(num_levels.remaining);
