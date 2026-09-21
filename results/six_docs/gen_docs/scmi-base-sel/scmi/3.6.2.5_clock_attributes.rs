@@ -1,0 +1,15 @@
+pub open spec fn clock_attributes_spec(result: int32, attributes: uint32, clock_name: [uint8; 16], clock_enable_delay: uint32, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> (attributes >= 0 && clock_name[0] == 0 && clock_enable_delay >= 0))
+    && (result == SCMI_NOT_FOUND ==> true)
+    && (result == SCMI_INVALID_PARAMETERS ==> true)
+    && (result == SCMI_HARDWARE_ERROR ==> true)
+    && (result == SCMI_PROTOCOL_ERROR ==> true)
+    && (result == SCMI_COMMS_ERROR ==> true)
+    && (result == SCMI_DENIED ==> true)
+    && (result == SCMI_OUT_OF_RANGE ==> true)
+    && (result == SCMI_PARTIAL_ERROR ==> true)
+    && (result == SCMI_NOT_SUPPORTED ==> true)
+    && (result == SCMI_IN_USE ==> true)
+    && (result == SCMI_GENERIC_ERROR ==> true)
+    && (result != SCMI_SUCCESS && result != SCMI_NOT_FOUND && result != SCMI_INVALID_PARAMETERS && result != SCMI_HARDWARE_ERROR && result != SCMI_PROTOCOL_ERROR && result != SCMI_COMMS_ERROR && result != SCMI_DENIED && result != SCMI_OUT_OF_RANGE && result != SCMI_PARTIAL_ERROR && result != SCMI_NOT_SUPPORTED && result != SCMI_IN_USE && result != SCMI_GENERIC_ERROR ==> true)
+}

@@ -1,0 +1,16 @@
+pub open spec fn sbi_nacl_sync_sret_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SBI_SBI_ERR_INVALID_STATE ==> true)
+    && (result == SBI_SBI_ERR_INVALID_PARAM ==> true)
+    && (result == SBI_SBI_ERR_DENIED ==> true)
+    && (result == SBI_SBI_ERR_FAILED ==> true)
+    && (result == SBI_SBI_ERR_IO ==> true)
+    && (result == SBI_SBI_ERR_TIMEOUT ==> true)
+    && (result == SBI_SBI_ERR_NOT_SUPPORTED ==> true)
+    && (result == SBI_SBI_ERR_BAD_RANGE ==> true)
+    && (result == SBI_SBI_ERR_ALREADY_AVAILABLE ==> true)
+    && (result == SBI_SBI_ERR_ALREADY_STARTED ==> true)
+    && (result == SBI_SBI_ERR_ALREADY_STOPPED ==> true)
+    && (result == SBI_SBI_ERR_NO_SHMEM ==> true)
+    && (result == SBI_SBI_ERR_DENIED_LOCKED ==> true)
+    && (result == SBI_SBI_SUCCESS ==> true)
+}

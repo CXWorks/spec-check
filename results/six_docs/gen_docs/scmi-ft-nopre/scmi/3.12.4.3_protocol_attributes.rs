@@ -1,0 +1,3 @@
+pub open spec fn 3.12.4.3_protocol_attributes_spec(de_num: UInt32, groups_num: UInt32, de_implementation_rev_dword0: UInt32, de_implementation_rev_dword1: UInt32, de_implementation_rev_dword2: UInt32, de_implementation_rev_dword3: UInt32, attributes_1: UInt32, default_blk_ts_rate: UInt32, result: Result<int32, (int32, UInt32, UInt32, UInt32, UInt32, UInt32, UInt32, UInt32, UInt32)>, old_s: S, new_s: S) -> bool {
+  true
+}

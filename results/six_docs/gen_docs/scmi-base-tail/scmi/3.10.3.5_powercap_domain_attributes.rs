@@ -1,0 +1,16 @@
+pub open spec fn 3.10.3.5_powercap_domain_attributes_spec(result: int32, attributes: uint32, name: [uint8; 16], min_mai: uint32, max_mai: uint32, mai_step: uint32, min_power_cap: uint32, max_power_cap: uint32, power_cap_step: uint32, sustainable_power: uint32, accuracy: uint32, parent_id: uint32, min_cai: uint32, max_cai: uint32, cai_step: uint32, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> (attributes >= 0 && name[0] == 0 && min_mai >= 0 && max_mai >= 0 && mai_step >= 0 && min_power_cap > 0 && max_power_cap > 0 && power_cap_step >= 0 && sustainable_power >= 0 && accuracy >= 0 && parent_id >= 0 && min_cai >= 0 && max_cai >= 0 && cai_step >= 0))
+    && (result == SCMI_NOT_FOUND ==> true)
+    && (result == SCMI_INVALID_PARAMETERS ==> true)
+    && (result == SCMI_GENERIC_ERROR ==> true)
+    && (result == SCMI_HARDWARE_ERROR ==> true)
+    && (result == SCMI_PROTOCOL_ERROR ==> true)
+    && (result == SCMI_COMMS_ERROR ==> true)
+    && (result == SCMI_BUSY ==> true)
+    && (result == SCMI_DENIED ==> true)
+    && (result == SCMI_IN_USE ==> true)
+    && (result == SCMI_NOT_SUPPORTED ==> true)
+    && (result == SCMI_OUT_OF_RANGE ==> true)
+    && (result == SCMI_PARTIAL_ERROR ==> true)
+    && (old_s == new_s)
+}

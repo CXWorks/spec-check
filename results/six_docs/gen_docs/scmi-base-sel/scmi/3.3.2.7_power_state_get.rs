@@ -1,0 +1,16 @@
+pub open spec fn 3.3.2.7_power_state_get_spec(result: int32, power_state: uint32, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> power_state == old_s.power_state)
+    && (result == SCMI_NOT_FOUND ==> !old_s.has_power_domain(old_s.domain_id))
+    && (result == SCMI_INVALID_PARAMETERS ==> old_s.domain_id < 0)
+    && (result == SCMI_HARDWARE_ERROR ==> old_s.hardware_error)
+    && (result == SCMI_PROTOCOL_ERROR ==> old_s.protocol_error)
+    && (result == SCMI_COMMS_ERROR ==> old_s.comms_error)
+    && (result == SCMI_DENIED ==> old_s.denied)
+    && (result == SCMI_OUT_OF_RANGE ==> old_s.domain_id >= old_s.max_power_domains)
+    && (result == SCMI_PARTIAL_ERROR ==> old_s.partial_error)
+    && (result == SCMI_NOT_SUPPORTED ==> old_s.not_supported)
+    && (result == SCMI_GENERIC_ERROR ==> old_s.generic_error)
+    && (result == SCMI_IN_USE ==> old_s.in_use)
+    && (result == SCMI_BUSY ==> old_s.busy)
+    && (result == SCMI_SUCCESS ==> true)
+}

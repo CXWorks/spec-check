@@ -1,0 +1,15 @@
+pub open spec fn sbi_pmu_counter_config_matching_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SBI_SBI_ERR_INVALID_PARAM ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_INVALID_ADDRESS ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_DENIED ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_FAILED ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_IO ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_TIMEOUT ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_NOT_SUPPORTED ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_BAD_RANGE ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_INVALID_STATE ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_DENIED_LOCKED ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_ERR_NO_SHMEM ==> (counter_idx_base as int < 0 || counter_idx_mask as int < 0 || config_flags as int < 0 || event_idx as int < 0 || event_data as int < 0))
+    && (result == SBI_SBI_SUCCESS ==> (counter_idx_base as int >= 0 && counter_idx_mask as int >= 0 && config_flags as int >= 0 && event_idx as int >= 0 && event_data as int >= 0))
+    && (result == SBI_SBI_SUCCESS ==> (new_s == old_s))
+}

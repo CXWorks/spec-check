@@ -1,0 +1,3 @@
+pub open spec fn 3.12.5.1_telemetry_reading_complete_spec(num_dwords: UInt32, array: [UInt32; 1], old_s: S, new_s: S) -> bool {
+  true
+}

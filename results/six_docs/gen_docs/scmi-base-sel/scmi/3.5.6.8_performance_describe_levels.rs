@@ -1,0 +1,4 @@
+pub open spec fn 3.5.6.8_performance_describe_levels_spec(result: int, num_levels: uint32, perf_levels: array<uint32>, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> (num_levels >= 0 && num_levels <= 4096 && (perf_levels.len() as int) == (num_levels as int) && (forall i: int | 0 <= i && i < (perf_levels.len() as int) ==> (0 <= (perf_levels[i] as int) && (perf_levels[i] as int) <= 0xFFFFFFFF))) && (forall i: int | 0 <= i && i < (perf_levels.len() as int) ==> (forall j: int | 0 <= j && j < (perf_levels.len() as int) && i < j ==> (perf_levels[i] as int) <= (perf_levels[j] as int))))
+    && (result != SCMI_SUCCESS ==> (num_levels == 0 && (forall i: int | 0 <= i && i < (perf_levels.len() as int) ==> (perf_levels[i] as int) == 0)))
+}

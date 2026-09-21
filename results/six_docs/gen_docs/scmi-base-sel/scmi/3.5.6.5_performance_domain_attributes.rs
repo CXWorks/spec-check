@@ -1,0 +1,5 @@
+pub open spec fn 3.5.6.5_performance_domain_attributes_spec(result: int, domain_id: UInt32, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> (old_s.performance_domains[domain_id as int].is_defined() && new_s.performance_domains[domain_id as int] == old_s.performance_domains[domain_id as int]))
+    && (result == SCMI_NOT_FOUND ==> (!old_s.performance_domains[domain_id as int].is_defined() && new_s.performance_domains[domain_id as int] == old_s.performance_domains[domain_id as int]))
+    && (result != SCMI_SUCCESS && result != SCMI_NOT_FOUND ==> (result == SCMI_INVALID_PARAMETERS || result == SCMI_OUT_OF_RANGE || result == SCMI_HARDWARE_ERROR || result == SCMI_PROTOCOL_ERROR || result == SCMI_COMMS_ERROR || result == SCMI_BUSY || result == SCMI_DENIED || result == SCMI_NOT_SUPPORTED || result == SCMI_GENERIC_ERROR || result == SCMI_IN_USE || result == SCMI_PARTIAL_ERROR))
+}

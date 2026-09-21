@@ -1,0 +1,17 @@
+pub open spec fn drtm_get_error_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == DRTM_SUCCESS ==> old_s.drtm_error_code == result)
+    && (result == DRTM_NOT_FOUND ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_NOT_SUPPORTED ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_INVALID_PARAMETERS ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_INVALID_DATA ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_OUT_OF_RESOURCE ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_TPM_ERROR ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_DENIED ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_COPROCESSOR_ERROR ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_INTERNAL_ERROR ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_MEM_PROTECT_INVALID ==> old_s.drtm_error_code == 0)
+    && (result == DRTM_ALREADY_CLOSED ==> old_s.drtm_error_code == 0)
+    && (result == 0 ==> old_s.drtm_error_code == 0)
+    && (result != 0 && result != DRTM_SUCCESS && result != DRTM_NOT_FOUND && result != DRTM_NOT_SUPPORTED && result != DRTM_INVALID_PARAMETERS && result != DRTM_INVALID_DATA && result != DRTM_OUT_OF_RESOURCE && result != DRTM_TPM_ERROR && result != DRTM_DENIED && result != DRTM_COPROCESSOR_ERROR && result != DRTM_INTERNAL_ERROR && result != DRTM_MEM_PROTECT_INVALID && result != DRTM_ALREADY_CLOSED ==> old_s.drtm_error_code == 0)
+    && (new_s.drtm_error_code == old_s.drtm_error_code)
+}

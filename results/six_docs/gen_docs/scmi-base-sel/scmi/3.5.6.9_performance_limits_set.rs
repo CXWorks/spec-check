@@ -1,0 +1,15 @@
+pub open spec fn 3.5.6.9_performance_limits_set_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> (new_s.performance_limits_set == true))
+    && (result == SCMI_NOT_FOUND ==> (old_s.performance_domain_exists(old_s.domain_id) == false))
+    && (result == SCMI_OUT_OF_RANGE ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_DENIED ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_INVALID_PARAMETERS ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_HARDWARE_ERROR ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_PROTOCOL_ERROR ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_COMMS_ERROR ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_BUSY ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_IN_USE ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_PARTIAL_ERROR ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_NOT_SUPPORTED ==> (new_s.performance_limits_set == false))
+    && (result == SCMI_GENERIC_ERROR ==> (new_s.performance_limits_set == false))
+}

@@ -1,0 +1,6 @@
+pub open spec fn sbi_pmu_counter_stop_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SBI_SBI_ERR_INVALID_PARAM ==> (old_s.cmd_input_stop_flags & 0x3FFFFFFFFFFFFFFF != old_s.cmd_input_stop_flags || (old_s.cmd_input_counter_idx_base as int) < 0 || (old_s.cmd_input_counter_idx_base as int) >= (1u64 << 64) || (old_s.cmd_input_counter_idx_mask as int) < 0 || (old_s.cmd_input_counter_idx_mask as int) >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_ALREADY_STOPPED ==> (old_s.cmd_input_counter_idx_base as int) >= 0 && (old_s.cmd_input_counter_idx_base as int) < (1u64 << 64) && (old_s.cmd_input_counter_idx_mask as int) >= 0 && (old_s.cmd_input_counter_idx_mask as int) < (1u64 << 64))
+    && (result == SBI_SBI_ERR_NO_SHMEM ==> (old_s.cmd_input_stop_flags & 0x2) != 0)
+    && (result == SBI_SBI_SUCCESS ==> (old_s.cmd_input_counter_idx_base as int) >= 0 && (old_s.cmd_input_counter_idx_base as int) < (1u64 << 64) && (old_s.cmd_input_counter_idx_mask as int) >= 0 && (old_s.cmd_input_counter_idx_mask as int) < (1u64 << 64) && (old_s.cmd_input_stop_flags & 0x3FFFFFFFFFFFFFFF) == 0)
+}

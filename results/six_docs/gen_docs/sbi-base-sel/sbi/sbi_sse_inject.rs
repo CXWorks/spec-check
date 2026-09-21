@@ -1,0 +1,18 @@
+pub open spec fn sbi_sse_inject_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SBI_SBI_ERR_INVALID_PARAM ==> (event_id as int < 0 || hart_id as int < 0))
+    && (result == SBI_SBI_ERR_INVALID_STATE ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_DENIED ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_BAD_RANGE ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_FAILED ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_IO ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_TIMEOUT ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_NOT_SUPPORTED ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_NO_SHMEM ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_DENIED_LOCKED ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_ALREADY_AVAILABLE ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_ALREADY_STARTED ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_ALREADY_STOPPED ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_ERR_INVALID_ADDRESS ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result == SBI_SBI_SUCCESS ==> (event_id as int >= 0 && hart_id as int >= 0))
+    && (result != SBI_SBI_SUCCESS ==> (event_id as int >= 0 && hart_id as int >= 0))
+}

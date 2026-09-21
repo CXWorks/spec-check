@@ -1,0 +1,7 @@
+pub open spec fn drtm_lock_tcb_hashes_spec(result: int64, old_s: S, new_s: S) -> bool {
+  (result == DRTM_NOT_SUPPORTED ==> true)
+  && (result == DENIED ==> true)
+  && ((!(result == DRTM_NOT_SUPPORTED) &&
+       !(result == DENIED))
+    ==> result == DRTM_SUCCESS)
+}

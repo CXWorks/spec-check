@@ -1,0 +1,17 @@
+pub open spec fn performance_domain_attributes_spec(result: int32, attributes: uint32, rate_limit: uint32, sustained_freq: uint32, sustained_perf_level: uint32, name: [uint8; 16], guaranteed_perf_level: uint32, qos_capability_types: uint32, qos_parent_id: uint32, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> (attributes >= 0 && rate_limit >= 0 && sustained_freq >= 0 && sustained_perf_level >= 0 && qos_capability_types >= 0 && qos_parent_id >= 0))
+    && (result == SCMI_NOT_FOUND ==> true)
+    && (result == SCMI_INVALID_PARAMETERS ==> true)
+    && (result == SCMI_GENERIC_ERROR ==> true)
+    && (result == SCMI_HARDWARE_ERROR ==> true)
+    && (result == SCMI_PROTOCOL_ERROR ==> true)
+    && (result == SCMI_COMMS_ERROR ==> true)
+    && (result == SCMI_BUSY ==> true)
+    && (result == SCMI_DENIED ==> true)
+    && (result == SCMI_IN_USE ==> true)
+    && (result == SCMI_NOT_SUPPORTED ==> true)
+    && (result == SCMI_OUT_OF_RANGE ==> true)
+    && (result == SCMI_PARTIAL_ERROR ==> true)
+    && (result != SCMI_SUCCESS ==> true)
+    && (result == SCMI_SUCCESS ==> true)
+}

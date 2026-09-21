@@ -1,0 +1,3 @@
+pub open spec fn 3.10.3.17_powercap_describe_fastchannel_spec(domain_id: UInt32, message_id: UInt32, cpli: UInt32, result: int32, attributes: UInt32, rate_limit: UInt32, chan_addr_low: UInt32, chan_addr_high: UInt32, chan_size: UInt32, doorbell_addr_low: UInt32, doorbell_addr_high: UInt32, doorbell_set_mask_low: UInt32, doorbell_set_mask_high: UInt32, doorbell_preserve_mask_low: UInt32, doorbell_preserve_mask_high: UInt32, old_s: S, new_s: S) -> bool {
+  true
+}

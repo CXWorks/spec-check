@@ -1,0 +1,16 @@
+pub open spec fn ffa_features_spec(result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {
+    (result == RSI_ERROR_INPUT ==> (old_s.cmd_input_w1 & 0x80000000 != 0 || old_s.cmd_input_w1 & 0x7FFFFFFF == 0))
+    && (result == RSI_SUCCESS ==> (old_s.cmd_input_w1 & 0x80000000 == 0 || old_s.cmd_input_w1 & 0x80000000 != 0))
+    && (result == RSI_SUCCESS ==> (old_s.cmd_input_w2 == 0 || old_s.cmd_input_w2 == 0))
+    && (result == RSI_SUCCESS ==> (new_s.cmd_output_w2 == 0 || new_s.cmd_output_w2 == 0))
+    && (result == RSI_SUCCESS ==> (new_s.cmd_output_w3 == 0 || new_s.cmd_output_w3 == 0))
+    && (result == RSI_SUCCESS ==> (old_s.cmd_input_w3 == 0 || old_s.cmd_input_w3 == 0))
+    && (result == RSI_SUCCESS ==> (old_s.cmd_input_w4 == 0 || old_s.cmd_input_w4 == 0))
+    && (result == RSI_SUCCESS ==> (old_s.cmd_input_w5 == 0 || old_s.cmd_input_w5 == 0))
+    && (result == RSI_SUCCESS ==> (old_s.cmd_input_w6 == 0 || old_s.cmd_input_w6 == 0))
+    && (result == RSI_SUCCESS ==> (old_s.cmd_input_w7 == 0 || old_s.cmd_input_w7 == 0))
+    && (result == RSI_SUCCESS ==> (new_s.cmd_output_w4 == 0 || new_s.cmd_output_w4 == 0))
+    && (result == RSI_SUCCESS ==> (new_s.cmd_output_w5 == 0 || new_s.cmd_output_w5 == 0))
+    && (result == RSI_SUCCESS ==> (new_s.cmd_output_w6 == 0 || new_s.cmd_output_w6 == 0))
+    && (result == RSI_SUCCESS ==> (new_s.cmd_output_w7 == 0 || new_s.cmd_output_w7 == 0))
+}

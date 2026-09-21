@@ -1,0 +1,3 @@
+pub open spec fn 3.10.3.5_powercap_domain_attributes_spec(domain_id: UInt32, attributes: UInt32, name: [uint8; 16], min_mai: UInt32, max_mai: UInt32, mai_step: UInt32, min_power_cap: UInt32, max_power_cap: UInt32, power_cap_step: UInt32, sustainable_power: UInt32, accuracy: UInt32, parent_id: UInt32, min_cai: UInt32, max_cai: UInt32, cai_step: UInt32, result: ScmiCommandReturnCode, old_s: S, new_s: S) -> bool {
+  true
+}

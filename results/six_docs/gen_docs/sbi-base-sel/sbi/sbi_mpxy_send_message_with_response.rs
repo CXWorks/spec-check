@@ -1,0 +1,16 @@
+pub open spec fn sbi_mpxy_send_message_with_response_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SBI_SBI_ERR_INVALID_ADDRESS ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_INVALID_PARAM ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_INVALID_STATE ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_DENIED ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_FAILED ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_IO ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_TIMEOUT ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_NOT_SUPPORTED ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_BAD_RANGE ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_ALREADY_AVAILABLE ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_ALREADY_STARTED ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_ALREADY_STOPPED ==> <unconstrained>)
+    && (result == SBI_SBI_ERR_NO_SHMEM ==> <unconstrained>)
+    && (result == SBI_SBI_SUCCESS ==> <unconstrained>)
+}

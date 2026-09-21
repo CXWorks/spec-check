@@ -1,0 +1,15 @@
+pub open spec fn 3.4.2.5_system_power_state_set_spec(result: int32, old_s: S, new_s: S) -> bool {
+    (SCMI_INVALID_PARAMETERS == result ==> (old_s.flags & 0xFFFFFFFF != 0 || old_s.system_state >= 0x5 || old_s.system_state <= 0x2 || old_s.system_state == 0x0))
+    && (SCMI_NOT_SUPPORTED == result ==> true)
+    && (SCMI_DENIED == result ==> true)
+    && (SCMI_SUCCESS == result ==> true)
+    && (SCMI_BUSY == result ==> true)
+    && (SCMI_COMMS_ERROR == result ==> true)
+    && (SCMI_HARDWARE_ERROR == result ==> true)
+    && (SCMI_PROTOCOL_ERROR == result ==> true)
+    && (SCMI_OUT_OF_RANGE == result ==> true)
+    && (SCMI_PARTIAL_ERROR == result ==> true)
+    && (SCMI_NOT_FOUND == result ==> true)
+    && (SCMI_IN_USE == result ==> true)
+    && (SCMI_GENERIC_ERROR == result ==> true)
+}

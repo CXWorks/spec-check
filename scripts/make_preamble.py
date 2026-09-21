@@ -79,7 +79,12 @@ def main():
         # guess here would be worse than none, and this file is read as
         # vocabulary rather than compiled.
         for c in codes:
-            out.append(f"pub spec const {pre}_{c}: int;")
+            # Do not double-prefix. SBI's codes are already SBI_ERR_*, and
+            # prefixing produced SBI_SBI_ERR_ALREADY_AVAILABLE -- which the
+            # models then faithfully copied, writing SBI_SBI_SUCCESS 247 times.
+            # The vocabulary was wrong and the models were not.
+            name = c if c.startswith(pre + "_") else f"{pre}_{c}"
+            out.append(f"pub spec const {name}: int;")
     if fids:
         out.append(f"\n\n// ---------------------------------------------------------------------------\n"
                    f"// Function IDs, scraped from each command's parameter table\n"

@@ -19,21 +19,21 @@ type Address = u64;
 // SBI return codes (from the document's own Return codes table)
 // ---------------------------------------------------------------------------
 
-pub spec const SBI_SBI_ERR_ALREADY_AVAILABLE: int;
-pub spec const SBI_SBI_ERR_ALREADY_STARTED: int;
-pub spec const SBI_SBI_ERR_ALREADY_STOPPED: int;
-pub spec const SBI_SBI_ERR_BAD_RANGE: int;
-pub spec const SBI_SBI_ERR_DENIED: int;
-pub spec const SBI_SBI_ERR_DENIED_LOCKED: int;
-pub spec const SBI_SBI_ERR_FAILED: int;
-pub spec const SBI_SBI_ERR_INVALID_ADDRESS: int;
-pub spec const SBI_SBI_ERR_INVALID_PARAM: int;
-pub spec const SBI_SBI_ERR_INVALID_STATE: int;
-pub spec const SBI_SBI_ERR_IO: int;
-pub spec const SBI_SBI_ERR_NOT_SUPPORTED: int;
-pub spec const SBI_SBI_ERR_NO_SHMEM: int;
-pub spec const SBI_SBI_ERR_TIMEOUT: int;
-pub spec const SBI_SBI_SUCCESS: int;
+pub spec const SBI_ERR_ALREADY_AVAILABLE: int;
+pub spec const SBI_ERR_ALREADY_STARTED: int;
+pub spec const SBI_ERR_ALREADY_STOPPED: int;
+pub spec const SBI_ERR_BAD_RANGE: int;
+pub spec const SBI_ERR_DENIED: int;
+pub spec const SBI_ERR_DENIED_LOCKED: int;
+pub spec const SBI_ERR_FAILED: int;
+pub spec const SBI_ERR_INVALID_ADDRESS: int;
+pub spec const SBI_ERR_INVALID_PARAM: int;
+pub spec const SBI_ERR_INVALID_STATE: int;
+pub spec const SBI_ERR_IO: int;
+pub spec const SBI_ERR_NOT_SUPPORTED: int;
+pub spec const SBI_ERR_NO_SHMEM: int;
+pub spec const SBI_ERR_TIMEOUT: int;
+pub spec const SBI_SUCCESS: int;
 
 
 // ---------------------------------------------------------------------------

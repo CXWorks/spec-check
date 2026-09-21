@@ -1,0 +1,15 @@
+pub open spec fn clock_rate_notify_spec(result: int32, old_s: S, new_s: S) -> bool {
+    (result == SCMI_INVALID_PARAMETERS ==> (old_s as int) >= 0)
+    && (result == SCMI_NOT_FOUND ==> (old_s as int) >= 0)
+    && (result == SCMI_SUCCESS ==> (old_s as int) >= 0)
+    && (result == SCMI_BUSY ==> (old_s as int) >= 0)
+    && (result == SCMI_COMMS_ERROR ==> (old_s as int) >= 0)
+    && (result == SCMI_DENIED ==> (old_s as int) >= 0)
+    && (result == SCMI_GENERIC_ERROR ==> (old_s as int) >= 0)
+    && (result == SCMI_HARDWARE_ERROR ==> (old_s as int) >= 0)
+    && (result == SCMI_IN_USE ==> (old_s as int) >= 0)
+    && (result == SCMI_NOT_SUPPORTED ==> (old_s as int) >= 0)
+    && (result == SCMI_OUT_OF_RANGE ==> (old_s as int) >= 0)
+    && (result == SCMI_PARTIAL_ERROR ==> (old_s as int) >= 0)
+    && (result == SCMI_PROTOCOL_ERROR ==> (old_s as int) >= 0)
+}

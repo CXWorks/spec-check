@@ -1,0 +1,17 @@
+pub open spec fn sbi_hart_suspend_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SBI_SBI_ERR_INVALID_PARAM ==> suspend_type as int < 0 || suspend_type as int > 3)
+    && (result == SBI_SBI_ERR_INVALID_ADDRESS ==> resume_addr as int < 0 || opaque as int < 0)
+    && (result == SBI_SBI_ERR_DENIED ==> true)
+    && (result == SBI_SBI_ERR_FAILED ==> true)
+    && (result == SBI_SBI_ERR_IO ==> true)
+    && (result == SBI_SBI_ERR_TIMEOUT ==> true)
+    && (result == SBI_SBI_ERR_NOT_SUPPORTED ==> true)
+    && (result == SBI_SBI_ERR_BAD_RANGE ==> true)
+    && (result == SBI_SBI_ERR_DENIED_LOCKED ==> true)
+    && (result == SBI_SBI_ERR_ALREADY_AVAILABLE ==> true)
+    && (result == SBI_SBI_ERR_ALREADY_STARTED ==> true)
+    && (result == SBI_SBI_ERR_ALREADY_STOPPED ==> true)
+    && (result == SBI_SBI_ERR_NO_SHMEM ==> true)
+    && (result == SBI_SBI_SUCCESS ==> true)
+    && (result != SBI_SBI_SUCCESS && result != SBI_SBI_ERR_INVALID_PARAM && result != SBI_SBI_ERR_INVALID_ADDRESS && result != SBI_SBI_ERR_DENIED && result != SBI_SBI_ERR_FAILED && result != SBI_SBI_ERR_IO && result != SBI_SBI_ERR_TIMEOUT && result != SBI_SBI_ERR_NOT_SUPPORTED && result != SBI_SBI_ERR_BAD_RANGE && result != SBI_SBI_ERR_DENIED_LOCKED && result != SBI_SBI_ERR_ALREADY_AVAILABLE && result != SBI_SBI_ERR_ALREADY_STARTED && result != SBI_SBI_ERR_ALREADY_STOPPED && result != SBI_SBI_ERR_NO_SHMEM ==> true)
+}

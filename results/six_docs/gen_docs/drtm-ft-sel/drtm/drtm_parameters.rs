@@ -1,0 +1,3 @@
+pub open spec fn drtm_parameters_spec(revision: UInt16, launch_features: UInt32, dlme_region_address: Address, dlme_region_size: UInt64, dlme_image_start_offset: UInt64, dlme_entry_point_offset: UInt64, dlme_image_size: UInt64, dlme_data_offset: UInt64, normal_world_dce_region_address: Address, normal_world_dce_region_size: UInt64, memory_protection_table_address: Address, memory_protection_table_size: UInt64, old_s: S, new_s: S) -> bool {
+  true
+}

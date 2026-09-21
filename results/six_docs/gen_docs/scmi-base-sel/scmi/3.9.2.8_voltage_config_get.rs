@@ -1,0 +1,16 @@
+pub open spec fn 3.9.2.8_voltage_config_get_spec(result: int32, config: uint32, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> config == 0)
+    && (result == SCMI_SUCCESS ==> (config & 0xF) == (config & 0xF))
+    && (result == SCMI_NOT_FOUND ==> result == SCMI_NOT_FOUND)
+    && (result == SCMI_NOT_SUPPORTED ==> result == SCMI_NOT_SUPPORTED)
+    && (result == SCMI_DENIED ==> result == SCMI_DENIED)
+    && (result == SCMI_INVALID_PARAMETERS ==> result == SCMI_INVALID_PARAMETERS)
+    && (result == SCMI_OUT_OF_RANGE ==> result == SCMI_OUT_OF_RANGE)
+    && (result == SCMI_HARDWARE_ERROR ==> result == SCMI_HARDWARE_ERROR)
+    && (result == SCMI_PROTOCOL_ERROR ==> result == SCMI_PROTOCOL_ERROR)
+    && (result == SCMI_COMMS_ERROR ==> result == SCMI_COMMS_ERROR)
+    && (result == SCMI_BUSY ==> result == SCMI_BUSY)
+    && (result == SCMI_PARTIAL_ERROR ==> result == SCMI_PARTIAL_ERROR)
+    && (result == SCMI_GENERIC_ERROR ==> result == SCMI_GENERIC_ERROR)
+    && (result == SCMI_NOT_SUPPORTED ==> result == SCMI_NOT_SUPPORTED)
+}

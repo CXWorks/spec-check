@@ -1,0 +1,15 @@
+pub open spec fn pinctrl_list_associations_spec(result: int32, remaining: uint32, count: uint16, array: [uint32], old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> (remaining == 0 && count == 0))
+    && (result == SCMI_NOT_FOUND ==> (remaining == 0 && count == 0))
+    && (result == SCMI_NOT_SUPPORTED ==> (remaining == 0 && count == 0))
+    && (result == SCMI_DENIED ==> (remaining == 0 && count == 0))
+    && (result == SCMI_INVALID_PARAMETERS ==> (remaining == 0 && count == 0))
+    && (result == SCMI_HARDWARE_ERROR ==> (remaining == 0 && count == 0))
+    && (result == SCMI_PROTOCOL_ERROR ==> (remaining == 0 && count == 0))
+    && (result == SCMI_OUT_OF_RANGE ==> (remaining == 0 && count == 0))
+    && (result == SCMI_PARTIAL_ERROR ==> (remaining == 0 && count == 0))
+    && (result == SCMI_GENERIC_ERROR ==> (remaining == 0 && count == 0))
+    && (result == SCMI_IN_USE ==> (remaining == 0 && count == 0))
+    && (result == SCMI_COMMS_ERROR ==> (remaining == 0 && count == 0))
+    && (result == SCMI_BUSY ==> (remaining == 0 && count == 0))
+}

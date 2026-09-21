@@ -1,0 +1,15 @@
+pub open spec fn voltage_config_set_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SCMI_SUCCESS ==> (old_s.voltage_domains.contains(old_s.voltage_domains.get(old_s, old_s.voltage_domains, old_s.domain_id)) && new_s.voltage_domains.get(old_s, old_s.voltage_domains, old_s.domain_id) == new_s.voltage_domains.get(old_s, new_s.voltage_domains, old_s.domain_id)))
+    && (result == SCMI_NOT_FOUND ==> !old_s.voltage_domains.contains(old_s.voltage_domains.get(old_s, old_s.voltage_domains, old_s.domain_id)))
+    && (result == SCMI_INVALID_PARAMETERS ==> (old_s.voltage_domains.contains(old_s.voltage_domains.get(old_s, old_s.voltage_domains, old_s.domain_id)) && (old_s.voltage_domains.get(old_s, old_s.voltage_domains, old_s.domain_id).config_bits[31..4] != 0 || old_s.voltage_domains.get(old_s, old_s.voltage_domains, old_s.domain_id).mode != new_s.voltage_domains.get(old_s, new_s.voltage_domains, old_s.domain_id).mode)))
+    && (result == SCMI_NOT_SUPPORTED ==> true)
+    && (result == SCMI_DENIED ==> true)
+    && (result == SCMI_GENERIC_ERROR ==> true)
+    && (result == SCMI_HARDWARE_ERROR ==> true)
+    && (result == SCMI_PROTOCOL_ERROR ==> true)
+    && (result == SCMI_COMMS_ERROR ==> true)
+    && (result == SCMI_OUT_OF_RANGE ==> true)
+    && (result == SCMI_PARTIAL_ERROR ==> true)
+    && (result == SCMI_IN_USE ==> true)
+    && (result == SCMI_NOT_SUPPORTED ==> true)
+}

@@ -1,0 +1,17 @@
+pub open spec fn sbi_mpxy_set_shmem_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SBI_SBI_ERR_INVALID_ADDRESS ==> (old_s.shmem_phys_lo != 0xFFFFFFFFFFFFFFFF || old_s.shmem_phys_hi != 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_INVALID_PARAM ==> (old_s.shmem_phys_lo % 4096 != 0))
+    && (result == SBI_SBI_ERR_INVALID_STATE ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_DENIED ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_FAILED ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_TIMEOUT ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_IO ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_NOT_SUPPORTED ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_BAD_RANGE ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_DENIED_LOCKED ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_ALREADY_AVAILABLE ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_ALREADY_STARTED ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_ALREADY_STOPPED ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_ERR_NO_SHMEM ==> (old_s.shmem_phys_lo == 0xFFFFFFFFFFFFFFFF && old_s.shmem_phys_hi == 0xFFFFFFFFFFFFFFFF))
+    && (result == SBI_SBI_SUCCESS ==> (new_s.shmem_phys_lo == old_s.shmem_phys_lo && new_s.shmem_phys_hi == old_s.shmem_phys_hi))
+}

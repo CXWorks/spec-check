@@ -1,0 +1,27 @@
+pub open spec fn sdei_shared_reset_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SDEI_SUCCESS ==> (
+        (forall e: SdeiEventId. SdeiEventIsRunning(old_s, e) ==> false)
+        && (forall i: SdeiInterruptId. SdeiInterruptIsBound(old_s, i) ==> false)
+    ))
+    && (result == SDEI_NOT_SUPPORTED ==> true)
+    && (result == SDEI_DENIED ==> (
+        (exists e: SdeiEventId. SdeiEventIsRunning(old_s, e))
+        || (exists i: SdeiInterruptId. SdeiInterruptIsBound(old_s, i))
+    ))
+    && (result == SDEI_OUT_OF_RESOURCE ==> true)
+    && (result == SDEI_PENDING ==> true)
+    && (result == SDEI_INVALID_PARAMETERS ==> true)
+    && (result == SDEI_EVENT_COMPLETE_FID ==> false)
+    && (result == SDEI_EVENT_COMPLETE_AND_RESUME_FID ==> false)
+    && (result == SDEI_EVENT_CONTEXT_FID ==> false)
+    && (result == SDEI_EVENT_DISABLE_FID ==> false)
+    && (result == SDEI_EVENT_GET_INFO_FID ==> false)
+    && (result == SDEI_EVENT_REGISTER_FID ==> false)
+    && (result == SDEI_EVENT_ROUTING_SET_FID ==> false)
+    && (result == SDEI_EVENT_STATUS_FID ==> false)
+    && (result == SDEI_EVENT_UNREGISTER_FID ==> false)
+    && (result == SDEI_PE_MASK_FID ==> false)
+    && (result == SDEI_PE_UNMASK_FID ==> false)
+    && (result == SDEI_PRIVATE_RESET_FID ==> false)
+    && (result == SDEI_SHARED_RESET_FID ==> false)
+}

@@ -1,0 +1,18 @@
+pub open spec fn sbi_debug_num_triggers_spec(result: int, old_s: S, new_s: S) -> bool {
+    (result == SBI_SBI_ERR_INVALID_ADDRESS ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_INVALID_PARAM ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_INVALID_STATE ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_DENIED ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_FAILED ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_TIMEOUT ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_IO ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_NOT_SUPPORTED ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_BAD_RANGE ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_ALREADY_AVAILABLE ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_ALREADY_STARTED ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_ALREADY_STOPPED ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_ERR_NO_SHMEM ==> (old_s.trig_tdata1 as int < 0 || old_s.trig_tdata1 as int >= (1u64 << 64)))
+    && (result == SBI_SBI_SUCCESS ==> (old_s.trig_tdata1 as int >= 0 && old_s.trig_tdata1 as int < (1u64 << 64)))
+    && (result == SBI_SBI_SUCCESS ==> new_s.trig_tdata1 == old_s.trig_tdata1)
+    && (result == SBI_SBI_SUCCESS ==> new_s.num_triggers == old_s.num_triggers)
+}
