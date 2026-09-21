@@ -175,7 +175,14 @@ def split(text, heading, stop, name_from=None, qualify=False):
         else:
             found = names_in(m.group(2))
         for nm in found:
-            key = f"{m.group(1)}_{nm}" if qualify else nm
+            # Suffix, not prefix. Prefixing put the section number first
+            # ("3.10.3.13_POWERCAP_DOMAIN_NAME_GET"), so the generated function
+            # name began with a digit and was not a legal identifier -- the
+            # spec parser then failed on 151 of SCMI's 153 files and the
+            # vacuity check silently fell back to scanning whole files, which
+            # never equal "true". SCMI looked like the one document where the
+            # fine-tuned model was NOT vacuous. It was a naming artifact.
+            key = f"{nm}__{m.group(1).replace('.', '_')}" if qualify else nm
             out[key] = body
     return out
 
