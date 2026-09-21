@@ -1,0 +1,460 @@
+{
+ "doc": "sbi",
+ "vocab": [
+  "SBI_ERR_ALREADY_AVAILABLE",
+  "SBI_ERR_ALREADY_STARTED",
+  "SBI_ERR_ALREADY_STOPPED",
+  "SBI_ERR_BAD_RANGE",
+  "SBI_ERR_DENIED",
+  "SBI_ERR_DENIED_LOCKED",
+  "SBI_ERR_FAILED",
+  "SBI_ERR_INVALID_ADDRESS",
+  "SBI_ERR_INVALID_PARAM",
+  "SBI_ERR_INVALID_STATE",
+  "SBI_ERR_IO",
+  "SBI_ERR_NOT_SUPPORTED",
+  "SBI_ERR_NO_SHMEM",
+  "SBI_ERR_TIMEOUT",
+  "SBI_SUCCESS"
+ ],
+ "commands": {
+  "sbi_cppc_probe": {
+   "codes": [
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_cppc_read": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_cppc_read_hi": {
+   "codes": [
+    "SBI_ERR_DENIED",
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_cppc_write": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_debug_console_read": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_debug_console_write_byte": {
+   "codes": [
+    "SBI_ERR_DENIED",
+    "SBI_ERR_FAILED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_debug_console_write": {
+   "codes": [
+    "SBI_ERR_DENIED",
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_debug_disable_triggers": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_debug_enable_triggers": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_debug_install_triggers": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_debug_num_triggers": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_debug_read_triggers": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_debug_set_shmem": {
+   "codes": [
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_ADDRESS",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_debug_uninstall_triggers": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_debug_update_triggers": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_fwft_get": {
+   "codes": [
+    "SBI_ERR_DENIED",
+    "SBI_ERR_FAILED",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_fwft_set": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_get_impl_id": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_get_impl_version": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_get_marchid": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_get_mimpid": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_get_mvendorid": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_get_spec_version": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_hart_get_status": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM"
+   ],
+   "weak_source": false
+  },
+  "sbi_hart_start": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_hart_stop": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_hart_suspend": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_mpxy_get_channel_ids": {
+   "codes": [
+    "SBI_ERR_DENIED",
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_NO_SHMEM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_mpxy_get_notification_events": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_mpxy_get_shmem_size": {
+   "codes": [
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_mpxy_read_attributes": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_mpxy_send_message_with_response": {
+   "codes": [
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_mpxy_send_message_without_response": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_mpxy_set_shmem": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_mpxy_write_attributes": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_nacl_probe_feature": {
+   "codes": [
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_nacl_set_shmem": {
+   "codes": [
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_ADDRESS",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_nacl_sync_csr": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_nacl_sync_hfence": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_ERR_NO_SHMEM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_nacl_sync_sret": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_pmu_counter_config_matching": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_pmu_counter_fw_read": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_pmu_counter_fw_read_hi": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_pmu_counter_get_info": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_pmu_counter_start": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_pmu_counter_stop": {
+   "codes": [
+    "SBI_ERR_ALREADY_STOPPED",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_NO_SHMEM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_pmu_event_get_info": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_pmu_num_counters": {
+   "codes": [
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_pmu_snapshot_set_shmem": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_probe_extension": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_remote_fence_i": {
+   "codes": [
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_remote_hfence_gvma": {
+   "codes": [
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_ADDRESS",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_remote_hfence_gvma_vmid": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_remote_hfence_vvma_asid": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_remote_hfence_vvma": {
+   "codes": [
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_ADDRESS",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_remote_sfence_vma_asid": {
+   "codes": [
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_ADDRESS",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_remote_sfence_vma": {
+   "codes": [
+    "SBI_ERR_INVALID_ADDRESS",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_send_ipi": {
+   "codes": [
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_set_timer": {
+   "codes": [
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_sse_complete": {
+   "codes": [
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_sse_disable": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_sse_enable": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_INVALID_STATE",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_sse_hart_mask": {
+   "codes": [
+    "SBI_ERR_ALREADY_STOPPED",
+    "SBI_ERR_FAILED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_sse_hart_unmask": {
+   "codes": [
+    "SBI_ERR_ALREADY_STARTED",
+    "SBI_ERR_FAILED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_sse_inject": {
+   "codes": [
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_sse_read_attrs": {
+   "codes": [
+    "SBI_ERR_BAD_RANGE",
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_ADDRESS",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_sse_register": {
+   "codes": [
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_INVALID_STATE",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_sse_unregister": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_sse_write_attrs": {
+   "codes": [
+    "SBI_ERR_BAD_RANGE",
+    "SBI_ERR_DENIED",
+    "SBI_ERR_FAILED",
+    "SBI_ERR_INVALID_ADDRESS",
+    "SBI_ERR_INVALID_PARAM",
+    "SBI_ERR_INVALID_STATE",
+    "SBI_ERR_NOT_SUPPORTED",
+    "SBI_SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "sbi_steal_time_set_shmem": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_system_reset": {
+   "codes": [],
+   "weak_source": false
+  },
+  "sbi_system_suspend": {
+   "codes": [],
+   "weak_source": false
+  }
+ }
+}

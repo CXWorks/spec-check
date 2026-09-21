@@ -50,6 +50,8 @@ CODE_TABLE = {
     # PSCI has no numbered "Return codes" section; the list lives under a
     # table caption instead, so anchor on the caption.
     "psci_13": (r'(?mi)^\s*Table \d+ +Return error codes\s*$', r'(?mi)^\s*Table \d+\b'),
+    "scmi":    (r'(?mi)^\s*Table \d+: *Status codes\s*$', r'(?mi)^\s*Table \d+:'),
+    "sbi":     (r'(?mi)^\s*Table \d+\. *Standard SBI Errors\s*$', r'(?mi)^\s*Table \d+\.'),
     # FF-A numbers its tables "12.2" and titles this one "Error status codes".
     "ffa":     (r'(?mi)^\s*Table [\d.]+: *Error status codes\s*$', r'(?mi)^\s*Table [\d.]+:'),
 }
@@ -58,6 +60,8 @@ PDF_OF = {
     "sdei":    "ARM_DEN0054C_Software_Delegated_Exception_Interface.pdf",
     "psci_13": "DEN0022F.b_Power_State_Coordination_Interface.pdf",
     "ffa":     "DEN0077A_Firmware_Framework_Arm_A-profile_1.3_ALP4.pdf",
+    "scmi":    "DEN0056F_System_Control_and_Management_Interface_v4.0-bet0.pdf",
+    "sbi":     "riscv-sbi.pdf",
 }
 
 RETURN_HEAD = {
@@ -65,6 +69,8 @@ RETURN_HEAD = {
     "drtm":    r'(?mi)^\s*Return\b',
     "psci_13": r'(?mi)^\s*Return\b',
     "ffa":     r'(?mi)^\s*(?:Return|Output) ?(?:value|parameter)s?\b|^\s*Return\b',
+    "scmi":    r'(?mi)^\s*Return values\b|^\s*status\b',
+    "sbi":     r'(?mi)^\s*(?:Return|Error) ?(?:code|value)s?\b|struct sbiret\b',
 }
 # Underscores are NOT required. Insisting on them dropped every single-word
 # code -- SUCCESS, DENIED, ALREADY_ON's siblings -- and left a two-code

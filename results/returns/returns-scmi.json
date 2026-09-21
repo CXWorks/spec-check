@@ -1,0 +1,1068 @@
+{
+ "doc": "scmi",
+ "vocab": [
+  "BUSY",
+  "COMMS_ERROR",
+  "DENIED",
+  "GENERIC_ERROR",
+  "HARDWARE_ERROR",
+  "INVALID_PARAMETERS",
+  "IN_USE",
+  "NOT_FOUND",
+  "NOT_SUPPORTED",
+  "OUT_OF_RANGE",
+  "PARTIAL_ERROR",
+  "PROTOCOL_ERROR",
+  "SUCCESS"
+ ],
+ "commands": {
+  "3.10.3.10_POWERCAP_MAI_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.11_POWERCAP_CAI_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.12_POWERCAP_CAI_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.13_POWERCAP_DOMAIN_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.14_POWERCAP_MEASUREMENTS_GET": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.15_POWERCAP_CAP_NOTIFY": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.16_POWERCAP_MEASUREMENTS_NOTIFY": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.17_POWERCAP_DESCRIBE_FASTCHANNEL": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.10.3.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.10.3.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.5_POWERCAP_DOMAIN_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.6_POWERCAP_CPC_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.7_POWERCAP_CAP_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.8_POWERCAP_CAP_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.3.9_POWERCAP_MAI_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.10.4.1_POWERCAP_CAP_SET_COMPLETE": {
+   "codes": [
+    "SUCCESS"
+   ],
+   "weak_source": true
+  },
+  "3.10.5.1_POWERCAP_CAP_CHANGED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.10.5.2_POWERCAP_MEASUREMENTS_CHANGED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.11.2.10_PINCTRL_RELEASE": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.11.2.11_PINCTRL_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.11.2.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.11.2.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.11.2.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.11.2.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.11.2.5_PINCTRL_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.11.2.6_PINCTRL_LIST_ASSOCIATIONS": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.11.2.8_PINCTRL_SETTINGS_CONFIGURE": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "IN_USE",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "PROTOCOL_ERROR",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.11.2.9_PINCTRL_REQUEST": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "IN_USE",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.4.10_TELEMETRY_CONFIG_SET": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.4.12_TELEMETRY_RESET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.4.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.12.4.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.4.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.12.4.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.4.5_TELEMETRY_LIST_SHMTI": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.4.6_TELEMETRY_DE_DESCRIPTION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.12.4.7_TELEMETRY_LIST_UPDATE_INTERVALS": {
+   "codes": [
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.4.8_TELEMETRY_DE_CONFIGURE": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "IN_USE",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.4.9_TELEMETRY_DE_ENABLED_LIST": {
+   "codes": [
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.12.5.1_TELEMETRY_READING_COMPLETE": {
+   "codes": [
+    "PARTIAL_ERROR"
+   ],
+   "weak_source": false
+  },
+  "3.12.6.1_TELEMETRY_UPDATE": {
+   "codes": [
+    "PARTIAL_ERROR"
+   ],
+   "weak_source": false
+  },
+  "3.2.2.10_BASE_NOTIFY_ERRORS": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.2.2.11_BASE_SET_DEVICE_PERMISSIONS": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.2.2.12_BASE_SET_PROTOCOL_PERMISSIONS": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.2.2.13_BASE_RESET_AGENT_CONFIGURATION": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.2.2.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.2.2.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.2.2.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.2.2.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.2.2.5_BASE_DISCOVER_VENDOR": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.2.2.6_BASE_DISCOVER_SUB_VENDOR": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.2.2.7_BASE_DISCOVER_IMPLEMENTATION_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.2.2.8_BASE_DISCOVER_LIST_PROTOCOLS": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.2.2.9_BASE_DISCOVER_AGENT": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.2.3.1_BASE_ERROR_EVENT": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.3.2.10_POWER_DOMAIN_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.3.2.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.3.2.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.3.2.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.3.2.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.3.2.5_POWER_DOMAIN_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.3.2.6_POWER_STATE_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.3.2.7_POWER_STATE_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.3.2.8_POWER_STATE_NOTIFY": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.3.2.9_POWER_STATE_CHANGE_REQUESTED_NOTIFY": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.3.3.1_POWER_STATE_CHANGED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.3.3.2_POWER_STATE_CHANGE_REQUESTED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.4.2.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.4.2.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.4.2.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.4.2.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.4.2.5_SYSTEM_POWER_STATE_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED"
+   ],
+   "weak_source": false
+  },
+  "3.4.2.6_SYSTEM_POWER_STATE_GET": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.4.2.7_SYSTEM_POWER_STATE_NOTIFY": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.4.3.1_SYSTEM_POWER_STATE_NOTIFIER": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.5.6.10_PERFORMANCE_LIMITS_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.11_PERFORMANCE_LEVEL_SET": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.12_PERFORMANCE_LEVEL_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.13_REDUCE_SUSTAINED_PERFORMANCE_LEVEL": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.14_PERFORMANCE_QOS_CONFIG_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.15_PERFORMANCE_QOS_CONFIG_GET": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.16_PERFORMANCE_NOTIFY_LIMITS": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.19_PERFORMANCE_DOMAIN_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.5.6.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.5.6.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.5_PERFORMANCE_DOMAIN_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.6_PERFORMANCE_QOS_CAPABILITY_SUBTYPES": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.7_PERFORMANCE_QOS_ATTRIBUTES": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.8_PERFORMANCE_DESCRIBE_LEVELS": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.6.9_PERFORMANCE_LIMITS_SET": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.5.7.1_PERFORMANCE_QOS_CONFIG_COMPLETE": {
+   "codes": [
+    "SUCCESS"
+   ],
+   "weak_source": true
+  },
+  "3.5.8.1_PERFORMANCE_LIMITS_CHANGED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.5.8.2_PERFORMANCE_LEVEL_CHANGED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.6.2.10_CLOCK_CONFIG_GET": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.11_CLOCK_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.12_CLOCK_RATE_NOTIFY": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.13_CLOCK_RATE_CHANGE_REQUESTED_NOTIFY": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.14_CLOCK_POSSIBLE_PARENTS_GET": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.16_CLOCK_PARENT_GET": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.17_CLOCK_GET_PERMISSIONS": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.6.2.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.6.2.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.5_CLOCK_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.6_CLOCK_DESCRIBE_RATES": {
+   "codes": [
+    "NOT_FOUND",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.7_CLOCK_RATE_SET": {
+   "codes": [
+    "BUSY",
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.2.8_CLOCK_RATE_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.6.3.1_CLOCK_RATE_SET_COMPLETE": {
+   "codes": [
+    "DENIED",
+    "SUCCESS"
+   ],
+   "weak_source": true
+  },
+  "3.6.4.1_CLOCK_RATE_CHANGED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.6.4.2_CLOCK_RATE_CHANGE_REQUESTED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.7.2.10_SENSOR_CONFIG_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.11_SENSOR_CONFIG_SET": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.12_SENSOR_READING_GET": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "PROTOCOL_ERROR",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.13_SENSOR_CONTINUOUS_UPDATE_NOTIFY": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.14_SENSOR_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.15_SENSOR_AXIS_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.7.2.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.7.2.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.5_SENSOR_DESCRIPTION_GET": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.7.2.6_SENSOR_AXIS_DESCRIPTION_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.8_SENSOR_TRIP_POINT_NOTIFY": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.2.9_SENSOR_TRIP_POINT_CONFIG": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.7.3.1_SENSOR_READING_COMPLETE": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.7.4.1_SENSOR_TRIP_POINT_EVENT": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.7.4.2_SENSOR_UPDATE": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.8.2.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.8.2.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.8.2.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.8.2.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.8.2.5_RESET_DOMAIN_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.8.2.6_RESET": {
+   "codes": [
+    "DENIED",
+    "GENERIC_ERROR",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.8.2.7_RESET_NOTIFY": {
+   "codes": [
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.8.2.8_RESET_DOMAIN_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.8.3.1_RESET_COMPLETE": {
+   "codes": [
+    "GENERIC_ERROR",
+    "SUCCESS"
+   ],
+   "weak_source": true
+  },
+  "3.8.4.1_RESET_ISSUED": {
+   "codes": [],
+   "weak_source": true
+  },
+  "3.9.2.10_VOLTAGE_LEVEL_GET": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.9.2.11_VOLTAGE_DOMAIN_NAME_GET": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.9.2.1_PROTOCOL_VERSION": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.9.2.2_NEGOTIATE_PROTOCOL_VERSION": {
+   "codes": [
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.9.2.3_PROTOCOL_ATTRIBUTES": {
+   "codes": [],
+   "weak_source": false
+  },
+  "3.9.2.4_PROTOCOL_MESSAGE_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.9.2.5_VOLTAGE_DOMAIN_ATTRIBUTES": {
+   "codes": [
+    "NOT_FOUND",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.9.2.6_VOLTAGE_DESCRIBE_LEVELS": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "OUT_OF_RANGE",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.9.2.7_VOLTAGE_CONFIG_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.9.2.8_VOLTAGE_CONFIG_GET": {
+   "codes": [
+    "DENIED",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  },
+  "3.9.2.9_VOLTAGE_LEVEL_SET": {
+   "codes": [
+    "DENIED",
+    "INVALID_PARAMETERS",
+    "NOT_FOUND",
+    "NOT_SUPPORTED",
+    "SUCCESS"
+   ],
+   "weak_source": false
+  }
+ }
+}
