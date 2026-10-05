@@ -84,6 +84,55 @@ Section:
 """
 
 
+STRICT_RULES = """
+Additional rule for the pre:/post: lines -- this matters more than anything above:
+- Every `pre:` and `post:` line must be ONE expression in this restricted
+  pseudo-code and nothing else: helper calls `Name(arg, ...)`, field access
+  `x.f`, integer literals, named constants, comparisons (== != < <= > >=),
+  `!`, `&&`, `||`, `==>`, arithmetic (+ - * / %), parentheses. Quantifiers only
+  as `forall|x: Type| expr` or `exists|x: Type| expr`.
+- No English words or sentences, no bit slices such as `x[31:16]` (use a helper
+  such as `Bits(x, 31, 16)`), no `? :`, no `if`, no assignments.
+- A condition that cannot be written this way gets a descriptive helper
+  predicate instead, e.g. `post: CoreRestartsAtEntryPoint(target_cpu, entry_point_address)`.
+"""
+
+EXPR_ROW = re.compile(r'\b(?:pre|post):\s*(.*)$')
+
+
+def strict_violations(text):
+    """Why the pre:/post: expressions are not in the restricted pseudo-code."""
+    exprs, cur = [], None
+    for line in text.splitlines():
+        m = EXPR_ROW.search(line)
+        if m:
+            if cur is not None:
+                exprs.append(cur)
+            cur = m.group(1)
+        elif cur is not None and line.strip() and not re.match(r'^\s*[A-Z]?[\d.]+\s+[A-Z]', line) \
+                and not re.match(r'^\s*\w+\s{2,}(pre|post|ID)\b', line):
+            cur += " " + line.strip()
+        else:
+            if cur is not None:
+                exprs.append(cur)
+            cur = None
+    if cur is not None:
+        exprs.append(cur)
+    bad = []
+    for e in exprs:
+        words = [w for w in re.findall(r'\b([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\b', e)
+                 if "as" not in w]
+        if words:
+            bad.append(f"prose: {' '.join(words[0])!r} in {e[:60]!r}")
+        if re.search(r'\[\s*\d+\s*:\s*\d+\s*\]', e):
+            bad.append(f"bit slice in {e[:60]!r}")
+        if "?" in e:
+            bad.append(f"'?' in {e[:60]!r}")
+        if re.search(r'\b(forall|exists)\b(?!\s*\|)', e):
+            bad.append(f"quantifier not in Verus form in {e[:60]!r}")
+    return bad[:3]
+
+
 def doc_codes(doc, text):
     vocab = json.loads((ROOT / "results" / "returns" / f"returns-{doc}.json").read_text())["vocab"]
     return {c for c in vocab if re.search(rf'\b{c}\b', text)}
@@ -105,6 +154,8 @@ def check(style, doc, cmd, orig, new):
         if len(new) < 0.4 * len(orig):
             bad.append(f"too short: {len(new)} vs {len(orig)} chars")
     else:
+        if style == "strict":
+            bad += strict_violations(new)
         if not re.search(r'\bpost:', new):
             bad.append("no post: rows")
         for h in ("Input values", "Output values", "Failure conditions", "Success conditions", "Footprint"):
@@ -115,7 +166,8 @@ def check(style, doc, cmd, orig, new):
 
 def one(job, example, model, effort):
     doc, cmd, style, text = job
-    prompt = (CLEAN if style == "clean" else RMM.format(example=example)) + text
+    prompt = (CLEAN if style == "clean" else
+              RMM.format(example=example) + (STRICT_RULES if style == "strict" else "")) + text
     why = []
     for _ in range(2):
         try:
@@ -137,7 +189,7 @@ def main():
     ap.add_argument("--model", default="claude-opus-5-5")
     ap.add_argument("--effort", default="medium")
     ap.add_argument("--jobs", type=int, default=8)
-    ap.add_argument("--styles", nargs="+", default=["clean", "rmm"], choices=["clean", "rmm"])
+    ap.add_argument("--styles", nargs="+", default=["clean", "rmm"], choices=["clean", "rmm", "strict"])
     args = ap.parse_args()
 
     out = Path(args.out)
