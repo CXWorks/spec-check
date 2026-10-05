@@ -91,7 +91,10 @@ def doc_codes(doc, text):
 
 def check(style, doc, cmd, orig, new):
     bad = []
-    if cmd not in new:
+    # SCMI's names carry their section number (BASE_DISCOVER_AGENT__3_2_2_9) to
+    # tell apart same-named messages in different protocols; the document itself
+    # never writes the suffix, so only the name before it is required.
+    if re.sub(r'__\d+(?:_\d+)*$', '', cmd) not in new:
         bad.append("function name lost")
     lost = doc_codes(doc, orig) - doc_codes(doc, new)
     if lost:
@@ -134,6 +137,7 @@ def main():
     ap.add_argument("--model", default="claude-opus-5-5")
     ap.add_argument("--effort", default="medium")
     ap.add_argument("--jobs", type=int, default=8)
+    ap.add_argument("--styles", nargs="+", default=["clean", "rmm"], choices=["clean", "rmm"])
     args = ap.parse_args()
 
     out = Path(args.out)
@@ -144,7 +148,7 @@ def main():
             if f.name.startswith("._"):
                 continue
             cmd = f.name[: -len("_command.txt")]
-            for style in ("clean", "rmm"):
+            for style in args.styles:
                 jobs.append((doc, cmd, style, f.read_text()))
 
     with ThreadPoolExecutor(args.jobs) as ex:
@@ -161,9 +165,9 @@ def main():
 
     for doc in args.docs:
         cmds = sorted({c for d, c, s in done if d == doc})
-        keep = [c for c in cmds if (doc, c, "clean") in done and (doc, c, "rmm") in done]
+        keep = [c for c in cmds if all((doc, c, st) in done for st in args.styles)]
         report["kept"][doc] = keep
-        for style in ("clean", "rmm"):
+        for style in args.styles:
             v = f"{doc}_{style}"
             (out / "sections" / v).mkdir(parents=True, exist_ok=True)
             (out / "specs" / v).mkdir(parents=True, exist_ok=True)

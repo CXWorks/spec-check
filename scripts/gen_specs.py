@@ -157,6 +157,10 @@ def main():
                          "parity) in BENCHMARK_VERUS_RMM.md. 0 keeps the raw "
                          "generation, which stays the comparable configuration.")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--system-file", default=None,
+                    help="Replace the prompt variant's system prompt with this file's "
+                         "text, keeping its user template. For prompt ablations only; "
+                         "every checkpoint was trained on the stock system prompt.")
     ap.add_argument("--no-gold", action="store_true",
                     help="Keep commands that have no gold spec. For the zero-shot "
                          "documents only (psci_13, sdei, drtm ...), where no gold "
@@ -182,6 +186,9 @@ def main():
         print(f"[gen] repair enabled: up to {args.repair_rounds} round(s)", flush=True)
 
     prompt = get_v3_prompt(args.prompt_variant)
+    if args.system_file:
+        prompt = type(prompt)(f"{prompt.name}+{Path(args.system_file).stem}",
+                              Path(args.system_file).read_text(), prompt.user_template)
     print(f"[gen] prompt variant: {prompt.name}", flush=True)
 
     tok = AutoTokenizer.from_pretrained(args.base)
