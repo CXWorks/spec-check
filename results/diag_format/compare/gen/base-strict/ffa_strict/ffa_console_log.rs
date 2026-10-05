@@ -1,0 +1,15 @@
+pub open spec fn ffa_console_log_spec(result: UInt32, char_count: UInt32, characters: [UInt32; 6], old_s: S, new_s: S) -> bool {
+    (!IsImplementedAtInstance(old_s, FFA_CONSOLE_LOG) ==> ResultEqual(result, FFA_ERROR_NOT_SUPPORTED))
+    && (char_count == 0 ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (IsSmc32Convention(old_s, fid) && char_count > 24 ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (IsSmc64Convention(old_s, fid) && char_count > 128 ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (!AllCharactersLogged(old_s, characters, char_count) ==> ResultEqual(result, FFA_ERROR_RETRY))
+    && (ResultEqual(result, FFA_SUCCESS) ==> CharactersLoggedToConsoleInFiniteTime(old_s, characters, char_count))
+    && (ResultEqual(result, FFA_ERROR_RETRY) ==> logged_count == char_count)
+    && (ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS) ==> logged_count == 0)
+    && (ResultEqual(result, FFA_ERROR_NOT_SUPPORTED) ==> logged_count == 0)
+    && (ResultEqual(result, FFA_ERROR_RETRY) ==> new_s.console_output == old_s.console_output + CharactersLoggedToConsoleInFiniteTime(old_s, characters, char_count))
+    && (ResultEqual(result, FFA_SUCCESS) ==> new_s.console_output == old_s.console_output + char_count)
+    && (ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS) ==> new_s.console_output == old_s.console_output)
+    && (ResultEqual(result, FFA_ERROR_NOT_SUPPORTED) ==> new_s.console_output == old_s.console_output)
+}

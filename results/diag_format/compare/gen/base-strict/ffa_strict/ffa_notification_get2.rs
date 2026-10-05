@@ -1,0 +1,16 @@
+pub open spec fn ffa_notification_get2_spec(result: UInt32, error_code: Int32, sp_bitmap: [UInt64; 6], vm_bitmap: [UInt64; 6], spmc_bitmap: UInt64, hyp_bitmap: UInt64, reserved: UInt64, old_s: S, new_s: S) -> bool {
+    (!IsImplementedAtInstance(FFA_NOTIFICATION_GET2, CurrentInstance()) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!CallerAllowedToInvoke(Caller(), FFA_NOTIFICATION_GET2) ==> ResultEqual(result, DENIED))
+    && (!IsRecognizedPartitionId(Bits64(old_s.cmd_input_1, 15, 0)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(old_s.cmd_input_2, 63, 4) != 0 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (CurrentInstance() == NS_PHYSICAL && (Bits64(old_s.cmd_input_2, 1, 1) != 0 || Bits64(old_s.cmd_input_2, 3, 3) != 0) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(old_s.cmd_input_2, 0, 0) == 1 && ExceedsSupportedNotifications(old_s.cmd_input_3) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(old_s.cmd_input_2, 1, 1) == 1 && ExceedsSupportedNotifications(old_s.cmd_input_9) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (EmptyNotificationBitmapSpecified(old_s.cmd_input_2, old_s.cmd_input_1) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (ResultEqual(result, FFA_SUCCESS64) ==> reserved == 0)
+    && (Bits64(old_s.cmd_input_2, 0, 0) == 1 ==> sp_bitmap == RetrievedNotifications(PendingSpNotifications(old_s.cmd_input_1), old_s.cmd_input_3))
+    && (Bits64(old_s.cmd_input_2, 1, 1) == 1 ==> vm_bitmap == RetrievedNotifications(PendingVmNotifications(old_s.cmd_input_1), old_s.cmd_input_9))
+    && (Bits64(old_s.cmd_input_2, 2, 2) == 1 ==> spmc_bitmap == RetrievedNotifications(PendingSpmFrameworkNotifications(old_s.cmd_input_1), old_s.cmd_input_15))
+    && (Bits64(old_s.cmd_input_2, 3, 3) == 1 ==> hyp_bitmap == RetrievedNotifications(PendingHypFrameworkNotifications(old_s.cmd_input_1), old_s.cmd_input_16))
+    && (ResultEqual(result, FFA_SUCCESS64) ==> MaskedNotificationsRemainInCurrentState(old_s.cmd_input_1, old_s.cmd_input_3, old_s.cmd_input_9, old_s.cmd_input_15, old_s.cmd_input_16))
+}

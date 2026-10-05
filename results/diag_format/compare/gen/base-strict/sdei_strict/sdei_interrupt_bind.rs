@@ -1,0 +1,18 @@
+pub open spec fn sdei_interrupt_bind_spec(result: Int64, old_s: S, new_s: S) -> bool {
+    (!SdeiIsSupported() ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsValidInterrupt(old_s, old_s.interrupt) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsPpi(old_s, old_s.interrupt) && !IsSpi(old_s, old_s.interrupt) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsOwnedByClient(old_s, old_s.interrupt) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (InterruptState(old_s, old_s.interrupt) != INACTIVE ==> ResultEqual(result, DENIED))
+    && (!IsBound(old_s, old_s.interrupt) && NumFreeBindSlots(old_s) == 0 ==> ResultEqual(result, OUT_OF_RESOURCE))
+    && (Bits(result, 63, 32) == 0)
+    && (IsVendorEventNumber(Bits(result, 31, 0)))
+    && (EventIsBoundToInterrupt(Bits(result, 31, 0), old_s.interrupt))
+    && (EventPriority(Bits(result, 31, 0)) == NORMAL_PRIORITY)
+    && (IsPpi(old_s, old_s.interrupt) ==> IsPrivateEvent(Bits(result, 31, 0)))
+    && (IsSpi(old_s, old_s.interrupt) ==> IsSharedEvent(Bits(result, 31, 0)))
+    && (forall|pe: PE| EventNumberIsValidOnPe(Bits(result, 31, 0), pe))
+    && (Old(IsBound(old_s, old_s.interrupt)) ==> Bits(result, 31, 0) == Old(BoundEventNumber(old_s, old_s.interrupt)))
+    && (InterruptPriorityIsElevated(old_s, old_s.interrupt))
+    && (InterruptIsManagedByDispatcher(old_s, old_s.interrupt))
+}

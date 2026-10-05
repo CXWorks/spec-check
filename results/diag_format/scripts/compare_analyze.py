@@ -61,6 +61,7 @@ ARMS = [  # label, dir(doc), sweep set prefix, kept override
     ("原始 9B · 原文 · v3.1", lambda d: orig("base", d), None, None),
     ("原始 9B · 原文 · 允许新起 helper", lambda d: C / "gen" / "base-invent" / d, "base_invent", None),
     ("原始 9B · 中间表示 · v3.1", lambda d: rmm("base", d), "base_rmm", None),
+    ("原始 9B · 严格中间表示 · v3.1", lambda d: C / "gen" / "base-strict" / f"{d}_strict", "base_strict", strict_kept),
     ("Claude · 原文 · v3.1", only39(lambda d: C / "gen" / "claude-orig" / d), None, None),
     ("Claude · 原文 · 允许新起 helper", lambda d: C / "gen" / "claude-invent" / d, "claude_invent", None),
     ("Claude · 中间表示 · v3.1", only39(lambda d: C / "gen" / "claude-orig" / f"{d}_rmm"), "claude_rmm", None),
@@ -68,7 +69,7 @@ ARMS = [  # label, dir(doc), sweep set prefix, kept override
 
 sweeps = []
 for p in [C / "sweep" / n / "final.json" for n in
-          ("psci_sdei_9b", "psci_sdei_claude", "four_docs", "ft_invent", "ft_strict", "base_invent")]:
+          ("psci_sdei_9b", "psci_sdei_claude", "four_docs", "ft_invent", "ft_strict", "base_invent", "base_strict")]:
     if p.exists():
         sweeps += json.loads(p.read_text())
 verdict = {}

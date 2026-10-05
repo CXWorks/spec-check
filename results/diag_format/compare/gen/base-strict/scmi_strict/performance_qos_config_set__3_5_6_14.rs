@@ -1,0 +1,16 @@
+pub open spec fn performance_qos_config_set__3_5_6_14_spec(result: Int32, old_s: S, new_s: S) -> bool {
+    (!IsValidPerfDomain(domain_id(old_s)) ==> ResultEqual(result, NOT_FOUND))
+    && (!IsValidQosCapability(domain_id(old_s), capability(old_s)) ==> ResultEqual(result, NOT_FOUND))
+    && (PopCount(Bits(capability(old_s), 23, 16)) > 1 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (PopCount(Bits(capability(old_s), 7, 0)) > 1 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidQosConfigFlags(flags(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits(flags(old_s), 4, 2) == 0 && !IsSupportedQosValue(domain_id(old_s), capability(old_s), qos_value(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!CallerMayConfigureQos(domain_id(old_s), capability(old_s)) ==> ResultEqual(result, DENIED))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags(old_s), 1, 1) == 0 && Bits(flags(old_s), 4, 2) == 0 ==> QosValue(domain_id(old_s), capability(old_s)) == qos_value(old_s)))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags(old_s), 1, 1) == 0 && Bits(flags(old_s), 2, 2) == 1 ==> QosValue(domain_id(old_s), capability(old_s)) == PlatformDefaultQos(domain_id(old_s), capability(old_s))))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags(old_s), 1, 1) == 0 && Bits(flags(old_s), 3, 3) == 1 ==> (forall|d: PerfDomain| (d == domain_id(old_s) || IsSiblingDomain(d, domain_id(old_s)) ==> QosValue(d, capability(old_s)) == PlatformDefaultQos(d, capability(old_s)))))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags(old_s), 1, 1) == 0 && Bits(flags(old_s), 4, 4) == 1 ==> (forall|d: PerfDomain| QosValue(d, capability(old_s)) == PlatformDefaultQos(d, capability(old_s)))))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags(old_s), 1, 1) == 1 ==> QosConfigRequestQueued(domain_id(old_s), capability(old_s), flags(old_s), qos_value(old_s))))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags(old_s), 1, 1) == 1 && Bits(flags(old_s), 0, 0) == 0 ==> CompletesWithDelayedResponse(PERFORMANCE_QOS_CONFIG_COMPLETE)))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags(old_s), 1, 1) == 1 && Bits(flags(old_s), 0, 0) == 1 ==> !SendsDelayedResponse(PERFORMANCE_QOS_CONFIG_COMPLETE)))
+}

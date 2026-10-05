@@ -1,0 +1,17 @@
+pub open spec fn ffa_msg_send2_spec(result: u32, old_s: S, new_s: S) -> bool {
+    (!IsImplementedAtInstance(FFA_MSG_SEND2) ==> ResultEqual(result, NOT_SUPPORTED))
+    && ((IsVirtualInstance() || IsSecurePhysicalInstance()) && (sender_vm_id(old_s) != 0) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsNonSecurePhysicalInstance() && !IsValidSenderVmId(Bits(sender_vm_id(old_s), 31, 16)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidSenderId(MsgSender(old_s, sender_vm_id(old_s))) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidReceiverId(MsgReceiver(old_s, sender_vm_id(old_s))) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (MsgOffset(old_s, sender_vm_id(old_s)) < PartitionMsgHeaderSize() ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!MsgPayloadFitsInTxBuffer(old_s, sender_vm_id(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsRecognizedUuid(MsgUuid(old_s, sender_vm_id(old_s))) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!RxBufferIsFree(MsgReceiver(old_s, sender_vm_id(old_s))) ==> ResultEqual(result, BUSY))
+    && (!CalleeCanHandleRequest() ==> ResultEqual(result, DENIED))
+    && (!CallerMayInvoke(old_s, FFA_MSG_SEND2) ==> ResultEqual(result, DENIED))
+    && (!SupportsIndirectMessaging(MsgReceiver(old_s, sender_vm_id(old_s))) ==> ResultEqual(result, DENIED))
+    && (!RxBufferHasSpaceForMsg(MsgReceiver(old_s, sender_vm_id(old_s)), old_s, sender_vm_id(old_s)) ==> ResultEqual(result, NO_MEMORY))
+    && (ResultEqual(result, FFA_SUCCESS) ==> RxBufferHoldsMsg(MsgReceiver(old_s, sender_vm_id(old_s)), SourceTxBuffer(old_s, sender_vm_id(old_s))))
+    && (ResultEqual(result, FFA_SUCCESS) ==> ReceiverSchedulerNotifiedToRun(MsgReceiver(old_s, sender_vm_id(old_s))))
+}

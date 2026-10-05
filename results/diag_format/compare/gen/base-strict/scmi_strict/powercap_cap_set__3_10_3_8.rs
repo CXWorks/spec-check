@@ -1,0 +1,15 @@
+pub open spec fn powercap_cap_set__3_10_3_8_spec(result: Int32, old_s: S, new_s: S) -> bool {
+    (!IsValidPowercapDomain(old_s, domain_id) ==> ResultEqual(result, NOT_FOUND))
+    && (!IsValidCpli(old_s, domain_id, cpli) ==> ResultEqual(result, NOT_FOUND))
+    && (!IsPowercapCapSetSupported(old_s, domain_id, cpli) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsSupportedPowerCap(old_s, domain_id, cpli, power_cap) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits(flags, 31, 2) != 0 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidPowercapCapSetFlags(old_s, flags) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!AgentMaySetPowerCap(old_s, caller, domain_id) ==> ResultEqual(result, DENIED))
+    && (ResultEqual(result, SUCCESS) ==> (AgentRequestedPowerCap(new_s, caller, domain_id, cpli) == power_cap))
+    && (ResultEqual(result, SUCCESS) ==> (power_cap == 0 ==> !AgentPowerCapEnabled(new_s, caller, domain_id, cpli)))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags, 1, 1) == 0 ==> PowerCapSettingCompleted(new_s, domain_id, cpli, power_cap)))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags, 1, 1) == 1 ==> PowerCapSetRequestQueued(new_s, domain_id, cpli, power_cap)))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags, 1, 1) == 1 && Bits(flags, 0, 0) == 0 ==> DelayedResponsePending(POWERCAP_CAP_SET_COMPLETE, domain_id)))
+    && (ResultEqual(result, SUCCESS) ==> (Bits(flags, 1, 1) == 1 && Bits(flags, 0, 0) == 1 ==> !DelayedResponsePending(POWERCAP_CAP_SET_COMPLETE, domain_id)))
+}

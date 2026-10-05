@@ -1,0 +1,16 @@
+pub open spec fn sdei_event_register_spec(result: Int64, old_s: S, new_s: S) -> bool {
+    (!SdeiSupported() ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsValidEvent(event) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (DispatcherDetectsInvalidEntryPoint(entry_point_address, Bits(flags, 0, 0)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsSharedEvent(event) && !IsValidRoutingMode(Bits(flags, 0, 0)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsSharedEvent(event) && Bits(flags, 0, 0) == RM_PE && !IsValidAffinity(affinity) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsRegisteredByClient(event, CallingClient()) ==> ResultEqual(result, DENIED))
+    && (EventHandlerState(event) == HANDLER_UNREGISTER_PENDING ==> ResultEqual(result, DENIED))
+    && (ResultEqual(result, SUCCESS) ==> (IsSharedEvent(event) ==> IsRegisteredForClient(event, CallingClient())))
+    && (ResultEqual(result, SUCCESS) ==> (!IsSharedEvent(event) ==> IsRegisteredForPe(event, CallingPe())))
+    && (ResultEqual(result, SUCCESS) ==> (!EventEnabled(event)))
+    && (ResultEqual(result, SUCCESS) ==> (EventEntryPoint(event) == ResolveEntryPoint(entry_point_address, Bits(flags, 1, 1))))
+    && (ResultEqual(result, SUCCESS) ==> (EventArgument(event) == ep_argument))
+    && (ResultEqual(result, SUCCESS) ==> (IsSharedEvent(event) ==> EventRoutingMode(event) == Bits(flags, 0, 0)))
+    && (ResultEqual(result, SUCCESS) ==> (IsSharedEvent(event) && Bits(flags, 0, 0) == RM_PE ==> EventAffinity(event) == affinity))
+}

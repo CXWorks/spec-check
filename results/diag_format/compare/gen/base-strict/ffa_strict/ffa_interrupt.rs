@@ -1,0 +1,18 @@
+pub open spec fn ffa_interrupt_spec(result: Result<(), RsiCommandReturnCode>, old_s: S, new_s: S) -> bool {
+    (old_s.fid == 0x84000062 || old_s.fid == 0xC4000062)
+    && (result == RSI_SUCCESS)
+    && (old_s.instance == NS_PHYSICAL ==> new_s.conduit == ERET)
+    && (old_s.instance == NS_VIRTUAL || old_s.instance == S_VIRTUAL ==> new_s.conduit == ERET)
+    && (old_s.instance == S_PHYSICAL ==> (new_s.conduit == SMC || new_s.conduit == ERET))
+    && (new_s.conduit == SMC ==> (IsSel1OrSel2Spmc(old_s.caller) && IsSpmd(old_s.callee) && old_s.instance == S_PHYSICAL && IsNsInterruptPreemptingSp(old_s.caller)))
+    && (new_s.conduit == SMC ==> (old_s.endpoint_id == PreemptedSpId(old_s.caller) && old_s.vcpu_id == PreemptedSpExecutionContextId(old_s.caller)))
+    && (new_s.conduit == SMC ==> old_s.interrupt_id == 0)
+    && (IsBlockedCalleePreemption(old_s.caller, old_s.callee) ==> IsValidBlockedCombination(old_s.caller, old_s.callee, old_s.instance))
+    && (IsBlockedCalleePreemption(old_s.caller, old_s.callee) && !IsSel0(old_s.callee) ==> (old_s.endpoint_id == PreemptedPartitionId(old_s.callee) && old_s.vcpu_id == PreemptedExecutionContextId(old_s.callee)))
+    && (IsBlockedCalleePreemption(old_s.caller, old_s.callee) ==> old_s.interrupt_id == 0)
+    && (IsWaitingCalleeDelegation(old_s.caller, old_s.callee) ==> IsValidWaitingCombination(old_s.caller, old_s.callee, old_s.instance))
+    && (IsWaitingCalleeDelegation(old_s.caller, old_s.callee) && !IsSel0(old_s.callee) && !(IsSpmd(old_s.caller) && IsSpmc(old_s.callee)) ==> old_s.interrupt_id == PendingInterruptId(old_s.callee))
+    && (IsWaitingCalleeDelegation(old_s.caller, old_s.callee) ==> (old_s.endpoint_id == 0 && old_s.vcpu_id == 0))
+    && ReservedParameterRegistersZero(old_s)
+    && ControlReturnedToCallee(old_s.caller, old_s.callee)
+}

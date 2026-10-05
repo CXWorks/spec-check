@@ -1,0 +1,17 @@
+pub open spec fn ffa_notification_set_spec(result: Int32, result_fid: UInt32, old_s: S, new_s: S) -> bool {
+    (!IsImplementedAtInstance(old_s, FFA_NOTIFICATION_SET, CallerInstance(old_s)) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsValidPartitionId(old_s, sender_id(old_s)) || !IsValidPartitionId(old_s, receiver_id(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!AreValidNotificationSetFlags(old_s, per_vcpu(old_s), delay_sri(old_s), flags_reserved(old_s), receiver_vcpu_id(old_s), CallerInstance(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == 0 && receiver_vcpu_id(old_s) != 0 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == 0 && (exists|n: UInt64| n < 64 && IsBitSet(old_s, NotificationBitmap(old_s, bitmap_lo(old_s), bitmap_hi(old_s)), n)) && IsPerVcpuNotification(old_s, receiver_id(old_s), n) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == 1 && (exists|n: UInt64| n < 64 && IsBitSet(old_s, NotificationBitmap(old_s, bitmap_lo(old_s), bitmap_hi(old_s)), n)) && IsGlobalNotification(old_s, receiver_id(old_s), n) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == 1 && !PerVcpuNotificationsSupported(old_s) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && ((exists|n: UInt64| n < 64 && IsBitSet(old_s, NotificationBitmap(old_s, bitmap_lo(old_s), bitmap_hi(old_s)), n)) && !IsPermittedToSignal(old_s, sender_id(old_s), receiver_id(old_s), n) ==> ResultEqual(result, DENIED))
+    && (!SupportsNotificationReceipt(old_s, receiver_id(old_s)) ==> ResultEqual(result, DENIED))
+    && (HasAborted(old_s, receiver_id(old_s)) ==> ResultEqual(result, ABORTED))
+    && (result_fid == FFA_SUCCESS)
+    && (per_vcpu(old_s) == 0 ==> (forall|n: UInt64| (n < 64 && IsBitSet(old_s, NotificationBitmap(old_s, bitmap_lo(old_s), bitmap_hi(old_s)), n)) ==> IsGlobalNotificationPending(new_s, receiver_id(old_s), n)))
+    && (per_vcpu(old_s) == 1 ==> (forall|n: UInt64| (n < 64 && IsBitSet(old_s, NotificationBitmap(old_s, bitmap_lo(old_s), bitmap_hi(old_s)), n)) ==> IsPerVcpuNotificationPending(new_s, receiver_id(old_s), receiver_vcpu_id(old_s), n)))
+    && (forall|n: UInt64| (n < 64 && !IsBitSet(old_s, NotificationBitmap(old_s, bitmap_lo(old_s), bitmap_hi(old_s)), n)) ==> !IsSignaledByCall(new_s, receiver_id(old_s), n))
+    && ScheduleReceiverInterruptPerImplDefinedPolicy(new_s, receiver_id(old_s), delay_sri(old_s))
+}

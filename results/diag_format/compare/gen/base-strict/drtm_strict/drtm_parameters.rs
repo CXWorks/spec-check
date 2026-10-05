@@ -1,0 +1,18 @@
+pub open spec fn drtm_parameters_spec(result: Result<(), RmiStatusCode>, params: DRTMParameters, old_s: S, new_s: S) -> bool {
+    (params.revision != 2 ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (params.reserved != 0 ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (Bits(params.launch_features, 31, 8) != 0 ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!IsNonSecureContiguous(ParamsAddr(params), DrtmParametersSize(params)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!IsAligned(ParamsAddr(params), 4096) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (ParameterRangesOverlap(params) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (ParameterRangesWrap(params) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (params.dlme_image_start + params.dlme_image_size > params.dlme_region_size ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (params.dlme_entry_point_offset >= params.dlme_image_size ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!DlmeRegionIsValid(params.dlme_region_address, params.dlme_region_size) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (NwdDceInUse(params) && !IsNonSecureContiguous(params.nwd_dce_region_address, params.nwd_dce_region_size) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (NwdDceInUse(params) && !IsAligned(params.nwd_dce_region_address, 4096) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!NwdDceInUse(params) && (params.nwd_dce_region_address != 0 || params.nwd_dce_region_size != 0) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (Bits(params.launch_features, 2, 1) == 1 && Bits(params.launch_features, 6, 6) == 0 ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!IsAligned(params.mpt_address, 4096) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (Bits(params.launch_features, 5, 3) != 1 && (params.mpt_address != 0 || params.mpt_size != 0) ==> ResultEqual(result, RMI_ERROR_INPUT))
+}

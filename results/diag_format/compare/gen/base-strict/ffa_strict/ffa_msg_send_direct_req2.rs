@@ -1,0 +1,18 @@
+pub open spec fn ffa_msg_send_direct_req2_spec(result: Int32, ret_fid: UInt32, old_s: S, new_s: S) -> bool {
+    (!IsValidEndpointId(old_s, sender_id(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidEndpointId(old_s, receiver_id(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsRecognizedUuid(old_s, receiver_id(old_s), uuid_lo(old_s), uuid_hi(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!CalleeCanHandleRequest(old_s, receiver_id(old_s)) ==> ResultEqual(result, DENIED))
+    && (!CallerMayInvokeDirectReq2(old_s, sender_id(old_s)) ==> ResultEqual(result, DENIED))
+    && (!SupportsDirectReqReceipt(old_s, receiver_id(old_s)) ==> ResultEqual(result, DENIED))
+    && (!IsImplementedAtInstance(old_s, FFA_MSG_SEND_DIRECT_REQ2) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (RuntimeState(old_s, receiver_id(old_s)) == RUNNING ==> ResultEqual(result, BUSY))
+    && (RuntimeState(old_s, receiver_id(old_s)) == BLOCKED ==> ResultEqual(result, BUSY))
+    && (RuntimeState(old_s, receiver_id(old_s)) == PREEMPTED ==> ResultEqual(result, BUSY))
+    && (EndpointHasAborted(old_s, receiver_id(old_s)) ==> ResultEqual(result, ABORTED))
+    && (!EndpointReadyForRequest(old_s, receiver_id(old_s)) ==> ResultEqual(result, NOT_READY))
+    && (ret_fid == FFA_MSG_SEND_DIRECT_RESP2 || ret_fid == FFA_INTERRUPT || ret_fid == FFA_YIELD || ret_fid == FFA_SUCCESS)
+    && (ret_fid == FFA_INTERRUPT ==> MustResumeViaFfaRun(old_s, receiver_id(old_s)))
+    && (ret_fid == FFA_YIELD ==> RuntimeState(old_s, receiver_id(old_s)) == BLOCKED && MustResumeViaFfaRun(old_s, receiver_id(old_s)))
+    && (ret_fid == FFA_SUCCESS ==> OtherParamRegistersAreZero(old_s, new_s))
+}

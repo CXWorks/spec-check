@@ -1,0 +1,16 @@
+pub open spec fn telemetry_de_description_spec(status: Int32, num_desc_hi: UInt16, num_desc_lo: UInt16, desc: [DE_DESC], desc_index: UInt32, old_s: S, new_s: S) -> bool {
+    (true ==> ResultEqual(status, SUCCESS))
+    && (true ==> (num_desc_hi as int) == 0)
+    && (true ==> (num_desc_lo as int) == RemainingDeDescriptors(desc_index, num_desc_lo as int))
+    && (forall|i: UInt32| i < (num_desc_lo as int) ==> desc[i] == DeDescriptorAt(desc_index + i))
+    && (forall|i: UInt32| i < (num_desc_lo as int) ==> Bits(desc[i].de_attributes_1, 4, 2) == 0)
+    && (forall|i: UInt32| i < (num_desc_lo as int) ==> Bits(desc[i].de_attributes_1, 1, 0) <= 2)
+    && (forall|i: UInt32| i < (num_desc_lo as int) ==> desc[i].de_attributes_3 == 0)
+    && (forall|i: UInt32| i < (num_desc_lo as int) ==> (DeDescHasLineTsRate(desc[i]) == (Bits(desc[i].de_attributes_1, 1, 0) == 1)))
+    && (forall|i: UInt32| i < (num_desc_lo as int) ==> (DeDescHasFastChannelFields(desc[i]) == (Bits(desc[i].de_attributes_1, 30, 30) == 1)))
+    && (forall|i: UInt32| i < (num_desc_lo as int) && Bits(desc[i].de_attributes_1, 30, 30) == 1 ==> FastChannelSizeSufficient(desc[i]))
+    && (forall|i: UInt32| i < (num_desc_lo as int) ==> (DeDescHasName(desc[i]) == (Bits(desc[i].de_attributes_1, 31, 31) == 1)))
+    && (forall|i: UInt32| i < (num_desc_lo as int) && Bits(desc[i].de_attributes_1, 31, 31) == 1 ==> IsNullTerminatedUtf8(desc[i].name, 16))
+    && (forall|i: UInt32| i < (num_desc_lo as int) ==> DeDataSpaceSufficient(desc[i]))
+    && (true ==> old_s == new_s)
+}

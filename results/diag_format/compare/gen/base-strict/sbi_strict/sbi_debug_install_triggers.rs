@@ -1,0 +1,16 @@
+pub open spec fn sbi_debug_install_triggers_spec(result: i64, value: i64, trig_count: u64, old_s: S, new_s: S) -> bool {
+    (true)
+    && (TriggerConfigsProcessedInIncreasingIndexOrderFromZero(trig_count)(old_s) ==> true)
+    && (forall|i: u64| i < trig_count ==> (!PreTrigIdxInUse(InstalledTrigIdx(i))(old_s) && !PreHwTriggerInUse(HwTriggerOf(InstalledTrigIdx(i)))(old_s)))
+    && (forall|i: u64| i < trig_count ==> HwTriggerMatchesConfig(HwTriggerOf(InstalledTrigIdx(i)), TrigConfigAt(i))(old_s))
+    && (forall|i: u64| i < trig_count ==> TrigState(InstalledTrigIdx(i)).vs == TrigConfigAt(i).tdata1.vs)
+    && (forall|i: u64| i < trig_count ==> TrigState(InstalledTrigIdx(i)).vu == TrigConfigAt(i).tdata1.vu)
+    && (forall|i: u64| i < trig_count ==> TrigState(InstalledTrigIdx(i)).s == TrigConfigAt(i).tdata1.s)
+    && (forall|i: u64| i < trig_count ==> TrigState(InstalledTrigIdx(i)).u == TrigConfigAt(i).tdata1.u)
+    && (forall|i: u64| i < trig_count ==> HwTriggerOf(InstalledTrigIdx(i)).tdata1 == TrigConfigAt(i).tdata1)
+    && (forall|i: u64| i < trig_count ==> HwTriggerOf(InstalledTrigIdx(i)).tdata2 == TrigConfigAt(i).tdata2)
+    && (forall|i: u64| i < trig_count ==> HwTriggerOf(InstalledTrigIdx(i)).tdata3 == TrigConfigAt(i).tdata3)
+    && (forall|i: u64| i < trig_count ==> SharedMemWordLE(i * (XLEN / 2), 0) == InstalledTrigIdx(i))
+    && (forall|c: TriggerChain| IsTriggerChainInSharedMem(c, trig_count) ==> TrigIdxsContiguous(c))
+    && (forall|c: TriggerChain| IsTriggerChainInSharedMem(c, trig_count) ==> HwTriggersContiguous(c))
+}

@@ -1,0 +1,16 @@
+pub open spec fn telemetry_config_set_spec(result: Int32, old_s: S, new_s: S) -> bool {
+    (Bits64(control(old_s), 31, 9) != 0 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(control(old_s), 8, 5) > 2 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(ProtocolAttributes1(old_s), 18, 18) == 0 && Bits64(control(old_s), 8, 5) != 2 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(control(old_s), 8, 5) == 1 && !IsValidEventGroup(group_identifier(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(control(old_s), 0, 0) == 1 && Bits64(control(old_s), 4, 1) > 2 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(control(old_s), 0, 0) == 1 && !AnyDeEnabled(Bits64(control(old_s), 8, 5), group_identifier(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Bits64(control(old_s), 0, 0) == 1 && EnabledDeOrGroupLimitReached(Bits64(control(old_s), 8, 5), group_identifier(old_s), Bits64(control(old_s), 4, 1)) ==> ResultEqual(result, OUT_OF_RANGE))
+    && (ResultEqual(result, SUCCESS) ==> true)
+    && (Bits64(control(old_s), 0, 0) == 1 ==> TelemetryEnabled(Bits64(control(old_s), 8, 5), group_identifier(old_s)))
+    && (Bits64(control(old_s), 0, 0) == 0 ==> !TelemetryEnabled(Bits64(control(old_s), 8, 5), group_identifier(old_s)))
+    && (Bits64(control(old_s), 0, 0) == 1 && !(Bits64(control(old_s), 4, 1) == 0 && !AllInterfacesSupportOnDemand(old_s)) ==> TelemetryMode(Bits64(control(old_s), 8, 5), group_identifier(old_s)) == Bits64(control(old_s), 4, 1))
+    && (Bits64(control(old_s), 0, 0) == 1 && Bits64(control(old_s), 4, 1) == 0 && !AllInterfacesSupportOnDemand(old_s) ==> TelemetryMode(Bits64(control(old_s), 8, 5), group_identifier(old_s)) == 1)
+    && (Bits64(control(old_s), 0, 0) == 1 && Bits64(control(old_s), 4, 1) == 2 ==> TelemetryDisabledAfterReadingComplete(Bits64(control(old_s), 8, 5), group_identifier(old_s)))
+    && (Bits64(control(old_s), 0, 0) == 1 && Bits64(control(old_s), 4, 1) != 2 ==> SamplingRate(Bits64(control(old_s), 8, 5), group_identifier(old_s)) == Bits64(sampling_rate(old_s), 20, 5) * Pow10(SignedBits(sampling_rate(old_s), 4, 0)))
+}
