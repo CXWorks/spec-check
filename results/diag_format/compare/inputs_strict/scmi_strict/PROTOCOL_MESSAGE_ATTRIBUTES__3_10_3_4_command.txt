@@ -1,0 +1,32 @@
+3.10.3.4 PROTOCOL_MESSAGE_ATTRIBUTES command
+               Returns the implementation details for a specific message in this protocol. The caller can pass the POWERCAP_CAP_NOTIFY message identifier to ask whether power cap and CAI change notifications are supported. It can pass the POWERCAP_MEASUREMENTS_NOTIFY message identifier to ask whether MAI and power measurement change notifications are supported. The notification commands are described in Section 3.10.3.15 and Section 3.10.3.16.
+               Message header: protocol_id 0x18, message_id 0x2. This command is mandatory.
+               3.10.3.4.1 Interface
+               3.10.3.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Param[0]     31:0        uint32                                message_id of the message
+               3.10.3.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        int32                                 Command return status (see Section 3.1.4)
+        attributes          Return[1]    31:0        uint32                                Flags associated with the specified message. Bits[31:1]: Reserved, must be zero. Bit[0]: FastChannel support
+               3.10.3.4.2 Failure conditions
+  ID                          Condition
+  msg_invalid                 pre: !IsValidMessage(message_id) || !IsImplementedMessage(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cap_notify_unavail          pre: message_id == POWERCAP_CAP_NOTIFY && (!NotificationsImplemented(message_id) || !NotificationsAvailableToAgent(message_id, calling_agent))
+                              post: ResultEqual(status, NOT_FOUND)
+  meas_notify_unavail         pre: message_id == POWERCAP_MEASUREMENTS_NOTIFY && (!NotificationsImplemented(message_id) || !NotificationsAvailableToAgent(message_id, calling_agent))
+                              post: ResultEqual(status, NOT_FOUND)
+               3.10.3.4.2.1   Failure condition ordering
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not have any failure condition orderings.
+               3.10.3.4.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  msg_available               post: IsImplementedMessage(message_id) && IsAvailableToAgent(message_id, calling_agent)
+  cap_notify                  post: message_id == POWERCAP_CAP_NOTIFY ==> NotificationsSupported(POWERCAP_CAP_NOTIFY, calling_agent)
+  meas_notify                 post: message_id == POWERCAP_MEASUREMENTS_NOTIFY ==> NotificationsSupported(POWERCAP_MEASUREMENTS_NOTIFY, calling_agent)
+  attr_reserved               post: Bits(attributes, 31, 1) == 0
+  attr_fc_set                 post: HasDedicatedFastChannel(message_id) ==> Bits(attributes, 0, 0) == 1
+  attr_fc_clear               post: !HasDedicatedFastChannel(message_id) ==> Bits(attributes, 0, 0) == 0
+               3.10.3.4.4 Footprint
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not modify any state.

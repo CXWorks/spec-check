@@ -1,0 +1,30 @@
+3.10.3.14 POWERCAP_MEASUREMENTS_GET command
+               Requests the measurement data for a power capping domain, such as average power consumption and the measurement averaging interval (MAI).
+               message_id: 0x9, protocol_id: 0x18
+               This command is mandatory if any domain supports reading power measurements.
+               3.10.3.14.1 Interface
+               3.10.3.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the power capping domain
+               3.10.3.14.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        power               Payload[1]   31:0        UInt32                                Average power consumption of the power capping domain, measured over the latest power measurement averaging interval
+        mai                 Payload[2]   31:0        UInt32                                Power measurement averaging interval set for the domain
+               3.10.3.14.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  supported                   pre: !IsPowercapMeasurementsGetSupported(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_access                pre: !AgentMayGetPowercapMeasurements(calling_agent, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.10.3.14.2.1   Failure condition ordering
+               The POWERCAP_MEASUREMENTS_GET command does not have any failure condition orderings.
+               3.10.3.14.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  power                       post: power == AveragePowerOverLatestInterval(domain_id)
+  mai                         post: mai == PowercapMeasurementAveragingInterval(domain_id)
+               3.10.3.14.4 Footprint
+               The POWERCAP_MEASUREMENTS_GET command does not modify any state.

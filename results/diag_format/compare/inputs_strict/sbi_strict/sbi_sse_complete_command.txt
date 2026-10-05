@@ -1,0 +1,24 @@
+17.13 sbi_sse_complete command
+               Completes the supervisor event handling for the highest priority event in RUNNING state on the calling hart.
+               17.13.1 Interface
+               17.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 6
+               17.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiReturnCode                         Command return status
+               17.13.2 Failure conditions
+               The sbi_sse_complete command does not have any failure conditions.
+               17.13.2.1   Failure condition ordering
+               The sbi_sse_complete command does not have any failure condition orderings.
+               17.13.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  no_running                  post: !PreExistsRunningEvent(CallingHart()) ==> HartSseStateUnchanged(CallingHart())
+  oneshot_state               post: PreExistsRunningEvent(CallingHart()) && IsOneShot(PreHighestPriorityRunningEvent(CallingHart())) ==> PreHighestPriorityRunningEvent(CallingHart()).state == REGISTERED
+  enabled_state               post: PreExistsRunningEvent(CallingHart()) && !IsOneShot(PreHighestPriorityRunningEvent(CallingHart())) ==> PreHighestPriorityRunningEvent(CallingHart()).state == ENABLED
+  resume                      post: PreExistsRunningEvent(CallingHart()) ==> InterruptedSupervisorStateResumed(CallingHart(), PreHighestPriorityRunningEvent(CallingHart()))
+               17.13.4 Footprint
+    ID                        Value
+    event_state               PreHighestPriorityRunningEvent(CallingHart()).state
+    hart_state                SupervisorState(CallingHart())

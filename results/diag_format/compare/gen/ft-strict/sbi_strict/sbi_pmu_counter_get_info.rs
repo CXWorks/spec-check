@@ -1,0 +1,17 @@
+pub open spec fn sbi_pmu_counter_get_info_spec(counter_idx: UInt, result: SbiErrorCode, value: CounterInfo, old_s: S, new_s: S) -> bool {
+  (result == SBI_SUCCESS ==> Bits(value, 63, 63) == CounterTypeEncoding(new_s, counter_idx))
+  && (result == SBI_SUCCESS ==> (Bits(value, 63, 63) == 0) == IsHardwareCounter(new_s, counter_idx))
+  && (result == SBI_SUCCESS ==> (Bits(value, 63, 63) == 1) == IsFirmwareCounter(new_s, counter_idx))
+  && (result == SBI_SUCCESS ==> Bits(value, 63, 63) == 0 ==> Bits(value, 11, 0) == CounterCsrNumber(new_s, counter_idx))
+  && (result == SBI_SUCCESS ==> Bits(value, 63, 63) == 0 ==> Bits(value, 17, 12) == CounterBitWidth(new_s, counter_idx) - 1)
+  && ((!(result == SBI_SUCCESS))
+    ==> Bits(value, 63, 63) == CounterTypeEncoding(new_s, counter_idx))
+  && ((!(result == SBI_SUCCESS))
+    ==> (Bits(value, 63, 63) == 0) == IsHardwareCounter(new_s, counter_idx))
+  && ((!(result == SBI_SUCCESS))
+    ==> (Bits(value, 63, 63) == 1) == IsFirmwareCounter(new_s, counter_idx))
+  && ((!(result == SBI_SUCCESS))
+    ==> Bits(value, 63, 63) == 0 ==> Bits(value, 11, 0) == CounterCsrNumber(new_s, counter_idx))
+  && ((!(result == SBI_SUCCESS))
+    ==> Bits(value, 63, 63) == 0 ==> Bits(value, 17, 12) == CounterBitWidth(new_s, counter_idx) - 1)
+}

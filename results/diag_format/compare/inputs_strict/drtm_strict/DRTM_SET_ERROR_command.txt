@@ -1,0 +1,31 @@
+3.8 DRTM_SET_ERROR command
+               Sets a DRTM error code indicating that a dynamic launch has failed.
+               3.8.1 Interface
+               3.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC4000117
+        error_code          X1           63:0        Int64                                 Error code describing the reason for a dynamic launch failure. See error encoding in section 3.12
+               3.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               3.8.2 Failure conditions
+  ID                          Condition
+  drtm_support                pre: !DrtmIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  error_already_set           pre: DrtmErrorPreviouslySet()
+                              post: ResultEqual(result, DENIED)
+               3.8.2.1   Failure condition ordering
+               The DRTM_SET_ERROR command does not have any failure condition orderings.
+               3.8.3 Success conditions
+  ID                          Condition
+  result_success              post: ResultEqual(result, SUCCESS)
+  error_recorded              post: DrtmErrorPreviouslySet()
+  error_persisted             post: PersistedInNonVolatileSecureStorage(PersistedDrtmError())
+  error_value_dce             post: !DceStageCompleted() ==> PersistedDrtmError() == error_code
+  error_value_dlme_upper      post: DceStageCompleted() ==> Bits(PersistedDrtmError(), 63, 11) == Bits(error_code, 63, 11)
+  error_value_dlme_phase      post: DceStageCompleted() ==> Bits(PersistedDrtmError(), 2, 0) == DRTM_ERROR_PHASE_DLME
+  error_value_dlme_code       post: DceStageCompleted() ==> Bits(PersistedDrtmError(), 10, 3) == 0xFF
+               3.8.4 Footprint
+    ID                        Value
+    error_persisted           PersistedDrtmError()
+    error_recorded            DrtmErrorPreviouslySet()

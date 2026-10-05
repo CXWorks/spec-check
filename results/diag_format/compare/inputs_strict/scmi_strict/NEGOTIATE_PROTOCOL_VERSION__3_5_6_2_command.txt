@@ -1,0 +1,27 @@
+3.5.6.2 NEGOTIATE_PROTOCOL_VERSION command
+               Negotiates the protocol version that the agent intends to use if the agent does not support the version returned by the PROTOCOL_VERSION command.
+               The agent can attempt any number of negotiations. All commands, responses and notifications must comply with the protocol version that was last negotiated successfully. If the agent uses a protocol version other than the one returned by PROTOCOL_VERSION without a successful negotiation, behaviour is best effort and functionality is not guaranteed.
+               This command is optional. Platforms that intend to support agents compliant with older versions of this protocol are strongly recommended to implement it.
+               3.5.6.2.1 Interface
+               3.5.6.2.1.1   Input values
+        Name                Register        Bits        Type                                  Description
+        message_id          Header          -           UInt                                  Message ID, value 0x10
+        protocol_id         Header          -           UInt                                  Protocol ID, value 0x13
+        version             Parameters      31:0        UInt32                                Negotiated protocol version that the agent intends to use
+               3.5.6.2.1.2   Output values
+        Name                Register        Bits        Type                                  Description
+        status              Return values   31:0        Int32                                 Command return status. Section 3.1.4 defines the status codes.
+               3.5.6.2.2 Failure conditions
+  ID                          Condition
+  version_supp                pre: !IsProtocolVersionSupported(version)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.5.6.2.2.1   Failure condition ordering
+               The NEGOTIATE_PROTOCOL_VERSION command does not have any failure condition orderings.
+               3.5.6.2.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  neg_version                 post: NegotiatedProtocolVersion(agent) == version
+  compliance                  post: CommandsResponsesNotificationsComplyWithVersion(agent, version)
+               3.5.6.2.4 Footprint
+    ID                        Value
+    neg_version               NegotiatedProtocolVersion(agent)

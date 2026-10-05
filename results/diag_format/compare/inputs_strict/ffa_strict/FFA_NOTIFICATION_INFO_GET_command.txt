@@ -1,0 +1,45 @@
+16.11 FFA_NOTIFICATION_INFO_GET command
+               Returns lists of endpoints that have pending notifications and must be run to handle those notifications.
+               Valid FF-A instances and conduits: Non-secure physical (SMC), Secure physical (ERET), Non-secure virtual (SMC, HVC).
+               16.11.1 Interface
+               16.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x84000083 or 0xC4000083
+        reserved            W1-W7        31:0        -                                     Reserved (SBZ)
+                            X1-X17       63:0
+               16.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W2           31:0        Int32                                 FFA_ERROR error code
+        pending_flags       W2/X2        31:0/63:0   UInt32/UInt64                         Pending notification flags
+        id_lists            W3-W7/X3-X7  31:0/63:0   UInt32/UInt64                         ID lists: packed 16-bit endpoint IDs and vCPU IDs
+               16.11.2 Failure conditions
+  ID                          Condition
+  no_data                     pre: !PendingNotificationInfoAvailable(caller)
+                              post: ResultEqual(result, NO_DATA)
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_INFO_GET, ffa_instance)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               16.11.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_INFO_GET command does not have any failure condition orderings.
+               16.11.3 Success conditions
+  ID                          Condition
+  success                     post: ReturnedFunction() == FFA_SUCCESS
+  flags_rsvd                  post: Bits(pending_flags, 6, 1) == 0
+  list_count                  post: ListCount(pending_flags) == Bits(pending_flags, 11, 7)
+  list_count_rsvd32           post: IsSmc32(fid) ==> Bits(pending_flags, 11, 11) == 0
+  flags_rsvd64                post: IsSmc64(fid) ==> Bits(pending_flags, 63, 52) == 0
+  list_size                   post: forall|i: UInt64| (1 <= i && i <= ListCount(pending_flags)) ==> IdCountInList(pending_flags, i) == Bits(pending_flags, (2 * i - 1) + 12, (2 * (i - 1)) + 12) + 1
+  list_size_bound             post: forall|i: UInt64| (1 <= i && i <= ListCount(pending_flags)) ==> (1 <= IdCountInList(pending_flags, i) && IdCountInList(pending_flags, i) <= 4)
+  id_capacity32               post: IsSmc32(fid) ==> TotalIdCount(pending_flags) <= 10
+  id_capacity64               post: IsSmc64(fid) ==> TotalIdCount(pending_flags) <= 20
+  first_id32                  post: IsSmc32(fid) ==> FirstIdOfList(id_lists, pending_flags, 1) == Bits(W3, 15, 0)
+  first_id64                  post: IsSmc64(fid) ==> FirstIdOfList(id_lists, pending_flags, 1) == Bits(X3, 15, 0)
+  packing                     post: IdListsTightlyPacked(id_lists, pending_flags)
+  global_only                 post: forall|i: UInt64| (1 <= i && i <= ListCount(pending_flags) && HasOnlyGlobalPending(ListEndpoint(id_lists, pending_flags, i))) ==> IdCountInList(pending_flags, i) == 1
+  per_vcpu                    post: forall|i: UInt64| (1 <= i && i <= ListCount(pending_flags) && IdCountInList(pending_flags, i) > 1) ==> ListIsEndpointThenVcpuIds(id_lists, pending_flags, i)
+  more_pending_clear          post: Bits(pending_flags, 0, 0) == 0 ==> AllPendingIdListsRetrieved(caller)
+  more_pending_set            post: Bits(pending_flags, 0, 0) == 1 ==> !AllPendingIdListsRetrieved(caller)
+  report_once                 post: forall|i: UInt64| (1 <= i && i <= ListCount(pending_flags)) ==> !RetrievableAgain(ListAt(id_lists, pending_flags, i))
+  vm_scope                    post: IsNonSecureVirtualInstance(ffa_instance) ==> forall|i: UInt64| (1 <= i && i <= ListCount(pending_flags)) ==> SchedulerImplementedInVm(ListEndpoint(id_lists, pending_flags, i), caller)
+               16.11.4 Footprint
+    ID                        Value
+    report_once               NotificationInfoRetrievalState(caller)

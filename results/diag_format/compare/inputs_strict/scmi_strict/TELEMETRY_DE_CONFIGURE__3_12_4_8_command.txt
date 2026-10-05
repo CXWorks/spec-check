@@ -1,0 +1,65 @@
+3.12.4.8 TELEMETRY_DE_CONFIGURE command
+               Enables or disables a DE or an event group. If an event group is specified, the platform applies the configuration to either all of the DEs in the event group or none of them. Enabling a DE that is already enabled, or disabling a DE that is already disabled, returns SUCCESS along with the other relevant information. This command is mandatory.
+               3.12.4.8.1 Interface
+               3.12.4.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x1B
+        message_id          Header       -           UInt32                                Message ID, value 0x6
+        identifier          Param 0      31:0        UInt32                                Identifier for the DE or the event group
+        flags.reserved      Param 1      31:4        Bits28                                Reserved, must be zero
+        flags.selector      Param 1      3           Bits1                                 Whether identifier refers to a DE (0) or an event group (1)
+        flags.disable_all   Param 1      2           Bits1                                 If 1, disable all DEs and groups. The identifier is ignored, and any data associated with the DEs or groups might be lost
+        flags.de_mode       Param 1      1:0         Bits2                                 DE Mode: 0 disables the DE or group, 1 enables it without timestamps, 2 enables it with timestamps. All other values are reserved. Must be 0 if flags.disable_all is 1
+               3.12.4.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return 0     31:0        Int32                                 Command return status
+        SHMTI_id            Return 1     31:0        UInt32                                ID of the SHMTI where the DE or event group is allocated when it is enabled, or 0xFFFFFFFF
+        SHMTI_de_offset     Return 2     31:0        UInt32                                Offset in bytes from the start of the SHMTI (including the Prologue) to the start of the DE Line-Metadata. For an event group, this is the DE in the group with the smallest offset in the SHMTI. Ignored if SHMTI_id is 0xFFFFFFFF
+        blk_ts_offset       Return 3     31:0        UInt32                                Offset in bytes from the start of the SHMTI (including the Prologue) to the start of the Block Timestamp line associated with this DE. Ignored if SHMTI_id is 0xFFFFFFFF
+               3.12.4.8.2 Failure conditions
+  ID                          Condition
+  flags_reserved              pre: flags.reserved != 0
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  de_mode_reserved            pre: flags.de_mode > 2
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  disable_all_mode            pre: flags.disable_all == 1 && flags.de_mode != 0
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  de_identifier               pre: flags.disable_all == 0 && flags.selector == 0 && !IsValidDeId(identifier)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  group_identifier            pre: flags.disable_all == 0 && flags.selector == 1 && !IsValidEventGroupId(identifier)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  group_de_in_use             pre: InUseCheckImplemented() && flags.disable_all == 0 && flags.selector == 1 && flags.de_mode != 0 && (exists|de: DeId| DeInEventGroup(de, identifier) && DeIsEnabled(de))
+                              post: ResultEqual(status, IN_USE)
+  de_group_in_use             pre: InUseCheckImplemented() && flags.disable_all == 0 && flags.selector == 0 && flags.de_mode == 0 && DeEnabledByEventGroup(identifier)
+                              post: ResultEqual(status, IN_USE)
+  enable_limit                pre: flags.disable_all == 0 && flags.de_mode != 0 && EnabledCountAtPlatformLimit()
+                              post: ResultEqual(status, OUT_OF_RANGE)
+               3.12.4.8.2.1   Failure condition ordering
+               The TELEMETRY_DE_CONFIGURE command does not have any failure condition orderings.
+               3.12.4.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  disable_all                 post: flags.disable_all == 1 ==> (forall|de: DeId| !DeIsEnabled(de)) && (forall|grp: EventGroupId| !EventGroupIsEnabled(grp))
+  de_disabled                 post: flags.disable_all == 0 && flags.selector == 0 && flags.de_mode == 0 ==> !DeIsEnabled(identifier)
+  de_enabled_no_ts            post: flags.disable_all == 0 && flags.selector == 0 && flags.de_mode == 1 ==> DeIsEnabled(identifier) && !DeTimestampsEnabled(identifier)
+  de_enabled_ts               post: flags.disable_all == 0 && flags.selector == 0 && flags.de_mode == 2 ==> DeIsEnabled(identifier) && DeTimestampsEnabled(identifier)
+  group_disabled              post: flags.disable_all == 0 && flags.selector == 1 && flags.de_mode == 0 ==> (forall|de: DeId| DeInEventGroup(de, identifier) ==> !DeIsEnabled(de))
+  group_enabled_no_ts         post: flags.disable_all == 0 && flags.selector == 1 && flags.de_mode == 1 ==> (forall|de: DeId| DeInEventGroup(de, identifier) ==> DeIsEnabled(de) && !DeTimestampsEnabled(de))
+  group_enabled_ts            post: flags.disable_all == 0 && flags.selector == 1 && flags.de_mode == 2 ==> (forall|de: DeId| DeInEventGroup(de, identifier) ==> DeIsEnabled(de) && DeTimestampsEnabled(de))
+  shmti_none_enabled          post: flags.disable_all == 1 || flags.de_mode == 0 ==> SHMTI_id == 0xFFFFFFFF
+  shmti_unsupported           post: !ShmtiSupported() ==> SHMTI_id == 0xFFFFFFFF
+  shmti_not_used              post: !ShmtiUsedFor(identifier, flags.selector) ==> SHMTI_id == 0xFFFFFFFF
+  shmti_info_unsupported      post: !PlatformReturnsShmtiInfo() ==> SHMTI_id == 0xFFFFFFFF
+  shmti_alloc                 post: SHMTI_id != 0xFFFFFFFF ==> ShmtiAllocatedTo(SHMTI_id, identifier, flags.selector)
+  de_offset                   post: SHMTI_id != 0xFFFFFFFF && flags.selector == 0 ==> SHMTI_de_offset == DeLineMetadataOffset(SHMTI_id, identifier)
+  group_de_offset             post: SHMTI_id != 0xFFFFFFFF && flags.selector == 1 ==> SHMTI_de_offset == MinDeLineMetadataOffsetInGroup(SHMTI_id, identifier)
+  blk_ts_no_ts                post: SHMTI_id != 0xFFFFFFFF && flags.de_mode != 2 ==> blk_ts_offset == 0
+  blk_ts_unused               post: SHMTI_id != 0xFFFFFFFF && !DeUsesBlockTimestamps(identifier) ==> blk_ts_offset == 0
+  blk_ts_offset               post: SHMTI_id != 0xFFFFFFFF && flags.de_mode == 2 && DeUsesBlockTimestamps(identifier) ==> blk_ts_offset == BlockTimestampLineOffset(SHMTI_id, identifier) && IsCompliantBlockTimestampLine(SHMTI_id, blk_ts_offset)
+               3.12.4.8.4 Footprint
+    ID                        Value
+    de_enable                 DeIsEnabled(de)
+    de_timestamps             DeTimestampsEnabled(de)
+    group_enable              EventGroupIsEnabled(grp)
+    shmti_alloc               ShmtiAllocation(de)
+    de_data                   DeData(de)

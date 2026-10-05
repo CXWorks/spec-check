@@ -1,0 +1,26 @@
+3.5.6.19 PERFORMANCE_DOMAIN_NAME_GET command
+               Returns the extended name of a performance domain.
+               3.5.6.19.1 Interface
+               3.5.6.19.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0xC
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x13
+        domain_id           Param[0]     31:0        UInt32                                Identifier for the performance domain
+               3.5.6.19.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Ret[0]       31:0        Int32                                 Command return status
+        flags               Ret[1]       31:0        UInt32                                Reserved, must be zero
+        name                Ret[2..17]   511:0       UInt8[64]                             Null-terminated ASCII string, up to 64 bytes, holding the performance domain extended name
+               3.5.6.19.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PerformanceDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.19.2.1   Failure condition ordering
+               The PERFORMANCE_DOMAIN_NAME_GET command does not have any failure condition orderings.
+               3.5.6.19.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags                       post: flags == 0
+  name_value                  post: IsNullTerminatedAsciiString(name, 64) && name == PerformanceDomainExtendedName(domain_id)
+               3.5.6.19.4 Footprint
+               The PERFORMANCE_DOMAIN_NAME_GET command does not modify any state.

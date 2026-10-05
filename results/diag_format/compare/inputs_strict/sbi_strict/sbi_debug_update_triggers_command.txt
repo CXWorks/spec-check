@@ -1,0 +1,29 @@
+19.5 sbi_debug_update_triggers command
+               Updates debug triggers that are already installed, using an array of trigger configurations in the calling hart's shared memory. The array starts at offset 0x0. Each trigger configuration is four consecutive XLEN-bit little-endian words: word[0] = trig_idx, word[1] = trig_tdata1, word[2] = trig_tdata2 and word[3] = trig_tdata3. Trigger configuration i is at offset i * (XLEN / 2).
+               19.5.1 Interface
+               19.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt64                                FID, value 4
+        trig_count          —            —           unsigned long                         Number of trigger configuration entries in the shared memory at offset 0x0
+               19.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              —            —           struct sbiret                         Command return status
+               19.5.2 Failure conditions
+  ID                          Condition
+  trig_idx                    pre: exists|i: UInt64| i < trig_count && !IsInstalledDebugTrigger(ShmemTrigIdx(i))
+                              post: CallFails(result)
+  trig_type                   pre: exists|i: UInt64| i < trig_count && TriggerType(ShmemTrigTdata1(i)) != InstalledDebugTrigger(ShmemTrigIdx(i)).type
+                              post: CallFails(result)
+  trig_chain                  pre: exists|i: UInt64| i < trig_count && TriggerChain(ShmemTrigTdata1(i)) != InstalledDebugTrigger(ShmemTrigIdx(i)).chain
+                              post: CallFails(result)
+               19.5.2.1   Failure condition ordering
+               Trigger configurations are checked in increasing order of array index, starting at index 0. For each index, the checks run in this order:
+  [trig_idx] < [trig_type]
+  [trig_idx] < [trig_chain]
+               19.5.3 Success conditions
+  ID                          Condition
+  trig_update                 post: forall|i: UInt64| i < trig_count ==> DebugTriggerUpdatedFrom(ShmemTrigIdx(i), ShmemTrigTdata1(i), ShmemTrigTdata2(i), ShmemTrigTdata3(i))
+  result                      post: CallSucceeds(result)
+               19.5.4 Footprint
+    ID                        Value
+    trig_update               forall|i: UInt64| i < trig_count ==> InstalledDebugTrigger(ShmemTrigIdx(i))

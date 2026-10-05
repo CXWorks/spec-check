@@ -1,0 +1,50 @@
+16.9 FFA_NOTIFICATION_SET2 command
+               Asks the partition manager to signal the notifications set in the Notification bitmap to the Receiver endpoint. An FF-A component uses this ABI only if it supports Extended notifications. Endpoints invoke it at a virtual FF-A instance. The Hypervisor invokes it at the Non-secure physical FF-A instance with the SMC conduit, so that the SPMC signals VM notifications to an SP on behalf of a VM.
+               16.9.1 Interface
+               16.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC4000096
+        ids                 W1           31:0        UInt32                                Sender and Receiver endpoint IDs. Bits[31:16]: Sender endpoint ID. Bits[15:0]: Receiver endpoint ID
+        flags               X2           63:0        UInt64                                Bit[0]: Per-vCPU notification flag. Bit[1]: Delay Schedule Receiver interrupt flag. Bits[15:2]: Reserved (MBZ). Bits[63:16]: Receiver vCPU ID when Bit[0] is 1
+        bitmap              X3-X8        63:0        UInt64[6]                             Notification bitmap. Bit position i is Bit[i % 64] of X((i / 64) + 3). A set bit means the notification at that position must be signaled to the Receiver
+        reserved            X9-X17       63:0        UInt64                                Reserved (SBZ)
+               16.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FFA_SUCCESS on success, otherwise FFA_ERROR
+        result              W2           31:0        Int32                                 Error code when FFA_ERROR is returned
+               16.9.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_SET2, CurrentFfaInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  unknown_id                  pre: !IsRecognizedPartitionId(Bits(ids, 31, 16)) || !IsRecognizedPartitionId(Bits(ids, 15, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  invalid_flags               pre: !IsValidNotificationSetFlags(flags)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  global_vcpu_id              pre: Bits(flags, 0, 0) == 0 && Bits(flags, 63, 16) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  global_has_per_vcpu         pre: Bits(flags, 0, 0) == 0 && BitmapContainsPerVcpuNotification(Bits(ids, 15, 0), bitmap)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  per_vcpu_has_global         pre: Bits(flags, 0, 0) == 1 && BitmapContainsGlobalNotification(Bits(ids, 15, 0), bitmap)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  per_vcpu_unsupported        pre: Bits(flags, 0, 0) == 1 && !PerVcpuNotificationsSupported()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  exceeds_supported           pre: exists|i: UInt64| i >= NumSupportedNotifications() && i < 384 && BitmapBit(bitmap, i) == 1
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  empty_bitmap                pre: forall|i: UInt64| i < 384 ==> BitmapBit(bitmap, i) == 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  sender_denied               pre: exists|i: UInt64| BitmapBit(bitmap, i) == 1 && !SenderMaySignalNotification(Bits(ids, 31, 16), Bits(ids, 15, 0), i)
+                              post: ResultEqual(result, DENIED)
+  receiver_unsupported        pre: !ReceiverSupportsNotifications(Bits(ids, 15, 0))
+                              post: ResultEqual(result, DENIED)
+  receiver_aborted            pre: PartitionHasAborted(Bits(ids, 15, 0))
+                              post: ResultEqual(result, ABORTED)
+               16.9.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_SET2 command does not have any failure condition orderings.
+               16.9.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(fid, FFA_SUCCESS)
+  global_signaled             post: Bits(flags, 0, 0) == 0 ==> (forall|i: UInt64| BitmapBit(bitmap, i) == 1 ==> GlobalNotificationSignaled(Bits(ids, 15, 0), i))
+  per_vcpu_signaled           post: Bits(flags, 0, 0) == 1 ==> (forall|i: UInt64| BitmapBit(bitmap, i) == 1 ==> PerVcpuNotificationSignaled(Bits(ids, 15, 0), Bits(flags, 63, 16), i))
+               16.9.4 Footprint
+    ID                        Value
+    notif_state               NotificationState(Bits(ids, 15, 0))

@@ -1,0 +1,26 @@
+5.15 MEM_PROTECT_CHECK_RANGE command
+               Checks whether a memory address range is protected by MEM_PROTECT. Introduced in PSCI1.1. This command is optional.
+               5.15.1 Interface
+               5.15.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID of MEM_PROTECT_CHECK_RANGE
+        base                X1           63:0        Address                               Base address of the memory range to check
+        length              X2           63:0        UInt64                                Length of the memory range to check
+               5.15.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        PsciReturnCode                        Command return status
+               5.15.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !IsImplemented(MEM_PROTECT_CHECK_RANGE)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  range_prot                  pre: !RangeIsProtectedByMemProtect(base, base + length - 1)
+                              post: ResultEqual(result, DENIED)
+               5.15.2.1   Failure condition ordering
+  [not_impl] < [range_prot]
+               5.15.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  range_prot                  post: RangeIsProtectedByMemProtect(base, base + length - 1)
+  mem_protect                 post: IsImplemented(MEM_PROTECT)
+               5.15.4 Footprint
+               The MEM_PROTECT_CHECK_RANGE command does not modify any state.

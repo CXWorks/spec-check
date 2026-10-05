@@ -1,0 +1,40 @@
+3.9.2.6 VOLTAGE_DESCRIBE_LEVELS command
+               Lets the agent find out which voltage levels a voltage domain supports. The levels may be returned over several calls.
+               3.9.2.6.1 Interface
+               3.9.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x4
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x17
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the voltage domain
+        level_index         Payload[1]   31:0        UInt32                                Index of the first voltage level to describe in the returned voltage array
+               3.9.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        flags               Payload[1]   31:0        UInt32                                Describes the voltage levels this domain supports. Bits[31:16]: number of remaining voltage levels. Bits[15:13]: reserved, must be zero. Bit[12]: return format (1 = segment triplet, 0 = discrete levels). Bits[11:0]: number of voltage levels returned by this call
+        voltage[N]          Payload[2..] 31:0        Int32[N]                              Voltage array in microvolts (uV). N is given by Bits[11:0] of flags
+               3.9.2.6.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !VoltageDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  level_index_range           pre: !IsValidVoltageLevelIndex(domain_id, level_index)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  supported                   pre: !IsRequestSupported(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  permission                  pre: !AgentMayGetVoltageLevels(caller, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.9.2.6.2.1   Failure condition ordering
+               The VOLTAGE_DESCRIBE_LEVELS command does not have any failure condition orderings.
+               3.9.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags_reserved              post: Bits(flags, 15, 13) == 0
+  segment_remaining           post: Bits(flags, 12, 12) == 1 ==> Bits(flags, 31, 16) == 0
+  segment_count               post: Bits(flags, 12, 12) == 1 ==> Bits(flags, 11, 0) == 3
+  segment_lowest              post: Bits(flags, 12, 12) == 1 ==> Elem(voltage, 0) == LowestVoltageLevel(domain_id)
+  segment_highest             post: Bits(flags, 12, 12) == 1 ==> Elem(voltage, 1) == HighestVoltageLevel(domain_id)
+  segment_step                post: Bits(flags, 12, 12) == 1 ==> Elem(voltage, 2) == VoltageStepSize(domain_id)
+  discrete_levels             post: Bits(flags, 12, 12) == 0 ==> (forall|i: UInt32| i < Bits(flags, 11, 0) ==> Elem(voltage, i) == VoltageLevelAt(domain_id, level_index + i))
+  discrete_remaining          post: Bits(flags, 12, 12) == 0 ==> Bits(flags, 31, 16) == RemainingVoltageLevels(domain_id, level_index, Bits(flags, 11, 0))
+  ascending_order             post: forall|i: UInt32| i + 1 < Bits(flags, 11, 0) ==> Elem(voltage, i) < Elem(voltage, i + 1)
+               3.9.2.6.4 Footprint
+               The VOLTAGE_DESCRIBE_LEVELS command does not modify any state.

@@ -1,0 +1,29 @@
+3.8.2.7 RESET_NOTIFY command
+               Requests that the platform send RESET_ISSUED notifications to the calling agent when a reset domain has been reset, or stops those notifications. If a reset has been explicitly signaled, the platform generates the notification when the reset signal has been asserted. Notification support is optional, and PROTOCOL_MESSAGE_ATTRIBUTES must be used to discover whether this command is implemented. These notifications are disabled by default during initial boot of the platform.
+               3.8.2.7.1 Interface
+               3.8.2.7.1.1   Input values
+        Name                Register        Bits        Type                                  Description
+        message_id          Header          -           UInt                                  Message identifier, value 0x5
+        protocol_id         Header          -           UInt                                  Protocol identifier, value 0x16
+        domain_id           Payload[0]      31:0        UInt32                                Identifier for the reset domain
+        notify_enable       Payload[1]      31:1        UInt32                                Reserved, must be zero
+                                            0                                                 Notify enable: 1 = send RESET_ISSUED notifications to the calling agent when the domain is reset; 0 = do not send RESET_ISSUED notifications to the calling agent
+               3.8.2.7.1.2   Output values
+        Name                Register        Bits        Type                                  Description
+        status              Payload[0]      31:0        Int32                                 Command return status
+               3.8.2.7.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidResetDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  notify_enable_valid         pre: !IsValidNotifyEnable(notify_enable)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.8.2.7.2.1   Failure condition ordering
+               The RESET_NOTIFY command does not have any failure condition orderings.
+               3.8.2.7.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  notify_on                   post: Bits(notify_enable, 0, 0) == 1 ==> ResetNotificationsEnabled(CallingAgent(), domain_id)
+  notify_off                  post: Bits(notify_enable, 0, 0) == 0 ==> !ResetNotificationsEnabled(CallingAgent(), domain_id)
+               3.8.2.7.4 Footprint
+    ID                        Value
+    notify_state              ResetNotificationsEnabled(CallingAgent(), domain_id)

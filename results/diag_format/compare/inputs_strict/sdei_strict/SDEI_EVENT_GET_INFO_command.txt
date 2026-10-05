@@ -1,0 +1,36 @@
+5.1.10 SDEI_EVENT_GET_INFO command
+               Retrieves the information of an event.
+               5.1.10.1 Interface
+               5.1.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000029
+        event               X1           31:0        Int32                                 Event number
+        info                X2           31:0        UInt32                                Information requested
+               5.1.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 On success, the requested information. On error, an error code.
+               5.1.10.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_valid                 pre: !IsValidEventNumber(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  info_valid                  pre: !IsValidEventInfo(info)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  routing_shared              pre: (info == EV_ROUTING_MODE || info == EV_ROUTING_AFF) && !IsSharedEvent(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  routing_aff                 pre: info == EV_ROUTING_AFF && EventRoutingMode(event) != RM_PE
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  routing_registered          pre: (info == EV_ROUTING_MODE || info == EV_ROUTING_AFF) && !IsEventRegistered(event)
+                              post: ResultEqual(result, DENIED)
+               5.1.10.2.1   Failure condition ordering
+               The SDEI_EVENT_GET_INFO command does not have any failure condition orderings.
+               5.1.10.3 Success conditions
+  ID                          Condition
+  ev_type                     post: (info == EV_TYPE) ==> ((IsPrivateEvent(event) ==> result == 0) && (IsSharedEvent(event) ==> result == 1))
+  ev_signaled                 post: (info == EV_SIGNALED) ==> ((IsSoftwareSignalable(event) ==> result == 0) && (!IsSoftwareSignalable(event) ==> result == 1))
+  ev_priority                 post: (info == EV_PRIORITY) ==> ((EventPriority(event) == PRIORITY_NORMAL ==> result == 0) && (EventPriority(event) == PRIORITY_CRITICAL ==> result == 1))
+  ev_routing_mode             post: (info == EV_ROUTING_MODE) ==> ((EventRoutingMode(event) == RM_ANY ==> result == 0) && (EventRoutingMode(event) == RM_PE ==> result == 1))
+  ev_routing_aff              post: (info == EV_ROUTING_AFF) ==> (result == EventRoutingAffinity(event) && IsMpidrFormat(result))
+               5.1.10.4 Footprint
+               The SDEI_EVENT_GET_INFO command does not modify any state.

@@ -1,0 +1,29 @@
+5.20 SYSTEM_SUSPEND command
+               Suspends the system to RAM. The calling core resumes execution at entry_point_address on wakeup.
+               5.20.1 Interface
+               5.20.1.1   Input values
+        Name                   Register     Bits        Type                  Description
+        fid                    -            -           UInt64                FID of SYSTEM_SUSPEND
+        entry_point_address    -            -           Address               Address at which the calling core resumes execution on wakeup
+        context_id             -            -           UInt64                Context ID that enables resumption on wakeup
+               5.20.1.2   Output values
+        Name                   Register     Bits        Type                  Description
+        result                 -            -           PsciReturnCode        Command return status
+               5.20.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !SystemSuspendImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  invalid_address             pre: EntryPointKnownInvalid(entry_point_address)
+                              post: ResultEqual(result, INVALID_ADDRESS)
+  other_core_not_off          pre: exists|c: Core| c != CallingCore() && AffinityState(c) != OFF
+                              post: ResultEqual(result, DENIED)
+               5.20.2.1   Failure condition ordering
+               The SYSTEM_SUSPEND command does not have any failure condition orderings.
+               5.20.3 Success conditions
+  ID                          Condition
+  system_suspend              post: SystemInDeepestPowerdownState()
+  resume_core                 post: CoreResumesAtEntryPoint(CallingCore(), entry_point_address, context_id)
+               5.20.4 Footprint
+    ID                        Value
+    system_power_state        SystemPowerState()
+    calling_core_state        AffinityState(CallingCore())

@@ -1,0 +1,29 @@
+5.16 PSCI_FEATURES command
+               Returns whether a PSCI function, or SMCCC_VERSION, is implemented, and the feature flags of an implemented function.
+               5.16.1 Interface
+               5.16.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        function_id         W0           31:0        UInt32                                Function ID for PSCI_FEATURES
+        psci_func_id        W1           31:0        UInt32                                Function ID of the PSCI function, or of SMCCC_VERSION, being queried
+               5.16.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        Int32                                 Feature flags if the function is implemented, otherwise NOT_SUPPORTED
+               5.16.2 Failure conditions
+  ID                          Condition
+  func_impl                   pre: !IsImplementedFunction(psci_func_id)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  smc64_aarch32               pre: CallerIsAArch32() && IsSmc64FunctionId(psci_func_id) && IsImplementedFunction(psci_func_id)
+                              post: ResultEqual(result, NOT_SUPPORTED) || IsValidFeatureFlags(psci_func_id, result)
+               5.16.2.1   Failure condition ordering
+               The PSCI_FEATURES command does not have any failure condition orderings.
+               5.16.3 Success conditions
+  ID                          Condition
+  flags_positive              post: Bits(result, 31, 31) == 0
+  susp_reserved               post: (psci_func_id == 0x84000001 || psci_func_id == 0xC4000001) ==> Bits(result, 31, 2) == 0
+  susp_param_format           post: (psci_func_id == 0x84000001 || psci_func_id == 0xC4000001) ==> ((Bits(result, 1, 1) == 1) == UsesExtendedStateIdFormat())
+  susp_os_initiated           post: (psci_func_id == 0x84000001 || psci_func_id == 0xC4000001) ==> ((Bits(result, 0, 0) == 1) == SupportsOsInitiatedMode())
+  off2_reserved               post: (psci_func_id == 0x84000015 || psci_func_id == 0xC4000015) ==> (Bits(result, 31, 31) == 0 && Bits(result, 30, 1) == 0)
+  off2_hibernate_off          post: (psci_func_id == 0x84000015 || psci_func_id == 0xC4000015) ==> Bits(result, 0, 0) == 1
+  other_reserved              post: (psci_func_id != 0x84000001 && psci_func_id != 0xC4000001 && psci_func_id != 0x84000015 && psci_func_id != 0xC4000015) ==> Bits(result, 31, 0) == 0
+               5.16.4 Footprint
+               The PSCI_FEATURES command does not modify any state.

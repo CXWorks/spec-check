@@ -1,0 +1,31 @@
+9.2 sbi_hart_stop command
+
+               Asks the SBI implementation to stop running the calling hart in supervisor-mode and to take back ownership of the hart. Under normal conditions this call does not return.
+
+               9.2.1 Interface
+
+               9.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 1
+
+               9.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    Int                                   struct sbiret error field
+        value               a1           XLEN-1:0    Int                                   struct sbiret value field
+
+               9.2.2 Failure conditions
+               The excerpt does not list any failure conditions for the sbi_hart_stop command.
+
+               9.2.2.1   Failure condition ordering
+               The sbi_hart_stop command does not have any failure condition orderings.
+
+               9.2.3 Success conditions
+  ID                          Condition
+  hart_smode                  post: !HartExecutingInSupervisorMode(calling_hart)
+  hart_owner                  post: HartOwnedBySbiImplementation(calling_hart)
+  no_return                   post: !CallReturnsToCaller(calling_hart)
+
+               9.2.4 Footprint
+    ID                        Value
+    hart_smode                HartSupervisorExecutionState(calling_hart)
+    hart_owner                HartOwnership(calling_hart)

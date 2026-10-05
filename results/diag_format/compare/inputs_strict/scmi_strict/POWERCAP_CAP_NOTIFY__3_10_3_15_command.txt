@@ -1,0 +1,28 @@
+3.10.3.15 POWERCAP_CAP_NOTIFY command
+               Asks the platform to send POWERCAP_CAP_CHANGED notifications when the power cap or CAI of a power capping domain changes.
+               3.10.3.15.1 Interface
+               3.10.3.15.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0xA
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x18
+        domain_id           Param[0]     31:0        UInt32                                Identifier of the power capping domain
+        notify_enable       Param[1]     31:0        UInt32                                Bits[31:1]: reserved, must be zero. Bit[0]: notify enable. 0 means the platform sends no POWERCAP_CAP_CHANGED messages to the calling agent. 1 means it sends POWERCAP_CAP_CHANGED messages to the calling agent when the domain's power cap or CAI changes
+               3.10.3.15.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status
+               3.10.3.15.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  notify_enable_valid         pre: !IsValidNotifyEnable(notify_enable)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.10.3.15.2.1   Failure condition ordering
+               The POWERCAP_CAP_NOTIFY command does not have any failure condition orderings.
+               3.10.3.15.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  notify_on                   post: (Bits(notify_enable, 0, 0) == 1) ==> CapChangeNotifyEnabled(caller, domain_id)
+  notify_off                  post: (Bits(notify_enable, 0, 0) == 0) ==> !CapChangeNotifyEnabled(caller, domain_id)
+               3.10.3.15.4 Footprint
+    ID                        Value
+    notify_state              CapChangeNotifyEnabled(caller, domain_id)

@@ -1,0 +1,30 @@
+3.9.2.5 VOLTAGE_DOMAIN_ATTRIBUTES command
+               Returns the attribute flags associated with a specific voltage domain.
+               This command is mandatory.
+               3.9.2.5.1 Interface
+               3.9.2.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message identifier, value 0x3
+        protocol_id         Header       -           UInt                                  Protocol identifier, value 0x17
+        domain_id           Payload      31:0        UInt32                                Identifier for the domain. Domain identifiers are limited to 16 bits; bits 31:16 are ignored by the platform
+               3.9.2.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status
+        attributes          Payload      31:0        UInt32                                Bit[31]: asynchronous voltage level set support. Bit[30]: extended voltage domain name. Bits[29:0]: reserved, must be zero
+        name                Payload      -           UInt8[16]                             Null-terminated ASCII string of up to 16 bytes describing the voltage domain name. When Bit[30] of attributes is 1, holds the lower 15 bytes of the null-terminated voltage domain name
+               3.9.2.5.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !VoltageDomainExists(Bits(domain_id, 15, 0))
+                              post: ResultEqual(status, NOT_FOUND)
+               3.9.2.5.2.1   Failure condition ordering
+               The VOLTAGE_DOMAIN_ATTRIBUTES command does not have any failure condition orderings.
+               3.9.2.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  async_set                   post: (Bit(attributes, 31) == 1) == VoltageDomainSupportsAsyncLevelSet(Bits(domain_id, 15, 0))
+  ext_name                    post: (Bit(attributes, 30) == 1) == (VoltageDomainNameLength(Bits(domain_id, 15, 0)) > 16)
+  reserved                    post: Bits(attributes, 29, 0) == 0
+  name_short                  post: Bit(attributes, 30) == 0 ==> NameEquals(name, VoltageDomainName(Bits(domain_id, 15, 0)))
+  name_ext                    post: Bit(attributes, 30) == 1 ==> NameEqualsLowerBytes(name, VoltageDomainName(Bits(domain_id, 15, 0)), 15)
+               3.9.2.5.4 Footprint
+               The VOLTAGE_DOMAIN_ATTRIBUTES command does not modify any state.

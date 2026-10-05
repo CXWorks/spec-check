@@ -1,0 +1,38 @@
+3.11.2.5 PINCTRL_ATTRIBUTES command
+               Returns the attributes of a pin, a group of pins, or a function.
+               This command is mandatory.
+               3.11.2.5.1 Interface
+               3.11.2.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x3
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x19
+        identifier          Payload[0]   31:0        UInt32                                Identifier of the pin, group or function. Only bits 15:0 are used. The platform ignores bits 31:16
+        flags               Payload[1]   31:0        UInt32                                Bits[31:2]: Reserved, must be zero. Bits[1:0]: Selector. 0 = Pin, 1 = Group, 2 = Function. Other values are reserved
+               3.11.2.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        attributes          Payload[1]   31:0        UInt32                                Bit[31]: Extended name. Bits[30:18]: Reserved, must be zero. Bit[17]: GPIO function descriptor. Bit[16]: Pin-only function descriptor. Bits[15:0]: Number of pins or groups
+        name                Payload[2:5] 127:0       UInt8[16]                             Null-terminated ASCII name of the pin, group or function. Holds the lower 15 bytes of the name when Bit[31] of attributes is 1
+               3.11.2.5.2 Failure conditions
+  ID                          Condition
+  ident_exists                pre: !EntityExists(Bits(identifier, 15, 0), Bits(flags, 1, 0))
+                              post: ResultEqual(status, NOT_FOUND)
+               3.11.2.5.2.1   Failure condition ordering
+               The PINCTRL_ATTRIBUTES command does not have any failure condition orderings.
+               3.11.2.5.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  ext_name_set                post: Bits(attributes, 31, 31) == 1 ==> EntityNameLength(Bits(identifier, 15, 0), Bits(flags, 1, 0)) > 16
+  ext_name_clear              post: Bits(attributes, 31, 31) == 0 ==> !ExtendedNameSupported(Bits(identifier, 15, 0), Bits(flags, 1, 0))
+  reserved                    post: Bits(attributes, 30, 18) == 0
+  gpio_desc                   post: Bits(flags, 1, 0) == 2 ==> ((Bits(attributes, 17, 17) == 1) == FunctionSupportsGpio(Bits(identifier, 15, 0)))
+  gpio_unique                 post: (Bits(flags, 1, 0) == 2 && Bits(attributes, 17, 17) == 1) ==> IsOnlyGpioFunctionOfAssociatedPinsAndGroups(Bits(identifier, 15, 0))
+  pin_only_desc               post: Bits(flags, 1, 0) == 2 ==> ((Bits(attributes, 16, 16) == 1) == IsPinOnlyFunction(Bits(identifier, 15, 0)))
+  count_pin                   post: Bits(flags, 1, 0) == 0 ==> Bits(attributes, 15, 0) == 1
+  count_group                 post: Bits(flags, 1, 0) == 1 ==> Bits(attributes, 15, 0) == GroupPinCount(Bits(identifier, 15, 0))
+  count_func_pins             post: (Bits(flags, 1, 0) == 2 && Bits(attributes, 16, 16) == 1) ==> Bits(attributes, 15, 0) == FunctionSupportingPinCount(Bits(identifier, 15, 0))
+  count_func_groups           post: (Bits(flags, 1, 0) == 2 && Bits(attributes, 16, 16) == 0) ==> Bits(attributes, 15, 0) == FunctionSupportingGroupCount(Bits(identifier, 15, 0))
+  name_full                   post: Bits(attributes, 31, 31) == 0 ==> NameFieldHoldsNullTerminatedName(name, EntityName(Bits(identifier, 15, 0), Bits(flags, 1, 0)))
+  name_lower                  post: Bits(attributes, 31, 31) == 1 ==> NameFieldHoldsLower15BytesNullTerminated(name, EntityName(Bits(identifier, 15, 0), Bits(flags, 1, 0)))
+               3.11.2.5.4 Footprint
+               The PINCTRL_ATTRIBUTES command does not modify any state.

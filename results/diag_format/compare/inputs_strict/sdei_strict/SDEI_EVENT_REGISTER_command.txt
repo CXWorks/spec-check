@@ -1,0 +1,50 @@
+5.1.2 SDEI_EVENT_REGISTER command
+               Registers a handler for the specified event.
+               5.1.2.1 Interface
+               5.1.2.1.1   Input values
+        Name                   Register     Bits        Type        Description
+        fid                    X0           31:0        UInt32      FID, value 0xC4000021
+        event                  X1           31:0        Int32       Event number
+        entry_point_address    X2           63:0        UInt64      Entry point address at ELC for the event handler
+        ep_argument            X3           63:0        UInt64      User-defined argument passed to the entry point routine
+        flags                  X4           63:0        UInt64      Registration flags. Bits [63:2]: reserved, must be zero. Bit [1]: relative_mode (0: entry_point_address is an absolute address; 1: entry_point_address is relative to VBAR for ELC; optional, support can be found with SDEI_FEATURES). Bit [0]: routing_mode (0: RM_ANY; 1: RM_PE)
+        affinity               X5           63:0        UInt64      Affinity argument. For RM_PE, uses the MPIDR format: bits [63:40] must be zero; bits [39:32] Aff3; bits [31:24] must be zero; bits [23:16] Aff2; bits [15:8] Aff1; bits [7:0] Aff0
+               5.1.2.1.2   Output values
+        Name                   Register     Bits        Type        Description
+        result                 X0           63:0        Int64       Command return status: SUCCESS, NOT_SUPPORTED, INVALID_PARAMETERS or DENIED
+               5.1.2.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_valid                 pre: !IsValidEvent(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  ep_valid                    pre: DispatcherDetectsInvalidEntryPoint(entry_point_address, flags)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  routing_mode                pre: IsSharedEvent(event) && !IsValidRoutingMode(Bits(flags, 0, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  affinity                    pre: IsSharedEvent(event) && Bits(flags, 0, 0) == RM_PE && !IsValidAffinity(affinity)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  already_reg                 pre: IsRegisteredByClient(event, CallingClient())
+                              post: ResultEqual(result, DENIED)
+  unreg_pending               pre: EventHandlerState(event) == HANDLER_UNREGISTER_PENDING
+                              post: ResultEqual(result, DENIED)
+               5.1.2.2.1   Failure condition ordering
+               The SDEI_EVENT_REGISTER command does not have any failure condition orderings.
+               5.1.2.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  reg_shared                  post: IsSharedEvent(event) ==> IsRegisteredForClient(event, CallingClient())
+  reg_private                 post: !IsSharedEvent(event) ==> IsRegisteredForPe(event, CallingPe())
+  disabled                    post: !EventEnabled(event)
+  entry_point                 post: EventEntryPoint(event) == ResolveEntryPoint(entry_point_address, Bits(flags, 1, 1))
+  ep_argument                 post: EventArgument(event) == ep_argument
+  routing_mode                post: IsSharedEvent(event) ==> EventRoutingMode(event) == Bits(flags, 0, 0)
+  affinity                    post: IsSharedEvent(event) && Bits(flags, 0, 0) == RM_PE ==> EventAffinity(event) == affinity
+               5.1.2.4 Footprint
+    ID                        Value
+    handler_state             EventHandlerState(event)
+    registration              EventRegistration(event)
+    entry_point               EventEntryPoint(event)
+    ep_argument               EventArgument(event)
+    routing_mode              EventRoutingMode(event)
+    affinity                  EventAffinity(event)

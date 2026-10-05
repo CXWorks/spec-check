@@ -1,0 +1,48 @@
+5.9.1 MIGRATE_INFO_TYPE command
+               Reports whether the Trusted OS needs migration, and how it can migrate. The Normal world uses this to decide whether it can use CPU_OFF and MIGRATE for the Trusted OS.
+               5.9.1.1 Interface
+               5.9.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID of MIGRATE_INFO_TYPE
+               5.9.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Trusted OS migration type: 0 (UP migrate capable), 1 (UP not migrate capable), 2 (MP capable or not present), or NOT_SUPPORTED
+               5.9.1.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsMigrateInfoTypeImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               5.9.1.2.1   Failure condition ordering
+               The MIGRATE_INFO_TYPE command does not have any failure condition orderings.
+               5.9.1.3 Success conditions
+  ID                          Condition
+  type_range                  post: result == 0 || result == 1 || result == 2
+  type_constant               post: result == PlatformMigrateInfoType()
+  type_up_migrate             post: result == 0 ==> TrustedOsIsUniprocessor() && TrustedOsIsMigrateCapable()
+  type_up_no_migrate          post: result == 1 ==> TrustedOsIsUniprocessor() && !TrustedOsIsMigrateCapable()
+  type_mp_or_absent           post: result == 2 ==> TrustedOsIsMpCapable() || !TrustedOsIsPresent()
+  up_migrate_calls            post: result == 0 ==> MigrateResultOnResidentCore() == SUCCESS && CpuOffResultOnResidentCore() == DENIED
+  up_no_migrate_calls         post: result == 1 ==> MigrateResultOnResidentCore() == DENIED && CpuOffResultOnResidentCore() == DENIED
+  mp_or_absent_calls          post: result == 2 ==> MigrateResultOnResidentCore() == NOT_SUPPORTED && CpuOffDoesNotReturnOnResidentCore()
+               5.9.1.4 Footprint
+               The MIGRATE_INFO_TYPE command does not modify any state.
+
+5.9.2 MIGRATE_INFO_UP_CPU command
+               Returns the MPIDR-based value of the core where the uniprocessor Trusted OS currently runs.
+               5.9.2.1 Interface
+               5.9.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID of MIGRATE_INFO_UP_CPU
+               5.9.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        UInt64                                MPIDR-based value of the core where the Trusted OS resides. Uses the same format as the target_cpu parameter of CPU_ON and MIGRATE (see section 5.1.4)
+               5.9.2.2 Failure conditions
+               The MIGRATE_INFO_UP_CPU command does not have any failure conditions.
+               5.9.2.2.1   Failure condition ordering
+               The MIGRATE_INFO_UP_CPU command does not have any failure condition orderings.
+               5.9.2.3 Success conditions
+  ID                          Condition
+  resident_cpu                post: (PlatformMigrateInfoType() == 0 || PlatformMigrateInfoType() == 1) ==> result == TrustedOsResidentCpu()
+  resident_cpu_format         post: (PlatformMigrateInfoType() == 0 || PlatformMigrateInfoType() == 1) ==> IsTargetCpuFormat(result)
+  undefined_for_mp            post: PlatformMigrateInfoType() == 2 ==> IsUndefinedValue(result)
+               5.9.2.4 Footprint
+               The MIGRATE_INFO_UP_CPU command does not modify any state.

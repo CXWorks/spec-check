@@ -1,0 +1,54 @@
+14.3 FFA_RUN command
+               A scheduler (see 4.9 Primary scheduler) uses this command to give CPU cycles to the target endpoint execution context named in target_info.
+               Table 14.12 lists the valid FF-A instances and conduits:
+                    Non-secure physical: SMC
+                    Secure physical: ERET
+                    Non-secure virtual: SMC, HVC, ERET
+                    Secure virtual: SMC, HVC, SVC, ERET
+               14.3.1 Interface
+               14.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                FID, value 0x8400006D or 0xC400006D (see 11.1.2 Parameter Register Preservation)
+        target_info         w1           31:0        UInt32                                Identifies the target SP/VM. Bits[31:16]: ID of the SP/VM. Bits[15:0]: ID of the vCPU of the SP/VM to run
+        reserved            w2-w7        31:0        UInt32                                Reserved, SBZ
+        reserved            x2-x17       63:0        UInt64                                Reserved, SBZ
+               14.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                Function ID of the completing ABI: FFA_ERROR, FFA_INTERRUPT, FFA_MSG_WAIT, FFA_YIELD or FFA_MSG_SEND_DIRECT_RESP
+        error_code          w2           31:0        Int32                                 Error code. Valid only when result is FFA_ERROR
+               14.3.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_RUN, ffa_instance)
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, NOT_SUPPORTED)
+  endpoint_id                 pre: !IsRecognizedEndpointId(Bits(target_info, 31, 16))
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, INVALID_PARAMETERS)
+  vcpu_id                     pre: !IsRecognizedVcpuId(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, INVALID_PARAMETERS)
+  vcpu_pinned                 pre: IsVcpuPinnedToOtherPe(Bits(target_info, 31, 16), Bits(target_info, 15, 0), CurrentPe())
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, INVALID_PARAMETERS)
+  callee_state                pre: !CalleeCanHandleRequest(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, DENIED)
+  caller_denied               pre: !CallerAllowedToInvokeRun(caller, CpuCycleAllocationMode())
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, DENIED)
+  vcpu_busy                   pre: IsVcpuBusy(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, BUSY)
+  aborted                     pre: HasVcpuOrVmAborted(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, ABORTED)
+  not_ready                   pre: !IsReceiverReady(Bits(target_info, 31, 16))
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, NOT_READY)
+               14.3.2.1   Failure condition ordering
+               The FFA_RUN command does not have any failure condition orderings.
+               14.3.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_INTERRUPT) || ResultEqual(result, FFA_MSG_WAIT) || ResultEqual(result, FFA_YIELD) || ResultEqual(result, FFA_MSG_SEND_DIRECT_RESP)
+  target_waiting              post: PreExecCtxState(Bits(target_info, 31, 16), Bits(target_info, 15, 0)) == WAITING ==> TransitionedToRunning(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+  target_blocked              post: PreExecCtxState(Bits(target_info, 31, 16), Bits(target_info, 15, 0)) == BLOCKED ==> TransitionedToRunning(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+  target_preempted            post: PreExecCtxState(Bits(target_info, 31, 16), Bits(target_info, 15, 0)) == PREEMPTED ==> TransitionedToRunningViaEret(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+  physical_request            post: IsPhysicalInstance(ffa_instance) ==> RequestedTransitionFromPartitionManager(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+  caller_blocked              post: (IsVirtualInstance(ffa_instance) && (conduit == SMC || conduit == HVC || conduit == SVC)) ==> CallerWasBlockedDuringRun(caller)
+  caller_resumed              post: ((IsVirtualInstance(ffa_instance) && (conduit == SMC || conduit == HVC || conduit == SVC)) || (ffa_instance == NS_PHYSICAL && conduit == SMC)) ==> (ExecCtxState(caller) == RUNNING && CompletedViaEret(result))
+  secure_completion           post: (ffa_instance == SECURE_PHYSICAL && conduit == ERET) ==> CompletedViaSmc(result)
+               14.3.4 Footprint
+    ID                        Value
+    target_state              ExecCtxState(Bits(target_info, 31, 16), Bits(target_info, 15, 0))
+    caller_state              ExecCtxState(caller)

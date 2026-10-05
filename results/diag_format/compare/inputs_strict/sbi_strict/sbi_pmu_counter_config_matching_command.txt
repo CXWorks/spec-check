@@ -1,0 +1,45 @@
+11.8 sbi_pmu_counter_config_matching command
+               Finds a counter that is not started (or enabled) and can monitor the specified event, from a set of counters, and configures it.
+               11.8.1 Interface
+               11.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 2
+        counter_idx_base    a0           XLEN-1:0    unsigned long                         Base index of the set of counters
+        counter_idx_mask    a1           XLEN-1:0    unsigned long                         Mask that selects counters relative to counter_idx_base
+        config_flags        a2           XLEN-1:0    unsigned long                         Counter configuration and filter flags. See the config_flags bit definitions below.
+        event_idx           a3           XLEN-1:0    unsigned long                         Event to be monitored
+        event_data          a4           63:0        uint64_t                              Additional event configuration
+               config_flags bit definitions
+        Flag Name                          Bits          Description
+        SBI_PMU_CFG_FLAG_SKIP_MATCH        0:0           Skip the counter matching
+        SBI_PMU_CFG_FLAG_CLEAR_VALUE       1:1           Clear (or zero) the counter value in counter configuration
+        SBI_PMU_CFG_FLAG_AUTO_START        2:2           Start the counter after configuring a matching counter
+        SBI_PMU_CFG_FLAG_SET_VUINH         3:3           Event counting inhibited in VU-mode
+        SBI_PMU_CFG_FLAG_SET_VSINH         4:4           Event counting inhibited in VS-mode
+        SBI_PMU_CFG_FLAG_SET_UINH          5:5           Event counting inhibited in U-mode
+        SBI_PMU_CFG_FLAG_SET_SINH          6:6           Event counting inhibited in S-mode
+        SBI_PMU_CFG_FLAG_SET_MINH          7:7           Event counting inhibited in M-mode
+        RESERVED                           8:(XLEN-1)    Reserved for future use and must be zero
+               11.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    long                                  Command return status (struct sbiret.error)
+        value               a1           XLEN-1:0    unsigned long                         Return value (struct sbiret.value)
+               11.8.2 Failure conditions
+               The section does not describe any failure conditions for sbi_pmu_counter_config_matching.
+               11.8.2.1   Failure condition ordering
+               The sbi_pmu_counter_config_matching command does not have any failure condition orderings.
+               11.8.3 Success conditions
+  ID                          Condition
+  ctr_in_set                  post: IsCounterInSet(SelectedCounter(), counter_idx_base, counter_idx_mask)
+  ctr_skip_match              post: Bits(config_flags, 0, 0) == 1 ==> SelectedCounter() == FirstCounterInSet(counter_idx_base, counter_idx_mask)
+  ctr_not_started             post: Bits(config_flags, 0, 0) == 0 ==> !CounterWasStarted(SelectedCounter())
+  ctr_can_monitor             post: Bits(config_flags, 0, 0) == 0 ==> CounterCanMonitorEvent(SelectedCounter(), event_idx)
+  ctr_configured              post: CounterConfiguredForEvent(SelectedCounter(), event_idx, event_data)
+  ctr_clear_value             post: Bits(config_flags, 1, 1) == 1 ==> CounterValue(SelectedCounter()) == 0
+  ctr_auto_start              post: Bits(config_flags, 2, 2) == 1 ==> CounterIsStarted(SelectedCounter())
+  ctr_auto_start_value        post: Bits(config_flags, 2, 2) == 1 ==> CounterValueUnaffectedByAutoStart(SelectedCounter())
+               11.8.4 Footprint
+    ID                        Value
+    ctr_config                CounterConfig(SelectedCounter())
+    ctr_value                 CounterValue(SelectedCounter())
+    ctr_started               CounterStartedState(SelectedCounter())

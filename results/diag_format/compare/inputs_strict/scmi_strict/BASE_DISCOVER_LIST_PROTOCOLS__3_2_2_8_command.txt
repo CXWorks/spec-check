@@ -1,0 +1,28 @@
+3.2.2.8 BASE_DISCOVER_LIST_PROTOCOLS command
+               Lets the agent discover which protocols it is allowed to access.
+               3.2.2.8.1 Interface
+               3.2.2.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          header       7:0         UInt32                                Message ID, value 0x6
+        protocol_id         header       17:10       UInt32                                Protocol ID, value 0x10
+        skip                payload[0]   31:0        UInt32                                Number of protocols to skip
+               3.2.2.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              payload[0]   31:0        Int32                                 Command return status
+        num_protocols       payload[1]   31:0        UInt32                                Number of protocols that this call returns
+        protocols           payload[2..] 31:0        UInt32[1+(num_protocols-1)/4]         Array of implemented protocol identifiers, excluding the Base protocol, with four protocol identifiers packed into each array element
+               3.2.2.8.2 Failure conditions
+  ID                          Condition
+  skip_valid                  pre: !IsValidSkip(skip)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.2.2.8.2.1   Failure condition ordering
+               The BASE_DISCOVER_LIST_PROTOCOLS command does not have any failure condition orderings.
+               3.2.2.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  prot_list                   post: forall|i: UInt32| i < num_protocols ==> ProtocolIdAt(protocols, i) == AccessibleProtocolAt(skip + i)
+  prot_packing                post: forall|i: UInt32| i < num_protocols ==> ProtocolIdAt(protocols, i) == Bits(ArrayElement(protocols, i / 4), (i % 4) * 8 + 7, (i % 4) * 8)
+  prot_no_base                post: forall|i: UInt32| i < num_protocols ==> ProtocolIdAt(protocols, i) != BASE_PROTOCOL_ID
+  prot_order                  post: forall|i: UInt32| i + 1 < num_protocols ==> ProtocolIdAt(protocols, i) < ProtocolIdAt(protocols, i + 1)
+               3.2.2.8.4 Footprint
+               The BASE_DISCOVER_LIST_PROTOCOLS command does not modify any state.

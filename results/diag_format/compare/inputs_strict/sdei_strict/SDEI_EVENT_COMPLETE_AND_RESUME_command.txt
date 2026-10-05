@@ -1,0 +1,34 @@
+5.1.7 SDEI_EVENT_COMPLETE_AND_RESUME command
+               Completes the event handling and resumes execution at the specified address in ELC.
+               5.1.7.1 Interface
+               5.1.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000026
+        resume_addr         X1           63:0        Address                               Address in client to resume the execution from
+               5.1.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status. Returned only on error; on success the call does not return
+               5.1.7.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  resume_addr                 pre: DispatcherDetectsInvalidResumeAddress(resume_addr)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  handler_running             pre: HandlerRunning(CallingPe()) == FALSE
+                              post: ResultEqual(result, DENIED)
+               5.1.7.2.1   Failure condition ordering
+               The SDEI_EVENT_COMPLETE_AND_RESUME command does not have any failure condition orderings.
+               5.1.7.3 Success conditions
+  ID                          Condition
+  no_return                   post: !ReturnsToCaller()
+  handler_running             post: HandlerRunning(CallingPe()) == FALSE
+  private_complete            post: IsPrivateEvent(RunningEvent(CallingPe())) ==> EventHandlingCompleteForPe(RunningEvent(CallingPe()), CallingPe())
+  shared_complete             post: IsSharedEvent(RunningEvent(CallingPe())) ==> EventHandlingCompleteGlobally(RunningEvent(CallingPe()))
+  resume_exec                 post: PeResumesAtElc(CallingPe(), resume_addr)
+  resume_context              post: ResumeContextMimicsSyncExceptionToElc(CallingPe(), EventTakenPc(CallingPe()))
+  smc_order                   post: InterruptedYieldingSmc(CallingPe()) ==> ResumeHandlerRunsBeforeSecureExecution(CallingPe())
+               5.1.7.4 Footprint
+    ID                        Value
+    handler_running           HandlerRunning(CallingPe())
+    event_state               EventHandlingState(RunningEvent(CallingPe()))
+    pe_context                ExecutionContext(CallingPe())

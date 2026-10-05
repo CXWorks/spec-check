@@ -1,0 +1,36 @@
+3.12.4.7 TELEMETRY_LIST_UPDATE_INTERVALS command
+               Returns the update intervals that the protocol supports, either as an array of discrete values or as a segment {lowest, highest, step}. If one call cannot return every interval, the agent can make further calls, starting from a given index. This command is mandatory.
+               3.12.4.7.1 Interface
+               3.12.4.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x5
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x1B
+        index               Payload[0]   31:0        UInt32                                Index of the first update interval value to describe in the returned interval array
+        group_identifier    Payload[1]   31:0        UInt32                                Event group identifier
+        flags               Payload[2]   31:0        UInt32                                Bits[31:4]: Reserved, must be zero. Bits[3:0]: Selector. 0 = applies to all DEs that are not associated with any event group, and group_identifier is ignored. 1 = applies to the specified event group only. 2 = applies to all DEs and all event groups, and group_identifier is ignored. All other values are reserved. The Selector must be 2 if Bit[18] of attributes_1 of PROTOCOL_ATTRIBUTES is 0 (see Section 3.12.4.3).
+               3.12.4.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4)
+        ret_flags           Payload[1]   31:0        UInt32                                Returned flags field, describing the supported update intervals. Bits[31:16]: Number of remaining update intervals. Bits[15:13]: Reserved, must be zero. Bit[12]: Return format. 1 = the interval array is a segment {lowest, highest, step}. 0 = each entry is a discrete update interval. Bits[11:0]: Number of update intervals returned by this call.
+        intervals[N]        Payload[2..] 31:0        UInt32[N]                             Interval array. In each entry, Bits[31:21] are Reserved, Bits[20:5] are sec (seconds), and Bits[4:0] are exponent (a two's complement power-of-10 multiplier). The value is sec x 10^exponent seconds. N = Bits[11:0] of ret_flags.
+               3.12.4.7.2 Failure conditions
+  ID                          Condition
+  index_range                 pre: !IsValidUpdateIntervalIndex(group_identifier, flags, index)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+               3.12.4.7.2.1   Failure condition ordering
+               The TELEMETRY_LIST_UPDATE_INTERVALS command does not have any failure condition orderings.
+               3.12.4.7.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  reserved                    post: Bits(ret_flags, 15, 13) == 0
+  array_len                   post: ArrayLength(intervals) == Bits(ret_flags, 11, 0)
+  segment_count               post: Bit(ret_flags, 12) == 1 ==> Bits(ret_flags, 11, 0) == 3
+  segment_remaining           post: Bit(ret_flags, 12) == 1 ==> Bits(ret_flags, 31, 16) == 0
+  segment_lowest              post: Bit(ret_flags, 12) == 1 ==> ArrayEntry(intervals, 0) == LowestSupportedUpdateInterval(group_identifier, flags)
+  segment_highest             post: Bit(ret_flags, 12) == 1 ==> ArrayEntry(intervals, 1) == HighestSupportedUpdateInterval(group_identifier, flags)
+  segment_step                post: Bit(ret_flags, 12) == 1 ==> ArrayEntry(intervals, 2) == UpdateIntervalStepSize(group_identifier, flags)
+  discrete_entries            post: Bit(ret_flags, 12) == 0 ==> forall|i: UInt32| i < Bits(ret_flags, 11, 0) ==> ArrayEntry(intervals, i) == SupportedUpdateIntervalAt(group_identifier, flags, index + i)
+  discrete_remaining          post: Bit(ret_flags, 12) == 0 ==> Bits(ret_flags, 31, 16) == NumSupportedUpdateIntervals(group_identifier, flags) - index - Bits(ret_flags, 11, 0)
+  ascending                   post: forall|i: UInt32| i + 1 < Bits(ret_flags, 11, 0) ==> IntervalValue(ArrayEntry(intervals, i)) < IntervalValue(ArrayEntry(intervals, i + 1))
+               3.12.4.7.4 Footprint
+               The TELEMETRY_LIST_UPDATE_INTERVALS command does not modify any state.

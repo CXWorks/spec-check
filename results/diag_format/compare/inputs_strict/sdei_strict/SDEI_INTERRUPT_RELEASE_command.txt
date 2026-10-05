@@ -1,0 +1,41 @@
+5.1.15 SDEI_INTERRUPT_RELEASE command
+               Releases an interrupt from its event binding.
+               5.1.15.1 Interface
+               5.1.15.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt32                                FID, value 0xC400002E
+        event               X1           31:0        Int32                                 Event number returned by an earlier call to SDEI_INTERRUPT_BIND
+               5.1.15.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.15.2 Failure conditions
+  ID                          Condition
+  sdei_supported              pre: !IsSdeiSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_valid                 pre: !IsValidEventNumber(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  event_bound                 pre: !IsBoundInterruptEvent(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  private_handler_state       pre: IsPrivateEvent(event) && !(forall|pe: Pe| IsRegisteredPe(pe) ==> EventHandlerState(event, pe) == HANDLER_UNREGISTERED)
+                              post: ResultEqual(result, DENIED)
+  shared_handler_state        pre: IsSharedEvent(event) && SharedEventHandlerState(event) != HANDLER_UNREGISTERED
+                              post: ResultEqual(result, DENIED)
+               5.1.15.2.1   Failure condition ordering
+               The SDEI_INTERRUPT_RELEASE command does not have any failure condition orderings.
+               5.1.15.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  event_unbound               post: !IsBoundInterruptEvent(event)
+  event_removed               post: !IsValidEventNumber(event)
+  bind_slot                   post: BindSlotReturnedToPool(event)
+  pe_unregister               post: forall|pe: Pe| IsRegisteredPe(pe) ==> !IsUnregisterPending(event, pe)
+  intr_config                 post: InterruptConfigRestoredFromBind(ReleasedInterrupt(event))
+  intr_group                  post: IsPhysicalSdeiInstance() && SystemUsesGic() ==> InterruptGroup(ReleasedInterrupt(event)) == GROUP1_NON_SECURE
+  intr_disabled               post: !IsInterruptEnabledAtController(ReleasedInterrupt(event))
+               5.1.15.4 Footprint
+    ID                        Value
+    event_binding             InterruptEventBinding(event)
+    bind_slot                 BindSlotPool()
+    intr_config               InterruptConfig(ReleasedInterrupt(event))
+    intr_group                InterruptGroup(ReleasedInterrupt(event))
+    intr_enable               InterruptEnable(ReleasedInterrupt(event))

@@ -1,0 +1,18 @@
+pub open spec fn pinctrl_attributes__3_11_2_5_spec(identifier: UInt32, flags: UInt32, status: Int32, attributes: UInt32, name: [UInt8; 16], result: Result<(), RsiCommandReturnCode>, old_s: S, new_s: S) -> bool {
+  (!EntityExists(old_s, Bits(identifier, 15, 0), Bits(flags, 1, 0)) ==> ResultEqual(result, NOT_FOUND))
+  && (result == RSI_SUCCESS ==> ResultEqual(result, SUCCESS))
+  && (result == RSI_SUCCESS ==> Bits(attributes, 31, 31) == 1 ==> EntityNameLength(old_s, Bits(identifier, 15, 0), Bits(flags, 1, 0)) > 16)
+  && (result == RSI_SUCCESS ==> Bits(attributes, 31, 31) == 0 ==> !ExtendedNameSupported(old_s, Bits(identifier, 15, 0), Bits(flags, 1, 0)))
+  && (result == RSI_SUCCESS ==> Bits(attributes, 30, 18) == 0)
+  && (result == RSI_SUCCESS ==> Bits(flags, 1, 0) == 2 ==> ((Bits(attributes, 17, 17) == 1) == FunctionSupportsGpio(old_s, Bits(identifier, 15, 0))))
+  && (result == RSI_SUCCESS ==> (Bits(flags, 1, 0) == 2 && Bits(attributes, 17, 17) == 1) ==> IsOnlyGpioFunctionOfAssociatedPinsAndGroups(old_s, Bits(identifier, 15, 0)))
+  && (result == RSI_SUCCESS ==> Bits(flags, 1, 0) == 2 ==> ((Bits(attributes, 16, 16) == 1) == IsPinOnlyFunction(old_s, Bits(identifier, 15, 0))))
+  && (result == RSI_SUCCESS ==> Bits(flags, 1, 0) == 0 ==> Bits(attributes, 15, 0) == 1)
+  && (result == RSI_SUCCESS ==> Bits(flags, 1, 0) == 1 ==> Bits(attributes, 15, 0) == GroupPinCount(old_s, Bits(identifier, 15, 0)))
+  && (result == RSI_SUCCESS ==> (Bits(flags, 1, 0) == 2 && Bits(attributes, 16, 16) == 1) ==> Bits(attributes, 15, 0) == FunctionSupportingPinCount(old_s, Bits(identifier, 15, 0)))
+  && (result == RSI_SUCCESS ==> (Bits(flags, 1, 0) == 2 && Bits(attributes, 16, 16) == 0) ==> Bits(attributes, 15, 0) == FunctionSupportingGroupCount(old_s, Bits(identifier, 15, 0)))
+  && (result == RSI_SUCCESS ==> Bits(attributes, 31, 31) == 0 ==> NameFieldHoldsNullTerminatedName(name, EntityName(old_s, Bits(identifier, 15, 0), Bits(flags, 1, 0))))
+  && (result == RSI_SUCCESS ==> Bits(attributes, 31, 31) == 1 ==> NameFieldHoldsLower15BytesNullTerminated(name, EntityName(old_s, Bits(identifier, 15, 0), Bits(flags, 1, 0))))
+  && ((!(EntityExists(old_s, Bits(identifier, 15, 0), Bits(flags, 1, 0))))
+    ==> result == RSI_SUCCESS)
+}

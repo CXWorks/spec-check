@@ -1,0 +1,44 @@
+16.3 FFA_NOTIFICATION_BIND command
+               Requests the partition manager to bind the notifications in the Notification bitmap to the Sender endpoint. At the Non-secure physical FF-A instance, the Hypervisor requests the SPMC to bind SP notifications to the SP given by the Sender endpoint ID.
+               Valid FF-A instances and conduits: Non-secure virtual (SMC, HVC), Secure virtual (SMC, HVC, SVC), Non-secure physical (SMC), Secure physical (ERET).
+               16.3.1 Interface
+               16.3.1.1   Input values
+        Name                    Register     Bits        Type                  Description
+        fid                     W0           31:0        UInt32                Function ID, value 0x8400007F
+        receiver_id             W1           15:0        UInt16                Receiver endpoint ID
+        sender_id               W1           31:16       UInt16                Sender endpoint ID
+        flags                   W2           31:0        UInt32                Notification flags. Bit[0]: Per-vCPU notification flag (1: all notifications in the bitmap are per-vCPU notifications, only if per-vCPU notifications are supported; 0: all notifications in the bitmap are global notifications). Bits[31:1]: Reserved (SBZ)
+        notification_bitmap_lo  W3           31:0        UInt32                Bits[31:0] of the Notification bitmap. For each bit: 1 means the Sender endpoint can signal this notification, 0 has no effect
+        notification_bitmap_hi  W4           31:0        UInt32                Bits[63:32] of the Notification bitmap. For each bit: 1 means the Sender endpoint can signal this notification, 0 has no effect
+        reserved                W5-W7        31:0        UInt32                Reserved (SBZ)
+               16.3.1.2   Output values
+        Name                    Register     Bits        Type                  Description
+        result                  W0           31:0        UInt32                Command return status: FFA_SUCCESS with no further parameters, or FFA_ERROR
+        error_code              W2           31:0        Int32                 Error code, valid when result is FFA_ERROR
+               16.3.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_BIND, CurrentFfaInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  endpoint_id                 pre: !IsValidSenderId(sender_id) || !IsValidReceiverId(receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  per_vcpu_flag               pre: Bits(flags, 0, 0) == 1 && !PerVcpuNotificationsSupported()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bound_other                 pre: exists|n: NotificationId| BitmapBitSet(notification_bitmap_lo, notification_bitmap_hi, n) && IsBoundToOtherSender(receiver_id, n, sender_id)
+                              post: ResultEqual(result, DENIED)
+  pending                     pre: exists|n: NotificationId| BitmapBitSet(notification_bitmap_lo, notification_bitmap_hi, n) && IsNotificationPending(receiver_id, n)
+                              post: ResultEqual(result, DENIED)
+  caller                      pre: !CallerAllowedToInvoke(FFA_NOTIFICATION_BIND)
+                              post: ResultEqual(result, DENIED)
+  aborted                     pre: PartitionHasAborted(sender_id)
+                              post: ResultEqual(result, ABORTED)
+               16.3.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_BIND command does not have any failure condition orderings.
+               16.3.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  bound                       post: forall|n: NotificationId| BitmapBitSet(notification_bitmap_lo, notification_bitmap_hi, n) ==> IsBoundToSender(receiver_id, n, sender_id)
+  per_vcpu                    post: forall|n: NotificationId| BitmapBitSet(notification_bitmap_lo, notification_bitmap_hi, n) ==> (IsPerVcpuNotification(receiver_id, n) == (Bits(flags, 0, 0) == 1))
+               16.3.4 Footprint
+    ID                        Value
+    bound                     NotificationBinding(receiver_id)
+    per_vcpu                  NotificationPerVcpuAttribute(receiver_id)

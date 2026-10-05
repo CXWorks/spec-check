@@ -1,0 +1,26 @@
+12.2 FFA_ERROR command
+               Returns an error code in response to a previous invocation of an FF-A function.
+               12.2.1 Interface
+               12.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FID, value 0x84000060 or 0xC4000060 (0xC4000060 is used by callers that only implement SMC64 FIDs)
+        target_info         W1           31:0        UInt32                                Identifies the target SP/VM. Valid only when the SMC conduit is used at the Non-secure virtual FF-A instance; MBZ otherwise. Bits[31:16]: ID of the SP/VM. Bits[15:0]: ID of the vCPU of the SP/VM to deliver the error to
+        error_code          W2           31:0        Int32                                 Error code specific to the FF-A function. Status codes: -1 NOT_SUPPORTED, -2 INVALID_PARAMETERS, -3 NO_MEMORY, -4 BUSY, -5 INTERRUPTED, -6 DENIED, -7 RETRY, -8 ABORTED, -9 NO_DATA, -10 NOT_READY
+        reserved            W3-W7        31:0        UInt32                                Reserved (SBZ)
+               Valid FF-A instances and conduits:
+        FF-A instance                              Valid conduits
+        Secure and Non-secure physical             SMC, ERET
+        Non-secure virtual                         SMC, HVC, ERET
+        Secure virtual                             SMC, ERET
+               12.2.1.2   Output values
+               The section does not define any output values for FFA_ERROR.
+               12.2.2 Failure conditions
+               The section does not define any failure conditions for FFA_ERROR.
+               12.2.2.1   Failure condition ordering
+               The FFA_ERROR command does not have any failure condition orderings.
+               12.2.3 Success conditions
+  ID                          Condition
+  err_return                  post: ErrorCodeReturnedToCaller(error_code)
+  err_target                  post: IsSmcConduitAtNonSecureVirtualInstance() ==> ErrorDeliveredToVcpu(Bits(target_info, 31, 16), Bits(target_info, 15, 0), error_code)
+               12.2.4 Footprint
+               The section does not identify any state that FFA_ERROR may modify.

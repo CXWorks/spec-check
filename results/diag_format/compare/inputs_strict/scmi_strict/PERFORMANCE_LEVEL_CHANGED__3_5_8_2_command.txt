@@ -1,0 +1,24 @@
+3.5.8.2 PERFORMANCE_LEVEL_CHANGED command
+               Tells a subscribing agent that the performance level of the domain identified by domain_id has changed. The change may come from another agent, from the platform itself, or from the subscribing agent issuing PERFORMANCE_LEVEL_SET or PERFORMANCE_LIMITS_SET. This command is optional.
+               3.5.8.2.1 Interface
+               3.5.8.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0x1
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x13
+        agent_id            Payload[0]   31:0        UInt32                                Identifier for the agent that caused the performance level change
+        domain_id           Payload[1]   31:0        UInt32                                Identifier for the performance domain whose level was changed
+        performance_level   Payload[2]   31:0        UInt32                                The domain's new performance level, or new level index, as a result of the change
+               3.5.8.2.1.2   Output values
+               The PERFORMANCE_LEVEL_CHANGED command does not have any output values.
+               3.5.8.2.2 Failure conditions
+               The PERFORMANCE_LEVEL_CHANGED command does not have any failure conditions.
+               3.5.8.2.2.1   Failure condition ordering
+               The PERFORMANCE_LEVEL_CHANGED command does not have any failure condition orderings.
+               3.5.8.2.3 Success conditions
+  ID                          Condition
+  subscribed                  post: IsSubscribedToPerfLevelNotifications(recipient_agent, domain_id)
+  level_changed               post: PerformanceLevelChanged(domain_id)
+  new_level                   post: performance_level == PerformanceLevel(domain_id)
+  cause                       post: agent_id == PerfLevelChangeInitiator(domain_id)
+               3.5.8.2.4 Footprint
+               The PERFORMANCE_LEVEL_CHANGED command does not modify any state.

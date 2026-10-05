@@ -1,0 +1,44 @@
+5.1.14 SDEI_INTERRUPT_BIND command
+               Binds an interrupt to an event.
+               5.1.14.1 Interface
+               5.1.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                Function ID, value 0xC400002D
+        interrupt           X1           31:0        UInt32                                Interrupt number
+               5.1.14.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 On success: bits [63:32] are zero and bits [31:0] are the event number. On error: an error code
+               5.1.14.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  intr_valid                  pre: !IsValidInterrupt(interrupt)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  intr_type                   pre: !IsPpi(interrupt) && !IsSpi(interrupt)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  intr_owner                  pre: !IsOwnedByClient(interrupt)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  intr_state                  pre: InterruptState(interrupt) != INACTIVE
+                              post: ResultEqual(result, DENIED)
+  bind_slots                  pre: !IsBound(interrupt) && NumFreeBindSlots() == 0
+                              post: ResultEqual(result, OUT_OF_RESOURCE)
+               5.1.14.2.1   Failure condition ordering
+               The SDEI_INTERRUPT_BIND command does not have any failure condition orderings.
+               5.1.14.3 Success conditions
+  ID                          Condition
+  result_upper                post: Bits(result, 63, 32) == 0
+  event_number                post: IsVendorEventNumber(Bits(result, 31, 0))
+  event_bound                 post: EventIsBoundToInterrupt(Bits(result, 31, 0), interrupt)
+  event_priority              post: EventPriority(Bits(result, 31, 0)) == NORMAL_PRIORITY
+  event_private               post: IsPpi(interrupt) ==> IsPrivateEvent(Bits(result, 31, 0))
+  event_shared                post: IsSpi(interrupt) ==> IsSharedEvent(Bits(result, 31, 0))
+  event_all_pes               post: forall|pe: PE| EventNumberIsValidOnPe(Bits(result, 31, 0), pe)
+  rebind_same                 post: Old(IsBound(interrupt)) ==> Bits(result, 31, 0) == Old(BoundEventNumber(interrupt))
+  intr_priority               post: InterruptPriorityIsElevated(interrupt)
+  intr_managed                post: InterruptIsManagedByDispatcher(interrupt)
+               5.1.14.4 Footprint
+    ID                        Value
+    bind_slots                NumFreeBindSlots()
+    intr_binding              BoundEventNumber(interrupt)
+    intr_priority             InterruptPriority(interrupt)
+    intr_owner                InterruptManager(interrupt)

@@ -1,0 +1,1883 @@
+[
+ {
+  "file": "base_invent/drtm/drtm_close_locality.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/drtm/drtm_dynamic_launch.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/drtm/drtm_enable_secure_interrupts.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/drtm/drtm_features.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> drtm_features_unsat.rs:94:79\n    |\n 15 | pub open spec fn drtm_features_spec(result: int64, old_s: S, new_s: S) -> bool {\n    |                                                                                - closing delimiter possibly meant for this\n...\n 94 |     && (result == NOT_SUPPORTED ==> (old_s.drtm_function_id == 0xC400_0111 && (old_s.drtm_function_id_bit63 == 0 || old_s.drtm_func...\n    |                                                                               ^ unclosed delimiter\n...\n101 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> drtm_features_unsat.rs:101:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/drtm/drtm_get_error.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/drtm/drtm_lock_tcb_hashes.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/drtm/drtm_parameters.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n   --> drtm_parameters_unsat.rs:248:13\n    |\n  3 | verus! {\n    |        - unclosed delimiter\n...\n248 | } // verus!\n    |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/drtm/drtm_set_error.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/drtm/drtm_set_tcb_hash.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> drtm_set_tcb_hash_unsat.rs:18:79\n   |\n18 |     (result == RSI_ERROR_INPUT ==> (old_s.drtm_tcb_hash_table_addr as int < 0 || old_s.drtm_tcb_hash_table_addr as int >= (1u64 << 4...\n   |                                                                               ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/drtm/drtm_unprotect_memory.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/drtm/drtm_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_abort.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/ffa/ffa_console_log.rs",
+  "unsat": "compile_error",
+  "error": "error: expected curly braces\n  --> ffa_console_log_unsat.rs:23:32\n   |\n23 |     let max_count = if is_sm32 then max_count_sm32 else max_count_sm64;\n   |                                ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_el3_intr_handle.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_error.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/ffa/ffa_features.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> ffa_features_unsat.rs:81:50\n   |\n18 | pub open spec fn ffa_features_spec(result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {\n   |                                                                                                   - closing delimiter possibly meant for this\n...\n81 |     && (ResultEqual(result, RMI_ERROR_INPUT) ==> (new_s.cmd_input_function_id == 0x84000064 && (new_s.cmd_input_ffa_fid_or_feature_i...\n   |                                                  ^ unclosed delimiter\n...\n88 | } // verus!\n   | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n  --> ffa_features_unsat.rs:88:13\n   |\n 2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_id_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_interrupt.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/ffa/ffa_msg_poll.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_msg_send.rs",
+  "unsat": "compile_error",
+  "error": "error[E0618]: expected function, found `bool`\n  --> ffa_msg_send_unsat.rs:39:5\n   |\n39 |       (!IsProcessingDirectRequest(old_s) ==> ResultIsError(result))\n   |       -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^- help: consider using a semicolon here to finish the statement: `;`\n   |  _____|\n   | |\n...  |\n43 | |     (IsProcessingDirectRequest(old_s) ==> (result == FFA_SUCCESS && w1_is_mbz(new_s) && w2_is_mbz(new_s) && w3_is_mbz(new_s) && w4_is_mbz(new_s) && w5_is_mbz(new_s) && w6_is_mbz(new_s) && w7_is_mbz(new_s)))\n   | |______________________________________________________________________________________________________________________________________________________________________________________________________________- call expression requires function\n\nerror: aborting due to 1 previous error; 9 warnings emitted\n\nFor more information about this error, try `rustc --explain E0618`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_msg_send2.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n   --> ffa_msg_send2_unsat.rs:463:13\n    |\n  3 | verus! {\n    |        - unclosed delimiter\n...\n463 | } // verus!\n    |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_msg_send_direct_req.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/ffa/ffa_msg_send_direct_req2.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> ffa_msg_send_direct_req2_unsat.rs:42:58\n   |\n42 |     (old_s.ffa_msg_send_direct_req2_sender_id as int < 0 || old_s.ffa_msg_send_direct_req2_sender_id as int > 0xFFFF ||\n   |                                                          ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_msg_send_direct_resp.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_msg_send_direct_resp2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_msg_wait.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/ffa/ffa_normal_world_resume.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_bind.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> ffa_notification_bind_unsat.rs:27:77\n   |\n27 |     (result == FFA_ERROR_INVALID_PARAMETERS ==> (old_s.sender_id as int < 0 || old_s.sender_id as int > 0xFFFF || old_s.receiver_id ...\n   |                                                                             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_bind2.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> ffa_notification_bind2_unsat.rs:29:77\n   |\n29 |     (result == FFA_ERROR_INVALID_PARAMETERS ==> (old_s.sender_id as int < 0 || old_s.sender_id as int > 0xFFFF || old_s.receiver_id ...\n   |                                                                             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_bitmap_create.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_bitmap_destroy.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_get.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> ffa_notification_get_unsat.rs:155:8\n    |\n  8 | pub open spec fn ffa_notification_get_spec(result: u32, old_s: S, new_s: S) -> bool {\n    |                                                                                     - closing delimiter possibly meant for this\n...\n155 |     && (result == 0x0\n    |        ^ unclosed delimiter\n...\n162 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> ffa_notification_get_unsat.rs:162:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_get2.rs",
+  "unsat": "compile_error",
+  "error": "error[E0768]: no valid digits found for number\n   --> ffa_notification_get2_unsat.rs:154:57\n    |\n154 |     && (flags & 0x1 != 0 && flags & 0x2 != 0 && flags & 0x\n    |                                                         ^^\n\nerror: mismatched closing delimiter: `}`\n   --> ffa_notification_get2_unsat.rs:154:8\n    |\n 40 | ) -> bool {\n    |           - closing delimiter possibly meant for this\n...\n154 |     && (flags & 0x1 != 0 && flags & 0x2 != 0 && flags & 0x\n    |        ^ unclosed delimiter\n...\n172 | } // verus!",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_info_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_set2.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_unbind.rs",
+  "unsat": "compile_error",
+  "error": "error[E0618]: expected function, found `bool`\n  --> ffa_notification_unbind_unsat.rs:32:5\n   |\n32 | //     (result == FFA_ERROR_INVALID_PARAMETERS ==> (\n33 | ||         !IsPartitionIdValid(old_s, ExtractSenderId(old_s)) ||\n34 | ||         !IsPartitionIdValid(old_s, ExtractReceiverId(old_s)) ||\n35 | ||         !IsNotificationBitmapValid(old_s)\n36 | ||     ))\n   | ||      ^- help: consider using a semicolon here to finish the statement: `;`\n   | ||______|\n   | |\n37 | |      // Failure: Function not implemented at this FF-A instance\n38 | |      (result == FFA_ERROR_NOT_SUPPORTED ==> true)\n   | |_________________________________________________- call expression requires function\n\nerror: aborting due to 1 previous error; 12 warnings emitted",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_notification_unbind2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_ns_res_info_get.rs",
+  "unsat": "compile_error",
+  "error": "error[E0282]: type annotations needed\n  --> ffa_ns_res_info_get_unsat.rs:51:79\n   |\n51 |                     let size = (h as *const u8).offset(0).as_ref().map_or(0, |sz| *sz as u32);\n   |                                                                               ^^  --- type must be known at this point\n   |\nhelp: consider giving this closure parameter an explicit type\n   |\n51 |                     let size = (h as *const u8).offset(0).as_ref().map_or(0, |sz: /* Type */| *sz as u32);\n   |                                                                                 ++++++++++++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0282`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_partition_info_get.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "base_invent/ffa/ffa_partition_info_get_regs.rs",
+  "unsat": "compile_error",
+  "error": "error[E0618]: expected function, found `bool`\n  --> ffa_partition_info_get_regs_unsat.rs:69:8\n   |\n69 |       && (ResultEqual(result, FFA_ERROR_NOT_READY) ==> !IsCalleeReadyToHandleRequest(old_s))\n   |          -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^- help: consider using a semicolon here to finish the statement: `;`\n   |  ________|\n   | |\n70 | |     // Success conditions\n71 | |     // FFA_SUCCESS64: Returns metadata and descriptors\n72 | |     (result.is_Ok() ==> (\n...  |\n80 | |         && (new_s.partition_info_descriptors != old_s.partition_info_descriptors)\n81 | |     ))\n   | |______- call expression requires function\n\nerror: aborting due to 1 previous error; 7 warnings emitted",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_run.rs",
+  "unsat": "compile_error",
+  "error": "error[E0618]: expected function, found `bool`\n  --> ffa_run_unsat.rs:56:8\n   |\n56 |       && (IsVcpuPinnedToDifferentPe(old_s, TargetInfo(old_s).vcpu_id) ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))\n   |          -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^- help: consider using a semicolon here to finish the statement: `;`\n   |  ________|\n   | |\n57 | |     // NOT_SUPPORTED: This function is not implemented at this FF-A instance.\n58 | |     (!IsFfaInstanceValid(old_s) ==> ResultEqual(result, FFA_ERROR_NOT_SUPPORTED))\n   | |_________________________________________________________________________________- call expression requires function\n\nerror[E0618]: expected function, found `bool`\n  --> ffa_run_unsat.rs:62:8\n   |\n62 |       && (!IsCallerAllowed(old_s) ==> ResultEqual(result, FFA_ERROR_DENIED))\n   |          -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^- help: consider using a semicolon here to finish the statement: `;`",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_rx_acquire.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_rx_release.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_rxtx_map.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `>`\n  --> ffa_rxtx_map_unsat.rs:21:45\n   |\n21 |     (result == RSI_ERROR_INPUT ==> <failure conditions for invalid inputs>)\n   |                                             ^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_rxtx_unmap.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_spm_id_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/ffa/ffa_success.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/ffa/ffa_version.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n   --> ffa_version_unsat.rs:304:13\n    |\n  3 | verus! {\n    |        - unclosed delimiter\n...\n304 | } // verus!\n    |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/ffa/ffa_yield.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/affinity_info.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> affinity_info_unsat.rs:22:76\n   |\n22 |     (result == RSI_ERROR_INPUT ==> (old_s.lowest_affinity_level as int < 0 || old_s.lowest_affinity_level as int > old_s.num_affinit...\n   |                                                                            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/psci_13/cpu_default_suspend.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> cpu_default_suspend_unsat.rs:308:8\n    |\n 42 | pub open spec fn cpu_default_suspend_spec(result: PsciReturnCode, old_s: S, new_s: S) -> bool {\n    |                                                                                               - closing delimiter possibly meant for this\n...\n308 |     && (result == PSCI_SUCCESS\n    |        ^ unclosed delimiter\n...\n315 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> cpu_default_suspend_unsat.rs:315:13\n    |\n  3 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/psci_13/cpu_freeze.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/cpu_off.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/cpu_on.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> cpu_on_unsat.rs:36:84\n   |\n36 |     (PsciStatusCode::INVALID_PARAMETERS == result ==> (old_s.target_cpu as int < 0 || old_s.target_cpu as int >= 0x1_0000_0000))\n   |                                                                                    ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/psci_13/cpu_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/mem_protect.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/mem_protect_check_range.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n   --> mem_protect_check_range_unsat.rs:241:13\n    |\n  3 | verus! {\n    |        - unclosed delimiter\n...\n241 | } // verus!\n    |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/psci_13/migrate.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> migrate_unsat.rs:18:65\n   |\n18 |     (result == RSI_ERROR_INPUT ==> (old_s.target_cpu as int < 0 || old_s.target_cpu as int >= (1u64 << 32)))\n   |                                                                 ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/psci_13/migrate_info_type.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/node_hw_state.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> node_hw_state_unsat.rs:18:65\n   |\n18 |     (result == RSI_ERROR_INPUT ==> (old_s.target_cpu as int < 0 || old_s.target_cpu as int >= (1u64 << 48) || old_s.power_level as i...\n   |                                                                 ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/psci_13/psci_features.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/psci_set_suspend_mode.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> psci_set_suspend_mode_unsat.rs:272:8\n    |\n 32 | pub open spec fn psci_set_suspend_mode_spec(result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {\n    |                                                                                                       - closing delimiter possibly meant for this\n...\n272 |     && (is_valid_mode && !switch_to_os_initiated\n    |        ^ unclosed delimiter\n...\n279 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> psci_set_suspend_mode_unsat.rs:279:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/psci_13/psci_stat_count.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/psci_13/psci_stat_residency.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/psci_13/psci_version.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/psci_13/system_off2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/system_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/system_reset2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/psci_13/system_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_cppc_probe.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_cppc_read.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_cppc_read_hi.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_cppc_write.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_console_write.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_debug_console_write_unsat.rs:29:70\n   |\n29 |     (result.error == SBI_ERR_INVALID_PARAM ==> (num_bytes as int < 0 || base_addr_lo as int < 0 || base_addr_hi as int < 0))\n   |                                                                      ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_console_write_byte.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_disable_triggers.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_debug_disable_triggers_unsat.rs:29:26\n   |\n29 |         (exists (trig_idx: u64),\n   |                          ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_enable_triggers.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_debug_enable_triggers_unsat.rs:25:26\n   |\n25 |         (exists (trig_idx: u64),\n   |                          ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_install_triggers.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_read_triggers.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> sbi_debug_set_shmem_unsat.rs:24:50\n   |\n24 | pub uninterp spec fn valid_shared_memory_address(shmem_phys_lo: u64, shmem_phys_hi: u64) -> bool;\n   |                                                  ^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_uninstall_triggers.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `)`\n  --> sbi_debug_uninstall_triggers_unsat.rs:64:6\n   |\n 3 | verus! {\n   |        - the nearest open delimiter\n...\n34 | pub open spec fn sbi_debug_uninstall_triggers_spec(result: sbiret, old_s: S, new_s: S) -> bool {\n   |                                                                                                - the nearest open delimiter\n...\n46 |     ))\n   |      - missing open `(` for this delimiter\n...\n55 |     ))\n   |      - missing open `(` for this delimiter\n...\n64 |     ))",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_debug_update_triggers.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_debug_update_triggers_unsat.rs:24:16\n   |\n24 |     && (forall i: int | i < trig_count ==> {\n   |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_fwft_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_fwft_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_get_impl_id.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_get_impl_version.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_get_marchid.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/sbi/sbi_get_mimpid.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/sbi/sbi_get_mvendorid.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_get_spec_version.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_hart_get_status.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_hart_get_status_unsat.rs:25:24\n   |\n25 |     (hartid as int < 0 ==> ResultEqual(result, SBI_ERR_INVALID_PARAM))\n   |                        ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_hart_start.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_hart_stop.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/sbi/sbi_hart_suspend.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_mpxy_get_channel_ids.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_mpxy_get_notification_events.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_mpxy_get_shmem_size.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_mpxy_read_attributes.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_mpxy_send_message_with_response.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_mpxy_send_message_without_response.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_mpxy_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> sbi_mpxy_set_shmem_unsat.rs:45:31\n   |\n39 | pub open spec fn sbi_mpxy_set_shmem_spec(result: sbiret, old_s: S, new_s: S) -> bool {\n   |                                                                                      - closing delimiter possibly meant for this\n...\n45 |     let reserved_zero: bool = (flags & 0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_F...\n   |                               ^ unclosed delimiter\n...\n52 | } // verus!\n   | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n  --> sbi_mpxy_set_shmem_unsat.rs:52:13\n   |\n 2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_mpxy_write_attributes.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n   --> sbi_mpxy_write_attributes_unsat.rs:118:13\n    |\n  2 | verus! {\n    |        - unclosed delimiter\n...\n118 | } // verus!\n    |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_nacl_probe_feature.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_nacl_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> sbi_nacl_set_shmem_unsat.rs:27:52\n   |\n27 | pub open spec fn valid_shared_memory_address(s: S, shmem_phys_lo: UInt64, shmem_phys_hi: UInt64) -> bool;\n   |                                                    ^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error; 2 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_nacl_sync_csr.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_nacl_sync_hfence.rs",
+  "unsat": "compile_error",
+  "error": "error[E0282]: type annotations needed\n  --> sbi_nacl_sync_hfence_unsat.rs:36:21\n   |\n36 |     let max_index = 3840 / (old_s.xlen as u64);\n   |                     ^^^^ cannot infer type of the type parameter `hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat` declared on the function `spec_literal_integer`\n   |\nhelp: consider specifying the generic argument\n   |\n36 |     let max_index = 3840::<hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat> / (old_s.xlen as u64);\n   |                         +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\nerror: aborting due to 1 previous error; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0282`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_nacl_sync_sret.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_pmu_counter_config_matching.rs",
+  "unsat": "compile_error",
+  "error": "error[E0599]: no method named `spec_bitand` found for struct `vstd::prelude::int` in the current scope\n  --> sbi_pmu_counter_config_matching_unsat.rs:35:7\n   |\n35 |     ((config_flags & ((1u64 << 8) - 1)) == 0 ==> result.is_Ok())\n   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\nhelp: there is a method `spec_add` with a similar name\n   |\n35 -     ((config_flags & ((1u64 << 8) - 1)) == 0 ==> result.is_Ok())\n35 +     ((spec_add) == 0 ==> result.is_Ok())\n   |\n\nerror[E0599]: no method named `spec_bitand` found for struct `vstd::prelude::int` in the current scope\n  --> sbi_pmu_counter_config_matching_unsat.rs:36:30\n   |\n36 |     && (result.is_Err() ==> (config_flags & ((1u64 << 8) - 1)) != 0)",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_pmu_counter_fw_read.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_pmu_counter_fw_read_hi.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_pmu_counter_get_info.rs",
+  "unsat": "compile_error",
+  "error": "error: expected one of: `for`, parentheses, `fn`, `unsafe`, `extern`, `FnSpec`, `spec_fn`, `proof_fn`, identifier, `::`, `<`, `dyn`, square brackets, `*`, `&`, `!`, `impl`, `_`, lifetime\n  --> sbi_pmu_counter_get_info_unsat.rs:18:83\n   |\n18 |     && (result.error == 0 ==> (result.value as int >= 0 && result.value as int < (1u64 << 12) && (result.value as int) < (1u64 << 18...\n   |                                                                                   ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_pmu_counter_start.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n  --> sbi_pmu_counter_start_unsat.rs:80:13\n   |\n 2 | verus! {\n   |        - unclosed delimiter\n...\n80 | } // verus!\n   |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_pmu_counter_stop.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_pmu_num_counters.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_pmu_snapshot_set_shmem.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_probe_extension.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_remote_fence_i.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `>`\n  --> sbi_remote_fence_i_unsat.rs:19:59\n   |\n19 |     (result.error == SBI_ERR_INVALID_PARAM ==> <hart_mask and hart_mask_base imply invalid hartid>)\n   |                                                           ^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_remote_hfence_gvma.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_remote_hfence_gvma_vmid.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_remote_hfence_vvma.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_remote_hfence_vvma_asid.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_remote_sfence_vma.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_sfence_vma_unsat.rs:20:132\n   |\n20 | ...= 0 || old_s.hart_mask_base != 0 || old_s.start_addr as u64 < 0 || old_s.size as u64 < 0))\n   |                                                                    ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_remote_sfence_vma_asid.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_sfence_vma_asid_unsat.rs:28:73\n   |\n28 |     (result.error == SBI_ERR_INVALID_ADDRESS ==> (start_addr as u64 < 0 || size as u64 < 0 || (start_addr as u64 + size as u64) < st...\n   |                                                                         ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_send_ipi.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `>`\n  --> sbi_send_ipi_unsat.rs:30:59\n   |\n30 |     (result.error == SBI_ERR_INVALID_PARAM ==> <hart_mask and hart_mask_base imply invalid hartid>)\n   |                                                           ^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_set_timer.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_complete.rs",
+  "unsat": "compile_error",
+  "error": "error[E0599]: no method named `iter` found for reference `&vstd::seq::Seq<SseEvent>` in the current scope\n  --> sbi_sse_complete_unsat.rs:38:30\n   |\n38 |     for (i, event) in events.iter().enumerate() {\n   |                              ^^^^\n   |\nhelp: there is a method `filter` with a similar name, but with different arguments\n  --> vstd/seq_lib.rs:197:4\n\nerror: aborting due to 1 previous error; 2 warnings emitted\n\nFor more information about this error, try `rustc --explain E0599`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_disable.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> sbi_sse_disable_unsat.rs:35:38\n   |\n35 | pub open spec fn event_enabled(s: S, event_id: uint32_t) -> bool;\n   |                                      ^^^^^^^^\n\nerror: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> sbi_sse_disable_unsat.rs:37:41\n   |\n37 | pub open spec fn event_registered(s: S, event_id: uint32_t) -> bool;\n   |                                         ^^^^^^^^\n\nerror: aborting due to 2 previous errors; 5 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_enable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_hart_mask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_hart_unmask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_inject.rs",
+  "unsat": "compile_error",
+  "error": "error: expected one of: `for`, parentheses, `fn`, `unsafe`, `extern`, `FnSpec`, `spec_fn`, `proof_fn`, identifier, `::`, `<`, `dyn`, square brackets, `*`, `&`, `!`, `impl`, `_`, lifetime\n  --> sbi_sse_inject_unsat.rs:21:33\n   |\n21 |     (result == SBI_SUCCESS ==> <true>)\n   |                                 ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_read_attrs.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_sse_read_attrs_unsat.rs:35:49\n   |\n35 |     && (result == SBI_ERR_BAD_RANGE ==> exists(i: u32, i < attr_count(old_s) && is_reserved_event_attr_id(old_s, base_attr_id(old_s)...\n   |                                                 ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_register.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_sse_register_unsat.rs:24:66\n   |\n24 |     && (result == SBI_ERR_INVALID_PARAM ==> (event_id as int < 0 || (handler_entry_pc as int) % 2 != 0))\n   |                                                                  ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_unregister.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_sse_write_attrs.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n   --> sbi_sse_write_attrs_unsat.rs:403:13\n    |\n  3 | verus! {\n    |        - unclosed delimiter\n...\n403 | } // verus!\n    |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sbi/sbi_steal_time_set_shmem.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sbi/sbi_system_reset.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sbi/sbi_system_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/base_discover_agent__3_2_2_9.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> base_discover_agent__3_2_2_9_unsat.rs:17:8\n   |\n15 | pub open spec fn base_discover_agent__3_2_2_9_spec(result: int32, agent_id: UInt32, new_agent_id: UInt32, new_name: [UInt8; 16], old_s: S, new_s: S) -> bool {\n   |                                                                                                                                                              - closing delimiter possibly meant for this\n16 |     (agent_id == 0xFFFFFFFF ==> (result == SUCCESS && new_agent_id == agent_id && new_name[0] == 0))\n17 |     && (agent_id == 0 ==> (result == SUCCESS && new_agent_id == agent_id && new_name[0] == 'p' && new_name[1] == 'l' && new_name[2] == 'a' && new_name[3] == 't' ...\n   |        ^ unclosed delimiter\n...\n22 | }\n   | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/base_discover_implementation_version__3_2_2_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/base_discover_list_protocols__3_2_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/base_discover_sub_vendor__3_2_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> base_discover_sub_vendor__3_2_2_6_unsat.rs:13:70\n   |\n13 |     (result == 0 ==> (vendor_identifier[0] == 0 && vendor_identifier[1..16] == [0u8; 15]))\n   |                                                    ------------------^^^^^-\n   |                                                    |                 |\n   |                                                    |                 expected `int`, found `Range<_>`\n   |                                                    arguments to this method are incorrect\n   |\n   = note: expected struct `vstd::prelude::int`\n              found struct `std::ops::Range<_>`\nnote: method defined here\n  --> vstd/array.rs:31:12\n\nerror[E0308]: mismatched types\n  --> base_discover_sub_vendor__3_2_2_6_unsat.rs:14:44",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/base_discover_vendor__3_2_2_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/base_error_event__3_2_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/base_notify_errors__3_2_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/base_reset_agent_configuration__3_2_2_13.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/base_set_device_permissions__3_2_2_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/base_set_protocol_permissions__3_2_2_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_attributes__3_6_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_config_get__3_6_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_describe_rates__3_6_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> clock_describe_rates__3_6_2_6_unsat.rs:102:99\n    |\n 16 | pub open spec fn clock_describe_rates__3_6_2_6_spec(result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {\n    |                                                                                                               - closing delimiter possibly meant for this\n...\n102 |     && (result == RSI_SUCCESS ==> (new_s.cmd_output_num_rates_flags as int & 0x8000 == 0x8000 ==> (new_s.cmd_output_rates[0] as int...\n    |                                                                                                   ^ unclosed delimiter\n...\n109 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> clock_describe_rates__3_6_2_6_unsat.rs:109:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/clock_get_permissions__3_6_2_17.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_name_get__3_6_2_11.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched types; types must be compatible to use == or !=\n  --> clock_name_get__3_6_2_11_unsat.rs:16:45\n   |\n16 |     (result == NOT_FOUND ==> (flags == 0 && name == [0u8; 64]))\n   |                                             ----^^^^---------\n   |                                             |       |\n   |                                             |       this is `[u8; 0]`\n   |                                             this is `[u8; 64]`\n   |\n   = help: decorations (like &,Ghost,Tracked,Box,Rc,...) are transparent for == or != in spec code\n\nerror: aborting due to 1 previous error; 3 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/clock_parent_get__3_6_2_16.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_possible_parents_get__3_6_2_14.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> clock_possible_parents_get__3_6_2_14_unsat.rs:140:68\n    |\n 14 | pub open spec fn clock_possible_parents_get__3_6_2_14_spec(result: int32, flags: uint32, possible_parents: array<uint32>, old_s: S, new_s: S) -> bool {\n    |                                                                                                                                                       - closing delimiter possibly meant for this\n...\n140 |     && (result == 0x14 ==> (forall i: 0..possible_parents.len() :: (forall j:\n    |                                                                    ^ unclosed delimiter\n...\n147 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> clock_possible_parents_get__3_6_2_14_unsat.rs:147:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/clock_rate_change_requested_notify__3_6_2_13.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_rate_changed__3_6_4_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/clock_rate_get__3_6_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_rate_notify__3_6_2_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_rate_set__3_6_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/clock_rate_set_complete__3_6_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_10_3_2.rs",
+  "unsat": "compile_error",
+  "error": "error[E0425]: cannot find function `version_not_supported` in this scope\n  --> negotiate_protocol_version__3_10_3_2_unsat.rs:22:6\n   |\n19 | pub uninterp spec fn version_is_supported(old_s: S, v: uint32) -> bool;\n   | ----------------------------------------------------------------------- similarly named function `version_is_supported` defined here\n...\n22 |     (version_not_supported(old_s, version) ==> ResultEqual(result, NOT_SUPPORTED))\n   |      ^^^^^^^^^^^^^^^^^^^^^\n   |\nhelp: a function with a similar name exists\n   |\n22 -     (version_not_supported(old_s, version) ==> ResultEqual(result, NOT_SUPPORTED))\n22 +     (version_is_supported(old_s, version) ==> ResultEqual(result, NOT_SUPPORTED))\n   |\n\nerror[E0425]: cannot find function `version_supported` in this scope",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_11_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_12_4_2.rs",
+  "unsat": "compile_error",
+  "error": "error[E0425]: cannot find function `version_not_supported` in this scope\n  --> negotiate_protocol_version__3_12_4_2_unsat.rs:22:6\n   |\n19 | pub open spec fn version_is_supported(old_s: S, v: uint32) -> bool;\n   | ------------------------------------------------------------------- similarly named function `version_is_supported` defined here\n...\n22 |     (version_not_supported(old_s, version) ==> ResultEqual(result, NOT_SUPPORTED))\n   |      ^^^^^^^^^^^^^^^^^^^^^\n   |\nhelp: a function with a similar name exists\n   |\n22 -     (version_not_supported(old_s, version) ==> ResultEqual(result, NOT_SUPPORTED))\n22 +     (version_is_supported(old_s, version) ==> ResultEqual(result, NOT_SUPPORTED))\n   |\n\nerror[E0425]: cannot find function `version_supported` in this scope",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_2_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_3_2_2.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> negotiate_protocol_version__3_3_2_2_unsat.rs:317:8\n    |\n 11 | pub open spec fn negotiate_protocol_version__3_3_2_2_spec(result: int32, old_s: S, new_s: S) -> bool {\n    |                                                                                                      - closing delimiter possibly meant for this\n...\n317 |     && (result == 0x1\n    |        ^ unclosed delimiter\n...\n324 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> negotiate_protocol_version__3_3_2_2_unsat.rs:324:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_4_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_5_6_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_6_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_7_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_8_2_2.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `>`\n  --> negotiate_protocol_version__3_8_2_2_unsat.rs:15:43\n   |\n15 |     (result == NOT_SUPPORTED ==> <version not supported>)\n   |                                           ^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/negotiate_protocol_version__3_9_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/performance_describe_levels__3_5_6_8.rs",
+  "unsat": "compile_error",
+  "error": "error[E0277]: `std::ops::Range<vstd::prelude::int>` is not an iterator\n  --> performance_describe_levels__3_5_6_8_unsat.rs:59:17\n   |\n59 | /                 for i in 0..count {\n60 | |                     let base = i * 5;\n61 | |                     let entry0 = perf_levels[base];\n62 | |                     let entry1 = perf_levels[base + 1];\n...  |\n71 | |                         && entry4 >= 0\n72 | |                 }\n   | |_________________^ `Range<vstd::prelude::int>` is not an iterator\n   |\n   = help: the nightly-only, unstable trait `std::iter::Step` is not implemented for `vstd::prelude::int`\n   = note: `Range` only implements `Iterator` for select types in the standard library, particularly integers; to see the full list of types, see the documentation for the unstable `Step` trait\n   = note: required for `std::ops::Range<vstd::prelude::int>` to implement `std::iter::Iterator`\n   = note: required for `std::ops::Range<vstd::prelude::int>` to implement `std::iter::IntoIterator`",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/performance_domain_attributes__3_5_6_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/performance_domain_name_get__3_5_6_19.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/performance_level_changed__3_5_8_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/performance_level_get__3_5_6_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/performance_level_set__3_5_6_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/performance_limits_changed__3_5_8_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/performance_limits_get__3_5_6_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/performance_limits_set__3_5_6_9.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> performance_limits_set__3_5_6_9_unsat.rs:584:8\n    |\n 11 | pub open spec fn performance_limits_set__3_5_6_9_spec(result: int32, old_s: S, new_s: S) -> bool {\n    |                                                                                                  - closing delimiter possibly meant for this\n...\n584 |     && (result ==\n    |        ^ unclosed delimiter\n...\n591 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> performance_limits_set__3_5_6_9_unsat.rs:591:13\n    |\n  3 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/performance_notify_limits__3_5_6_16.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> performance_notify_limits__3_5_6_16_unsat.rs:19:41\n   |\n19 | pub uninterp spec fn DomainExists(s: S, domain_id: uint32) -> bool;\n   |                                         ^^^^^^^^^\n\nerror: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> performance_notify_limits__3_5_6_16_unsat.rs:20:56\n   |\n20 | pub uninterp spec fn DomainSupportsNotifications(s: S, domain_id: uint32) -> bool;\n   |                                                        ^^^^^^^^^\n\nerror: aborting due to 2 previous errors; 2 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/performance_qos_attributes__3_5_6_7.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> performance_qos_attributes__3_5_6_7_unsat.rs:501:20\n    |\n278 | pub open spec fn performance_qos_attributes__3_5_6_7_spec(result: Result<(), RmiStatusCode>, domain_id: UInt32, capability: UInt32, qos_attribute_1: UInt32, name: [UInt8; 16], old_s: S, new_s: S) -> bool {\n    |                                                                                                                                                                                                             - closing delimiter possibly meant for this\n...\n501 |     && (ResultEqual(result, RMI_ERROR_RTT_WALK_AUX\n    |                    ^ unclosed delimiter\n...\n508 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> performance_qos_attributes__3_5_6_7_unsat.rs:508:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/performance_qos_capability_subtypes__3_5_6_6.rs",
+  "unsat": "compile_error",
+  "error": "error[E0618]: expected function, found `bool`\n  --> performance_qos_capability_subtypes__3_5_6_6_unsat.rs:33:5\n   |\n33 |       (!DomainIsValid(old_s, domain_id) ==> ResultEqual(result, NOT_FOUND))\n   |       -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^- help: consider using a semicolon here to finish the statement: `;`\n   |  _____|\n   | |\n34 | |     // Failure: capability_type does not point to a valid capability Type of that domain\n35 | |     (!CapabilityTypeIsValid(old_s, domain_id, capability_type) ==> ResultEqual(result, NOT_FOUND))\n   | |__________________________________________________________________________________________________- call expression requires function\n\nerror: aborting due to 1 previous error; 6 warnings emitted\n\nFor more information about this error, try `rustc --explain E0618`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/performance_qos_config_complete__3_5_7_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/performance_qos_config_get__3_5_6_15.rs",
+  "unsat": "compile_error",
+  "error": "error[E0618]: expected function, found `u32`\n  --> performance_qos_config_get__3_5_6_15_unsat.rs:33:32\n   |\n28 | pub open spec fn qos_value(s: S) -> uint32;\n   | ------------------------------------------ this function of the same name is available here, but it's shadowed by the local binding\n29 |\n30 | pub open spec fn performance_qos_config_get__3_5_6_15_spec(result: int32, qos_value: uint32, old_s: S, new_s: S) -> bool {\n   |                                                                           --------- `qos_value` has type `u32`\n...\n33 |     && (result == SUCCESS ==> (qos_value(new_s) == qos_value(old_s)))\n   |                                ^^^^^^^^^-------\n   |                                |\n   |                                call expression requires function\n\nerror[E0618]: expected function, found `u32`\n  --> performance_qos_config_get__3_5_6_15_unsat.rs:33:52",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/performance_qos_config_set__3_5_6_14.rs",
+  "unsat": "compile_error",
+  "error": "error[E0618]: expected function, found `bool`\n  --> performance_qos_config_set__3_5_6_14_unsat.rs:68:9\n   |\n21 |   pub open spec fn ResultEqual(result: int32, code: int32) -> bool;\n   |   ---------------------------------------------------------------- `ResultEqual` defined here returns `bool`\n...\n68 |       ==> ResultEqual(result, NOT_FOUND)\n   |           -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^- help: consider using a semicolon here to finish the statement: `;`\n   |  _________|\n   | |\n...  |\n80 | |         || (QosValueNotSupported(old_s, domain_id, capability, qos_value))\n81 | |     )\n   | |_____- call expression requires function\n\nerror[E0618]: expected function, found `bool`",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/pinctrl_attributes__3_11_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/pinctrl_list_associations__3_11_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> pinctrl_list_associations__3_11_2_6_unsat.rs:434:508\n    |\n 41 | ) -> bool {\n    |           - closing delimiter possibly meant for this\n...\n434 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         && (arr...\n    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ^ unclosed delimiter\n...\n447 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> pinctrl_list_associations__3_11_2_6_unsat.rs:447:13\n    |\n  3 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/pinctrl_name_get__3_11_2_11.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched types; types must be compatible to use == or !=\n  --> pinctrl_name_get__3_11_2_11_unsat.rs:16:44\n   |\n16 |     (result == NOT_FOUND ==> flags == 0 && name == [0u8; 64])\n   |                                            ----^^^^---------\n   |                                            |       |\n   |                                            |       this is `[u8; 0]`\n   |                                            this is `[u8; 64]`\n   |\n   = help: decorations (like &,Ghost,Tracked,Box,Rc,...) are transparent for == or != in spec code\n\nerror: aborting due to 1 previous error; 3 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/pinctrl_release__3_11_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/pinctrl_request__3_11_2_9.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/pinctrl_settings_configure__3_11_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/power_domain_attributes__3_3_2_5.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> power_domain_attributes__3_3_2_5_unsat.rs:23:37\n   |\n23 |     && (result == SUCCESS ==> (name[0..16] == old_s.power_domain_attributes__3_3_2_5_name[old_s.domain_id]))\n   |                                -----^^^^^-\n   |                                |    |\n   |                                |    expected `int`, found `Range<_>`\n   |                                arguments to this method are incorrect\n   |\n   = note: expected struct `vstd::prelude::int`\n              found struct `std::ops::Range<_>`\nnote: method defined here\n  --> vstd/array.rs:31:12\n\nerror: aborting due to 1 previous error; 3 warnings emitted\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/power_domain_name_get__3_3_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/power_state_change_requested__3_3_3_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/power_state_change_requested_notify__3_3_2_9.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/scmi/power_state_changed__3_3_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/power_state_get__3_3_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/power_state_notify__3_3_2_8.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> power_state_notify__3_3_2_8_unsat.rs:265:28\n    |\n 16 | pub open spec fn power_state_notify__3_3_2_8_spec(result: int32, old_s: S, new_s: S) -> bool {\n    |                                                                                              - closing delimiter possibly meant for this\n...\n265 |     && (result == -247 ==> (old\n    |                            ^ unclosed delimiter\n...\n272 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> power_state_notify__3_3_2_8_unsat.rs:272:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/power_state_set__3_3_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> power_state_set__3_3_2_6_unsat.rs:489:8\n    |\n 12 | pub open spec fn power_state_set__3_3_2_6_spec(result: int32, old_s: S, new_s: S) -> bool {\n    |                                                                                           - closing delimiter possibly meant for this\n...\n489 |     && (result == 4\n    |        ^ unclosed delimiter\n...\n496 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> power_state_set__3_3_2_6_unsat.rs:496:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/powercap_cai_get__3_10_3_11.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> powercap_cai_get__3_10_3_11_unsat.rs:212:8\n    |\n 18 | pub open spec fn powercap_cai_get__3_10_3_11_spec(result: int32, cai: uint32, old_s: S, new_s: S) -> bool {\n    |                                                                                                           - closing delimiter possibly meant for this\n...\n212 |     && (result == 0\n    |        ^ unclosed delimiter\n...\n219 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> powercap_cai_get__3_10_3_11_unsat.rs:219:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/powercap_cai_set__3_10_3_12.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> powercap_cai_set__3_10_3_12_unsat.rs:160:34\n    |\n 19 | pub open spec fn powercap_cai_set__3_10_3_12_spec(result: int32, old_s: S, new_s: S) -> bool {\n    |                                                                                              - closing delimiter possibly meant for this\n...\n160 |     && (result == 0x8000008C ==> (old_s.powercap_domains[old_s.domain_id].flags !=\n    |                                  ^ unclosed delimiter\n...\n167 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> powercap_cai_set__3_10_3_12_unsat.rs:167:13\n    |\n  3 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/powercap_cap_changed__3_10_5_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/powercap_cap_get__3_10_3_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/powercap_cap_notify__3_10_3_15.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> powercap_cap_notify__3_10_3_15_unsat.rs:20:47\n   |\n20 |     (old_s.protocol_message_attributes == 0x0 => ResultEqual(result, NOT_FOUND))\n   |                                               ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/powercap_cap_set__3_10_3_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/powercap_cap_set_complete__3_10_4_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/powercap_cpc_attributes__3_10_3_6.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> powercap_cpc_attributes__3_10_3_6_unsat.rs:41:39\n   |\n41 |     && (result == SUCCESS ==> (forall i: int | i < num_cpl ==> (desc[i].flags == 0)))\n   |                                       ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/powercap_describe_fastchannel__3_10_3_17.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/powercap_domain_attributes__3_10_3_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/powercap_domain_name_get__3_10_3_13.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/powercap_mai_get__3_10_3_9.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/powercap_mai_set__3_10_3_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/powercap_measurements_changed__3_10_5_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/powercap_measurements_get__3_10_3_14.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/powercap_measurements_notify__3_10_3_16.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> powercap_measurements_notify__3_10_3_16_unsat.rs:55:9\n   |\n55 |         power_thresh_low >= 0 && power_thresh_low <= MAX_POWER_THRESHOLD\n   |         ^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_10_3_3.rs",
+  "unsat": "compile_error",
+  "error": "error[E0599]: no method named `spec_bitand` found for struct `vstd::prelude::int` in the current scope\n  --> protocol_attributes__3_10_3_3_unsat.rs:15:32\n   |\n15 |     && (attributes & 0xFFFF == (old_s.protocol_attributes as int) & 0xFFFF)\n   |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n   |\nhelp: there is a method `spec_add` with a similar name\n   |\n15 -     && (attributes & 0xFFFF == (old_s.protocol_attributes as int) & 0xFFFF)\n15 +     && (attributes & 0xFFFF == spec_add)\n   |\n\nerror: aborting due to 1 previous error; 2 warnings emitted\n\nFor more information about this error, try `rustc --explain E0599`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_11_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_12_4_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_2_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_3_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_4_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_5_6_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_6_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_7_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_8_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_attributes__3_9_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_10_3_4.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> protocol_message_attributes__3_10_3_4_unsat.rs:486:26\n    |\n266 | pub open spec fn protocol_message_attributes_spec(result: (int32, uint32), old_s: S, new_s: S) -> bool {\n    |                                                                                                        - closing delimiter possibly meant for this\n...\n486 |     && (status == 0) ==> (new_s.cmd_input_214 == old_s.cmd_input_\n    |                          ^ unclosed delimiter\n...\n493 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> protocol_message_attributes__3_10_3_4_unsat.rs:493:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_11_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_12_4_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_2_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_3_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_4_2_4.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> protocol_message_attributes__3_4_2_4_unsat.rs:247:8\n    |\n 11 | pub open spec fn protocol_message_attributes__3_4_2_4_spec(result: int32, attributes: uint32, old_s: S, new_s: S) -> bool {\n    |                                                                                                                           - closing delimiter possibly meant for this\n...\n247 |     && (result == 0xFFFFFF15 ==> attributes == 0x00000000\n    |        ^ unclosed delimiter\n...\n254 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> protocol_message_attributes__3_4_2_4_unsat.rs:254:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_5_6_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_6_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_7_2_4.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> protocol_message_attributes__3_7_2_4_unsat.rs:16:53\n   |\n16 | pub open spec fn message_id_not_supported(old_s: S, message_id: uint32) -> bool;\n   |                                                     ^^^^^^^^^^\n\nerror: aborting due to 1 previous error; 3 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_8_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_message_attributes__3_9_2_4.rs",
+  "unsat": "compile_error",
+  "error": "error[E0425]: cannot find function `message_id_invalid_or_not_implemented` in this scope\n  --> protocol_message_attributes__3_9_2_4_unsat.rs:17:30\n   |\n17 |     (result == NOT_FOUND ==> message_id_invalid_or_not_implemented(old_s, message_id))\n   |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror[E0425]: cannot find function `message_id_valid_and_implemented` in this scope\n  --> protocol_message_attributes__3_9_2_4_unsat.rs:18:31\n   |\n18 |     && (result == SUCCESS ==> message_id_valid_and_implemented(old_s, message_id))\n   |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope\n\nerror: aborting due to 2 previous errors\n\nFor more information about this error, try `rustc --explain E0425`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_10_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_11_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_12_4_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_2_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_3_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_4_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_5_6_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_6_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_7_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_8_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/protocol_version__3_9_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/reduce_sustained_performance_level__3_5_6_13.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> reduce_sustained_performance_level__3_5_6_13_unsat.rs:213:36\n    |\n 42 | pub open spec fn reduce_sustained_performance_level__3_5_6_13_spec(result: int32, old_s: S, new_s: S) -> bool {\n    |                                                                                                               - closing delimiter possibly meant for this\n...\n213 |     let domain_qos_only = (DomainAt(old_s, domain\n    |                                    ^ unclosed delimiter\n...\n220 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> reduce_sustained_performance_level__3_5_6_13_unsat.rs:220:13\n    |\n  3 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/reset__3_8_2_6.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/reset_complete__3_8_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/reset_domain_attributes__3_8_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/reset_domain_name_get__3_8_2_8.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> reset_domain_name_get__3_8_2_8_unsat.rs:17:69\n   |\n17 |     && (result == SUCCESS ==> (flags == 0 && name[0] == 0u8 && name[1..64] == name[1..64]))\n   |                                                                -----^^^^^-\n   |                                                                |    |\n   |                                                                |    expected `int`, found `Range<_>`\n   |                                                                arguments to this method are incorrect\n   |\n   = note: expected struct `vstd::prelude::int`\n              found struct `std::ops::Range<_>`\nnote: method defined here\n  --> vstd/array.rs:31:12\n\nerror[E0308]: mismatched types\n  --> reset_domain_name_get__3_8_2_8_unsat.rs:17:84",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/reset_issued__3_8_4_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/reset_notify__3_8_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/sensor_axis_description_get__3_7_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sensor_axis_description_get__3_7_2_6_unsat.rs:56:39\n   |\n56 |     && (result == SUCCESS ==> (forall i: uint32 | i < desc.len() ==> (desc[i].axis_id == old_s.sensor_axis_desc_id(old_s.sensor_id, ...\n   |                                       ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/sensor_axis_name_get__3_7_2_15.rs",
+  "unsat": "compile_error",
+  "error": "error[E0277]: the size for values of type `[AxisNameDesc]` cannot be known at compilation time\n  --> sensor_axis_name_get__3_7_2_15_unsat.rs:23:11\n   |\n23 |     desc: [AxisNameDesc],\n   |           ^^^^^^^^^^^^^^ doesn't have a size known at compile-time\n   |\n   = help: the trait `std::marker::Sized` is not implemented for `[AxisNameDesc]`\n   = help: unsized fn params are gated as an unstable feature\nhelp: function arguments must have a statically known size, borrowed slices always have a known size\n   |\n23 |     desc: &[AxisNameDesc],\n   |           +\n\nerror[E0277]: the size for values of type `[AxisNameDesc]` cannot be known at compilation time\n  --> sensor_axis_name_get__3_7_2_15_unsat.rs:53:11\n   |",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/sensor_config_get__3_7_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/sensor_config_set__3_7_2_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/sensor_continuous_update_notify__3_7_2_13.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/sensor_description_get__3_7_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/sensor_name_get__3_7_2_14.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched types; types must be compatible to use == or !=\n  --> sensor_name_get__3_7_2_14_unsat.rs:16:45\n   |\n16 |     (result == NOT_FOUND ==> (flags == 0 && name == [0u8; 64]))\n   |                                             ----^^^^---------\n   |                                             |       |\n   |                                             |       this is `[u8; 0]`\n   |                                             this is `[u8; 64]`\n   |\n   = help: decorations (like &,Ghost,Tracked,Box,Rc,...) are transparent for == or != in spec code\n\nerror: aborting due to 1 previous error; 3 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/sensor_reading_complete__3_7_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/sensor_reading_get__3_7_2_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/sensor_trip_point_config__3_7_2_9.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/sensor_trip_point_event__3_7_4_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/sensor_trip_point_notify__3_7_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/sensor_update__3_7_4_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/system_power_state_get__3_4_2_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/system_power_state_notifier__3_4_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/system_power_state_notify__3_4_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/system_power_state_set__3_4_2_5.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> system_power_state_set__3_4_2_5_unsat.rs:32:45\n   |\n23 | pub open spec fn system_power_state_set__3_4_2_5_spec(result: int32, old_s: S, new_s: S) -> bool {\n   |                                                                                                  - closing delimiter possibly meant for this\n...\n32 |     && (system_state_bits(old_s) == 0x3 ==> (result == 0 || result == 1 || result == 2 || result == 3 || result == 4 || result == 5 ...\n   |                                             ^ unclosed delimiter\n...\n39 | } // verus!\n   | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n  --> system_power_state_set__3_4_2_5_unsat.rs:39:13\n   |\n 2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_config_set__3_12_4_10.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n   --> telemetry_config_set__3_12_4_10_unsat.rs:322:13\n    |\n  2 | verus! {\n    |        - unclosed delimiter\n...\n322 | } // verus!\n    |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_de_configure__3_12_4_8.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> telemetry_de_configure__3_12_4_8_unsat.rs:251:9\n    |\n 25 | pub open spec fn telemetry_de_configure__3_12_4_8_spec(result: int32, old_s: S, new_s: S) -> bool {\n    |                                                                                                   - closing delimiter possibly meant for this\n...\n251 |         (\n    |         ^ unclosed delimiter\n...\n258 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> telemetry_de_configure__3_12_4_8_unsat.rs:258:13\n    |\n  3 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_de_description__3_12_4_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_de_enabled_list__3_12_4_9.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> telemetry_de_enabled_list__3_12_4_9_unsat.rs:203:54\n    |\n203 |     requires telemetry_de_enabled_list__3_12_4_9_spec(result, flags, array, uint32}, old_s, new_s)\n    |                                                      ^ unclosed delimiter         ^ mismatched closing delimiter\n\nerror: unexpected closing delimiter: `}`\n   --> telemetry_de_enabled_list__3_12_4_9_unsat.rs:207:1\n    |\n  2 | verus! {\n    |        - the nearest open delimiter\n...\n203 |     requires telemetry_de_enabled_list__3_12_4_9_spec(result, flags, array, uint32}, old_s, new_s)\n    |                                                                                                  - missing open `(` for this delimiter\n...\n207 | } // verus!",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_list_shmti__3_12_4_5.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> telemetry_list_shmti__3_12_4_5_unsat.rs:41:49\n   |\n41 |     requires telemetry_list_shmti__3_12_4_5_spec(result, num_SHMTI, SHMTI_desc, uint32, uint32, uint32, uint32}, old_s, new_s)\n   |                                                 ^ unclosed delimiter                                          ^ mismatched closing delimiter\n\nerror: unexpected closing delimiter: `)`\n  --> telemetry_list_shmti__3_12_4_5_unsat.rs:41:126\n   |\n 3 | verus! {\n   |        - this delimiter might not be properly closed...\n...\n41 |     requires telemetry_list_shmti__3_12_4_5_spec(result, num_SHMTI, SHMTI_desc, uint32, uint32, uint32, uint32}, old_s, new_s)\n   |                                                                                                               -              ^ unexpected closing delimiter\n   |                                                                                                               |\n   |                                                                                                               ...as it matches this but it has different indentation",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_list_update_intervals__3_12_4_7.rs",
+  "unsat": "compile_error",
+  "error": "error[E0277]: the size for values of type `[u32]` cannot be known at compilation time\n  --> telemetry_list_update_intervals__3_12_4_7_unsat.rs:22:16\n   |\n22 |     intervals: [uint32],\n   |                ^^^^^^^^ doesn't have a size known at compile-time\n   |\n   = help: the trait `std::marker::Sized` is not implemented for `[u32]`\n   = help: unsized fn params are gated as an unstable feature\nhelp: function arguments must have a statically known size, borrowed slices always have a known size\n   |\n22 |     intervals: &[uint32],\n   |                +\n\nerror[E0618]: expected function, found `bool`\n  --> telemetry_list_update_intervals__3_12_4_7_unsat.rs:25:5\n   |",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_reading_complete__3_12_5_1.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `>`\n  --> telemetry_reading_complete__3_12_5_1_unsat.rs:23:45\n   |\n23 |     (result == HARDWARE_ERROR ==> <hardware error conditions>)\n   |                                             ^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_reset__3_12_4_12.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "base_invent/scmi/telemetry_update__3_12_6_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/scmi/voltage_config_get__3_9_2_8.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> voltage_config_get__3_9_2_8_unsat.rs:19:52\n   |\n19 | pub uninterp spec fn domain_id_not_valid(old_s: S, domain_id: uint32) -> bool;\n   |                                                    ^^^^^^^^^\n\nerror: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> voltage_config_get__3_9_2_8_unsat.rs:23:50\n   |\n23 | pub uninterp spec fn agent_not_allowed(old_s: S, domain_id: uint32) -> bool;\n   |                                                  ^^^^^^^^^\n\nerror: aborting due to 2 previous errors; 2 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/voltage_config_set__3_9_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/voltage_describe_levels__3_9_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> voltage_describe_levels__3_9_2_6_unsat.rs:193:8\n    |\n 17 | pub open spec fn voltage_describe_levels__3_9_2_6_spec(result: int32, flags: uint32, voltage: &[int32], old_s: S, new_s: S) -> bool {\n    |                                                                                                                                     - closing delimiter possibly meant for this\n...\n193 |     && (flags & 0\n    |        ^ unclosed delimiter\n...\n200 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> voltage_describe_levels__3_9_2_6_unsat.rs:200:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/voltage_domain_attributes__3_9_2_5.rs",
+  "unsat": "compile_error",
+  "error": "error: expected one of: `for`, parentheses, `fn`, `unsafe`, `extern`, `FnSpec`, `spec_fn`, `proof_fn`, identifier, `::`, `<`, `dyn`, square brackets, `*`, `&`, `!`, `impl`, `_`, lifetime\n  --> voltage_domain_attributes__3_9_2_5_unsat.rs:14:100\n   |\n14 | pub open spec fn voltage_domain_attributes__3_9_2_5_spec(result: int32, attributes: uint32, name: [16]uint8, old_s: S, new_s: S) -> ...\n   |                                                                                                    ^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/voltage_domain_name_get__3_9_2_11.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched types; types must be compatible to use == or !=\n  --> voltage_domain_name_get__3_9_2_11_unsat.rs:16:45\n   |\n16 |     (result == NOT_FOUND ==> (flags == 0 && name == [0u8; 64]))\n   |                                             ----^^^^---------\n   |                                             |       |\n   |                                             |       this is `[u8; 0]`\n   |                                             this is `[u8; 64]`\n   |\n   = help: decorations (like &,Ghost,Tracked,Box,Rc,...) are transparent for == or != in spec code\n\nerror: aborting due to 1 previous error; 3 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/scmi/voltage_level_get__3_9_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/scmi/voltage_level_set__3_9_2_9.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> voltage_level_set__3_9_2_9_unsat.rs:21:41\n   |\n21 | pub uninterp spec fn DomainExists(s: S, domain_id: uint32) -> bool;\n   |                                         ^^^^^^^^^\n\nerror: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> voltage_level_set__3_9_2_9_unsat.rs:22:50\n   |\n22 | pub uninterp spec fn VoltageLevelSupported(s: S, domain_id: uint32, voltage_level: int32) -> bool;\n   |                                                  ^^^^^^^^^\n\nerror: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> voltage_level_set__3_9_2_9_unsat.rs:23:53\n   |\n23 | pub uninterp spec fn VoltageLevelSetSupported(s: S, domain_id: uint32) -> bool;",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_complete.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_complete_and_resume.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_context.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_disable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_enable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_get_info.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_register.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_routing_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_signal.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_status.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_event_unregister.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_features.rs",
+  "unsat": "compile_error",
+  "error": "error: this file contains an unclosed delimiter\n   --> sdei_features_unsat.rs:274:13\n    |\n  2 | verus! {\n    |        - unclosed delimiter\n...\n274 | } // verus!\n    |            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sdei/sdei_interrupt_bind.rs",
+  "unsat": "compile_error",
+  "error": "error[E0618]: expected function, found `bool`\n  --> sdei_interrupt_bind_unsat.rs:50:5\n   |\n50 |       (!SdeiSupported(old_s) ==> ResultEqual(result, SDEI_NOT_SUPPORTED))\n   |       -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^- help: consider using a semicolon here to finish the statement: `;`\n   |  _____|\n   | |\n51 | |     // Failure: INVALID_PARAMETERS (Invalid interrupt number or not owned by client)\n52 | |     (!IsValidInterruptNumber(old_s, interrupt) ==> ResultEqual(result, SDEI_INVALID_PARAMETERS))\n   | |________________________________________________________________________________________________- call expression requires function\n\nerror: aborting due to 1 previous error; 12 warnings emitted\n\nFor more information about this error, try `rustc --explain E0618`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sdei/sdei_interrupt_release.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_pe_mask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_pe_unmask.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `>`\n  --> sdei_pe_unmask_unsat.rs:17:45\n   |\n17 |     (result == RSI_ERROR_INPUT ==> <failure conditions>)\n   |                                             ^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_invent/sdei/sdei_private_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_shared_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_invent/sdei/sdei_version.rs",
+  "unsat": "compile_error",
+  "error": "error: expected one of: `for`, parentheses, `fn`, `unsafe`, `extern`, `FnSpec`, `spec_fn`, `proof_fn`, identifier, `::`, `<`, `dyn`, square brackets, `*`, `&`, `!`, `impl`, `_`, lifetime\n  --> sdei_version_unsat.rs:17:45\n   |\n17 |     && (result >= 0 ==> (result as int64 < (1u64 << 63)) && (result as int64 >= (1u64 << 48)) && (result as int64 < (1u64 << 63)))\n   |                                             ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ }
+]

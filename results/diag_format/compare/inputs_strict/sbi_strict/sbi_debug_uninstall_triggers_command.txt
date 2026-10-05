@@ -1,0 +1,38 @@
+19.6 sbi_debug_uninstall_triggers command
+               Uninstalls a set of debug triggers on the calling hart. The set is selected by trig_idx_base and trig_idx_mask.
+               19.6.1 Interface
+               19.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 5
+        trig_idx_base       a0           63:0        UInt64                                Starting trigger index of the set
+        trig_idx_mask       a1           63:0        Bits64                                Bitmask relative to trig_idx_base; each set bit selects one trigger to uninstall
+               19.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           63:0        SbiErrorCode                          Command return status (sbiret.error)
+               19.6.2 Failure conditions
+  ID                          Condition
+  trig_unmapped               pre: exists|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) && !IsMappedToHwTrigger(i)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  trig_bound                  pre: exists|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) && i >= trig_max
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+               19.6.2.1   Failure condition ordering
+               The sbi_debug_uninstall_triggers command does not have any failure condition orderings.
+               19.6.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  hw_tdata1                   post: forall|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) ==> PreMappedHwTrigger(i).tdata1 == 0
+  hw_tdata2                   post: forall|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) ==> PreMappedHwTrigger(i).tdata2 == 0
+  hw_tdata3                   post: forall|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) ==> PreMappedHwTrigger(i).tdata3 == 0
+  trig_state                  post: forall|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) ==> DebugTrigger(i).trig_state == 0
+  trig_unmap                  post: forall|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) ==> !IsMappedToHwTrigger(i)
+  hw_free                     post: forall|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) ==> IsHwTriggerFree(PreMappedHwTrigger(i))
+  idx_free                    post: forall|i: UInt64| TriggerInSet(trig_idx_base, trig_idx_mask, i) ==> IsTrigIdxFree(i)
+               19.6.4 Footprint
+    ID                        Value
+    hw_tdata1                 PreMappedHwTrigger(i).tdata1
+    hw_tdata2                 PreMappedHwTrigger(i).tdata2
+    hw_tdata3                 PreMappedHwTrigger(i).tdata3
+    trig_state                DebugTrigger(i).trig_state
+    trig_map                  HwTriggerMapping(i)
+    hw_free                   HwTriggerAllocation(PreMappedHwTrigger(i))
+    idx_free                  TrigIdxAllocation(i)

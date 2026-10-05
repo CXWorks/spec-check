@@ -1,0 +1,25 @@
+3.5 DRTM_UNPROTECT_MEMORY command
+               Removes the memory protection that DRTM_PARAMETERS requested and that the dynamic launch put in place.
+               3.5.1 Interface
+               3.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC4000113
+               3.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               3.5.2 Failure conditions
+  ID                          Condition
+  drtm_support                pre: !IsDrtmSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  prot_state                  pre: !LaunchMemoryProtectionsInPlace()
+                              post: ResultEqual(result, DENIED)
+               3.5.2.1   Failure condition ordering
+               The DRTM_UNPROTECT_MEMORY command does not have any failure condition orderings.
+               3.5.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  prot_region                 post: IsRegionBasedDmaProtection() ==> !LaunchMemoryProtectionsInPlace()
+  smmu_cfg                    post: IsCompleteDmaProtection() ==> SmmuConfigurationUnchanged()
+               3.5.4 Footprint
+    ID                        Value
+    prot_region               LaunchMemoryProtections()

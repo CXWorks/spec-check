@@ -1,0 +1,37 @@
+5.13 SYSTEM_RESET2 command
+               Resets the system using an architectural reset or a vendor-specific reset. The reset applies to the machine view of the calling OS. Introduced in PSCI 1.1. This function is optional.
+               5.13.1 Interface
+               5.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                Function ID of SYSTEM_RESET2
+        reset_type          X1           31:0        UInt32                                Bit[31]: 0 = architectural reset, 1 = vendor-specific reset. Bits[30:0]: when bit[31] is 0, the architectural reset requested (0x0 = SYSTEM_WARM_RESET; 0x1-0x7FFFFFFF reserved). Values 0x80000000-0xFFFFFFFF request a vendor-specific reset or shutdown
+        cookie              X2           63:0        UInt64                                Additional data for a vendor-specific reset. Ignored for SYSTEM_WARM_RESET
+               5.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           31:0        Int32                                 Command return status
+               5.13.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplemented(SYSTEM_RESET2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  arch_reset_type             pre: Bits(reset_type, 31, 31) == 0 && Bits(reset_type, 30, 0) != SYSTEM_WARM_RESET
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               5.13.2.1   Failure condition ordering
+  [not_supported] < [arch_reset_type]
+               5.13.3 Success conditions
+  ID                          Condition
+  machine_view                post: ResetAppliesToCallerMachineView(reset_type)
+  warm_memory                 post: Bits(reset_type, 31, 0) == SYSTEM_WARM_RESET ==> PreservedMainMemoryUnchanged()
+  warm_requesters             post: Bits(reset_type, 31, 0) == SYSTEM_WARM_RESET ==> MemoryRequestersReset()
+  warm_cpus                   post: Bits(reset_type, 31, 0) == SYSTEM_WARM_RESET ==> AllCpusAndMmusReset()
+  warm_interrupts             post: Bits(reset_type, 31, 0) == SYSTEM_WARM_RESET ==> AllInterruptsDisabled()
+  warm_smmu                   post: Bits(reset_type, 31, 0) == SYSTEM_WARM_RESET ==> SmmusInColdResetState()
+  warm_cookie                 post: Bits(reset_type, 31, 0) == SYSTEM_WARM_RESET ==> CookieIgnored(cookie)
+  vendor_reset                post: Bits(reset_type, 31, 31) == 1 ==> VendorResetPerformed(reset_type, cookie)
+               5.13.4 Footprint
+    ID                        Value
+    cpu_state                 AllCpus().state
+    mmu_state                 AllCpus().mmu
+    requester_state           MemoryRequesters().state
+    interrupt_state           InterruptController().state
+    smmu_state                Smmus().state
+    vendor_state              VendorResetState(reset_type, cookie)

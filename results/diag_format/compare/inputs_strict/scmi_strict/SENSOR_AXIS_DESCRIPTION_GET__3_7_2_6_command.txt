@@ -1,0 +1,42 @@
+3.7.2.6 SENSOR_AXIS_DESCRIPTION_GET command
+               Gets the properties of a sensor's axes. On success, returns an array of Sensor Axis Descriptors.
+               This command is mandatory for sensors that provide measurements along an axis.
+               3.7.2.6.1 Interface
+               3.7.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x7
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x15
+        sensor_id           Payload[0]   31:0        UInt32                                Identifier for the sensor
+        axis_desc_index     Payload[1]   31:0        UInt32                                Index in the sensor axis descriptor array of the first sensor axis descriptor to read
+               3.7.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        num_axis_flags      Payload[1]   31:0        UInt32                                Bits[31:26]: Number of remaining sensor axis descriptors
+                                                                                           Bits[25:6]: Reserved, must be zero
+                                                                                           Bits[5:0]: Number of sensor axis descriptors returned by this call
+        desc                Payload[2..] -           SENSOR_AXIS_DESC[N]                   Array of sensor axis descriptors. N is given by Bits[5:0] of num_axis_flags
+               3.7.2.6.2 Failure conditions
+  ID                          Condition
+  sensor_valid                pre: !IsValidSensor(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  axis_supported              pre: !SensorReportsAxisValues(sensor_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.7.2.6.2.1   Failure condition ordering
+  [sensor_valid] < [axis_supported]
+               3.7.2.6.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  num_returned                post: Bits(num_axis_flags, 5, 0) == DescCount(desc)
+  num_reserved                post: Bits(num_axis_flags, 25, 6) == 0
+  num_remaining               post: Bits(num_axis_flags, 31, 26) == NumSensorAxes(sensor_id) - axis_desc_index - Bits(num_axis_flags, 5, 0)
+  desc_content                post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> DescAt(desc, i) == SensorAxisDescriptor(sensor_id, axis_desc_index + i)
+  ext_name                    post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> (Bits(DescAt(desc, i).axis_attributes_low, 9, 9) == 1 ==> AxisNameLongerThan16Bytes(sensor_id, axis_desc_index + i))
+  name_term                   post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> IsNullTerminatedUtf8(DescAt(desc, i).name, 16)
+  ext_attrs                   post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> (Bits(DescAt(desc, i).axis_attributes_low, 8, 8) == 0 ==> !ExtendedAttributeFieldsAllocated(DescAt(desc, i)))
+  res_default                 post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisResolution(sensor_id, axis_desc_index + i)) ==> DescAt(desc, i).axis_resolution == 0x0)
+  min_low_default             post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisMinRange(sensor_id, axis_desc_index + i)) ==> DescAt(desc, i).axis_min_range_low == 0x0)
+  min_high_default            post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisMinRange(sensor_id, axis_desc_index + i)) ==> DescAt(desc, i).axis_min_range_high == 0x80000000)
+  max_low_default             post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisMaxRange(sensor_id, axis_desc_index + i)) ==> DescAt(desc, i).axis_max_range_low == 0xFFFFFFFF)
+  max_high_default            post: forall|i: UInt32| i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisMaxRange(sensor_id, axis_desc_index + i)) ==> DescAt(desc, i).axis_max_range_high == 0x7FFFFFFF)
+               3.7.2.6.4 Footprint
+               The SENSOR_AXIS_DESCRIPTION_GET command does not modify any state.

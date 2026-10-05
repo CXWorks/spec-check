@@ -1,0 +1,29 @@
+3.11.2.10 PINCTRL_RELEASE command
+               Releases an agent's exclusive control of a pin or group.
+               3.11.2.10.1 Interface
+               3.11.2.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       -           UInt                                  Protocol identifier, value 0x19
+        message_id          Header       -           UInt                                  Message identifier, value 0x8
+        identifier          Payload      31:0        uint32                                Identifier for the pin or group
+        flags               Payload      31:0        uint32                                Bits[31:2]: Reserved, must be zero. Bits[1:0]: Selector, whether identifier refers to a pin (0) or a group (1). All other values are reserved for future use
+               3.11.2.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        int32                                 Command return status
+               3.11.2.10.2 Failure conditions
+  ID                          Condition
+  flags_reserved              pre: Bits(flags, 31, 2) != 0
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  flags_selector              pre: Bits(flags, 1, 0) > 1
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  ident_valid                 pre: !IsValidPinOrGroup(identifier, Bits(flags, 1, 0))
+                              post: ResultEqual(status, NOT_FOUND)
+               3.11.2.10.2.1   Failure condition ordering
+               The section does not define an order for the PINCTRL_RELEASE failure conditions.
+               3.11.2.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  released                    post: !HasExclusiveControl(CallingAgent(), identifier, Bits(flags, 1, 0))
+               3.11.2.10.4 Footprint
+    ID                        Value
+    released                  ExclusiveControl(identifier, Bits(flags, 1, 0))

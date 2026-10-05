@@ -1,0 +1,73 @@
+3.10.3.5 POWERCAP_DOMAIN_ATTRIBUTES command
+               Returns the attributes associated with a specific power capping domain.
+               This command is mandatory.
+               3.10.3.5.1 Interface
+               3.10.3.5.1.1   Input values
+        Name                Register        Bits        Type                  Description
+        message_id          Header          7:0         UInt8                 Message ID, value 0x3
+        protocol_id         Header          17:10       UInt8                 Protocol ID, value 0x18
+        domain_id           Payload[0]      31:0        UInt32                Identifier for the domain. Only bits 15:0 are used; the platform ignores bits 31:16.
+               3.10.3.5.1.2   Output values
+        Name                Register        Bits        Type                  Description
+        status              Payload[0]      31:0        Int32                 Command return status
+        attributes          Payload[1]      31:0        UInt32                Domain attributes:
+                                                                              Bit[31]: MAI change notifications supported
+                                                                              Bit[30]: Power measurements change notification supported
+                                                                              Bit[29]: Asynchronous power cap set supported
+                                                                              Bit[28]: Extended domain name (name is longer than 16 bytes; full name from POWERCAP_DOMAIN_NAME_GET, Section 3.10.3.13)
+                                                                              Bit[27]: Power cap configuration supported
+                                                                              Bit[26]: Power monitoring supported
+                                                                              Bit[25]: MAI configuration supported
+                                                                              Bits[24:23]: Power unit (0x2 = mW, 0x1 = uW, 0x0 = abstract linear integer scale; other values reserved)
+                                                                              Bit[22]: At least one FastChannel available
+                                                                              Bit[21]: Power cap change notifications supported
+                                                                              Bit[20]: CAI configuration supported
+                                                                              Bit[19]: CAI change notifications supported
+                                                                              Bits[18:15]: Number of concurrent power limits supported (CPC is supported if greater than 1)
+                                                                              Bits[14:0]: Reserved, must be zero
+        name                Payload[2:5]    127:0       UInt8[16]             Null-terminated ASCII domain name of up to 16 bytes. When Bit[28] of attributes is 1, this holds the lower 15 bytes of the domain name.
+        min_mai             Payload[6]      31:0        UInt32                Minimum supported power measurement averaging interval (MAI), in microseconds. Zero if the platform does not report it.
+        max_mai             Payload[7]      31:0        UInt32                Maximum supported MAI, in microseconds. Zero if the platform does not report it.
+        mai_step            Payload[8]      31:0        UInt32                Step size between two consecutive supported MAI values
+        min_power_cap       Payload[9]      31:0        UInt32                Minimum power value that can be set as the power cap. If CPC is supported, this refers to CPL0.
+        max_power_cap       Payload[10]     31:0        UInt32                Maximum power value that can be set as the power cap. If CPC is supported, this refers to CPL0.
+        power_cap_step      Payload[11]     31:0        UInt32                Step size between two consecutive supported power cap values. If CPC is supported, this refers to CPL0.
+        sustainable_power   Payload[12]     31:0        UInt32                Maximum sustainable power consumption under normal conditions, taking known external factors such as thermal constraints into account
+        accuracy            Payload[13]     31:0        UInt32                Power measurement accuracy, in integral multiples of 0.001 percent. Zero if the platform does not report it.
+        parent_id           Payload[14]     31:0        UInt32                Parent power capping domain. 0xFFFFFFFF means the domain has no parent.
+        min_cai             Payload[15]     31:0        UInt32                Minimum supported power capping averaging interval (CAI), in microseconds. If CPC is supported, this refers to CPL0. Zero if the platform does not report it.
+        max_cai             Payload[16]     31:0        UInt32                Maximum supported CAI, in microseconds. If CPC is supported, this refers to CPL0. Zero if the platform does not report it.
+        cai_step            Payload[17]     31:0        UInt32                Step size between two consecutive supported CAI values. If CPC is supported, this refers to CPL0.
+               3.10.3.5.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PowercapDomainExists(Bits(domain_id, 15, 0))
+                              post: ResultEqual(status, NOT_FOUND)
+               3.10.3.5.2.1   Failure condition ordering
+               The POWERCAP_DOMAIN_ATTRIBUTES command does not have any failure condition orderings.
+               3.10.3.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  attr_mai_notify             post: Bits(attributes, 31, 31) == MaiChangeNotifySupported(Bits(domain_id, 15, 0))
+  attr_meas_notify            post: Bits(attributes, 30, 30) == PowerMeasChangeNotifySupported(Bits(domain_id, 15, 0))
+  attr_async_cap              post: Bits(attributes, 29, 29) == AsyncPowerCapSetSupported(Bits(domain_id, 15, 0))
+  attr_ext_name               post: Bits(attributes, 28, 28) == (DomainNameLength(Bits(domain_id, 15, 0)) > 16)
+  attr_cap_config             post: Bits(attributes, 27, 27) == PowerCapConfigSupported(Bits(domain_id, 15, 0))
+  attr_monitoring             post: Bits(attributes, 26, 26) == PowerMonitoringSupported(Bits(domain_id, 15, 0))
+  attr_cap_or_mon             post: Bits(attributes, 27, 27) == 1 || Bits(attributes, 26, 26) == 1
+  attr_mai_config             post: Bits(attributes, 25, 25) == MaiConfigSupported(Bits(domain_id, 15, 0))
+  attr_power_unit             post: Bits(attributes, 24, 23) <= 2
+  attr_fastchannel            post: Bits(attributes, 22, 22) == HasFastChannel(Bits(domain_id, 15, 0))
+  attr_cap_notify             post: Bits(attributes, 21, 21) == PowerCapChangeNotifySupported(Bits(domain_id, 15, 0))
+  attr_cai_config             post: Bits(attributes, 20, 20) == CaiConfigSupported(Bits(domain_id, 15, 0))
+  attr_cai_notify             post: Bits(attributes, 19, 19) == CaiChangeNotifySupported(Bits(domain_id, 15, 0))
+  attr_num_limits             post: Bits(attributes, 27, 27) == 1 ==> Bits(attributes, 18, 15) > 0
+  attr_reserved               post: Bits(attributes, 14, 0) == 0
+  name                        post: NameMatchesDomain(name, Bits(domain_id, 15, 0), Bits(attributes, 28, 28))
+  mai_step                    post: min_mai != max_mai ==> mai_step != 0
+  min_power_cap               post: min_power_cap != 0
+  max_power_cap               post: max_power_cap != 0
+  power_cap_step              post: min_power_cap != max_power_cap ==> power_cap_step != 0
+  cai_step                    post: min_cai != max_cai ==> cai_step != 0
+  parent_id                   post: parent_id == 0xFFFFFFFF || PowercapDomainExists(parent_id)
+               3.10.3.5.4 Footprint
+               The POWERCAP_DOMAIN_ATTRIBUTES command does not modify any state.

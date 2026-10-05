@@ -1,0 +1,31 @@
+5.1.19 SDEI_SHARED_RESET command
+               Resets shared SDEI data.
+               5.1.19.1 Interface
+               5.1.19.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                Function ID, value 0xC4000032
+               5.1.19.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.19.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !IsSdeiSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_running               pre: exists|e: SdeiEvent| IsSharedEvent(e) && e.handler_running == TRUE
+                              post: ResultEqual(result, DENIED)
+  binding_registered          pre: exists|e: SdeiEvent| IsInterruptBoundEvent(e) && IsEventRegistered(e)
+                              post: ResultEqual(result, DENIED)
+               5.1.19.2.1   Failure condition ordering
+               The SDEI_SHARED_RESET command does not have any failure condition orderings.
+               5.1.19.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  shared_unreg                post: forall|e: SdeiEvent| IsSharedEvent(e) ==> !IsEventRegistered(e)
+  irq_release                 post: forall|i: Interrupt| !IsInterruptBoundToEvent(i)
+  aux_clear                   post: SharedAuxiliaryInfoCleared()
+  private_unchanged           post: forall|e: SdeiEvent| IsPrivateEvent(e) ==> PrivateEventStateUnchanged(e)
+               5.1.19.4 Footprint
+    ID                        Value
+    shared_unreg              SharedEventRegistrations()
+    irq_release               InterruptEventBindings()
+    aux_clear                 SharedAuxiliaryInfo()

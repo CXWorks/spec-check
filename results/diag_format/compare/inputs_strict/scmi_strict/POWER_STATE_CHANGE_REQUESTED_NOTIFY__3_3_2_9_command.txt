@@ -1,0 +1,27 @@
+3.3.2.9 POWER_STATE_CHANGE_REQUESTED_NOTIFY command
+               Lets the calling agent turn on or turn off POWER_STATE_CHANGE_REQUESTED notifications for a power domain. The platform sends these notifications when another agent asks to change the state of that power domain.
+               This command is optional. Use PROTOCOL_MESSAGE_ATTRIBUTES to find out whether it is implemented. These notifications must be turned off by default during initial boot of the platform.
+               3.3.2.9.1 Interface
+               3.3.2.9.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        protocol_id         Message header       -           UInt32                                Protocol identifier, value 0x11
+        message_id          Message header       -           UInt32                                Message identifier, value 0x7
+        domain_id           Parameter word 0     31:0        UInt32                                Identifier for the power domain
+        notify_enable       Parameter word 1     31:0        UInt32                                Bits[31:1]: Reserved, must be zero. Bit[0]: Notify enable. 0 means the platform does not send POWER_STATE_CHANGE_REQUESTED messages to the calling agent. 1 means the platform sends POWER_STATE_CHANGE_REQUESTED messages to the calling agent when another agent requests a change in the state of the power domain.
+               3.3.2.9.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Return word 0        31:0        Int32                                 Command return status (see Section 3.1.4)
+               3.3.2.9.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowerDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.3.2.9.2.1   Failure condition ordering
+               The POWER_STATE_CHANGE_REQUESTED_NOTIFY command does not have any failure condition orderings.
+               3.3.2.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_on                   post: Bits(notify_enable, 0, 0) == 1 ==> PowerStateChangeRequestedNotifyEnabled(CallingAgent(), domain_id)
+  notify_off                  post: Bits(notify_enable, 0, 0) == 0 ==> !PowerStateChangeRequestedNotifyEnabled(CallingAgent(), domain_id)
+               3.3.2.9.4 Footprint
+    ID                        Value
+    notify_state              PowerStateChangeRequestedNotifyEnabled(CallingAgent(), domain_id)

@@ -1,0 +1,34 @@
+3.5.6.3 PROTOCOL_ATTRIBUTES command
+               Returns the attributes associated with this protocol. This command is mandatory.
+               3.5.6.3.1 Interface
+               3.5.6.3.1.1   Input values
+        Name                        Register      Bits        Type        Description
+        message_id                  Header        7:0         UInt8       Message identifier, value 0x1
+        protocol_id                 Header        17:10       UInt8       Protocol identifier, value 0x13
+               3.5.6.3.1.2   Output values
+        Name                        Register      Bits        Type        Description
+        status                      Payload[0]    31:0        Int32       Command return status, see Section 3.1.4
+        attributes                  Payload[1]    31:0        UInt32      Bits[31:18]: Reserved, must be zero
+                                                                          Bits[17:16]: Power Unit (2: uW, 1: mW, 0: abstract linear scale, other values reserved)
+                                                                          Bits[15:0]: Number of performance domains
+        statistics_address_low      Payload[2]    31:0        UInt32      Lower 32 bits of the PA of the statistics shared memory region (Section 3.5.9); invalid if statistics_len is 0
+        statistics_address_high     Payload[3]    31:0        UInt32      Upper 32 bits of the PA of the statistics shared memory region (Section 3.5.9); invalid if statistics_len is 0
+        statistics_len              Payload[4]    31:0        UInt32      Length in bytes of the statistics shared memory region; 0 if not supported
+               3.5.6.3.2 Failure conditions
+               The PROTOCOL_ATTRIBUTES command does not have any failure conditions specified in this section.
+               3.5.6.3.2.1   Failure condition ordering
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+               3.5.6.3.3 Success conditions
+  ID                          Condition
+  attr_reserved               post: Bits(attributes, 31, 18) == 0
+  attr_power_unit             post: Bits(attributes, 17, 16) <= 2
+  attr_power_uw               post: (Bits(attributes, 17, 16) == 2) ==> PowerExpressedInMicrowatts()
+  attr_power_mw               post: (Bits(attributes, 17, 16) == 1) ==> PowerExpressedInMilliwatts()
+  attr_power_abstract         post: (Bits(attributes, 17, 16) == 0) ==> PowerExpressedInAbstractLinearScale()
+  attr_num_domains            post: Bits(attributes, 15, 0) == NumPerformanceDomains()
+  stats_unsupported           post: (statistics_len == 0) ==> !StatisticsRegionSupported()
+  stats_align                 post: (statistics_len != 0) ==> (statistics_address_low % 8 == 0)
+  stats_mapped                post: (statistics_len != 0) ==> AddrInCallerMemoryMap(statistics_address_high * 4294967296 + statistics_address_low)
+               3.5.6.3.4 Footprint
+               The PROTOCOL_ATTRIBUTES command does not modify any state.
+               Note: Statistics capability has been marked for deprecation and is being replaced by system telemetry.

@@ -1,0 +1,28 @@
+5.1.13 SDEI_PE_UNMASK command
+               Unmasks the calling PE so that it can receive SDEI events for the calling client.
+               5.1.13.1 Interface
+               5.1.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC400002C
+               5.1.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.13.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiImplementedForClient(CallingClient())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               5.1.13.2.1   Failure condition ordering
+               The SDEI_PE_UNMASK command does not have any failure condition orderings.
+               5.1.13.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  pe_unmask_normal            post: !PeMaskedForPriority(CallingClient(), CallingPe(), NORMAL)
+  pe_unmask_critical          post: !PeMaskedForPriority(CallingClient(), CallingPe(), CRITICAL)
+  other_pe                    post: forall|pe: Pe| pe != CallingPe() ==> PeMaskStateUnchanged(CallingClient(), pe)
+  event_status                post: forall|ev: Event| EventStatusUnchanged(ev)
+  pending_dispatch            post: PendingEventsDispatched(CallingClient(), CallingPe())
+               5.1.13.4 Footprint
+    ID                        Value
+    pe_unmask_normal          PeMaskState(CallingClient(), CallingPe(), NORMAL)
+    pe_unmask_critical        PeMaskState(CallingClient(), CallingPe(), CRITICAL)
+    pending_dispatch          PendingEvents(CallingClient(), CallingPe())

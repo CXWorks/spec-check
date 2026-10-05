@@ -1,0 +1,54 @@
+3.12.4.10 TELEMETRY_CONFIG_SET command
+               Configures and enables telemetry data capture.
+               This command is mandatory.
+               3.12.4.10.1 Interface
+               3.12.4.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x8
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x1B
+        group_identifier    Param[0]     31:0        UInt32                                Event group identifier
+        control             Param[1]     31:0        UInt32                                Telemetry control
+          reserved          Param[1]     31:9        Bits23                                Reserved, must be zero
+          selector          Param[1]     8:5         UInt4                                 0: applies to all DEs that are not associated with any event group (group_identifier ignored); 1: applies to the DEs in the specified event group only; 2: applies to all DEs and all event groups (group_identifier ignored); other values reserved. Must be 2 if Bit[18] of attributes_1 of PROTOCOL_ATTRIBUTES is 0
+          mode              Param[1]     4:1         UInt4                                 0: on-demand read with no notification; 1: continuous notifications; 2: single-sample asynchronous read; other values reserved. Ignored if enable is 0
+          enable            Param[1]     0           UInt1                                 1: enable telemetry collection; 0: disable telemetry collection (data associated with the DEs might be lost)
+        sampling_rate       Param[2]     31:0        UInt32                                Sampling rate, [sec] x 10[exponent] seconds. Ignored if enable is 0 or mode is 2
+          reserved          Param[2]     31:21       Bits11                                Reserved
+          sec               Param[2]     20:5        UInt16                                Seconds
+          exponent          Param[2]     4:0         Int5                                  Two's complement power-of-10 multiplier applied to sec
+               3.12.4.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              Ret[0]       31:0        Int32                                 status: command return status
+               3.12.4.10.2 Failure conditions
+  ID                          Condition
+  ctrl_reserved               pre: Bits(control, 31, 9) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  selector_reserved           pre: Bits(control, 8, 5) > 2
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  selector_no_groups          pre: Bits(ProtocolAttributes1(), 18, 18) == 0 && Bits(control, 8, 5) != 2
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  group_invalid               pre: Bits(control, 8, 5) == 1 && !IsValidEventGroup(group_identifier)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  mode_reserved               pre: Bits(control, 0, 0) == 1 && Bits(control, 4, 1) > 2
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  no_de_enabled               pre: Bits(control, 0, 0) == 1 && !AnyDeEnabled(Bits(control, 8, 5), group_identifier)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  enable_limit                pre: Bits(control, 0, 0) == 1 && EnabledDeOrGroupLimitReached(Bits(control, 8, 5), group_identifier, Bits(control, 4, 1))
+                              post: ResultEqual(result, OUT_OF_RANGE)
+               3.12.4.10.2.1   Failure condition ordering
+               The TELEMETRY_CONFIG_SET command does not have any failure condition orderings.
+               3.12.4.10.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  tel_enable                  post: Bits(control, 0, 0) == 1 ==> TelemetryEnabled(Bits(control, 8, 5), group_identifier)
+  tel_disable                 post: Bits(control, 0, 0) == 0 ==> !TelemetryEnabled(Bits(control, 8, 5), group_identifier)
+  mode_set                    post: Bits(control, 0, 0) == 1 && !(Bits(control, 4, 1) == 0 && !AllInterfacesSupportOnDemand()) ==> TelemetryMode(Bits(control, 8, 5), group_identifier) == Bits(control, 4, 1)
+  mode_fallback               post: Bits(control, 0, 0) == 1 && Bits(control, 4, 1) == 0 && !AllInterfacesSupportOnDemand() ==> TelemetryMode(Bits(control, 8, 5), group_identifier) == 1
+  single_sample               post: Bits(control, 0, 0) == 1 && Bits(control, 4, 1) == 2 ==> TelemetryDisabledAfterReadingComplete(Bits(control, 8, 5), group_identifier)
+  rate_set                    post: Bits(control, 0, 0) == 1 && Bits(control, 4, 1) != 2 ==> SamplingRate(Bits(control, 8, 5), group_identifier) == Bits(sampling_rate, 20, 5) * Pow10(SignedBits(sampling_rate, 4, 0))
+               3.12.4.10.4 Footprint
+    ID                        Value
+    tel_enable                TelemetryEnabled(Bits(control, 8, 5), group_identifier)
+    mode_set                  TelemetryMode(Bits(control, 8, 5), group_identifier)
+    rate_set                  SamplingRate(Bits(control, 8, 5), group_identifier)
+    de_data                   DeTelemetryData(Bits(control, 8, 5), group_identifier)

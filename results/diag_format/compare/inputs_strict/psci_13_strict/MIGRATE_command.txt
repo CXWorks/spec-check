@@ -1,0 +1,32 @@
+5.8 MIGRATE command
+               Moves a uniprocessor (UP) migrate-capable Trusted OS to another core, so that the original core can call CPU_OFF to power down.
+               5.8.1 Interface
+               5.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID
+        target_cpu          X1           63:0        UInt64                                MPIDR of the migration target core
+               5.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        PsciReturnCode                        Command return status
+               5.8.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !MigrateIsImplemented() || !MigrationRequired()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  target_mpidr                pre: !IsValidMpidr(target_cpu)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  reg_width                   pre: CallerRegisterWidth() != FidRegisterWidth(fid)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  not_migratable              pre: TrustedOsIsUp() && !TrustedOsIsMigrateCapable()
+                              post: ResultEqual(result, DENIED)
+  not_present                 pre: CurrentCore() != TrustedOsResidentCore()
+                              post: ResultEqual(result, NOT_PRESENT)
+  internal_failure            pre: MigrateImplementationDefinedFailure(target_cpu)
+                              post: ResultEqual(result, INTERNAL_FAILURE)
+               5.8.2.1   Failure condition ordering
+               The MIGRATE command does not have any failure condition orderings.
+               5.8.3 Success conditions
+  ID                          Condition
+  tos_resident                post: TrustedOsResidentCore() == target_cpu
+               5.8.4 Footprint
+    ID                        Value
+    tos_resident              TrustedOsResidentCore()

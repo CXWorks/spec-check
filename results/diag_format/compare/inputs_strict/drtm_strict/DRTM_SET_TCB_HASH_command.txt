@@ -1,0 +1,36 @@
+3.9 DRTM_SET_TCB_HASH command
+               Used by firmware to record hashes of components of the TCB of the system.
+               3.9.1 Interface
+               3.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC4000118
+        tcb_hash_table      X1           63:0        Address                               64-bit physical address of a TCB hash table
+               3.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+        supplemental        X1           63:0        Int64                                 If result == SUCCESS: number of valid entries populated in the table. If result == INVALID_DATA: index of the table entry that contains the error
+               3.9.2 Failure conditions
+  ID                          Condition
+  drtm_support                pre: !DrtmIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  table_addr                  pre: !IsValidTcbHashTableAddress(tcb_hash_table)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  table_header                pre: !IsValidTcbHashTableHeader(tcb_hash_table)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  table_entry                 pre: exists|i: UInt64| i < TcbHashTableEntryCount(tcb_hash_table) && !IsValidTcbHashTableEntry(tcb_hash_table, i)
+                              post: ResultEqual(result, INVALID_DATA) && supplemental == FirstInvalidTcbHashTableEntry(tcb_hash_table)
+  max_hashes                  pre: ExceedsMaxTcbHashes(tcb_hash_table)
+                              post: ResultEqual(result, OUT_OF_RESOURCE)
+  hashes_locked               pre: TcbHashesLocked()
+                              post: ResultEqual(result, DENIED)
+               3.9.2.1   Failure condition ordering
+               The DRTM_SET_TCB_HASH command does not have any failure condition orderings.
+               3.9.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  hashes_recorded             post: TcbHashesRecorded(tcb_hash_table)
+  source_ignored              post: SourceOfEntryIgnored(tcb_hash_table)
+  valid_entries               post: supplemental == NumValidTcbHashEntries()
+               3.9.4 Footprint
+    ID                        Value
+    hashes_recorded           RecordedTcbHashes()

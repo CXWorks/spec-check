@@ -1,0 +1,58 @@
+13.13 FFA_NS_RES_INFO_GET command
+               Retrieves information about whether S-Endpoints can access resources associated with the Non-secure Security state.
+               13.13.1 Interface
+               13.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC400008F
+        target_id           X1           63:0        UInt64                                Bits[63:16]: Reserved (SBZ). Bits[15:0]: Target S-Endpoint ID. Valid only if the Target S-Endpoint ID valid flag is b'1; Reserved (SBZ) otherwise
+        flags               X2           63:0        UInt64                                Bits[63:5]: Reserved (SBZ). Bit[4]: Request type (b'0: start retrieval, b'1: continue retrieval). Bits[3:2]: NS resource type (b'00: list of regions in the NS PAS that an S-Endpoint can access; all other values reserved). Bit[1]: Reserved (SBZ). Bit[0]: Target S-Endpoint ID valid (b'0: all S-Endpoints, b'1: only the specified S-Endpoint)
+        reserved            X3-X17       63:0        UInt64                                Reserved (SBZ)
+               13.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W2           31:0        Int32                                 Error code (FFA_ERROR)
+        res_info_len        X2           63:0        UInt64                                Resource information descriptor length information (FFA_SUCCESS). Bits[63:32]: Written size, the length in bytes of the Resource information descriptor written in the RX buffer in this invocation. Bits[31:0]: Remaining size, the length in bytes of the Resource information descriptor that is still to be transmitted to the caller
+        reserved            X3-X17       63:0        UInt64                                Reserved (MBZ)
+               13.13.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !IsImplementedAtInstance(FFA_NS_RES_INFO_GET)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  target_rsvd                 pre: Bits(target_id, 63, 16) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  target_sbz                  pre: Bits(flags, 0, 0) == 0 && Bits(target_id, 15, 0) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_rsvd                  pre: Bits(flags, 63, 5) != 0 || Bits(flags, 1, 1) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  res_type                    pre: Bits(flags, 3, 2) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  regs_rsvd                   pre: !ReservedRegistersAreZero(3, 17)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  target_id                   pre: Bits(flags, 0, 0) == 1 && !IsValidSEndpointId(Bits(target_id, 15, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  rx_unmapped                 pre: !IsRxBufferMappedInCallee(caller)
+                              post: ResultEqual(result, RETRY)
+  rx_owner                    pre: !IsRxBufferOwnedByCallee(caller)
+                              post: ResultEqual(result, RETRY)
+  busy                        pre: IsCalleeBusy()
+                              post: ResultEqual(result, RETRY)
+  aborted                     pre: Bits(flags, 4, 4) == 1 && RetrievalAbortedImpDef(caller)
+                              post: ResultEqual(result, ABORTED)
+               13.13.2.1   Failure condition ordering
+               The FFA_NS_RES_INFO_GET command does not have any failure condition orderings.
+               13.13.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  written_size                post: Bits(res_info_len, 63, 32) == ResInfoDescBytesWrittenToRx(caller)
+  remaining_size              post: Bits(res_info_len, 31, 0) == ResInfoDescBytesRemaining(caller)
+  amd_array_offset            post: ResInfoDesc(caller).amd_array_offset % 16 == 0
+  amd_all                     post: Bits(flags, 0, 0) == 0 ==> (forall|e: SEndpoint| forall|r: NsRegion| IsAccessible(e, r) ==> RegionDescribedByAmd(ResInfoDesc(caller), e, r))
+  amd_single                  post: Bits(flags, 0, 0) == 1 ==> (forall|r: NsRegion| IsAccessible(Bits(target_id, 15, 0), r) ==> RegionDescribedByAmd(ResInfoDesc(caller), Bits(target_id, 15, 0), r))
+  amd_indirect                post: forall|a: Amd| (AmdInDesc(ResInfoDesc(caller), a) && IsIndirectlyAccessibleRegion(a)) ==> (Bits(a.flags, 0, 0) == 1 && a.component_id == SPMC_ID && a.rap == MostPermissiveSpPermission(a))
+  amd_whole_pas               post: forall|e: SEndpoint| EntireNsPasAccessibleRwx(e) ==> (exists|a: Amd| AmdInDesc(ResInfoDesc(caller), a) && a.component_id == e && a.address == 0xFFFFFFFFFFFFFFFF && a.page_count == 0 && a.rap == 0x77)
+  amd_inaccessible            post: forall|e: SEndpoint| forall|r: NsRegion| !IsAccessible(e, r) ==> (!RegionDescribedByAmd(ResInfoDesc(caller), e, r) || AmdRapForRegion(ResInfoDesc(caller), e, r) == 0)
+  amd_s2_static               post: forall|a: Amd| (AmdInDesc(ResInfoDesc(caller), a) && IsPhysicalSEl1SpUnderSEl2Spmc(a.component_id) && IsStaticNsRegion(a)) ==> a.rap == Stage2BasePermToAmdRap(a)
+  amd_s1_static               post: forall|a: Amd| (AmdInDesc(ResInfoDesc(caller), a) && IsPhysicalSEl0Sp(a.component_id) && IsStaticNsRegion(a)) ==> a.rap == UnprivStage1BasePermToAmdRap(a)
+  empty                       post: (Bits(flags, 3, 2) == 0 && ((Bits(flags, 0, 0) == 1 && EntireNsPasInaccessibleFrom(Bits(target_id, 15, 0))) || (Bits(flags, 0, 0) == 0 && EntireNsPasInaccessibleFromAll()))) ==> res_info_len == 0
+               13.13.4 Footprint
+    ID                        Value
+    rx_buffer                 RxBuffer(caller)
+    retrieval_state           ResInfoRetrievalState(caller)

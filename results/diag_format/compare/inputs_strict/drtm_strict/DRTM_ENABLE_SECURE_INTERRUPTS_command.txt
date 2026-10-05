@@ -1,0 +1,28 @@
+3.11 DRTM_ENABLE_SECURE_INTERRUPTS command
+               Used by the DLME to re-enable Secure interrupts following a dynamic launch.
+               3.11.1 Interface
+               3.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC400011A
+               3.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Return status: SUCCESS, NOT_SUPPORTED or DENIED
+               3.11.2 Failure conditions
+  ID                          Condition
+  drtm_supported              pre: !IsDrtmSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  launch_occurred             pre: !DynamicLaunchOccurred()
+                              post: ResultEqual(result, DENIED)
+  sec_int_disabled            pre: !SecureInterruptsDisabled()
+                              post: ResultEqual(result, DENIED)
+  disable_requested           pre: !SecureInterruptDisableRequestedInDrtmParameters()
+                              post: ResultEqual(result, DENIED)
+               3.11.2.1   Failure condition ordering
+               The DRTM_ENABLE_SECURE_INTERRUPTS command does not have any failure condition orderings.
+               3.11.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  sec_int_enabled             post: SecureInterruptsEnabled() || !SecureInterruptsInUseByPlatform()
+               3.11.4 Footprint
+    ID                        Value
+    sec_int_enabled           SecureInterruptEnableState()

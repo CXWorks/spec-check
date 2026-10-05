@@ -1,0 +1,38 @@
+3.7.2.10 SENSOR_CONFIG_GET command
+               Reads the sensor configuration. Returns the configured sensor update interval, the sensor state and whether timestamping is enabled.
+               This command is mandatory.
+               3.7.2.10.1 Interface
+               3.7.2.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          header       -           UInt                                  Message identifier, value 0x9
+        protocol_id         header       -           UInt                                  Protocol identifier, value 0x15
+        sensor_id           payload      31:0        UInt32                                Identifier for the sensor
+               3.7.2.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              payload      31:0        Int32                                 Command return status (see Section 3.1.4)
+        sensor_config       payload      31:0        UInt32                                Sensor configuration
+                                                                                           Bits[31:11] sensor_update_interval:
+                                                                                             Bits[31:16] sec: seconds
+                                                                                             Bits[15:11] exponent: two's complement power-of-10 multiplier applied to sec
+                                                                                             Interval = sec x 10^exponent seconds; 0 if the sensor does not require or support an update interval
+                                                                                           Bits[10:2] Reserved
+                                                                                           Bit[1] Timestamp reporting: 1 if timestamped, 0 if not timestamped
+                                                                                           Bit[0] Sensor state: 1 if enabled, 0 if disabled
+               3.7.2.10.2 Failure conditions
+  ID                          Condition
+  sensor_exists               pre: !SensorExists(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.7.2.10.2.1   Failure condition ordering
+               The SENSOR_CONFIG_GET command does not have any failure condition orderings.
+               3.7.2.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  interval_sec                post: SensorUpdateIntervalSupported(sensor_id) ==> Bits(sensor_config, 31, 16) == SensorUpdateIntervalSec(sensor_id)
+  interval_exp                post: SensorUpdateIntervalSupported(sensor_id) ==> Bits(sensor_config, 15, 11) == SensorUpdateIntervalExponent(sensor_id)
+  interval_none               post: !SensorUpdateIntervalSupported(sensor_id) ==> Bits(sensor_config, 31, 11) == 0
+  timestamp_on                post: SensorIsTimestamped(sensor_id) ==> Bits(sensor_config, 1, 1) == 1
+  timestamp_off               post: !SensorIsTimestamped(sensor_id) ==> Bits(sensor_config, 1, 1) == 0
+  state_on                    post: SensorIsEnabled(sensor_id) ==> Bits(sensor_config, 0, 0) == 1
+  state_off                   post: !SensorIsEnabled(sensor_id) ==> Bits(sensor_config, 0, 0) == 0
+               3.7.2.10.4 Footprint
+               The SENSOR_CONFIG_GET command does not modify any state.

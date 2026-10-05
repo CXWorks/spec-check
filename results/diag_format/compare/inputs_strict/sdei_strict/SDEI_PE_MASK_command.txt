@@ -1,0 +1,28 @@
+5.1.12 SDEI_PE_MASK command
+               Masks the calling PE so that it does not receive SDEI events.
+               5.1.12.1 Interface
+               5.1.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC400002B
+               5.1.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 1: Masked (this call masked the calling PE); 0: Not masked (the PE was already masked); or an error code
+               5.1.12.2 Failure conditions
+  ID                          Condition
+  sdei_supp                   pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               5.1.12.2.1   Failure condition ordering
+               The SDEI_PE_MASK command does not have any failure condition orderings.
+               5.1.12.3 Success conditions
+  ID                          Condition
+  pe_masked                   post: PeSdeiMasked(CallingClient(), CallingPe())
+  res_masked                  post: !PeSdeiMaskedBeforeCall(CallingClient(), CallingPe()) ==> ResultEqual(result, 1)
+  res_not_masked              post: PeSdeiMaskedBeforeCall(CallingClient(), CallingPe()) ==> ResultEqual(result, 0)
+  normal_masked               post: !PeCanReceiveSdeiEvent(CallingClient(), CallingPe(), SDEI_PRIORITY_NORMAL)
+  critical_masked             post: !PeCanReceiveSdeiEvent(CallingClient(), CallingPe(), SDEI_PRIORITY_CRITICAL)
+  event_status                post: forall|e: SdeiEvent| SdeiEventStatus(e) == SdeiEventStatusBeforeCall(e)
+  other_pe                    post: forall|p: Pe| p != CallingPe() ==> PeSdeiMasked(CallingClient(), p) == PeSdeiMaskedBeforeCall(CallingClient(), p)
+  other_client                post: forall|c: Client| c != CallingClient() ==> PeSdeiMasked(c, CallingPe()) == PeSdeiMaskedBeforeCall(c, CallingPe())
+               5.1.12.4 Footprint
+    ID                        Value
+    pe_masked                 PeSdeiMasked(CallingClient(), CallingPe())

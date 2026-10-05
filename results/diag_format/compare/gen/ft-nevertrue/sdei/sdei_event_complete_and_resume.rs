@@ -1,0 +1,9 @@
+pub open spec fn sdei_event_complete_and_resume_spec(resume_addr: UInt64, result: SdeiCommandReturnCode, old_s: S, new_s: S) -> bool {
+  (result == SDEI_ERROR_INVALID_PARAMETERS ==> (resume_addr % 4 != 0))
+  && (result == SDEI_ERROR_DENIED ==> HandlerRunning(old_s, current_pe()) == false)
+  && ((!(result == SDEI_ERROR_INVALID_PARAMETERS) &&
+       result == SDEI_SUCCESS)
+    ==> HandlerRunning(new_s, current_pe()) == false)
+  && (result != SDEI_SUCCESS
+    ==> HandlerRunning(new_s, current_pe()) == HandlerRunning(old_s, current_pe()))
+}

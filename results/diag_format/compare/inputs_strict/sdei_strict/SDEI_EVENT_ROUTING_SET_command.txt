@@ -1,0 +1,37 @@
+5.1.11 SDEI_EVENT_ROUTING_SET command
+               Sets the routing information of a shared event.
+               5.1.11.1 Interface
+               5.1.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC400002A
+        event               X1           31:0        Int32                                 Event number
+        routing_mode        X2           63:0        UInt64                                Event routing mode. Bits [63:1]: reserved, must be zero. Bit [0]: 0 = RM_ANY (route to any PE in the system), 1 = RM_PE (route to the PE specified by affinity)
+        affinity            X3           63:0        UInt64                                When routing_mode is RM_PE, the target PE in MPIDR format
+               5.1.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.11.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_valid                 pre: !IsValidEventNumber(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  event_shared                pre: !IsSharedEvent(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  routing_mode                pre: !IsValidRoutingMode(routing_mode)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  affinity                    pre: Bits(routing_mode, 0, 0) == RM_PE && !IsValidAffinity(affinity)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  handler_state               pre: EventHandlerState(event) != HANDLER_REGISTERED
+                              post: ResultEqual(result, DENIED)
+               5.1.11.2.1   Failure condition ordering
+               The SDEI_EVENT_ROUTING_SET command does not have any failure condition orderings.
+               5.1.11.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  routing_mode                post: EventRoutingMode(event) == Bits(routing_mode, 0, 0)
+  affinity                    post: Bits(routing_mode, 0, 0) == RM_PE ==> EventRoutingAffinity(event) == affinity
+               5.1.11.4 Footprint
+    ID                        Value
+    routing_mode              EventRoutingMode(event)
+    affinity                  EventRoutingAffinity(event)

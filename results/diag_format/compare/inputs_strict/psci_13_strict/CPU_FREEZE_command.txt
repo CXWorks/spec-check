@@ -1,0 +1,29 @@
+5.17 CPU_FREEZE command
+               Places the calling core in an IMPLEMENTATION DEFINED low-power state from which wakeup interrupts do not return it to execution. Introduced in PSCI1.0. This function is optional.
+               5.17.1 Interface
+               5.17.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID of CPU_FREEZE
+               5.17.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        PsciReturnCode                        Command return status. Returned only on failure.
+               5.17.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsCpuFreezeImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  denied                      pre: CpuOffWouldReturnDenied(calling_cpu)
+                              post: ResultEqual(result, DENIED)
+               5.17.2.1   Failure condition ordering
+               The CPU_FREEZE command does not have any failure condition orderings.
+               5.17.3 Success conditions
+  ID                          Condition
+  no_return                   post: !ReturnsToCaller(calling_cpu)
+  power_state                 post: CoreInImplDefinedLowPowerState(calling_cpu)
+  wake_ignored                post: forall|i: Interrupt| IsWakeupInterruptFor(i, calling_cpu) ==> (!WakesCore(i, calling_cpu) && IsPendingOrActive(i))
+  resume                      post: ResumesOnlyViaCpuOn(calling_cpu)
+  cache_mgmt                  post: CacheAndCoherencyManagedByImplementation(calling_cpu)
+  thermal                     post: AllCoresExceptOneFrozen() ==> !PlatformThermallyCritical()
+               5.17.4 Footprint
+    ID                        Value
+    power_state               CoreAt(calling_cpu).power_state
+    topology_state            PowerDomainsContaining(calling_cpu).power_state

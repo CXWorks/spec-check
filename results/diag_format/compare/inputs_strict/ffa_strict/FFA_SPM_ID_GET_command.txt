@@ -1,0 +1,28 @@
+13.11 FFA_SPM_ID_GET command
+               Returns the 16-bit ID of the SPMC or SPMD. Which ID is returned depends on the FF-A instance where the function is invoked.
+               Valid FF-A instances and their conduits are: Non-secure physical (SMC), Secure physical (SMC, ERET), Non-secure virtual (SMC, HVC) and Secure virtual (SMC, HVC, SVC).
+               13.11.1 Interface
+               13.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x84000085
+        reserved            W1-W7        31:0        UInt32                                Reserved (SBZ)
+               13.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        function_id         W0           31:0        UInt32                                FFA_SUCCESS or FFA_ERROR
+        result              W2           31:0        UInt32 / Int32                        On FFA_SUCCESS, the ID of the SPMD or SPMC: Bits[31:16] Reserved (MBZ), Bits[15:0] ID. On FFA_ERROR, the error code.
+               13.11.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_SPM_ID_GET, CallerInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               13.11.2.1   Failure condition ordering
+               The FFA_SPM_ID_GET command does not have any failure condition orderings.
+               13.11.3 Success conditions
+  ID                          Condition
+  success                     post: function_id == FFA_SUCCESS
+  id_mbz                      post: Bits(result, 31, 16) == 0
+  ns_instance                 post: (CallerInstance() == NON_SECURE_PHYSICAL || CallerInstance() == NON_SECURE_VIRTUAL) ==> Bits(result, 15, 0) == SpmcId()
+  s_virtual                   post: CallerInstance() == SECURE_VIRTUAL ==> Bits(result, 15, 0) == SpmcId()
+  s_phys_sel                  post: (CallerInstance() == SECURE_PHYSICAL && (SpmcExceptionLevel() == S_EL1 || SpmcExceptionLevel() == S_EL2)) ==> Bits(result, 15, 0) == SpmdId()
+  s_phys_el3                  post: (CallerInstance() == SECURE_PHYSICAL && SpmcExceptionLevel() == EL3) ==> Bits(result, 15, 0) == SpmcId()
+               13.11.4 Footprint
+               The FFA_SPM_ID_GET command does not modify any state.

@@ -1,0 +1,25 @@
+3.3.2.2 NEGOTIATE_PROTOCOL_VERSION command
+               Negotiates the protocol version that the agent intends to use, if the agent does not support the version returned by the PROTOCOL_VERSION command.
+               3.3.2.2.1 Interface
+               3.3.2.2.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        message_id          Message header       -           UInt                                  Message ID, value 0x10
+        protocol_id         Message header       -           UInt                                  Protocol ID, value 0x11
+        version             Parameter 0          31:0        UInt32                                The protocol version that the agent intends to use
+               3.3.2.2.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Return value 0       31:0        Int32                                 Command return status
+               3.3.2.2.2 Failure conditions
+  ID                          Condition
+  version_unsupported         pre: !PlatformSupportsProtocolVersion(version)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.3.2.2.2.1   Failure condition ordering
+               The NEGOTIATE_PROTOCOL_VERSION command does not have any failure condition orderings.
+               3.3.2.2.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  negotiated_version          post: NegotiatedProtocolVersion(agent) == version
+  version_compliance          post: AllSubsequentMessagesComplyWithVersion(agent, version)
+               3.3.2.2.4 Footprint
+    ID                        Value
+    negotiated_version        NegotiatedProtocolVersion(agent)

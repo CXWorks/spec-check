@@ -1,0 +1,34 @@
+16.2 FFA_NOTIFICATION_BITMAP_DESTROY command
+               The Hypervisor uses this command to ask the SPMC to destroy the SP and SPM framework notifications bitmap for a VM.
+               The Hypervisor invokes it at the Non-secure physical FF-A instance with the SMC conduit. Valid instance and conduit configurations:
+        Config No.          FF-A instance              Valid conduits
+        1                   Non-secure physical        SMC
+        2                   Secure physical            ERET
+               16.2.1 Interface
+               16.2.1.1   Input values
+        Name                Register     Bits        Type          Description
+        fid                 w0           31:0        UInt32        Function ID, value 0x8400007E
+        vm_id               w1           31:16       UInt32        Reserved (SBZ)
+        vm_id               w1           15:0        UInt32        ID of the VM whose notification bitmap in the Secure world must be destroyed, so that SPs can no longer send notifications to this VM
+        reserved            w2-w7        31:0        UInt32        Reserved (SBZ)
+               16.2.1.2   Output values
+        Name                Register     Bits        Type          Description
+        result              w0           31:0        UInt32        FFA_SUCCESS with no further parameters on success, or FFA_ERROR on failure
+        error_code          w2           31:0        Int32         Error code returned with FFA_ERROR
+               16.2.2 Failure conditions
+  ID                          Condition
+  vm_id_valid                 pre: !IsRecognizedPartitionId(Bits(vm_id, 15, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  impl                        pre: !IsImplementedAtInstance(FFA_NOTIFICATION_BITMAP_DESTROY, CurrentFfaInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  bitmap_state                pre: !IsNotificationBitmapRegistered(Bits(vm_id, 15, 0)) || !IsNotificationBitmapMasked(Bits(vm_id, 15, 0)) || IsNotificationBitmapPending(Bits(vm_id, 15, 0))
+                              post: ResultEqual(result, DENIED)
+               16.2.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_BITMAP_DESTROY command does not have any failure condition orderings.
+               16.2.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  bitmap_destroyed            post: !IsNotificationBitmapRegistered(Bits(vm_id, 15, 0))
+               16.2.4 Footprint
+    ID                        Value
+    bitmap_destroyed          NotificationBitmapOf(Bits(vm_id, 15, 0))

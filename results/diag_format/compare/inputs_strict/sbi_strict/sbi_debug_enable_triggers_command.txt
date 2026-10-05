@@ -1,0 +1,32 @@
+19.7 sbi_debug_enable_triggers command
+               Enables a set of debug triggers on the calling hart.
+               19.7.1 Interface
+               19.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 6
+        trig_idx_base       a0           XLEN-1:0    UInt                                  Starting trigger index
+        trig_idx_mask       a1           XLEN-1:0    Bitmask                               Bitmask of triggers to enable, relative to trig_idx_base. Each bit selects one trigger
+               19.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Command return status (sbiret.error)
+               19.7.2 Failure conditions
+  ID                          Condition
+  trig_unmapped               pre: exists|i: UInt| InTriggerSet(trig_idx_base, trig_idx_mask, i) && !IsMappedToHwTrigger(CallingHart(), i)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  trig_bound                  pre: exists|i: UInt| InTriggerSet(trig_idx_base, trig_idx_mask, i) && i >= trig_max
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+               19.7.2.1   Failure condition ordering
+               The sbi_debug_enable_triggers command does not have any failure condition orderings.
+               19.7.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  trig_vs                     post: forall|i: UInt| InTriggerSet(trig_idx_base, trig_idx_mask, i) ==> MappedHwTrigger(CallingHart(), i).vs == TrigState(CallingHart(), i).vs
+  trig_vu                     post: forall|i: UInt| InTriggerSet(trig_idx_base, trig_idx_mask, i) ==> MappedHwTrigger(CallingHart(), i).vu == TrigState(CallingHart(), i).vu
+  trig_s                      post: forall|i: UInt| InTriggerSet(trig_idx_base, trig_idx_mask, i) ==> MappedHwTrigger(CallingHart(), i).s == TrigState(CallingHart(), i).s
+  trig_u                      post: forall|i: UInt| InTriggerSet(trig_idx_base, trig_idx_mask, i) ==> MappedHwTrigger(CallingHart(), i).u == TrigState(CallingHart(), i).u
+               19.7.4 Footprint
+    ID                        Value
+    trig_vs                   MappedHwTrigger(CallingHart(), i).vs, for each i in the trigger set
+    trig_vu                   MappedHwTrigger(CallingHart(), i).vu, for each i in the trigger set
+    trig_s                    MappedHwTrigger(CallingHart(), i).s, for each i in the trigger set
+    trig_u                    MappedHwTrigger(CallingHart(), i).u, for each i in the trigger set

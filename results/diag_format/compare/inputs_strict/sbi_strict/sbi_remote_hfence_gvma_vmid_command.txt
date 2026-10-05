@@ -1,0 +1,25 @@
+8.4 sbi_remote_hfence_gvma_vmid command
+               Instructs the remote harts to execute one or more HFENCE.GVMA instructions. The fence covers the range of guest physical addresses from start_addr to start_addr + size, for the given VMID only. This function call is only valid for harts that implement the hypervisor extension.
+               8.4.1 Interface
+               8.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        hart_mask           a0           XLEN-1:0    UnsignedLong                          Mask selecting the target harts
+        hart_mask_base      a1           XLEN-1:0    UnsignedLong                          Base hart ID that hart_mask is relative to
+        start_addr          a2           XLEN-1:0    UnsignedLong                          Start of the guest physical address range
+        size                a3           XLEN-1:0    UnsignedLong                          Size of the guest physical address range
+        vmid                a4           XLEN-1:0    UnsignedLong                          VMID that the fence is restricted to
+        fid                 a6           XLEN-1:0    UnsignedLong                          FID, value 3
+               8.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Error code returned in sbiret.error
+               8.4.2 Failure conditions
+               The error codes for this function are listed in Table 12, "RFENCE Remote HFENCE.GVMA with VMID Errors". That table is not reproduced in this section, so no failure conditions are listed here.
+               8.4.2.1   Failure condition ordering
+               The sbi_remote_hfence_gvma_vmid command does not have any failure condition orderings.
+               8.4.3 Success conditions
+  ID                          Condition
+  hart_hext                   post: forall|h: HartId| IsHartSelected(hart_mask, hart_mask_base, h) ==> HartImplementsHypervisorExtension(h)
+  hfence_gvma                 post: forall|h: HartId| IsHartSelected(hart_mask, hart_mask_base, h) ==> HfenceGvmaExecuted(h, start_addr, start_addr + size, vmid)
+               8.4.4 Footprint
+    ID                        Value
+    hfence_gvma               forall|h: HartId| IsHartSelected(hart_mask, hart_mask_base, h) ==> GStageTlbEntries(h, vmid, start_addr, start_addr + size)

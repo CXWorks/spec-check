@@ -1,0 +1,16 @@
+pub open spec fn telemetry_list_shmti__3_12_4_5_spec(result: int32, num_SHMTI: uint32, SHMTI_desc: {uint32, uint32, uint32, uint32, uint32}, old_s: S, new_s: S) -> bool {
+    (result == 0) ==> (num_SHMTI >= 0)
+    && (result == 0) ==> (SHMTI_desc.len() as int == num_SHMTI as int)
+    && (result == 0) ==> (forall i: int | 0 <= i && i < num_SHMTI as int ==> SHMTI_desc[i].entry[4] == 0)
+    && (result == 0) ==> (forall i: int | 0 <= i && i < num_SHMTI as int ==> SHMTI_desc[i].entry[1] as int >= 0)
+    && (result == 0) ==> (forall i: int | 0 <= i && i < num_SHMTI as int ==> SHMTI_desc[i].entry[2] as int >= 0)
+    && (result == 0) ==> (forall i: int | 0 <= i && i < num_SHMTI as int ==> SHMTI_desc[i].entry[3] as int >= 0)
+    && (result == 0) ==> (forall i: int | 0 <= i && i < num_SHMTI as int ==> SHMTI_desc[i].entry[0] as int >= 0)
+    && (result != 0) ==> (num_SHMTI == 0)
+    && (result != 0) ==> (SHMTI_desc.len() == 0)
+    && (forall i: int | 0 <= i && i < SHMTI_desc.len() ==> SHMTI_desc[i].entry[4] == 0)
+    && (forall i: int | 0 <= i && i < SHMTI_desc.len() ==> SHMTI_desc[i].entry[1] as int >= 0)
+    && (forall i: int | 0 <= i && i < SHMTI_desc.len() ==> SHMTI_desc[i].entry[2] as int >= 0)
+    && (forall i: int | 0 <= i && i < SHMTI_desc.len() ==> SHMTI_desc[i].entry[3] as int >= 0)
+    && (forall i: int | 0 <= i && i < SHMTI_desc.len() ==> SHMTI_desc[i].entry[0] as int >= 0)
+}

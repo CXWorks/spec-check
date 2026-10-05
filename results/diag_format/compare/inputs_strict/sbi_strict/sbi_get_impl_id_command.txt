@@ -1,0 +1,19 @@
+4.2 sbi_get_impl_id command
+               Returns the current SBI implementation ID. Each SBI implementation has a different ID, so software can use it to probe for SBI implementation quirks.
+               4.2.1 Interface
+               4.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 1
+               4.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           63:0        Int64                                 sbiret.error: command return status
+        value               a1           63:0        UInt64                                sbiret.value: current SBI implementation ID
+               4.2.2 Failure conditions
+               The sbi_get_impl_id command does not have any failure conditions.
+               4.2.2.1   Failure condition ordering
+               The sbi_get_impl_id command does not have any failure condition orderings.
+               4.2.3 Success conditions
+  ID                          Condition
+  impl_id                     post: value == CurrentSbiImplementationId()
+               4.2.4 Footprint
+               The sbi_get_impl_id command does not modify any state.

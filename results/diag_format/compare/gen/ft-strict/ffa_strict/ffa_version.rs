@@ -1,0 +1,30 @@
+pub open spec fn ffa_version_spec(version: UInt32, flags: UInt32, result: Int32, old_s: S, new_s: S) -> bool {
+  (!CalleeImplementsFfa(old_s) ==> ResultEqual(result, NOT_SUPPORTED))
+  && (Bits(version, 31, 31) != 0 ==> ResultEqual(result, INVALID_PARAMETER))
+  && (Bits(flags, 1, 0) > 2 ==> ResultEqual(result, INVALID_PARAMETER))
+  && (result >= 0 ==> Bits(result, 31, 31) == 0)
+  && (Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(old_s, caller) && FfaInUse(old_s, caller) ==> result == NULL_VERSION)
+  && (Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(old_s, caller) && !FfaInUse(old_s, caller) && VersionLess(version, PrevNegotiatedVersion(old_s, caller)) && !DowngradeAllowed(old_s, caller) ==> result == NULL_VERSION)
+  && (Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(old_s, caller) && OnlyIncompatibleLowerVersions(old_s, version) ==> result == HighestIncompatibleVersion(old_s, version))
+  && (Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(old_s, caller) && OnlyIncompatibleHigherVersions(old_s, version) ==> result == LowestIncompatibleVersion(old_s, version) || ResultEqual(result, NOT_SUPPORTED))
+  && (Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(old_s, caller) && OnlyIncompatibleHigherAndLowerVersions(old_s, version) ==> result == HighestIncompatibleVersion(old_s, version))
+  && (Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(old_s, caller) && NegotiationSucceeds(old_s, caller, version) ==> IsCompatible(version, result) && !VersionLess(result, version))
+  && (Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(old_s, caller) && NegotiationSucceeds(old_s, caller, version) ==> NegotiatedVersion(new_s, caller) == version)
+  && (Bits(flags, 1, 0) == 0 && !NegotiationSucceeds(old_s, caller, version) ==> NegotiatedVersion(new_s, caller) == PrevNegotiatedVersion(old_s, caller))
+  && (Bits(flags, 1, 0) == 0 && IsSpmcCallerAtSeparateEl(old_s, caller) ==> result == SpmcStartNegotiatedVersion() && NegotiatedVersion(new_s, caller) == PrevNegotiatedVersion(old_s, caller))
+  && (Bits(flags, 1, 0) == 1 && HasCompatibleVersion(old_s, version) ==> IsCompatible(version, result) && !VersionLess(result, version))
+  && (Bits(flags, 1, 0) == 1 && OnlyIncompatibleLowerVersions(old_s, version) ==> result == HighestIncompatibleVersion(old_s, version))
+  && (Bits(flags, 1, 0) == 1 && OnlyIncompatibleHigherVersions(old_s, version) ==> result == LowestIncompatibleVersion(old_s, version))
+  && (Bits(flags, 1, 0) == 1 && OnlyIncompatibleHigherAndLowerVersions(old_s, version) ==> result == HighestIncompatibleVersion(old_s, version))
+  && (Bits(flags, 1, 0) == 1 ==> NegotiatedVersion(new_s, caller) == PrevNegotiatedVersion(old_s, caller))
+  && (Bits(flags, 1, 0) == 2 ==> result == NegotiatedVersion(old_s, caller))
+  && (Bits(flags, 1, 0) == 2 ==> NegotiatedVersion(new_s, caller) == PrevNegotiatedVersion(old_s, caller))
+  && ((CalleeImplementsFfa(old_s) &&
+       !(Bits(version, 31, 31) != 0) &&
+       !(Bits(flags, 1, 0) > 2))
+    ==> result >= 0)
+  && (result < 0
+    ==> NegotiatedVersion(new_s, caller) == NegotiatedVersion(old_s, caller))
+  && (result >= 0 && !(Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(old_s, caller) && NegotiationSucceeds(old_s, caller, version))
+    ==> NegotiatedVersion(new_s, caller) == NegotiatedVersion(old_s, caller))
+}

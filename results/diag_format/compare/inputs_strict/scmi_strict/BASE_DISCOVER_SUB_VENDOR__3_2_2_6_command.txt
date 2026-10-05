@@ -1,0 +1,22 @@
+3.2.2.6 BASE_DISCOVER_SUB_VENDOR command
+               On success, this optional command provides a sub vendor identifier ASCII string.
+               3.2.2.6.1 Interface
+               3.2.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt8                                 Message identifier, value 0x4
+        protocol_id         Header       -           UInt8                                 Protocol identifier, value 0x10
+               3.2.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        vendor_identifier   Payload      127:0       UInt8[16]                             Null terminated ASCII string of up to 16 bytes with a vendor name
+               3.2.2.6.2 Failure conditions
+               The BASE_DISCOVER_SUB_VENDOR command does not have any failure conditions.
+               3.2.2.6.2.1   Failure condition ordering
+               The BASE_DISCOVER_SUB_VENDOR command does not have any failure condition orderings.
+               3.2.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  vendor_str                  post: IsNullTerminatedAsciiString(vendor_identifier, 16)
+  vendor_name                 post: IsSubVendorName(vendor_identifier)
+               3.2.2.6.4 Footprint
+               The BASE_DISCOVER_SUB_VENDOR command does not modify any state.

@@ -1,0 +1,1963 @@
+[
+ {
+  "file": "ft_strict/drtm/drtm_close_locality.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_dynamic_launch.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_enable_secure_interrupts.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_features.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> drtm_features_unsat.rs:57:6\n   |\n45 | pub open spec fn drtm_features_spec(id: UInt64, result: Int64, features: Bits64, old_s: S, new_s: S) -> bool {\n   |                                                                                                              - closing delimiter possibly meant for this\n...\n57 |   && ((!( (Bits(id, 63, 63) == 0 && IsImplementedDrtmFunction(Bits(id, 31, 0))) ||\n   |      ^ unclosed delimiter\n...\n60 | }\n   | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_get_error.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_lock_tcb_hashes.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_parameters.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_set_error.rs",
+  "unsat": "compile_error",
+  "error": "error[E0061]: this function takes 1 argument but 0 arguments were supplied\n  --> drtm_set_error_unsat.rs:44:72\n   |\n44 |   && (result == SUCCESS ==> PersistedInNonVolatileSecureStorage(new_s, PersistedDrtmError()))\n   |                                                                        ^^^^^^^^^^^^^^^^^^-- argument #1 of type `S` is missing\n   |\nnote: function defined here\n  --> drtm_set_error_unsat.rs:34:18\n   |\n34 | pub open spec fn PersistedDrtmError(s: S) -> Int64;\n   |                  ^^^^^^^^^^^^^^^^^^ ----\nhelp: provide the argument\n   |\n44 |   && (result == SUCCESS ==> PersistedInNonVolatileSecureStorage(new_s, PersistedDrtmError(/* S */)))\n   |                                                                                           +++++++\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_set_tcb_hash.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_unprotect_memory.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/drtm/drtm_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_abort.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_console_log.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_el3_intr_handle.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_error.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_features.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_id_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_interrupt.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_msg_poll.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_msg_send2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_msg_send_direct_req.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_msg_send_direct_req2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_msg_send_direct_resp.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_msg_send_direct_resp2.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> ffa_msg_send_direct_resp2_unsat.rs:13:39\n   |\n13 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> ffa_msg_send_direct_resp2_unsat.rs:14:44\n   |\n14 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_msg_wait.rs",
+  "unsat": "compile_error",
+  "error": "error[E0061]: this function takes 2 arguments but 3 arguments were supplied\n  --> ffa_msg_wait_unsat.rs:57:82\n   |\n57 | ... == ERET ==> SchedulerInformedOfWaiting(new_s, (endpoint_vcpu_ids >> 16) as int, (endpoint_vcpu_ids) as int))\n   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^                                          -------------------------- unexpected argument #3 of type `vstd::prelude::int`\n   |\nnote: function defined here\n  --> ffa_msg_wait_unsat.rs:44:18\n   |\n44 | pub open spec fn SchedulerInformedOfWaiting(s: S, c: int) -> bool;\n   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^\nhelp: remove the extra argument\n   |\n57 -   && (result == FFA_SUCCESS && IsNsVirtualInstance(old_s) && conduit == ERET ==> SchedulerInformedOfWaiting(new_s, (endpoint_vcpu_ids >> 16) as int, (endpoint_vcpu_ids) as int))\n57 +   && (result == FFA_SUCCESS && IsNsVirtualInstance(old_s) && conduit == ERET ==> SchedulerInformedOfWaiting(new_s, (endpoint_vcpu_ids >> 16) as int))\n   |",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_normal_world_resume.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_bind.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_bind2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_bitmap_create.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> ffa_notification_bitmap_create_unsat.rs:42:6\n   |\n36 | /   (!FunctionImplementedAtInstance(old_s, 0x8400007D) ==> ResultEqual(result, NOT_SUPPORTED))\n37 | |   && (!IsRecognizedVmId(old_s, 15, 0) ==> ResultEqual(result, INVALID_PARAMETERS))\n38 | |   && (NotificationBitmapExists(old_s, 15, 0) ==> ResultEqual(result, DENIED))\n39 | |   && (!NotificationBitmapAllocatable(old_s, 15, 0) ==> ResultEqual(result, NO_MEMORY))\n40 | |   && (result == FFA_SUCCESS ==> ResultEqual(result, FFA_SUCCESS))\n41 | |   && (result == FFA_SUCCESS ==> NotificationBitmapExists(new_s, 15, 0))\n   | |_______________________________________________________________________- expected because this is `bool`\n42 |     && (result == FFA_SUCCESS ==> AllocatedSpNotificationCount(new_s, 15, 0) == 8, 0)\n   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `bool`, found `(bool, _)`\n   |\n   = note: expected type `bool`\n             found tuple `(bool, _)`\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_bitmap_destroy.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_get2.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> ffa_notification_get2_unsat.rs:17:47\n   |\n17 | pub spec const NOT_SUPPORTED: FfaStatusCode = -1;\n   |                               -------------   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> ffa_notification_get2_unsat.rs:18:52\n   |\n18 | pub spec const INVALID_PARAMETERS: FfaStatusCode = -2;\n   |                                    -------------   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_info_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_set2.rs",
+  "unsat": "compile_error",
+  "error": "error[E0061]: this function takes 3 arguments but 2 arguments were supplied\n  --> ffa_notification_set2_unsat.rs:52:109\n   |\n52 | ...itmapBit(bitmap, i) == 1 ==> GlobalNotificationSignaled(Bits(ids, 15, 0), i)))\n   |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^--------------------- argument #3 is missing\n   |\nnote: function defined here\n  --> ffa_notification_set2_unsat.rs:35:18\n   |\n35 | pub open spec fn GlobalNotificationSignaled<A, B, C>(a: A, b: B, c: C) -> bool;\n   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^                      ----\nhelp: provide the argument\n   |\n52 |   && (result == FFA_SUCCESS ==> Bits(flags, 0, 0) == 0 ==> (forall|i: UInt64| BitmapBit(bitmap, i) == 1 ==> GlobalNotificationSignaled(Bits(ids, 15, 0), i, /* c */)))\n   |                                                                                                                                                           +++++++++\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_unbind.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_notification_unbind2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_ns_res_info_get.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n   --> ffa_ns_res_info_get_unsat.rs:129:68\n    |\n129 |   && (result == FFA_SUCCESS ==> Bits(flags, 0, 0) == 0 ==> (forall e: SEndpoint; forall r: NsRegion; IsAccessible(e, r) ==> RegionD...\n    |                                                                    ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_partition_info_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_partition_info_get_regs.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> ffa_partition_info_get_regs_unsat.rs:71:54\n   |\n71 |   && (ResultEqual(result, FFA_SUCCESS64) ==> (forall i: UInt64 (start_index <= i && i <= current_index) ==> DescriptorAt(new_s, part...\n   |                                                      ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_run.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_rx_acquire.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_rx_release.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_rxtx_map.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_rxtx_unmap.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_spm_id_get.rs",
+  "unsat": "compile_error",
+  "error": "error[E0415]: identifier `result` is bound more than once in this parameter list\n  --> ffa_spm_id_get_unsat.rs:53:101\n   |\n53 | ... RsiCommandReturnCode>, function_id: UInt32, result: UInt32, old_s: S, new_s: S) -> bool {\n   |                                                 ^^^^^^ used as parameter more than once\n\nerror[E0415]: identifier `result` is bound more than once in this parameter list\n  --> ffa_spm_id_get_unsat.rs:65:102\n   |\n65 | ... RsiCommandReturnCode>, function_id: UInt32, result: UInt32, old_s: S, new_s: S)\n   |                                                 ^^^^^^ used as parameter more than once\n\nerror: aborting due to 2 previous errors; 6 warnings emitted\n\nFor more information about this error, try `rustc --explain E0415`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_success.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/ffa/ffa_yield.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> ffa_yield_unsat.rs:57:6\n   |\n49 | pub open spec fn ffa_yield_spec(ids: UInt32, timeout_lo: UInt32, timeout_hi: UInt32, result: UInt32, status: Int32, old_s: S, new_s: S) -> bool {\n   |                                                                                                                                                 - closing delimiter possibly meant for this\n...\n57 |   && ((!((ConduitIsEret(old_s) && (!IsRecognizedEndpointId(old_s, Bits(ids, 31, 16)) || !IsRecognizedVcpuId(old_s, Bits(ids, 31, 16), Bits(ids, 15, ...\n   |      ^ unclosed delimiter\n...\n63 | }\n   | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/affinity_info.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> affinity_info_unsat.rs:47:15\n   |\n47 |   && ((exists c: Core| InAffinityInstance(c, target_affinity, lowest_affinity_level) && (CoreEnabledByCpuOn(c) || IsColdBootPrimaryC...\n   |               ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/cpu_default_suspend.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> cpu_default_suspend_unsat.rs:15:50\n   |\n15 | pub spec const INVALID_ADDRESS: PsciReturnCode = -9;\n   |                                 --------------   ^^ expected `i32`, found `int`\n   |                                 |\n   |                                 expected `i32` because of return type\n\nerror: aborting due to 1 previous error; 11 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/cpu_freeze.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> cpu_freeze_unsat.rs:15:48\n   |\n15 | pub spec const NOT_SUPPORTED: PsciReturnCode = -1;\n   |                               --------------   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> cpu_freeze_unsat.rs:16:41\n   |\n16 | pub spec const DENIED: PsciReturnCode = -3;\n   |                        --------------   ^^ expected `i32`, found `int`\n   |                        |\n   |                        expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/cpu_off.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> cpu_off_unsat.rs:67:44\n   |\n67 |   && (result == PSCI_SUCCESS ==> (forall (n: TopologyNode), NodePoweredDown(new_s, n) ==> CachesCleaned(new_s, n)))\n   |                                            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/cpu_on.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/cpu_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/mem_protect.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/mem_protect_check_range.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> mem_protect_check_range_unsat.rs:35:44\n   |\n35 |   && (!RangeIsProtectedByMemProtect(old_s, base, base + length - 1) ==> ResultEqual(result, DENIED))\n   |        ----------------------------        ^^^^ expected `int`, found `u64`\n   |        |\n   |        arguments to this function are incorrect\n   |\nnote: function defined here\n  --> mem_protect_check_range_unsat.rs:31:18\n   |\n31 | pub open spec fn RangeIsProtectedByMemProtect(s: S, start: int, end: int) -> bool;\n   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^       ----------\n\nerror[E0308]: mismatched types\n  --> mem_protect_check_range_unsat.rs:37:65",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/migrate.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/migrate_info_type.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/node_hw_state.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/psci_features.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> psci_features_unsat.rs:11:39\n   |\n11 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror: aborting due to 1 previous error; 8 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/psci_set_suspend_mode.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> psci_set_suspend_mode_unsat.rs:20:48\n   |\n20 | pub spec const NOT_SUPPORTED: PsciReturnCode = -1;\n   |                               --------------   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> psci_set_suspend_mode_unsat.rs:21:53\n   |\n21 | pub spec const INVALID_PARAMETERS: PsciReturnCode = -2;\n   |                                    --------------   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/psci_stat_count.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/psci_stat_residency.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/psci_version.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> psci_version_unsat.rs:46:16\n   |\n46 |   && (forall (f: PsciFunction), (IsInRevision(f, MajorRevision(new_s, version), MinorRevisionLowerThan(new_s, version)) ==> IsCompat...\n   |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/system_off2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/system_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/psci_13/system_reset2.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `}`\n  --> system_reset2_unsat.rs:74:1\n   |\n37 | pub open spec fn system_reset2_spec(reset_type: UInt32, cookie: UInt64, result: Result<(), RsiCommandReturnCode>, old_s: S, new_s: S) -> bool {\n   |                                                                                                                                               - the nearest open delimiter\n...\n50 |     ==> result == RSI_SUCCESS)\n   |                              - missing open `(` for this delimiter\n...\n74 | } // verus!\n   | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/psci_13/system_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_cppc_probe.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_cppc_read.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_cppc_read_hi.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_cppc_write.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_console_write.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sbi_debug_console_write_unsat.rs:14:47\n   |\n14 | pub spec const SBI_ERR_FAILED: SbiErrorCode = -1;\n   |                                ------------   ^^ expected `i64`, found `int`\n   |                                |\n   |                                expected `i64` because of return type\n\nerror[E0308]: mismatched types\n  --> sbi_debug_console_write_unsat.rs:15:54\n   |\n15 | pub spec const SBI_ERR_INVALID_PARAM: SbiErrorCode = -3;\n   |                                       ------------   ^^ expected `i64`, found `int`\n   |                                       |\n   |                                       expected `i64` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_console_write_byte.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_disable_triggers.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_enable_triggers.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_install_triggers.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `)`\n  --> sbi_debug_install_triggers_unsat.rs:75:121\n   |\n 3 | ...s! {\n   |       - the nearest open delimiter\n...\n71 | ...open spec fn sbi_debug_install_triggers_spec(trig_count: unsigned long, error: long, value: long, old_s: S, new_s: S) -> bool {\n   |                                                                                                                                  - the nearest open delimiter\n72 | ...riggerConfigsProcessedInIncreasingIndexOrderFromZero(new_s, trig_count))\n73 | ... (forall|i: UInt64| i < trig_count ==> !PreTrigIdxInUse(new_s, InstalledTrigIdx(i)) && !PreHwTriggerInUse(new_s, HwTriggerOf(InstalledTrigIdx(i)))))\n   |                                                                                                                                                       - missing open `(` for this delimiter\n74 | ... (forall|i: UInt64| i < trig_count ==> HwTriggerMatchesConfig(new_s, HwTriggerOf(InstalledTrigIdx(i)), TrigConfigAt(new_s, i))))\n   |                                                                                                                                   - missing open `(` for this delimiter\n75 | ... (forall|i: UInt64| i < trig_count ==> TrigState(new_s, InstalledTrigIdx(i)).vs == TrigConfigAt(new_s, i).tdata1.vs))\n   |                                                                                                                        ^ unexpected closing delimiter\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_read_triggers.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_debug_read_triggers_unsat.rs:26:71\n   |\n26 | pub open spec fn sbi_debug_read_triggers_spec(trig_idx_base: unsigned long, trig_count: unsigned long, result: struct sbiret, old_s:...\n   |                                                                       ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_debug_set_shmem_unsat.rs:41:67\n   |\n41 | pub open spec fn sbi_debug_set_shmem_spec(shmem_phys_lo: unsigned long, shmem_phys_hi: unsigned long, flags: unsigned long, error: l...\n   |                                                                   ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_uninstall_triggers.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_debug_update_triggers.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_debug_update_triggers_unsat.rs:49:70\n   |\n49 | pub open spec fn sbi_debug_update_triggers_spec(trig_count: unsigned long, result: struct sbiret, old_s: S, new_s: S) -> bool {\n   |                                                                      ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_fwft_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_fwft_set.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_fwft_set_unsat.rs:37:69\n   |\n37 | pub open spec fn sbi_fwft_set_spec(feature: UInt32, value: unsigned long, flags: unsigned long, ret: struct sbiret, old_s: S, new_s:...\n   |                                                                     ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_get_impl_id.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_get_impl_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_get_marchid.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_get_mimpid.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_get_mvendorid.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_get_spec_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_hart_get_status.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_hart_start.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_hart_start_unsat.rs:19:55\n   |\n19 | pub open spec fn sbi_hart_start_spec(hartid: unsigned long, start_addr: unsigned long, opaque: unsigned long, ret: struct sbiret, ol...\n   |                                                       ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_hart_stop.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_hart_suspend.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_hart_suspend_unsat.rs:34:86\n   |\n34 | pub open spec fn sbi_hart_suspend_spec(suspend_type: uint32_t, resume_addr: unsigned long, opaque: unsigned long, result: struct sbi...\n   |                                                                                      ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_mpxy_get_channel_ids.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_mpxy_get_channel_ids_unsat.rs:54:43\n   |\n54 |   && (result == SBI_SUCCESS ==> (forall (i: UInt32), i < ShmemReturned(new_s, CallingHart(new_s)) ==> ShmemChannelId(new_s, CallingH...\n   |                                           ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_mpxy_get_notification_events.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_mpxy_get_shmem_size.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_mpxy_get_shmem_size_unsat.rs:26:16\n   |\n26 |   && (forall (h: Hart), MpxyShmemSize(h) == uvalue)\n   |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_mpxy_read_attributes.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_mpxy_send_message_with_response.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_mpxy_send_message_without_response.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_mpxy_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_mpxy_set_shmem_unsat.rs:35:66\n   |\n35 | pub open spec fn sbi_mpxy_set_shmem_spec(shmem_phys_lo: unsigned long, shmem_phys_hi: unsigned long, flags: unsigned long, result: S...\n   |                                                                  ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_mpxy_write_attributes.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_mpxy_write_attributes_unsat.rs:20:40\n   |\n20 |   (result == SBI_SUCCESS ==> (forall (i: UInt32), (i < attribute_count) ==> (ChannelAttribute(new_s, channel_id, base_attribute_id +...\n   |                                        ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_nacl_probe_feature.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_nacl_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_nacl_set_shmem_unsat.rs:41:66\n   |\n41 | pub open spec fn sbi_nacl_set_shmem_spec(shmem_phys_lo: unsigned long, shmem_phys_hi: unsigned long, flags: unsigned long, result: S...\n   |                                                                  ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_nacl_sync_csr.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_nacl_sync_csr_unsat.rs:22:59\n   |\n22 | pub open spec fn sbi_nacl_sync_csr_spec(csr_num: unsigned long, result: long, old_s: S, new_s: S) -> bool {\n   |                                                           ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_nacl_sync_hfence.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_nacl_sync_hfence_unsat.rs:41:66\n   |\n41 | pub open spec fn sbi_nacl_sync_hfence_spec(entry_index: unsigned long, result: sbiret.error, old_s: S, new_s: S) -> bool {\n   |                                                                  ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_nacl_sync_sret.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_pmu_counter_config_matching.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_pmu_counter_config_matching_unsat.rs:38:82\n   |\n38 | pub open spec fn sbi_pmu_counter_config_matching_spec(counter_idx_base: unsigned long, counter_idx_mask: unsigned long, config_flags...\n   |                                                                                  ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_pmu_counter_fw_read.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_pmu_counter_fw_read_unsat.rs:29:69\n   |\n29 | pub open spec fn sbi_pmu_counter_fw_read_spec(counter_idx: unsigned long, error: long, value: unsigned long, old_s: S, new_s: S) -> ...\n   |                                                                     ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_pmu_counter_fw_read_hi.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_pmu_counter_get_info.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_pmu_counter_start.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_pmu_counter_start_unsat.rs:30:72\n   |\n30 | pub open spec fn sbi_pmu_counter_start_spec(counter_idx_base: unsigned long, counter_idx_mask: unsigned long, start_flags: unsigned ...\n   |                                                                        ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_pmu_counter_stop.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_pmu_counter_stop_unsat.rs:38:11\n   |\n38 |   (exists i: UInt | CounterInSet(old_s, counter_idx_base, counter_idx_mask, i) && !IsValidCounter(old_s, i) ==> ResultEqual(result, ...\n   |           ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_pmu_num_counters.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_pmu_snapshot_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_pmu_snapshot_set_shmem_unsat.rs:33:74\n   |\n33 | pub open spec fn sbi_pmu_snapshot_set_shmem_spec(shmem_phys_lo: unsigned long, shmem_phys_hi: unsigned long, flags: unsigned long, r...\n   |                                                                          ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_probe_extension.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_remote_fence_i.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_fence_i_unsat.rs:38:11\n   |\n38 |   (exists h: HartId, IsTargetedHart(hart_mask, hart_mask_base, h) && (!IsHartEnabledByPlatform(h) || !IsHartAvailableToSupervisor(h)...\n   |           ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_remote_hfence_gvma.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_hfence_gvma_unsat.rs:34:17\n   |\n34 |   && ((exists (h: HartId), IsTargetHart(old_s, h, hart_mask, hart_mask_base)) && (!HartSupportsHypervisorExtension(old_s, h)) ==> Re...\n   |                 ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_remote_hfence_gvma_vmid.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_hfence_gvma_vmid_unsat.rs:23:13\n   |\n23 |   (forall (h: HartId), IsHartSelected(hart_mask, hart_mask_base, h) ==> HartImplementsHypervisorExtension(new_s))\n   |             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_remote_hfence_vvma.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_hfence_vvma_unsat.rs:48:66\n   |\n48 | pub open spec fn sbi_remote_hfence_vvma_spec(hart_mask: unsigned long, hart_mask_base: unsigned long, start_addr: unsigned long, siz...\n   |                                                                  ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_remote_hfence_vvma_asid.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_hfence_vvma_asid_unsat.rs:28:71\n   |\n28 | pub open spec fn sbi_remote_hfence_vvma_asid_spec(hart_mask: unsigned long, hart_mask_base: unsigned long, start_addr: unsigned long...\n   |                                                                       ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_remote_sfence_vma.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_sfence_vma_unsat.rs:31:65\n   |\n31 | pub open spec fn sbi_remote_sfence_vma_spec(hart_mask: unsigned long, hart_mask_base: unsigned long, start_addr: unsigned long, size...\n   |                                                                 ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_remote_sfence_vma_asid.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_remote_sfence_vma_asid_unsat.rs:35:70\n   |\n35 | pub open spec fn sbi_remote_sfence_vma_asid_spec(hart_mask: unsigned long, hart_mask_base: unsigned long, start_addr: unsigned long,...\n   |                                                                      ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_send_ipi.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_send_ipi_unsat.rs:31:11\n   |\n31 |   (exists h: HartId, IsTargetedHart(hart_mask, hart_mask_base, h) && !(IsHartEnabledByPlatform(h) && IsHartAvailableToSupervisor(h))...\n   |           ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_set_timer.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_set_timer_unsat.rs:31:111\n   |\n31 | pub open spec fn sbi_set_timer_spec(stime_value: UInt64, error: SbiReturnCode, timer_event: NextTimerEventTime(), timer_pending: Tim...\n   |                                                                                                               ^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_complete.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_disable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_enable.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_sse_enable_unsat.rs:44:77\n   |\n44 |   && (result == SBI_SUCCESS && IsGlobalEvent(old_s, event_id) ==> (forall (h: Hart), EventEnabledOnHart(new_s, event_id, h)))\n   |                                                                             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_hart_mask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_hart_unmask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_inject.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_sse_inject_unsat.rs:35:76\n   |\n35 | pub open spec fn sbi_sse_inject_spec(event_id: uint32_t, hart_id: unsigned long, result: struct sbiret, old_s: S, new_s: S) -> bool {\n   |                                                                            ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_read_attrs.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sbi_sse_read_attrs_unsat.rs:48:25\n   |\n48 |   && ((output_phys_lo % (XLEN / 8) != 0) || !SatisfiesSharedMemoryRequirements(old_s, output_phys_lo, output_phys_hi, (XLEN / 8) * a...\n   |        -----------------^^^^^^^^^^\n   |        |                |\n   |        |                expected `u64`, found `int`\n   |        arguments to this method are incorrect\n   |\nhelp: the return type of this call is `vstd::prelude::int` due to the type of the argument passed\n  --> sbi_sse_read_attrs_unsat.rs:48:8\n   |\n48 |   && ((output_phys_lo % (XLEN / 8) != 0) || !SatisfiesSharedMemoryRequirements(old_s, output_phys_lo, output_phys_hi, (XLEN / 8) * a...\n   |        ^^^^^^^^^^^^^^^^^----------\n   |                         |\n   |                         this argument influences the return type of `spec_euclidean_mod`",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_register.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_sse_register_unsat.rs:45:77\n   |\n45 |   && (result == SBI_SUCCESS && IsGlobalEvent(old_s, event_id) ==> (forall (h: Hart), EventStateForHart(new_s, event_id, h) == REGIST...\n   |                                                                             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_unregister.rs",
+  "unsat": "compile_error",
+  "error": "error: expected one of: `for`, parentheses, `fn`, `unsafe`, `extern`, `FnSpec`, `spec_fn`, `proof_fn`, identifier, `::`, `<`, `dyn`, square brackets, `*`, `&`, `!`, `impl`, `_`, lifetime\n  --> sbi_sse_unregister_unsat.rs:31:67\n   |\n31 | pub open spec fn sbi_sse_unregister_spec(event_id: UInt32, error: struct sbiret.error, old_s: S, new_s: S) -> bool {\n   |                                                                   ^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_sse_write_attrs.rs",
+  "unsat": "compile_error",
+  "error": "error: Could not automatically infer triggers for this quantifier.  Use #[trigger] annotations to manually mark trigger terms instead.\n  --> sbi_sse_write_attrs_unsat.rs:44:6\n   |\n44 |   && (exists|i: UInt32| i < attr_count && IsReservedAttrId(old_s, base_attr_id + i) ==> ResultEqual(result, SBI_ERR_BAD_RANGE))\n   |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error; 14 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_steal_time_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_steal_time_set_shmem_unsat.rs:22:75\n   |\n22 |   && (!(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> (forall i: UInt64| i < 64 ==> MemByte(new_s, ShmemPhysAddr(new_s, ...\n   |                                                                           ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_system_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sbi/sbi_system_suspend.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sbi_system_suspend_unsat.rs:24:47\n   |\n24 | pub spec const SBI_ERR_FAILED: SbiErrorCode = -1;\n   |                                ------------   ^^ expected `i64`, found `int`\n   |                                |\n   |                                expected `i64` because of return type\n\nerror: aborting due to 1 previous error; 10 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/base_discover_agent__3_2_2_9.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/base_discover_implementation_version__3_2_2_7.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> base_discover_implementation_version__3_2_2_7_unsat.rs:17:16\n   |\n17 |   && (forall (v: UInt32), IsEarlierImplementationVersion(v) ==> v < implementation_version)\n   |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/base_discover_list_protocols__3_2_2_8.rs",
+  "verdict": "no_spec_fn"
+ },
+ {
+  "file": "ft_strict/scmi/base_discover_sub_vendor__3_2_2_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_strict/scmi/base_discover_vendor__3_2_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/base_error_event__3_2_3_1.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> base_error_event__3_2_3_1_unsat.rs:45:16\n   |\n45 |   && (forall (i: UInt32), i < Bits(error_status, 9, 0) ==> IsFailedCommandEntry(new_s, command_list, i))\n   |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/base_notify_errors__3_2_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/base_reset_agent_configuration__3_2_2_13.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/base_set_device_permissions__3_2_2_11.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> base_set_device_permissions__3_2_2_11_unsat.rs:13:39\n   |\n13 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> base_set_device_permissions__3_2_2_11_unsat.rs:14:44\n   |\n14 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/base_set_protocol_permissions__3_2_2_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/clock_config_get__3_6_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/clock_describe_rates__3_6_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> clock_describe_rates__3_6_2_6_unsat.rs:52:87\n   |\n52 |   && (ResultEqual(status, SUCCESS) ==> Bits(num_rates_flags, 12, 12) == 0 ==> (forall i: UInt32| i < Bits(num_rates_flags, 11, 0) ==...\n   |                                                                                       ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/clock_name_get__3_6_2_11.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> clock_name_get__3_6_2_11_unsat.rs:32:13\n   |\n32 |   && (result: ResultEqual(status, NOT_FOUND)\n   |             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/clock_parent_get__3_6_2_16.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/clock_possible_parents_get__3_6_2_14.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> clock_possible_parents_get__3_6_2_14_unsat.rs:52:47\n   |\n52 |   && (ResultEqual(status, SUCCESS) ==> forall i: UInt32, i < Bits(flags, 7, 0) ==> ElementAt(possible_parents, i) == NthPossiblePare...\n   |                                               ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/clock_rate_change_requested_notify__3_6_2_13.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/clock_rate_changed__3_6_4_1.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> clock_rate_changed__3_6_4_1_unsat.rs:25:99\n   |\n25 | pub open spec fn clock_rate_changed__3_6_4_1_spec(agent_id: UInt32, clock_id: UInt32, rate: UInt32[2], old_s: S, new_s: S) -> bool {\n   |                                                                                                   ^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/clock_rate_get__3_6_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/clock_rate_notify__3_6_2_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/clock_rate_set__3_6_2_7.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> clock_rate_set__3_6_2_7_unsat.rs:60:6\n   |\n52 | pub open spec fn clock_rate_set__3_6_2_7_spec(flags: UInt32, clock_id: UInt32, rate: [UInt32; 2], status: Int32, old_s: S, new_s: S) -> bool {\n   |                                                                                                                                              - closing delimiter possibly meant for this\n...\n60 |   && (ResultEqual(status, SUCCESS) ==> (Bits(flags, 0, 0) == 1 ==> AsyncClockRateChangeQueued(new_s, clock_id, SelectPhysicalRate(new_s, clock_id...\n   |      ^ unclosed delimiter\n...\n79 | }\n   | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/clock_rate_set_complete__3_6_3_1.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> clock_rate_set_complete__3_6_3_1_unsat.rs:12:32\n   |\n12 | pub spec const DENIED: Int32 = -3;\n   |                        -----   ^^ expected `i32`, found `int`\n   |                        |\n   |                        expected `i32` because of return type\n\nerror: aborting due to 1 previous error; 3 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_10_3_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_11_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_12_4_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_2_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_3_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_4_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_5_6_2.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> negotiate_protocol_version__3_5_6_2_unsat.rs:32:50\n   |\n32 | pub open spec fn NegotiatedProtocolVersion(s: S, agent: Agent) -> UInt32;\n   |                                                  ^^^^^\n\nerror: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> negotiate_protocol_version__3_5_6_2_unsat.rs:34:72\n   |\n34 | pub open spec fn CommandsResponsesNotificationsComplyWithVersion(s: S, agent: Agent, version: UInt32) -> bool;\n   |                                                                        ^^^^^\n\nerror: aborting due to 2 previous errors; 4 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_6_2_2.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> negotiate_protocol_version__3_6_2_2_unsat.rs:31:136\n   |\n31 | ... status: Int32, negotiated_version: NegotiatedProtocolVersion(agent), old_s: S, new_s: S) -> bool {\n   |                                                                 ^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_7_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_8_2_2.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> negotiate_protocol_version__3_8_2_2_unsat.rs:29:136\n   |\n29 | ... status: Int32, negotiated_version: NegotiatedProtocolVersion(agent), old_s: S, new_s: S) -> bool {\n   |                                                                 ^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/negotiate_protocol_version__3_9_2_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/performance_describe_levels__3_5_6_8.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `)`\n  --> performance_describe_levels__3_5_6_8_unsat.rs:42:214\n   |\n 2 | ...s! {\n   |       - the nearest open delimiter\n...\n33 | ...open spec fn performance_describe_levels__3_5_6_8_spec(domain_id: UInt32, skip_index: UInt32, status: Int32, num_levels: UInt32, perf_levels: [{UInt32; 5}], old_s: S, new_s: S) -> bool {\n   |                                                                                                                                                                                             - the nearest open delimiter\n...\n39 | ... (ResultEqual(status, SUCCESS) ==> (forall (i: UInt32), (i + 1 < Bits(num_levels, 11, 0)) ==> PerfLevelValue(perf_levels, i) < PerfLevelValue(perf_levels, i + 1))))\n   |                                                                                                                                                                       - missing open `(` for this delimiter\n40 | ... (ResultEqual(status, SUCCESS) ==> (forall (i: UInt32), (i < Bits(num_levels, 11, 0)) ==> Bits(PerfLevelAttributes(perf_levels, i), 31, 16) == 0))\n41 | ... (ResultEqual(status, SUCCESS) ==> (forall (i: UInt32), (i < Bits(num_levels, 11, 0)) ==> Bits(PerfLevelAttributes(perf_levels, i), 15, 0) == WorstCaseTransitionLatencyUs(new_s, domain_id, PerfLevelValue(perf_levels, i)))))\n   |                                                                                                                                                                                                                                  - missing open `(` for this delimiter\n42 | ... (ResultEqual(status, SUCCESS) ==> (forall (i: UInt32), (i < Bits(num_levels, 11, 0)) ==> (PerfLevelPowerCost(perf_levels, i) == 0 || IsLinearPowerScale(new_s, domain_id, PerfLevelPowerCost(perf_levels, i))))))\n   |                                                                                                                                                                                                                     ^ unexpected closing delimiter",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/performance_domain_attributes__3_5_6_5.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched types; types must be compatible to use == or !=\n   --> performance_domain_attributes__3_5_6_5_unsat.rs:119:9\n    |\n119 |     ==> result == ())\n    |         ------^^^^--\n    |         |         |\n    |         |         this is `()`\n    |         this is `core::result::Result<(), performance_domain_attributes__3_5_6_5_unsat::RmiStatusCode>`\n    |\n    = help: decorations (like &,Ghost,Tracked,Box,Rc,...) are transparent for == or != in spec code\n\nerror: aborting due to 1 previous error; 61 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/performance_domain_name_get__3_5_6_19.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/performance_level_changed__3_5_8_2.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> performance_level_changed__3_5_8_2_unsat.rs:34:16\n   |\n34 |   && (forall (s: S), PerformanceLevel(s, domain_id) == performance_level)\n   |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/performance_level_get__3_5_6_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/performance_level_set__3_5_6_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/performance_limits_changed__3_5_8_1.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched types; types must be compatible to use == or !=\n  --> performance_limits_changed__3_5_8_1_unsat.rs:40:47\n   |\n40 |     ==> NotificationSentToAgent(new_s, agent, domain_id == false))\n   |                                               ---------^^^^-----\n   |                                               |            |\n   |                                               |            this is `bool`\n   |                                               this is `u32`\n   |\n   = help: decorations (like &,Ghost,Tracked,Box,Rc,...) are transparent for == or != in spec code\n\nerror: aborting due to 1 previous error; 6 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/performance_limits_get__3_5_6_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/performance_limits_set__3_5_6_9.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> performance_limits_set__3_5_6_9_unsat.rs:13:35\n   |\n13 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> performance_limits_set__3_5_6_9_unsat.rs:14:38\n   |\n14 | pub spec const OUT_OF_RANGE: Int32 = -6;\n   |                              -----   ^^ expected `i32`, found `int`\n   |                              |\n   |                              expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/performance_notify_limits__3_5_6_16.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> performance_notify_limits__3_5_6_16_unsat.rs:18:32\n   |\n18 | pub spec const result: Int32 = -100;\n   |                        -----   ^^^^ expected `i32`, found `int`\n   |                        |\n   |                        expected `i32` because of return type\n\nerror: aborting due to 1 previous error; 7 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/performance_qos_attributes__3_5_6_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/performance_qos_capability_subtypes__3_5_6_6.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/performance_qos_config_complete__3_5_7_1.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> performance_qos_config_complete__3_5_7_1_unsat.rs:31:38\n   |\n31 |   && (Bit(flags, 4) == 1 ==> (forall d: PerfDomainId| QosValue(new_s, d, capability) == PlatformDefaultQos(new_s, d, capability)))\n   |                                      ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/performance_qos_config_get__3_5_6_15.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/performance_qos_config_set__3_5_6_14.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> performance_qos_config_set__3_5_6_14_unsat.rs:46:92\n   |\n46 |   && (ResultEqual(status, SUCCESS) && (flags & 0x2) == 0 && (flags & 0x4) == 1 ==> (forall d: PerfDomain, (d == domain_id || IsSibli...\n   |                                                                                            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/pinctrl_attributes__3_11_2_5.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> pinctrl_attributes__3_11_2_5_unsat.rs:21:35\n   |\n21 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n\nerror: aborting due to 1 previous error; 14 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/pinctrl_list_associations__3_11_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> pinctrl_list_associations__3_11_2_6_unsat.rs:49:37\n   |\n49 |   && (result == SUCCESS ==> (forall i: UInt32, i < (out_flags & 2047) ==> ArrayAt(array, i) == AssociationAt(old_s, identifier, (fla...\n   |                                     ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/pinctrl_name_get__3_11_2_11.rs",
+  "unsat": "compile_error",
+  "error": "error[E0415]: identifier `flags` is bound more than once in this parameter list\n  --> pinctrl_name_get__3_11_2_11_unsat.rs:25:101\n   |\n25 | ...ifier: UInt32, flags: UInt32, status: Int32, flags: UInt32, name: [UInt8; 64], old_s: S, new_s: S) -> bool {\n   |                                                 ^^^^^ used as parameter more than once\n\nerror[E0415]: identifier `flags` is bound more than once in this parameter list\n  --> pinctrl_name_get__3_11_2_11_unsat.rs:37:102\n   |\n37 | ...ifier: UInt32, flags: UInt32, status: Int32, flags: UInt32, name: [UInt8; 64], old_s: S, new_s: S)\n   |                                                 ^^^^^ used as parameter more than once\n\nerror: aborting due to 2 previous errors; 4 warnings emitted\n\nFor more information about this error, try `rustc --explain E0415`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/pinctrl_release__3_11_2_10.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> pinctrl_release__3_11_2_10_unsat.rs:13:44\n   |\n13 | pub spec const INVALID_PARAMETERS: int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> pinctrl_release__3_11_2_10_unsat.rs:14:35\n   |\n14 | pub spec const NOT_FOUND: int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/pinctrl_request__3_11_2_9.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> pinctrl_request__3_11_2_9_unsat.rs:48:50\n   |\n48 |   && (ResultEqual(status, SUCCESS) ==> (forall (a: AgentId), a != CallingAgent(new_s) ==> !PinOrGroupAvailableTo(new_s, a, identifie...\n   |                                                  ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/pinctrl_settings_configure__3_11_2_8.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> pinctrl_settings_configure__3_11_2_8_unsat.rs:52:48\n   |\n52 |   && (ResultEqual(status, SUCCESS) ==> (forall i: UInt32| i < Bits(attributes, 9, 2) ==> PinOrGroupConfig(new_s, identifier, Bits(at...\n   |                                                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/power_domain_attributes__3_3_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/power_domain_name_get__3_3_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/power_state_change_requested__3_3_3_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/power_state_change_requested_notify__3_3_2_9.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/power_state_changed__3_3_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/power_state_get__3_3_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/power_state_notify__3_3_2_8.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> power_state_notify__3_3_2_8_unsat.rs:13:44\n   |\n13 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> power_state_notify__3_3_2_8_unsat.rs:14:35\n   |\n14 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/power_state_set__3_3_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> power_state_set__3_3_2_6_unsat.rs:48:14\n   |\n48 |   && (forall p: PowerDomainId| IsParentDomain(old_s, p, domain_id) ==> PowerStateRequestedForParent(new_s, p, power_state))\n   |              ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_cai_get__3_10_3_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_cai_set__3_10_3_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_cap_changed__3_10_5_1.rs",
+  "unsat": "compile_error",
+  "error": "error: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> powercap_cap_changed__3_10_5_1_unsat.rs:14:64\n   |\n14 | pub open spec fn AgentRegisteredForCapChangeNotification(s: S, recipient: UInt32, domain_id: UInt32) -> bool;\n   |                                                                ^^^^^^^^^\n\nerror: The verifier does not yet support the following Rust feature: only variables are supported here, not general patterns\n  --> powercap_cap_changed__3_10_5_1_unsat.rs:16:41\n   |\n16 | pub open spec fn NotificationSent(s: S, recipient: UInt32, domain_id: UInt32) -> bool;\n   |                                         ^^^^^^^^^\n\nerror: aborting due to 2 previous errors; 7 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_cap_get__3_10_3_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_cap_notify__3_10_3_15.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_cap_set__3_10_3_8.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> powercap_cap_set__3_10_3_8_unsat.rs:12:39\n   |\n12 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> powercap_cap_set__3_10_3_8_unsat.rs:13:44\n   |\n13 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_cap_set_complete__3_10_4_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_cpc_attributes__3_10_3_6.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `}`\n   --> powercap_cpc_attributes__3_10_3_6_unsat.rs:122:1\n    |\n 59 | pub open spec fn powercap_cpc_attributes__3_10_3_6_spec(domain_id: UInt32, desc_index: UInt32, status: Int32, num_cpl: UInt32, desc: [CPLi_DESC; 4], old_s: S, new_s: S) -> bool {\n    |                                                                                                                                                                                  - the nearest open delimiter\n...\n114 |     ==> (forall i: UInt32, i < 4 ==> Bits(desc[i].flags, 31, 1) == 0)))\n    |                                                                       - missing open `(` for this delimiter\n...\n122 | } // verus!\n    | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_describe_fastchannel__3_10_3_17.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> powercap_describe_fastchannel__3_10_3_17_unsat.rs:13:39\n   |\n13 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> powercap_describe_fastchannel__3_10_3_17_unsat.rs:14:35\n   |\n14 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_domain_attributes__3_10_3_5.rs",
+  "verdict": "no_spec_fn"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_domain_name_get__3_10_3_13.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> powercap_domain_name_get__3_10_3_13_unsat.rs:14:35\n   |\n14 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n\nerror: aborting due to 1 previous error; 4 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_mai_get__3_10_3_9.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_mai_set__3_10_3_10.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> powercap_mai_set__3_10_3_10_unsat.rs:13:39\n   |\n13 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> powercap_mai_set__3_10_3_10_unsat.rs:14:44\n   |\n14 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_measurements_changed__3_10_5_2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_measurements_get__3_10_3_14.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/powercap_measurements_notify__3_10_3_16.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> powercap_measurements_notify__3_10_3_16_unsat.rs:13:35\n   |\n13 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> powercap_measurements_notify__3_10_3_16_unsat.rs:14:44\n   |\n14 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_10_3_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_11_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_12_4_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_2_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_3_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_4_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_5_6_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_6_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_7_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_8_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_attributes__3_9_2_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_10_3_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_11_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_12_4_4.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> protocol_message_attributes__3_12_4_4_unsat.rs:13:35\n   |\n13 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n\nerror: aborting due to 1 previous error; 4 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_2_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_3_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_4_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_5_6_4.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n  --> protocol_message_attributes__3_5_6_4_unsat.rs:42:6\n   |\n35 | pub open spec fn protocol_message_attributes__3_5_6_4_spec(message_id: UInt32, status: Int32, attributes: UInt32, old_s: S, new_s: S) -> bool {\n   |                                                                                                                                               - closing delimiter possibly meant for this\n...\n42 |   && ((!(IsValidMessageId(old_s, message_id) || !IsMessageImplemented(old_s, message_id)) &&\n   |      ^ unclosed delimiter\n...\n45 | }\n   | ^ mismatched closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_6_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_7_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_8_2_4.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> protocol_message_attributes__3_8_2_4_unsat.rs:32:13\n   |\n32 |   && (result: Result<(), RmiStatusCode>, IsMessageProvided(old_s, 0x16, message_id) ==> ResultEqual(status, SUCCESS))\n   |             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_message_attributes__3_9_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_10_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_11_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_12_4_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_2_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_3_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_4_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_5_6_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_6_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_7_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_8_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/protocol_version__3_9_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/reduce_sustained_performance_level__3_5_6_13.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> reduce_sustained_performance_level__3_5_6_13_unsat.rs:20:39\n   |\n20 | pub spec const NOT_SUPPORTED: int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> reduce_sustained_performance_level__3_5_6_13_unsat.rs:21:32\n   |\n21 | pub spec const DENIED: int32 = -3;\n   |                        -----   ^^ expected `i32`, found `int`\n   |                        |\n   |                        expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/reset__3_8_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> reset__3_8_2_6_unsat.rs:13:35\n   |\n13 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> reset__3_8_2_6_unsat.rs:14:44\n   |\n14 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/reset_complete__3_8_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/reset_domain_attributes__3_8_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/reset_domain_name_get__3_8_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/reset_issued__3_8_4_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/reset_notify__3_8_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_axis_description_get__3_7_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sensor_axis_description_get__3_7_2_6_unsat.rs:61:49\n   |\n61 |   && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> DescAt(new_s, desc, i) == SensorAxisDe...\n   |                                                 ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_axis_name_get__3_7_2_15.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sensor_axis_name_get__3_7_2_15_unsat.rs:46:50\n   |\n46 |   && (ResultEqual(status, SUCCESS) ==> (forall (i: UInt32), i < Bits(flags, 5, 0) ==> desc[i].axis_id == SensorAxisAtIndex(new_s, se...\n   |                                                  ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_config_get__3_7_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_config_set__3_7_2_11.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `)`\n  --> sensor_config_set__3_7_2_11_unsat.rs:57:317\n   |\n 2 | ...s! {\n   |       - the nearest open delimiter\n...\n48 | ...open spec fn sensor_config_set__3_7_2_11_spec(sensor_id: UInt32, sec: UInt16, exponent: Int5, round_auto: Bool, round_up: Bool, timestamp: Bool, sensor_state: Bool, status: Int32, sensor_config: [UInt32; 2], old_s: S, new_s: S) -> bool {\n   |                                                                                                                                                                                                                                                - the nearest open delimiter\n...\n55 | ... (ResultEqual(status, SUCCESS) ==> (Bits(sensor_config, 31, 11) != 0 && Bits(sensor_config, 10, 10) == 1) ==> SensorAt(new_s, sensor_id).update_interval == ClosestSupportedInterval(new_s, sensor_id, RequestedInterval(Bits(sensor_config, 31, 16), Bits(sensor_config, 15, 11)))))\n   |                                                                                                                                                                                                                                                                                        - missing open `(` for this delimiter\n56 | ... (ResultEqual(status, SUCCESS) ==> (Bits(sensor_config, 31, 11) != 0 && Bits(sensor_config, 10, 10) == 0 && Bits(sensor_config, 9, 9) == 1) ==> SensorAt(new_s, sensor_id).update_interval == RoundUpSupportedInterval(new_s, sensor_id, RequestedInterval(Bits(sensor_config, 31, 16), Bits(sensor_config, 15, 11)))))\n   |                                                                                                                                                                                                                                                                                                                          - missing open `(` for this delimiter\n57 | ... (ResultEqual(status, SUCCESS) ==> (Bits(sensor_config, 31, 11) != 0 && Bits(sensor_config, 10, 10) == 0 && Bits(sensor_config, 9, 9) == 0) ==> SensorAt(new_s, sensor_id).update_interval == RoundDownSupportedInterval(new_s, sensor_id, RequestedInterval(Bits(sensor_config, 31, 16), Bits(sensor_config, 15, 11)))))\n   |                                                                                                                                                                                                                                                                                                                            ^ unexpected closing delimiter\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_continuous_update_notify__3_7_2_13.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sensor_continuous_update_notify__3_7_2_13_unsat.rs:14:35\n   |\n14 | pub spec const NOT_FOUND: Int32 = -4;\n   |                           -----   ^^ expected `i32`, found `int`\n   |                           |\n   |                           expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> sensor_continuous_update_notify__3_7_2_13_unsat.rs:15:39\n   |\n15 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_description_get__3_7_2_5.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sensor_description_get__3_7_2_5_unsat.rs:52:16\n   |\n52 |   && (forall (i: UInt32), i < Bits(num_sensor_flags, 11, 0) ==> desc[i] == SensorDescriptorAt(old_s, desc_index + i))\n   |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_name_get__3_7_2_14.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_reading_complete__3_7_3_1.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sensor_reading_complete__3_7_3_1_unsat.rs:46:50\n   |\n46 |   && (ResultEqual(status, SUCCESS) ==> (forall (i: UInt32), i < SensorAxisCount(new_s, sensor_id) ==> ReadingAt(new_s, readings, i) ...\n   |                                                  ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_reading_get__3_7_2_12.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sensor_reading_get__3_7_2_12_unsat.rs:54:37\n   |\n54 |   && (result == SUCCESS ==> (forall i: UInt32, (i < ReadingCount(new_s, readings) && !TimestampCollected(new_s, sensor_id)) ==> (rea...\n   |                                     ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_trip_point_config__3_7_2_9.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sensor_trip_point_config__3_7_2_9_unsat.rs:17:39\n   |\n17 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> sensor_trip_point_config__3_7_2_9_unsat.rs:18:44\n   |\n18 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_trip_point_event__3_7_4_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_trip_point_notify__3_7_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/sensor_update__3_7_4_2.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sensor_update__3_7_4_2_unsat.rs:39:15\n   |\n39 |   && ((exists s: SensorId| SupportsContinuousUpdate(s)) ==> IsSensorUpdateImplemented(new_s))\n   |               ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/system_power_state_get__3_4_2_6.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/system_power_state_notifier__3_4_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/system_power_state_notify__3_4_2_7.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_strict/scmi/system_power_state_set__3_4_2_5.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `}`\n  --> system_power_state_set__3_4_2_5_unsat.rs:66:1\n   |\n42 | pub open spec fn system_power_state_set__3_4_2_5_spec(flags: UInt32, system_state: UInt32, status: Int32, old_s: S, new_s: S) -> bool {\n   |                                                                                                                                       - the nearest open delimiter\n...\n52 |     ==> status == RSI_SUCCESS)\n   |                              - missing open `(` for this delimiter\n...\n66 | } // verus!\n   | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_config_set__3_12_4_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_de_configure__3_12_4_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_de_description__3_12_4_6.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `}`\n  --> telemetry_de_description__3_12_4_6_unsat.rs:84:1\n   |\n42 | pub open spec fn telemetry_de_description__3_12_4_6_spec(desc_index: UInt32, status: Int32, num_desc: UInt16, desc: [DE_DESC; 4], old_s: S, new_s: S) -> bool {\n   |                                                                                                                                                               - the nearest open delimiter\n...\n70 |     ==> (forall (i: UInt32), i < Bits(num_desc, 15, 0) && Bits(desc[i].de_attributes_1, 30, 30) == 1 ==> FastChannelSizeSufficient(new_s, desc[i]))))\n   |                                                                                                                                                     - missing open `(` for this delimiter\n...\n84 | } // verus!\n   | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_de_enabled_list__3_12_4_9.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> telemetry_de_enabled_list__3_12_4_9_unsat.rs:41:36\n   |\n41 |   && (result == SUCCESS ==> forall i: UInt32, i < Bits(ret_flags, 15, 0) ==> IsEnabledElement(new_s, ArrayEntryWord(new_s, array, i,...\n   |                                    ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_list_shmti__3_12_4_5.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `}`\n  --> telemetry_list_shmti__3_12_4_5_unsat.rs:59:1\n   |\n40 | pub open spec fn telemetry_list_shmti__3_12_4_5_spec(index: UInt32, status: Int32, num_SHMTI: UInt16, SHMTI_desc: [UInt32; 5], result: Result<(), RsiCommandReturnCode>, old_s: S, new_s: S) -> bool {\n   |                                                                                                                                                                                                      - the nearest open delimiter\n...\n47 |   && (result == RSI_SUCCESS ==> (forall i: UInt32| i < (num_SHMTI) ==> IsInCallerMemoryMap(ShmtiAddress(Word(Entry(SHMTI_desc, i), 2), Word(Entry(SHMTI_desc, i), 1))))))\n   |                                                                                                                                                                         - missing open `(` for this delimiter\n...\n59 | } // verus!\n   | ^ unexpected closing delimiter\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_list_update_intervals__3_12_4_7.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `)`\n  --> telemetry_list_update_intervals__3_12_4_7_unsat.rs:99:152\n   |\n 3 | ...s! {\n   |       - the nearest open delimiter\n...\n45 | ...open spec fn telemetry_list_update_intervals__3_12_4_7_spec(index: UInt32, group_identifier: UInt32, flags: UInt32, status: Int32, ret_flags: UInt32, intervals: [UInt32; 4], old_s: S, new_s: S) -> bool {\n   |                                                                                                                                                                                                              - the nearest open delimiter\n...\n57 | ... (ResultEqual(status, SUCCESS) ==> (forall (i: UInt32), i + 1 < Bits(ret_flags, 11, 0) ==> IntervalValue(ArrayEntry(intervals, i)) < IntervalValue(ArrayEntry(intervals, i + 1)))))\n   |                                                                                                                                                                                      - missing open `(` for this delimiter\n...\n79 | ...==> (forall (i: UInt32), i + 1 < Bits(ret_flags, 11, 0) ==> IntervalValue(ArrayEntry(intervals, i)) < IntervalValue(ArrayEntry(intervals, i + 1)))))\n   |                                                                                                                                                       - missing open `(` for this delimiter\n...\n99 | ...==> (forall (i: UInt32), i + 1 < Bits(ret_flags, 11, 0) ==> IntervalValue(ArrayEntry(intervals, i)) < IntervalValue(ArrayEntry(intervals, i + 1)))))",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_reading_complete__3_12_5_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_reset__3_12_4_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/telemetry_update__3_12_6_1.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> telemetry_update__3_12_6_1_unsat.rs:54:13\n   |\n54 |   && (result: Result<(), RmiStatusCode>,\n   |             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/voltage_config_get__3_9_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/voltage_config_set__3_9_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/voltage_describe_levels__3_9_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> voltage_describe_levels__3_9_2_6_unsat.rs:58:77\n   |\n58 |   && (ResultEqual(status, SUCCESS) ==> Bits(flags, 12, 12) == 0 ==> (forall i: UInt32| i < Bits(flags, 11, 0) ==> Elem(voltage, i) =...\n   |                                                                             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/voltage_domain_attributes__3_9_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/voltage_domain_name_get__3_9_2_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/scmi/voltage_level_get__3_9_2_10.rs",
+  "unsat": "compile_error",
+  "error": "error: in expressions, `_` can only be used on the left-hand side of an assignment\n  --> voltage_level_get__3_9_2_10_unsat.rs:35:54\n   |\n35 |   && (ResultEqual((status, voltage_level), (SUCCESS, _)) ==> ResultEqual((status, voltage_level), (SUCCESS, VoltageLevelDuringComman...\n   |                                                      ^ `_` not allowed here\n\nerror[E0308]: mismatched types\n  --> voltage_level_get__3_9_2_10_unsat.rs:15:39\n   |\n15 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> voltage_level_get__3_9_2_10_unsat.rs:16:32",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/scmi/voltage_level_set__3_9_2_9.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> voltage_level_set__3_9_2_9_unsat.rs:13:39\n   |\n13 | pub spec const NOT_SUPPORTED: Int32 = -1;\n   |                               -----   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> voltage_level_set__3_9_2_9_unsat.rs:14:44\n   |\n14 | pub spec const INVALID_PARAMETERS: Int32 = -2;\n   |                                    -----   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_complete.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sdei_event_complete_unsat.rs:20:48\n   |\n20 | pub spec const NOT_SUPPORTED: SdeiStatusCode = -1;\n   |                               --------------   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> sdei_event_complete_unsat.rs:22:53\n   |\n22 | pub spec const INVALID_PARAMETERS: SdeiStatusCode = -2;\n   |                                    --------------   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_complete_and_resume.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sdei_event_complete_and_resume_unsat.rs:17:48\n   |\n17 | pub spec const NOT_SUPPORTED: SdeiStatusCode = -1;\n   |                               --------------   ^^ expected `i64`, found `int`\n   |                               |\n   |                               expected `i64` because of return type\n\nerror[E0308]: mismatched types\n  --> sdei_event_complete_and_resume_unsat.rs:19:53\n   |\n19 | pub spec const INVALID_PARAMETERS: SdeiStatusCode = -2;\n   |                                    --------------   ^^ expected `i64`, found `int`\n   |                                    |\n   |                                    expected `i64` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_context.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_disable.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sdei_event_disable_unsat.rs:15:55\n   |\n15 | pub spec const NOT_SUPPORTED: SdeiCommandReturnCode = -1;\n   |                               ---------------------   ^^ expected `i64`, found `int`\n   |                               |\n   |                               expected `i64` because of return type\n\nerror[E0308]: mismatched types\n  --> sdei_event_disable_unsat.rs:16:60\n   |\n16 | pub spec const INVALID_PARAMETERS: SdeiCommandReturnCode = -2;\n   |                                    ---------------------   ^^ expected `i64`, found `int`\n   |                                    |\n   |                                    expected `i64` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_enable.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sdei_event_enable_unsat.rs:20:55\n   |\n20 | pub spec const NOT_SUPPORTED: SdeiCommandReturnCode = -1;\n   |                               ---------------------   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> sdei_event_enable_unsat.rs:21:60\n   |\n21 | pub spec const INVALID_PARAMETERS: SdeiCommandReturnCode = -2;\n   |                                    ---------------------   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_get_info.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_register.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_event_register_unsat.rs:49:159\n   |\n49 | ...nt64, flags: UInt64, affinity: UInt64, result: ResultEqual(s, SUCCESS), old_s: S, new_s: S) -> bool {\n   |                                                              ^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_routing_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_signal.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_status.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_event_unregister.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_features.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_interrupt_bind.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_interrupt_release.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n   --> sdei_interrupt_release_unsat.rs:101:16\n    |\n101 |   && (forall (e: Event), (result == SdeiCommandReturnCode::SUCCESS && (IsPrivateEvent(old_s, e) && !(forall|pe: Pe| IsRegisteredPe(...\n    |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_pe_mask.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_pe_mask_unsat.rs:52:16\n   |\n52 |   && (forall (e: SdeiEvent), SdeiEventStatus(new_s, e) == SdeiEventStatusBeforeCall(new_s, e))\n   |                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_pe_unmask.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_pe_unmask_unsat.rs:41:40\n   |\n41 |   && (result == SUCCESS ==> (forall (pe: Pe), pe != CallingPe() ==> PeMaskStateUnchanged(new_s, CallingClient(), pe)))\n   |                                        ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_private_reset.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched types; types must be compatible to use == or !=\n  --> sdei_private_reset_unsat.rs:44:7\n   |\n44 |   && (result == SdeiCommandReturnCode::SUCCESS ==> ResultEqual(result, SUCCESS))\n   |       ------^^^^------------------------------\n   |       |         |\n   |       |         this is `sdei_private_reset_unsat::SdeiCommandReturnCode`\n   |       this is `core::result::Result<(), sdei_private_reset_unsat::SdeiCommandReturnCode>`\n   |\n   = help: decorations (like &,Ghost,Tracked,Box,Rc,...) are transparent for == or != in spec code\n\nerror: aborting due to 1 previous error; 12 warnings emitted\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_shared_reset.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sdei_shared_reset_unsat.rs:18:55\n   |\n18 | pub spec const NOT_SUPPORTED: SdeiCommandReturnCode = -1;\n   |                               ---------------------   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> sdei_shared_reset_unsat.rs:19:48\n   |\n19 | pub spec const DENIED: SdeiCommandReturnCode = -2;\n   |                        ---------------------   ^^ expected `i32`, found `int`\n   |                        |\n   |                        expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_strict/sdei/sdei_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ }
+]

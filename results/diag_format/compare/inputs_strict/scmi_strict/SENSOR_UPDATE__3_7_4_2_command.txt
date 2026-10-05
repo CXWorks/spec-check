@@ -1,0 +1,29 @@
+3.7.4.2 SENSOR_UPDATE command
+               The platform sends this notification to provide a sensor reading. It goes to an agent that requested continuous update notifications from the sensor with the SENSOR_CONTINUOUS_UPDATE_NOTIFY command.
+               3.7.4.2.1 Interface
+               3.7.4.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          —            —           UInt32                                Message identifier, value 0x1
+        protocol_id         —            —           UInt32                                Protocol identifier, value 0x15
+               3.7.4.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        agent_id            —            —           UInt32                                Agent that caused this event. In the current version of the specification this is 0, meaning the platform generates all sensor events
+        sensor_id           —            —           UInt32                                Sensor identifier
+        readings            —            —           SENSOR_READING[N]                     Array of sensor readings in Sensor Reading Descriptor format. N is 1 for scalar sensors. For sensors that report along axes, N is the number of axes and all axes are reported in order
+               3.7.4.2.2 Failure conditions
+               The SENSOR_UPDATE notification does not have any failure conditions.
+               3.7.4.2.2.1   Failure condition ordering
+               The SENSOR_UPDATE notification does not have any failure condition orderings.
+               3.7.4.2.3 Success conditions
+  ID                          Condition
+  sensor_enabled              post: SensorEnabled(sensor_id)
+  notify_requested            post: ContinuousUpdateRequested(RecipientAgent(), sensor_id)
+  agent_id                    post: agent_id == 0
+  scalar_count                post: IsScalarSensor(sensor_id) ==> NumReadings(readings) == 1
+  axes_count                  post: IsAxisSensor(sensor_id) ==> NumReadings(readings) == NumSensorAxes(sensor_id)
+  axes_order                  post: IsAxisSensor(sensor_id) ==> ReadingsInAxisOrder(sensor_id, readings)
+  rate_limit                  post: NotificationInterval(sensor_id) >= SensorUpdatePeriod(sensor_id)
+  latest_values               post: ReadingsAreLatest(sensor_id, readings)
+  mandatory                   post: (exists|s: SensorId| SupportsContinuousUpdate(s)) ==> IsSensorUpdateImplemented()
+               3.7.4.2.4 Footprint
+               The SENSOR_UPDATE notification does not have a footprint.

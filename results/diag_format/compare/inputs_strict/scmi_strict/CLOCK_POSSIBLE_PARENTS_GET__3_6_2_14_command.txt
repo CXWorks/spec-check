@@ -1,0 +1,38 @@
+3.6.2.14 CLOCK_POSSIBLE_PARENTS_GET command
+               Gets the possible parents of a clock device. Only one parent can be actively associated with a clock device at a time. If the transport cannot return all possible parents in one call, the caller can make multiple calls. Parents are returned in ascending numeric order of their identifiers. This command is mandatory if Bit[28] of the attributes field returned by CLOCK_ATTRIBUTES is set to 1 for any clock device.
+               3.6.2.14.1 Interface
+               3.6.2.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0xC
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x14
+        clock_id            Payload[0]   31:0        UInt32                                Identifier for the clock device
+        skip_parents        Payload[1]   31:0        UInt32                                Number of parents to skip before the first possible parent in the returned array
+               3.6.2.14.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        flags               Payload[1]   31:24       UInt32                                Number of remaining parents
+                                         23:8                                              Reserved, must be zero
+                                         7:0                                               Number of parent clock identifiers returned by this call
+        possible_parents    Payload[2..] -           UInt32[N]                             Possible parent clocks in ascending numeric order of identifier. N is given by Bits[7:0] of flags
+               3.6.2.14.2 Failure conditions
+  ID                          Condition
+  clock_exists                pre: !ClockExists(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  skip_range                  pre: !IsValidSkipParents(clock_id, skip_parents)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  parents_supported           pre: !PossibleParentsAdvertisementSupported(clock_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_permitted             pre: !AgentMayGetPossibleParents(calling_agent, clock_id)
+                              post: ResultEqual(status, DENIED)
+               3.6.2.14.2.1   Failure condition ordering
+               The CLOCK_POSSIBLE_PARENTS_GET command does not have any failure condition orderings.
+               3.6.2.14.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags_reserved              post: Bits(flags, 23, 8) == 0
+  flags_returned              post: Bits(flags, 7, 0) == ArrayLength(possible_parents)
+  flags_remaining             post: Bits(flags, 31, 24) == RemainingPossibleParents(clock_id, skip_parents, Bits(flags, 7, 0))
+  parents_valid               post: forall|i: UInt32| i < Bits(flags, 7, 0) ==> ElementAt(possible_parents, i) == NthPossibleParent(clock_id, skip_parents + i)
+  parents_order               post: forall|i: UInt32| i + 1 < Bits(flags, 7, 0) ==> ElementAt(possible_parents, i) < ElementAt(possible_parents, i + 1)
+               3.6.2.14.4 Footprint
+               The CLOCK_POSSIBLE_PARENTS_GET command does not modify any state.

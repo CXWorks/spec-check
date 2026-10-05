@@ -1,0 +1,27 @@
+20.11 sbi_mpxy_send_message_without_response command
+               Sends a message to an MPXY channel without waiting for a message response.
+               20.11.1 Interface
+               20.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 6
+        channel_id          a0           31:0        UInt32                                Identifier of the target MPXY channel
+        message_id          a1           31:0        UInt32                                Message protocol specific identification of the message to be sent
+        message_data_len    a2           XLEN-1:0    UInt                                  Length in bytes of the message data, located at offset 0x0 in the shared memory set up by the calling hart
+               20.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    SbiErrorCode                          Command return status (sbiret.error)
+               20.11.2 Failure conditions
+  ID                          Condition
+  len_max                     pre: message_data_len > MsgDataMaxLen(channel_id)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  len_shmem                   pre: message_data_len > SharedMemorySize(CallingHart())
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+               20.11.2.1   Failure condition ordering
+               The sbi_mpxy_send_message_without_response command does not have any failure condition orderings.
+               20.11.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  msg_sent                    post: MessageTransmitted(channel_id, message_id, SharedMemoryData(CallingHart(), 0, message_data_len))
+               20.11.4 Footprint
+    ID                        Value
+    msg_sent                  ChannelMessages(channel_id)

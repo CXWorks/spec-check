@@ -1,0 +1,45 @@
+17.8 sbi_sse_write_attrs command
+               Writes a range of event attribute values to a software event. For a local event, the attributes are updated only for the calling hart. For a global event, the attributes are updated for all harts.
+               17.8.1 Interface
+               17.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 1
+        event_id            a0           31:0        UInt32                                Software event ID
+        base_attr_id        a1           31:0        UInt32                                First event attribute ID in the range
+        attr_count          a2           31:0        UInt32                                Number of event attributes in the range
+        input_phys_lo       a3           XLEN-1:0    UInt                                  Lower bits of the PA of the input shared memory. Must be XLEN / 8 bytes aligned
+        input_phys_hi       a4           XLEN-1:0    UInt                                  Upper bits of the PA of the input shared memory
+               17.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    SbiError                              Command return status (sbiret.error)
+               17.8.2 Failure conditions
+  ID                          Condition
+  event_invalid               pre: !IsValidEventId(event_id)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  event_not_supported         pre: IsValidEventId(event_id) && !IsEventSupportedByPlatform(event_id)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED)
+  attr_count_zero             pre: attr_count == 0
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  attr_range                  pre: exists|i: UInt32| i < attr_count && IsReservedAttrId(base_attr_id + i)
+                              post: ResultEqual(result, SBI_ERR_BAD_RANGE)
+  shmem_invalid               pre: !SharedMemoryMeetsRequirements(input_phys_lo, input_phys_hi, (XLEN / 8) * attr_count)
+                              post: ResultEqual(result, SBI_ERR_INVALID_ADDRESS)
+  attr_read_only              pre: IsValidEventId(event_id) && (exists|i: UInt32| i < attr_count && IsReadOnlyAttr(event_id, base_attr_id + i))
+                              post: ResultEqual(result, SBI_ERR_DENIED)
+  attr_value_illegal          pre: IsValidEventId(event_id) && (exists|i: UInt32| i < attr_count && !IsLegalAttrValue(event_id, base_attr_id + i, InputValueAt(input_phys_lo, input_phys_hi, (XLEN / 8) * (base_attr_id + i))))
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  attr_value_state            pre: IsValidEventId(event_id) && (exists|i: UInt32| i < attr_count && !AttrValueSatisfiesStateRules(event_id, base_attr_id + i, InputValueAt(input_phys_lo, input_phys_hi, (XLEN / 8) * (base_attr_id + i))))
+                              post: ResultEqual(result, SBI_ERR_INVALID_STATE)
+  write_failed                pre: WriteFailedForUnspecifiedReason(event_id, base_attr_id, attr_count)
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+               17.8.2.1   Failure condition ordering
+               Among errors with attribute values (attr_read_only, attr_value_illegal, attr_value_state), the error for the lowest attribute ID in the range is returned. The section does not specify any other ordering.
+               17.8.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  attr_local                  post: IsLocalEvent(event_id) ==> (forall|i: UInt32| i < attr_count ==> AttrValue(event_id, CallingHart(), base_attr_id + i) == InputValueAt(input_phys_lo, input_phys_hi, (XLEN / 8) * (base_attr_id + i)))
+  attr_global                 post: IsGlobalEvent(event_id) ==> (forall|h: Hart| forall|i: UInt32| i < attr_count ==> AttrValue(event_id, h, base_attr_id + i) == InputValueAt(input_phys_lo, input_phys_hi, (XLEN / 8) * (base_attr_id + i)))
+               17.8.4 Footprint
+    ID                        Value
+    attr_local                AttrValue(event_id, CallingHart(), base_attr_id + i), for each i < attr_count
+    attr_global               AttrValue(event_id, h, base_attr_id + i), for each hart h and each i < attr_count

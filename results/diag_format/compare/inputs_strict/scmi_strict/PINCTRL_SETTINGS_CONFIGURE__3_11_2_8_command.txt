@@ -1,0 +1,46 @@
+3.11.2.8 PINCTRL_SETTINGS_CONFIGURE command
+               Sets the configuration of a pin or group, and the function that the pin or group enables. One call can set more than one configuration. If the transport cannot carry all the configurations in one call, the agent makes several calls.
+               This command is mandatory.
+               3.11.2.8.1 Interface
+               3.11.2.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          header       7:0         UInt8                                 Message ID, value 0x6
+        protocol_id         header       17:10       UInt8                                 Protocol ID, value 0x19
+        identifier          payload[0]   31:0        UInt32                                Identifier for the pin or group
+        function_id         payload[1]   31:0        UInt32                                Identifier for the function to enable for the selected pin or group. Set to 0xFFFFFFFF if no function is to be enabled. The platform ignores this field if Bit[10] of attributes is 0
+        attributes          payload[2]   31:11       UInt32                                Reserved, must be zero
+        attributes          payload[2]   10          UInt1                                 function_id valid: 0 means the function selection does not change and the platform ignores function_id; 1 means the function selection changes to function_id
+        attributes          payload[2]   9:2         UInt8                                 Number of configurations to set (N). The transport limits the maximum value. Set to 0 if no configurations are to be set. If this field is 0, Bit[10] must not be 0
+        attributes          payload[2]   1:0         UInt2                                 Selector: 0 means pin, 1 means group. All other values are reserved
+        configs[i].type     payload[3+2*i] 31:8      UInt32                                Reserved, must be zero
+        configs[i].type     payload[3+2*i] 7:0       UInt8                                 config_type, as described in Table 27. The entries are sorted in increasing order of config type
+        configs[i].config_value payload[4+2*i] 31:0  UInt32                                Configuration value
+               3.11.2.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              payload[0]   31:0        Int32                                 Command return status
+               3.11.2.8.2 Failure conditions
+  ID                          Condition
+  ident_valid                 pre: !IsValidPinOrGroup(identifier, Bits(attributes, 1, 0))
+                              post: ResultEqual(status, NOT_FOUND)
+  params_valid                pre: !AreValidSettingsConfigureParameters(identifier, function_id, attributes, configs)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  config_supported            pre: !IsSupportedConfiguration(identifier, Bits(attributes, 1, 0), function_id, attributes, configs)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_permitted             pre: !AgentMaySetConfiguration(calling_agent, identifier, Bits(attributes, 1, 0))
+                              post: ResultEqual(status, DENIED)
+  in_use                      pre: IsInUseByOtherAgent(identifier, Bits(attributes, 1, 0), calling_agent)
+                              post: ResultEqual(status, IN_USE)
+  transport_capacity          pre: Bits(attributes, 9, 2) > TransportConfigCapacity()
+                              post: ResultEqual(status, PROTOCOL_ERROR)
+               3.11.2.8.2.1   Failure condition ordering
+               The PINCTRL_SETTINGS_CONFIGURE command does not have any failure condition orderings.
+               3.11.2.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  configs_set                 post: forall|i: UInt32| i < Bits(attributes, 9, 2) ==> PinOrGroupConfig(identifier, Bits(attributes, 1, 0), Bits(configs[i].type, 7, 0)) == configs[i].config_value
+  function_set                post: Bits(attributes, 10, 10) == 1 ==> PinOrGroupFunction(identifier, Bits(attributes, 1, 0)) == function_id
+  function_unchanged          post: Bits(attributes, 10, 10) == 0 ==> PinOrGroupFunction(identifier, Bits(attributes, 1, 0)) == PrePinOrGroupFunction(identifier, Bits(attributes, 1, 0))
+               3.11.2.8.4 Footprint
+    ID                        Value
+    configs_set               PinOrGroupConfig(identifier, Bits(attributes, 1, 0), *)
+    function_set              PinOrGroupFunction(identifier, Bits(attributes, 1, 0))

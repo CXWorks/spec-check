@@ -1,0 +1,18 @@
+pub open spec fn sbi_mpxy_set_shmem_spec(shmem_phys_lo: unsigned long, shmem_phys_hi: unsigned long, flags: unsigned long, result: SbiCommandReturnCode, old_s: S, new_s: S) -> bool {
+  (!(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> SharedMemoryBase(new_s) == ConcatPhysAddr(new_s, shmem_phys_hi, shmem_phys_lo))
+  && (!(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> SharedMemorySize(new_s) == MpxyGetShmemSize(new_s))
+  && ((IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> SharedMemoryDisabled(new_s))
+  && (SharedMemorySetupMode(new_s) == Bits(new_s, flags, 1, 0))
+  && (result == SBI_SUCCESS ==> SharedMemoryBase(new_s) == ConcatPhysAddr(new_s, shmem_phys_hi, shmem_phys_lo))
+  && (result == SBI_SUCCESS ==> SharedMemorySize(new_s) == MpxyGetShmemSize(new_s))
+  && (result == SBI_SUCCESS ==> SharedMemoryDisabled(new_s))
+  && (result == SBI_SUCCESS ==> SharedMemorySetupMode(new_s) == Bits(new_s, flags, 1, 0))
+  && ((!(result == SBI_SUCCESS))
+    ==> SharedMemoryBase(new_s) == SharedMemoryBase(old_s))
+  && ((!(result == SBI_SUCCESS))
+    ==> SharedMemorySize(new_s) == SharedMemorySize(old_s))
+  && ((!(result == SBI_SUCCESS))
+    ==> SharedMemoryDisabled(new_s) == SharedMemoryDisabled(old_s))
+  && ((!(result == SBI_SUCCESS))
+    ==> SharedMemorySetupMode(new_s) == SharedMemorySetupMode(old_s))
+}

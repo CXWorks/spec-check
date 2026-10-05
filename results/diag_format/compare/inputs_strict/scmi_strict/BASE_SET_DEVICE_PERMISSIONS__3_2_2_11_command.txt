@@ -1,0 +1,35 @@
+3.2.2.11 BASE_SET_DEVICE_PERMISSIONS command
+               Tells the platform whether an agent may access a device. The device is named by a device identifier.
+               3.2.2.11.1 Interface
+               3.2.2.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x9
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x10
+        agent_id            Param[0]     31:0        UInt32                                Identifier of the agent
+        device_id           Param[1]     31:0        UInt32                                Identifier of the device
+        flags               Param[2]     31:0        UInt32                                Bits[31:1]: Reserved, must be zero. Bit[0]: Access Type. 0 = deny agent access to the device, 1 = allow agent access to the device
+               3.2.2.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status
+               3.2.2.11.2 Failure conditions
+  ID                          Condition
+  cmd_support                 pre: !IsCommandImplemented(protocol_id, message_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_exists                pre: !AgentExists(agent_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  device_exists               pre: !DeviceExists(device_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  flags_valid                 pre: !IsValidDevicePermissionFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  caller_perm                 pre: !CallerMaySetAgentPermissions(caller, agent_id)
+                              post: ResultEqual(status, DENIED)
+               3.2.2.11.2.1   Failure condition ordering
+               The BASE_SET_DEVICE_PERMISSIONS command does not have any failure condition orderings.
+               3.2.2.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  dev_allow                   post: Bits(flags, 0, 0) == 1 ==> AgentHasDeviceAccess(agent_id, device_id)
+  dev_deny                    post: Bits(flags, 0, 0) == 0 ==> !AgentHasDeviceAccess(agent_id, device_id)
+               3.2.2.11.4 Footprint
+    ID                        Value
+    dev_access                AgentHasDeviceAccess(agent_id, device_id)

@@ -1,0 +1,15 @@
+pub open spec fn reset_domain_attributes__3_8_2_5_spec(domain_id: UInt32, status: Int32, attributes: UInt32, latency: UInt32, name: [UInt8; 16], result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+  (!IsValidResetDomain(old_s, domain_id) ==> ResultEqual(result, NOT_FOUND))
+  && (result.is_Ok() ==> ResultEqual(result, SUCCESS))
+  && (result.is_Ok() ==> (Bits(attributes, 31, 31) == 1) == ResetDomainSupportsAsyncReset(old_s, domain_id))
+  && (result.is_Ok() ==> (Bits(attributes, 30, 30) == 1) == ResetDomainSupportsResetNotifications(old_s, domain_id))
+  && (result.is_Ok() ==> (Bits(attributes, 29, 29) == 1) ==> ResetDomainNameLength(old_s, domain_id) > 16)
+  && (result.is_Ok() ==> Bits(attributes, 28, 0) == 0)
+  && (result.is_Ok() ==> ResetLatencySupported(old_s, domain_id) ==> latency == MaxResetLatencyUs(old_s, domain_id))
+  && (result.is_Ok() ==> !ResetLatencySupported(old_s, domain_id) ==> latency == 0xFFFFFFFF)
+  && (result.is_Ok() ==> IsNullTerminatedAsciiString(name, 16))
+  && (result.is_Ok() ==> (Bits(attributes, 29, 29) == 0) ==> name == ResetDomainName(old_s, domain_id))
+  && (result.is_Ok() ==> (Bits(attributes, 29, 29) == 1) ==> name == NullTerminatedPrefix(ResetDomainName(old_s, domain_id), 15))
+  && ((IsValidResetDomain(old_s, domain_id))
+    ==> ResultEqual(result, SUCCESS))
+}

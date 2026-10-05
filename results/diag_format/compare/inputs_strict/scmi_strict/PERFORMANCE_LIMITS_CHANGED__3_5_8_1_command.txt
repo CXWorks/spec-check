@@ -1,0 +1,25 @@
+3.5.8.1 PERFORMANCE_LIMITS_CHANGED command
+               If an agent has registered for limit change notifications for the domain identified by domain_id, the platform sends this notification to that agent when the domain's performance limits change. This command is optional.
+               3.5.8.1.1 Interface
+               3.5.8.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0x0
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x13
+               3.5.8.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        agent_id            Payload[0]   31:0        UInt32                                Identifier of the agent that caused the performance limit change
+        domain_id           Payload[1]   31:0        UInt32                                Identifier of the performance domain whose limit changed
+        range_max           Payload[2]   31:0        UInt32                                Maximum allowed performance level, or the level index when Level Indexing Mode is used
+        range_min           Payload[3]   31:0        UInt32                                Minimum allowed performance level, or the level index when Level Indexing Mode is used
+               3.5.8.1.2 Failure conditions
+               The PERFORMANCE_LIMITS_CHANGED command does not have any failure conditions.
+               3.5.8.1.2.1   Failure condition ordering
+               The PERFORMANCE_LIMITS_CHANGED command does not have any failure condition orderings.
+               3.5.8.1.3 Success conditions
+  ID                          Condition
+  notify_sent                 post: IsRegisteredForLimitChangeNotification(agent, domain_id) && PerformanceLimitsChanged(domain_id) ==> NotificationSentToAgent(agent, domain_id)
+  notify_agent                post: agent_id == LimitChangeCausingAgent(domain_id)
+  notify_max                  post: range_max == PerformanceLimitMax(domain_id)
+  notify_min                  post: range_min == PerformanceLimitMin(domain_id)
+               3.5.8.1.4 Footprint
+               The PERFORMANCE_LIMITS_CHANGED command does not modify any state.

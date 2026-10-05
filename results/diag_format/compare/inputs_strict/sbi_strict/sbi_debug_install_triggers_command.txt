@@ -1,0 +1,38 @@
+19.4 sbi_debug_install_triggers command
+               Installs debug triggers based on an array of trigger configurations in the shared memory of the calling hart. The trig_idx assigned to each installed trigger configuration is written back in the shared memory.
+               19.4.1 Interface
+               19.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 3
+        trig_count          a0           XLEN-1:0    unsigned long                         Number of trigger configuration entries in the shared memory at offset 0x0
+               19.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    long                                  Return status (struct sbiret.error)
+        value               a1           XLEN-1:0    long                                  Return value (struct sbiret.value)
+               19.4.2 Failure conditions
+               The sbi_debug_install_triggers command does not specify any failure conditions.
+               19.4.2.1   Failure condition ordering
+               The sbi_debug_install_triggers command does not have any failure condition orderings.
+               19.4.3 Success conditions
+  ID                          Condition
+  cfg_order                   post: TriggerConfigsProcessedInIncreasingIndexOrderFromZero(trig_count)
+  trig_unused                 post: forall|i: UInt64| i < trig_count ==> !PreTrigIdxInUse(InstalledTrigIdx(i)) && !PreHwTriggerInUse(HwTriggerOf(InstalledTrigIdx(i)))
+  trig_match                  post: forall|i: UInt64| i < trig_count ==> HwTriggerMatchesConfig(HwTriggerOf(InstalledTrigIdx(i)), TrigConfigAt(i))
+  state_vs                    post: forall|i: UInt64| i < trig_count ==> TrigState(InstalledTrigIdx(i)).vs == TrigConfigAt(i).tdata1.vs
+  state_vu                    post: forall|i: UInt64| i < trig_count ==> TrigState(InstalledTrigIdx(i)).vu == TrigConfigAt(i).tdata1.vu
+  state_s                     post: forall|i: UInt64| i < trig_count ==> TrigState(InstalledTrigIdx(i)).s == TrigConfigAt(i).tdata1.s
+  state_u                     post: forall|i: UInt64| i < trig_count ==> TrigState(InstalledTrigIdx(i)).u == TrigConfigAt(i).tdata1.u
+  csr_tdata1                  post: forall|i: UInt64| i < trig_count ==> HwTriggerOf(InstalledTrigIdx(i)).tdata1 == TrigConfigAt(i).tdata1
+  csr_tdata2                  post: forall|i: UInt64| i < trig_count ==> HwTriggerOf(InstalledTrigIdx(i)).tdata2 == TrigConfigAt(i).tdata2
+  csr_tdata3                  post: forall|i: UInt64| i < trig_count ==> HwTriggerOf(InstalledTrigIdx(i)).tdata3 == TrigConfigAt(i).tdata3
+  shmem_idx                   post: forall|i: UInt64| i < trig_count ==> SharedMemWordLE(i * (XLEN / 2), 0) == InstalledTrigIdx(i)
+  chain_idx                   post: forall|c: TriggerChain| IsTriggerChainInSharedMem(c, trig_count) ==> TrigIdxsContiguous(c)
+  chain_hw                    post: forall|c: TriggerChain| IsTriggerChainInSharedMem(c, trig_count) ==> HwTriggersContiguous(c)
+               19.4.4 Footprint
+    ID                        Value
+    shmem_idx                 SharedMemWordLE(i * (XLEN / 2), 0)
+    trig_map                  HwTriggerOf(InstalledTrigIdx(i))
+    trig_state                TrigState(InstalledTrigIdx(i))
+    csr_tdata1                HwTriggerOf(InstalledTrigIdx(i)).tdata1
+    csr_tdata2                HwTriggerOf(InstalledTrigIdx(i)).tdata2
+    csr_tdata3                HwTriggerOf(InstalledTrigIdx(i)).tdata3

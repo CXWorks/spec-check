@@ -1,0 +1,40 @@
+16.1 FFA_NOTIFICATION_BITMAP_CREATE command
+               The Hypervisor calls this function at the Non-secure physical FF-A instance through the SMC conduit. It asks the SPMC to create the SP and SPM framework notifications bitmap for the VM given in the VM ID input parameter. See also 10.3 Notification bitmap setup.
+               The valid configurations are:
+               - Non-secure physical FF-A instance, SMC conduit.
+               - Secure physical FF-A instance, ERET conduit.
+               16.1.1 Interface
+               16.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x8400007D
+        vm_id               w1           31:16       UInt32                                Reserved (MBZ)
+                            w1           15:0        UInt32                                ID of the VM. A bitmap must be created in the Secure world for this VM so that SPs can send it notifications
+        vcpu_count          w2           31:0        UInt32                                Number of vCPUs that the VM implements
+        notification_count  w3           31:9        UInt32                                Reserved (SBZ)
+                            w3           8:0         UInt32                                Number of SP notifications i requested for the VM. Total notification count = i + 64
+        reserved            w4-w7        31:0        UInt32                                Reserved (SBZ)
+               16.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        allocated_count     w2           31:9        UInt32                                Reserved (SBZ). Returned in FFA_SUCCESS
+                            w2           8:0         UInt32                                Number of SP notifications i allocated for the VM. Total notification count = i + 64. Returned in FFA_SUCCESS
+        error_code          w2           31:0        Int32                                 Error code. Returned in FFA_ERROR
+               16.1.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !FunctionImplementedAtInstance(fid)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  vm_id                       pre: !IsRecognizedVmId(Bits(vm_id, 15, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bitmap_exists               pre: NotificationBitmapExists(Bits(vm_id, 15, 0))
+                              post: ResultEqual(result, DENIED)
+  no_memory                   pre: !NotificationBitmapAllocatable(Bits(vm_id, 15, 0))
+                              post: ResultEqual(result, NO_MEMORY)
+               16.1.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_BITMAP_CREATE command has no failure condition orderings.
+               16.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  bitmap_created              post: NotificationBitmapExists(Bits(vm_id, 15, 0))
+  allocated_count             post: AllocatedSpNotificationCount(Bits(vm_id, 15, 0)) == Bits(allocated_count, 8, 0)
+               16.1.4 Footprint
+    ID                        Value
+    bitmap                    NotificationBitmap(Bits(vm_id, 15, 0))

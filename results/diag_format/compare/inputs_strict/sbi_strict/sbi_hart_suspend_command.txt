@@ -1,0 +1,28 @@
+9.4 sbi_hart_suspend command
+               Asks the SBI implementation to put the calling hart into a platform-specific suspend (low power) state. The suspend_type parameter selects the state.
+               9.4.1 Interface
+               9.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 -            -           -                                     FID, value 3
+        suspend_type        -            31:0        uint32_t                              Platform-specific suspend state, retentive or non-retentive
+        resume_addr         -            -           unsigned long                         Resume address. Unused during retentive suspend
+        opaque              -            -           unsigned long                         Opaque value
+               9.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              -            -           struct sbiret                         Command return status
+               9.4.2 Failure conditions
+               The section does not specify any failure conditions for the sbi_hart_suspend command.
+               9.4.2.1   Failure condition ordering
+               The sbi_hart_suspend command does not have any failure condition orderings.
+               9.4.3 Success conditions
+  ID                          Condition
+  hart_suspend                post: HartEnteredSuspendState(CallingHart(), suspend_type)
+  hart_wakeup                 post: HartResumesOnInterruptOrPlatformEvent(CallingHart())
+  ret_regs                    post: IsRetentiveSuspendType(suspend_type) ==> HartRegistersAndCsrsPreserved(CallingHart())
+  ret_result                  post: IsRetentiveSuspendType(suspend_type) ==> CallReturnsWithoutFailure(result)
+  ret_resume_addr             post: IsRetentiveSuspendType(suspend_type) ==> ResumeAddrUnused(resume_addr)
+  nonret_regs                 post: !IsRetentiveSuspendType(suspend_type) ==> !HartRegistersAndCsrsPreserved(CallingHart())
+               9.4.4 Footprint
+    ID                        Value
+    hart_suspend              HartSuspendState(CallingHart())
+    hart_regs                 HartRegistersAndCsrs(CallingHart())

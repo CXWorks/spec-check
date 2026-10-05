@@ -1,0 +1,31 @@
+13.10 FFA_ID_GET command
+               Returns the 16-bit ID of the calling FF-A component.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                       Valid conduits
+        1                   Physical FF-A instance              SMC
+        2                   Virtual FF-A instance               SMC, HVC, SVC
+               13.10.1 Interface
+               13.10.1.1    Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000069
+        reserved            w1-w7        31:0        UInt32                                Reserved (SBZ)
+               13.10.1.2    Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                FFA_SUCCESS or FFA_ERROR function
+        id                  w2           15:0        UInt16                                On FFA_SUCCESS: ID of the caller
+        reserved            w2           31:16       UInt16                                On FFA_SUCCESS: Reserved (MBZ)
+        error_code          w2           31:0        Int32                                 On FFA_ERROR: Error code
+               13.10.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsFunctionImplementedAtInstance(FFA_ID_GET, CurrentFfaInstance())
+                              post: ResultEqual(error_code, NOT_SUPPORTED)
+               13.10.2.1    Failure condition ordering
+               The FFA_ID_GET command does not have any failure condition orderings.
+               13.10.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  id_value                    post: id == CallerFfaId()
+  id_reserved                 post: reserved == 0
+  id_ns_phys                  post: IsNonSecurePhysicalFfaInstance(CurrentFfaInstance()) ==> id == 0
+               13.10.4 Footprint
+               The FFA_ID_GET command does not modify any state.

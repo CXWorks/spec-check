@@ -1,0 +1,24 @@
+3.11.2.4 PROTOCOL_MESSAGE_ATTRIBUTES command
+               Returns the implementation details of a specific message in this protocol. Callers can use it to check whether an optional command is supported.
+               message_id: 0x2, protocol_id: 0x19. This command is mandatory.
+               3.11.2.4.1 Interface
+               3.11.2.4.1.1   Input values
+        Name                Register        Bits        Type                                  Description
+        message_id          Parameter 0     31:0        UInt32                                message_id of the message
+               3.11.2.4.1.2   Output values
+        Name                Register        Bits        Type                                  Description
+        status              Return 0        31:0        Int32                                 Command return status (see Section 3.1.4)
+        attributes          Return 1        31:0        UInt32                                Flags associated with the specified command in the protocol
+               3.11.2.4.2 Failure conditions
+  ID                          Condition
+  msg_not_found               pre: !IsMessageValid(0x19, message_id) || !IsMessageImplemented(0x19, message_id) || !IsMessageAvailableToCallingAgent(0x19, message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.11.2.4.2.1   Failure condition ordering
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not have any failure condition orderings.
+               3.11.2.4.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  msg_supported               post: IsMessageImplemented(0x19, message_id) && IsMessageAvailableToCallingAgent(0x19, message_id)
+  attributes                  post: attributes == 0
+               3.11.2.4.4 Footprint
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not have a footprint.

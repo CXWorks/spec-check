@@ -1,0 +1,29 @@
+3.6.2.4 PROTOCOL_MESSAGE_ATTRIBUTES command
+               Returns the implementation details associated with a specific message in this protocol.
+               3.6.2.4.1 Interface
+               3.6.2.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_header      header       31:0        UInt32                                message_id 0x2, protocol_id 0x14
+        message_id          payload[0]   31:0        UInt32                                message_id of the message
+               3.6.2.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              payload[0]   31:0        Int32                                 Command return status
+        attributes          payload[1]   31:0        UInt32                                Flags associated with the specified command in the protocol
+               3.6.2.4.2 Failure conditions
+  ID                          Condition
+  msg_valid                   pre: !IsValidMessageId(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  msg_impl                    pre: !IsMessageImplemented(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  notify_avail                pre: (message_id == CLOCK_RATE_NOTIFY || message_id == CLOCK_RATE_CHANGE_REQUESTED_NOTIFY) && !IsNotificationAvailableToAgent(message_id, calling_agent)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.6.2.4.2.1   Failure condition ordering
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not have any failure condition orderings.
+               3.6.2.4.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  msg_avail                   post: IsMessageImplemented(message_id) && IsMessageAvailableToAgent(message_id, calling_agent)
+  attributes                  post: attributes == 0
+  notify_supp                 post: (message_id == CLOCK_RATE_NOTIFY || message_id == CLOCK_RATE_CHANGE_REQUESTED_NOTIFY) ==> IsNotificationSupported(message_id)
+               3.6.2.4.4 Footprint
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not modify any state.

@@ -1,0 +1,28 @@
+3.9.2.10 VOLTAGE_LEVEL_GET command
+               Gets the current voltage level of a voltage domain.
+               3.9.2.10.1 Interface
+               3.9.2.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0x8
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x17
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the voltage domain
+               3.9.2.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        voltage_level       Payload[1]   31:0        Int32                                 Voltage level of the domain, in microvolts (uV)
+               3.9.2.10.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidVoltageDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  req_supported               pre: !IsRequestSupported(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_permitted             pre: !AgentMayGetVoltageLevel(calling_agent, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.9.2.10.2.1   Failure condition ordering
+               The VOLTAGE_LEVEL_GET command does not have any failure condition orderings.
+               3.9.2.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  level                       post: voltage_level == VoltageLevelDuringCommand(domain_id)
+               3.9.2.10.4 Footprint
+               The VOLTAGE_LEVEL_GET command does not have a footprint.

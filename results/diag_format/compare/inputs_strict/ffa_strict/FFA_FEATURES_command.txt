@@ -1,0 +1,28 @@
+13.3 FFA_FEATURES command
+               Queries whether an optional feature of an FF-A interface is present, and its properties and implementation. Also queries whether a Framework feature that does not belong to a specific FF-A interface is present, and its properties.
+               Valid conduits: Non-secure physical instance: SMC. Secure physical instance: ERET, SMC. Secure and Non-secure virtual instances: SMC, HVC, SVC.
+               13.3.1 Interface
+               13.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000064
+        id                  w1           31:0        UInt32                                FF-A function ID or Feature ID. Bit[31]: if b'1, w1 holds the Function ID of the FF-A interface being queried, and either the SMC32 or SMC64 FID can be used. If b'0, w1 holds a Feature ID: Bit[30:8] is Reserved (MBZ) and Bit[7:0] is the Feature ID
+        input_props         w2           31:0        UInt32                                Properties the caller expects for the Function ID in w1. Reserved (MBZ) if w1 holds a Feature ID
+        reserved            w3-w7        31:0        UInt32                                Reserved (SBZ)
+               13.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                Completion through an FFA_SUCCESS or FFA_ERROR invocation
+        iface_props         w2-w3        31:0        UInt32                                Interface properties: optional features the queried interface or feature implements, or properties it exports
+               13.3.2 Failure conditions
+  ID                          Condition
+  func_not_impl               pre: Bits(id, 31, 31) == 1 && !IsImplementedFfaFunction(id)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  feat_not_supp               pre: Bits(id, 31, 31) == 0 && !IsSupportedFrameworkFeature(Bits(id, 7, 0))
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               13.3.2.1   Failure condition ordering
+               The FFA_FEATURES command does not have any failure condition orderings.
+               13.3.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  props                       post: iface_props == QueriedInterfaceProperties(id, input_props)
+               13.3.4 Footprint
+               The FFA_FEATURES command does not have a footprint.

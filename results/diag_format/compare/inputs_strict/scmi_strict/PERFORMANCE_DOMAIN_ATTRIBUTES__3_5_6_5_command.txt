@@ -1,0 +1,57 @@
+3.5.6.5 PERFORMANCE_DOMAIN_ATTRIBUTES command
+               Returns attributes that are specific to a given performance domain. This command is mandatory.
+               3.5.6.5.1 Interface
+               3.5.6.5.1.1   Input values
+        Name                    Register        Bits        Type        Description
+        message_id              Header          -           UInt        Message identifier, value 0x3
+        protocol_id             Header          -           UInt        Protocol identifier, value 0x13
+        domain_id               Payload[0]      31:0        UInt32      Identifier for the performance domain
+               3.5.6.5.1.2   Output values
+        Name                    Register        Bits        Type        Description
+        status                  Payload[0]      31:0        Int32       Command return status
+        attributes              Payload[1]      31:0        UInt32      Domain attributes: Bit[31] can set limits; Bit[30] can set performance level; Bit[29] performance limits change notifications support; Bit[28] performance level change notifications support; Bit[27] FastChannel support; Bit[26] extended performance domain name; Bit[25] Level Indexing Mode; Bit[24] asynchronous QoS configuration support; Bit[23] QoS only domain; Bit[22] sustained performance reduction support; Bits[21:0] reserved, zero
+        rate_limit              Payload[2]      31:0        UInt32      Bits[31:20] reserved, zero; Bits[19:0] minimum time in microseconds between successive requests (0 means not supported); does not apply to FastChannels
+        sustained_freq          Payload[3]      31:0        UInt32      Base frequency in kHz corresponding to the sustained performance level
+        sustained_perf_level    Payload[4]      31:0        UInt32      Performance level corresponding to the maximum sustained performance level of the domain
+        name                    Payload[5:8]    127:0       UInt8[16]   Null terminated ASCII domain name of up to 16 bytes
+        guaranteed_perf_level   Payload[9]      31:0        UInt32      Performance level corresponding to the guaranteed performance delivered by the platform
+        qos_capability_types    Payload[10]     31:0        UInt32      Bitmap of supported QoS capability Types: Bits[31:24] reserved, zero; Bits[23:16] OEM QoS capability Type bitmap; Bits[15:8] reserved, zero; Bits[7:0] architected QoS capability Type bitmap
+        qos_parent_id           Payload[11]     31:0        UInt32      Identifier of the parent QoS domain, or 0xFFFFFFFF if the domain has no parent
+               3.5.6.5.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerformanceDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.5.2.1   Failure condition ordering
+               The PERFORMANCE_DOMAIN_ATTRIBUTES command does not have any failure condition orderings.
+               3.5.6.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  can_set_limits              post: (Bits(attributes, 31, 31) == 1) == CallerCanSetPerfLimits(domain_id)
+  can_set_level               post: (Bits(attributes, 30, 30) == 1) == CallerCanSetPerfLevel(domain_id)
+  limits_notify               post: (Bits(attributes, 29, 29) == 1) == SupportsPerfLimitsChangeNotify(domain_id)
+  level_notify                post: (Bits(attributes, 28, 28) == 1) == SupportsPerfLevelChangeNotify(domain_id)
+  fastchannel                 post: (Bits(attributes, 27, 27) == 1) == HasFastChannel(domain_id)
+  ext_name                    post: (Bits(attributes, 26, 26) == 1) == (PerfDomainNameLength(domain_id) > 16)
+  level_index                 post: (Bits(attributes, 25, 25) == 1) == UsesLevelIndexingMode(domain_id)
+  async_qos                   post: (Bits(attributes, 24, 24) == 1) == SupportsAsyncQosConfig(domain_id)
+  qos_only                    post: (Bits(attributes, 23, 23) == 1) == IsQosOnlyDomain(domain_id)
+  qos_only_ctrl               post: Bits(attributes, 23, 23) == 1 ==> Bits(attributes, 31, 28) == 0
+  sustained_reduce            post: (Bits(attributes, 22, 22) == 1) == SupportsSustainedPerfReduction(domain_id)
+  sustained_reduce_qos        post: Bits(attributes, 23, 23) == 1 ==> Bits(attributes, 22, 22) == 0
+  attr_reserved               post: Bits(attributes, 21, 0) == 0
+  rate_reserved               post: Bits(rate_limit, 31, 20) == 0
+  rate_value                  post: Bits(rate_limit, 19, 0) == RateLimitMicroseconds(domain_id)
+  sustained_freq              post: sustained_freq == SustainedFreqKhz(domain_id) || (Bits(attributes, 23, 23) == 1 && sustained_freq == 0)
+  sustained_level             post: sustained_perf_level == PlatformSustainedPerfLevel(domain_id) || (Bits(attributes, 23, 23) == 1 && sustained_perf_level == 0)
+  name_term                   post: IsNullTerminatedAscii(name, 16)
+  name_short                  post: Bits(attributes, 26, 26) == 0 ==> name == PerfDomainName(domain_id)
+  name_ext                    post: Bits(attributes, 26, 26) == 1 ==> name == LowerBytesNullTerminated(PerfDomainName(domain_id), 15)
+  guaranteed_level            post: guaranteed_perf_level == GuaranteedPerfLevel(domain_id) || guaranteed_perf_level == 0
+  qos_reserved_hi             post: Bits(qos_capability_types, 31, 24) == 0
+  qos_reserved_mid            post: Bits(qos_capability_types, 15, 8) == 0
+  qos_oem                     post: Bits(qos_capability_types, 23, 16) == SupportedOemQosCapabilityTypes(domain_id)
+  qos_arch                    post: Bits(qos_capability_types, 7, 0) == SupportedArchQosCapabilityTypes(domain_id)
+  qos_parent                  post: (qos_parent_id == 0xFFFFFFFF) == !HasQosParentDomain(domain_id)
+  qos_parent_value            post: HasQosParentDomain(domain_id) ==> qos_parent_id == QosParentDomainId(domain_id)
+               3.5.6.5.4 Footprint
+               The PERFORMANCE_DOMAIN_ATTRIBUTES command does not modify any state.

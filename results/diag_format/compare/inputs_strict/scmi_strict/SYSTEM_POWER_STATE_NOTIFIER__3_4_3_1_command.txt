@@ -1,0 +1,29 @@
+3.4.3.1 SYSTEM_POWER_STATE_NOTIFIER command
+               The platform sends this notification to an agent that has registered for system power state notifications with SYSTEM_POWER_STATE_NOTIFY. The agent is typically one of these:
+               • The OSPM. On receiving the notification, the OSPM starts a system power state transition. The notification tells the OSPM that a remote entity, such as the management agent or the privileged agent, is requesting a graceful power state transition.
+               • A management agent or privileged agent that started a graceful power state transition and is waiting for the OSPM to carry it out. The notification confirms that the platform controller has received the power state transition request. On PSCI compliant systems the request comes from the PSCI agent. On non-PSCI compliant systems it comes from the OSPM.
+               This command is optional.
+               3.4.3.1.1 Interface
+               3.4.3.1.1.1   Input values
+        Name                Register          Bits        Type                                  Description
+        message_id          Header            -           UInt                                  Message identifier, value 0x0
+        protocol_id         Header            -           UInt                                  Protocol identifier, value 0x12
+        agent_id            Payload word 0    31:0        UInt32                                Identifier for the agent that caused the system power state transition
+        flags               Payload word 1    31:0        UInt32                                Bits[31:1]: reserved, must be zero. Bit[0]: graceful request. A value of 1 means the transition was requested gracefully. A value of 0 means it was requested forcibly. When sent to the management agent, a value of 0 can also mean that the PSCI agent requested the transition in response to an initial graceful request from the management agent
+        system_state        Payload word 2    31:0        UInt32                                System power state that the system has transitioned to, or that has been requested. 0x0 system shutdown, 0x1 system cold reset, 0x2 system warm reset, 0x3 system power-up, 0x4 system suspend, 0x5-0x7FFFFFFF reserved and must not be used, 0x80000000-0xFFFFFFFF vendor-defined
+        timeout             Payload word 3    31:0        UInt32                                Timeout imposed by the platform, in milliseconds, for a graceful system shutdown by OSPM. Valid only when system_state is 0x0 and flags Bit[0] is 1. Set to zero if the platform imposes no timeout
+               3.4.3.1.1.2   Output values
+               The SYSTEM_POWER_STATE_NOTIFIER command does not have any output values.
+               3.4.3.1.2 Failure conditions
+               The SYSTEM_POWER_STATE_NOTIFIER command does not have any failure conditions.
+               3.4.3.1.2.1   Failure condition ordering
+               The SYSTEM_POWER_STATE_NOTIFIER command does not have any failure condition orderings.
+               3.4.3.1.3 Success conditions
+  ID                          Condition
+  registered                  post: AgentRegisteredForSystemPowerStateNotify(recipient)
+  flags_rsvd                  post: Bits(flags, 31, 1) == 0
+  state_valid                 post: system_state <= 0x4 || system_state >= 0x80000000
+  timeout_zero                post: (system_state == 0x0 && Bits(flags, 0, 0) == 1 && !PlatformImposesShutdownTimeout()) ==> timeout == 0
+  timeout_expiry              post: (system_state == 0x0 && Bits(flags, 0, 0) == 1 && PlatformImposesShutdownTimeout() && ShutdownTimeoutExpired(timeout) && !SystemShutdownRequestReceived()) ==> PlatformMayForceSystemShutdown()
+               3.4.3.1.4 Footprint
+               The section does not name any state that the SYSTEM_POWER_STATE_NOTIFIER command modifies.

@@ -1,0 +1,28 @@
+3.9.2.11 VOLTAGE_DOMAIN_NAME_GET command
+               Returns the extended name of a voltage domain.
+               This command is mandatory only if the extended voltage domain name is supported. The extended voltage domain name is supported when Bit[30] of the attributes field returned by VOLTAGE_DOMAIN_ATTRIBUTES is set to 1 (see Section 3.9.2.5).
+               3.9.2.11.1 Interface
+               3.9.2.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x9
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x17
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the voltage domain
+               3.9.2.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4)
+        flags               Payload[1]   31:0        UInt32                                Reserved, must be zero
+        name                Payload[2]   511:0       UInt8[64]                             Null-terminated ASCII string, up to 64 bytes long, giving the extended name of the voltage domain
+               3.9.2.11.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !VoltageDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.9.2.11.2.1   Failure condition ordering
+               The VOLTAGE_DOMAIN_NAME_GET command does not have any failure condition orderings.
+               3.9.2.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags                       post: flags == 0
+  name                        post: name == VoltageDomainExtendedName(domain_id)
+  name_term                   post: IsNullTerminatedAscii(name, 64)
+               3.9.2.11.4 Footprint
+               The VOLTAGE_DOMAIN_NAME_GET command does not modify any state.

@@ -1,0 +1,66 @@
+3.12.4.3 PROTOCOL_ATTRIBUTES command
+
+               Returns the implementation details associated with this protocol.
+
+               This command is mandatory.
+
+               3.12.4.3.1 Interface
+
+               3.12.4.3.1.1   Input values
+
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message ID, value 0x1
+        protocol_id         Header       -           UInt                                  Protocol ID, value 0x1B
+
+               3.12.4.3.1.2   Output values
+
+        Name                          Register         Bits        Type        Description
+        status                        Return word 0    31:0        Int32       Command return status. See Section 3.1.4 for status code definitions.
+        de_num                        Return word 1    31:0        UInt32      Total number of Data Events (DEs) supported by this protocol
+        groups_num                    Return word 2    31:0        UInt32      Total number of event groups supported by this protocol
+        de_implementation_rev_dword0  Return word 3    31:0        UInt32      Bits[31:0] of the primary 128-bit DE implementation revision. See Section 3.12.2.2.
+        de_implementation_rev_dword1  Return word 4    31:0        UInt32      Bits[63:32] of the primary 128-bit DE implementation revision
+        de_implementation_rev_dword2  Return word 5    31:0        UInt32      Bits[95:64] of the primary 128-bit DE implementation revision
+        de_implementation_rev_dword3  Return word 6    31:0        UInt32      Bits[127:96] of the primary 128-bit DE implementation revision
+        attributes_1                  Return word 7    31:0        UInt32      Protocol attributes:
+                                                                               Bit[31]: Single-sample asynchronous read support
+                                                                               Bit[30]: Continuous update notification support
+                                                                               Bits[29:19]: Reserved, must be zero
+                                                                               Bit[18]: Event group specific sampling rate and collection support
+                                                                               Bit[17]: Telemetry Reset support
+                                                                               Bit[16]: FastChannel support
+                                                                               Bits[15:0]: Number of SHMTIs supported by this protocol
+        default_blk_ts_rate           Return word 8    31:0        UInt32      Default clock rate in kHz used to generate block timestamps
+
+               3.12.4.3.2 Failure conditions
+
+               The PROTOCOL_ATTRIBUTES command does not have any failure conditions.
+
+               3.12.4.3.2.1   Failure condition ordering
+
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+
+               3.12.4.3.3 Success conditions
+
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  de_num                      post: de_num == NumDataEventsSupported()
+  groups_num                  post: groups_num == NumEventGroupsSupported()
+  de_impl_rev                 post: DeImplementationRev128(de_implementation_rev_dword0, de_implementation_rev_dword1, de_implementation_rev_dword2, de_implementation_rev_dword3) == PrimaryDeImplementationRevision()
+  async_read_set              post: Bits(attributes_1, 31, 31) == 1 ==> SupportsSingleSampleAsyncReadViaConfigSet() && ReadCompletionSignalledByTelemetryReadingComplete()
+  async_read_clear            post: Bits(attributes_1, 31, 31) == 0 ==> !SupportsSingleSampleAsyncReadViaConfigSet()
+  cont_update_set             post: Bits(attributes_1, 30, 30) == 1 ==> SupportsContinuousUpdateNotifications() && TelemetryUpdateSentAtSamplingInterval()
+  cont_update_clear           post: Bits(attributes_1, 30, 30) == 0 ==> !SupportsContinuousUpdateNotifications()
+  reserved                    post: Bits(attributes_1, 29, 19) == 0
+  group_rate_set              post: Bits(attributes_1, 18, 18) == 1 ==> PerEventGroupSamplingRateAndCollectionModeConfigurable() && UngroupedDesShareSamplingRateAndCollectionMode()
+  group_rate_clear            post: Bits(attributes_1, 18, 18) == 0 ==> AllDesAndGroupsShareSamplingRateAndCollectionMode()
+  telemetry_reset             post: Bits(attributes_1, 17, 17) == 1 ==> SupportsFullTelemetryReset()
+  fastchannel_set             post: Bits(attributes_1, 16, 16) == 1 ==> FastChannelsSupported() && (exists|de: DataEvent| UsesFastChannel(de))
+  fastchannel_clear           post: Bits(attributes_1, 16, 16) == 0 ==> !FastChannelsSupported()
+  shmti_num                   post: Bits(attributes_1, 15, 0) == NumShmtisSupported()
+  blk_ts_rate                 post: default_blk_ts_rate == DefaultBlockTimestampClockRateKhz()
+  blk_ts_default              post: forall|ts: BlockTimestampLine| ts.id == 0 ==> BlockTimestampClockRateKhz(ts) == default_blk_ts_rate
+
+               3.12.4.3.4 Footprint
+
+               The PROTOCOL_ATTRIBUTES command does not modify any state.

@@ -1,0 +1,20 @@
+pub open spec fn sensor_axis_description_get__3_7_2_6_spec(sensor_id: UInt32, axis_desc_index: UInt32, status: Int32, num_axis_flags: UInt32, desc: [SENSOR_AXIS_DESC; 1], old_s: S, new_s: S) -> bool {
+  (!IsValidSensor(old_s, sensor_id) ==> ResultEqual(status, NOT_FOUND))
+  && (!SensorReportsAxisValues(old_s, sensor_id) ==> ResultEqual(status, NOT_SUPPORTED))
+  && (ResultEqual(status, SUCCESS) ==> ResultEqual(status, SUCCESS))
+  && (ResultEqual(status, SUCCESS) ==> Bits(num_axis_flags, 5, 0) == DescCount(new_s, desc))
+  && (ResultEqual(status, SUCCESS) ==> Bits(num_axis_flags, 25, 6) == 0)
+  && (ResultEqual(status, SUCCESS) ==> Bits(num_axis_flags, 31, 26) == NumSensorAxes(new_s, sensor_id) - axis_desc_index - Bits(num_axis_flags, 5, 0))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> DescAt(new_s, desc, i) == SensorAxisDescriptor(new_s, sensor_id, axis_desc_index + i))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> (Bits(DescAt(new_s, desc, i).axis_attributes_low, 9, 9) == 1 ==> AxisNameLongerThan16Bytes(new_s, sensor_id, axis_desc_index + i)))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> IsNullTerminatedUtf8(new_s, DescAt(new_s, desc, i).name, 16))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> (Bits(DescAt(new_s, desc, i).axis_attributes_low, 8, 8) == 0 ==> !ExtendedAttributeFieldsAllocated(new_s, DescAt(new_s, desc, i))))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(new_s, desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisResolution(new_s, sensor_id, axis_desc_index + i)) ==> DescAt(new_s, desc, i).axis_resolution == 0x0))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(new_s, desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisMinRange(new_s, sensor_id, axis_desc_index + i)) ==> DescAt(new_s, desc, i).axis_min_range_low == 0x0))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(new_s, desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisMinRange(new_s, sensor_id, axis_desc_index + i)) ==> DescAt(new_s, desc, i).axis_min_range_high == 0x80000000))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(new_s, desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisMaxRange(new_s, sensor_id, axis_desc_index + i)) ==> DescAt(new_s, desc, i).axis_max_range_low == 0xFFFFFFFF))
+  && (ResultEqual(status, SUCCESS) ==> forall (i: UInt32), i < Bits(num_axis_flags, 5, 0) ==> ((Bits(DescAt(new_s, desc, i).axis_attributes_low, 8, 8) == 1 && !SensorReportsAxisMaxRange(new_s, sensor_id, axis_desc_index + i)) ==> DescAt(new_s, desc, i).axis_max_range_high == 0x7FFFFFFF))
+  && ((IsValidSensor(old_s, sensor_id) &&
+       SensorReportsAxisValues(old_s, sensor_id))
+    ==> ResultEqual(status, SUCCESS))
+}

@@ -1,0 +1,27 @@
+3.6.2.11 CLOCK_NAME_GET command
+               Returns the extended name of a specific clock device.
+               3.6.2.11.1 Interface
+               3.6.2.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message identifier, value 0x8
+        protocol_id         Header       17:10       UInt8                                 Protocol identifier, value 0x14
+        clock_id            Payload[0]   31:0        UInt32                                Identifier for the clock device
+               3.6.2.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        flags               Payload[1]   31:0        UInt32                                Reserved, must be zero
+        name                Payload[2]   511:0       UInt8[64]                             Null-terminated ASCII string of up to 64 bytes giving the clock extended name
+               3.6.2.11.2 Failure conditions
+  ID                          Condition
+  clock_exists                pre: !ClockExists(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.6.2.11.2.1   Failure condition ordering
+               The CLOCK_NAME_GET command does not have any failure condition orderings.
+               3.6.2.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags                       post: Bits(flags, 31, 0) == 0
+  name_value                  post: IsClockExtendedName(name, clock_id)
+  name_term                   post: IsNullTerminatedAscii(name, 64)
+               3.6.2.11.4 Footprint
+               The CLOCK_NAME_GET command does not modify any state.

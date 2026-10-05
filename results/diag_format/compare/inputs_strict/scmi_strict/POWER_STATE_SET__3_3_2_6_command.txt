@@ -1,0 +1,37 @@
+3.3.2.6 POWER_STATE_SET command
+               Sets the power state of a power domain, synchronously or asynchronously.
+               3.3.2.6.1 Interface
+               3.3.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x4
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x11
+        flags               Payload[0]   31:0        UInt32                                Bits[31:1]: Reserved, must be zero. Bit[0]: Async flag. 1 = asynchronous transition, 0 = synchronous transition. Ignored for application processor domains.
+        domain_id           Payload[1]   31:0        UInt32                                Identifier for the power domain
+        power_state         Payload[2]   31:0        UInt32                                Platform-specific parameter that identifies the power state of the domain and, if needed, of its parents. For device power domains, it is encoded as described in Table 6.
+               3.3.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+               3.3.2.6.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PowerDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  state_valid                 pre: !IsValidPowerState(domain_id, power_state)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  supported                   pre: !IsRequestSupported(flags, domain_id, power_state)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_permission            pre: !AgentMaySetPowerState(calling_agent, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.3.2.6.2.1   Failure condition ordering
+               The POWER_STATE_SET command does not have any failure condition orderings.
+               3.3.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  sync_done                   post: (IsSynchronousRequest(flags, domain_id) && !IsApplicationProcessorDomain(domain_id)) ==> PowerDomainInState(domain_id, power_state)
+  async_sched                 post: (Bits(flags, 0, 0) == 1 && !IsApplicationProcessorDomain(domain_id)) ==> PowerStateChangeScheduled(domain_id, power_state)
+  ap_return                   post: IsApplicationProcessorDomain(domain_id) ==> ReturnsBeforeApPowerDown(domain_id)
+  ap_wfi                      post: IsApplicationProcessorDomain(domain_id) ==> TransitionBeginsOnWfi(domain_id, power_state)
+  parent_state                post: forall|p: PowerDomainId| IsParentDomain(p, domain_id) ==> PowerStateRequestedForParent(p, power_state)
+               3.3.2.6.4 Footprint
+    ID                        Value
+    domain_state              PowerDomain(domain_id).state
+    parent_state              PowerDomain(p).state, for each p where IsParentDomain(p, domain_id)

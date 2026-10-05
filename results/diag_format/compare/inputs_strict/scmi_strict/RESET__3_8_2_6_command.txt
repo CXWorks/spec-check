@@ -1,0 +1,40 @@
+3.8.2.6 RESET command
+               Resets the specified reset domain.
+               3.8.2.6.1 Interface
+               3.8.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x4
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x16
+        domain_id           Payload[0]   31:0        UInt32                                Identifier of the reset domain
+        flags               Payload[1]   31:0        UInt32                                Request flags. Bits[31:3]: reserved, must be zero. Bit[2]: async flag, valid only when Bit[0] == 1 (1 = complete asynchronously, 0 = complete synchronously). Bit[1]: explicit signal, ignored when Bit[0] == 1 (1 = assert reset signal, 0 = de-assert reset signal). Bit[0]: autonomous reset action (1 = platform performs the reset autonomously, 0 = caller explicitly asserts and de-asserts the reset signal)
+        reset_state         Payload[2]   31:0        UInt32                                Requested reset state, in the format given in Table 22
+               3.8.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+               3.8.2.6.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !ResetDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  flags_reserved              pre: Bits(flags, 31, 3) != 0
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  flags_valid                 pre: !IsValidResetFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  reset_state                 pre: !IsSupportedResetState(domain_id, reset_state)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  permission                  pre: !AgentMayResetDomain(caller, domain_id)
+                              post: ResultEqual(status, DENIED)
+  operation_failed            pre: ResetOperationFailed(domain_id)
+                              post: ResultEqual(status, GENERIC_ERROR)
+               3.8.2.6.2.1   Failure condition ordering
+               The RESET command does not have any failure condition orderings.
+               3.8.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  auto_sync                   post: (Bits(flags, 0, 0) == 1 && Bits(flags, 2, 2) == 0) ==> ResetDomainResetTo(domain_id, reset_state)
+  auto_async                  post: (Bits(flags, 0, 0) == 1 && Bits(flags, 2, 2) == 1) ==> ReturnedOnReceiptOfRequest(domain_id)
+  explicit_assert             post: (Bits(flags, 0, 0) == 0 && Bits(flags, 1, 1) == 1) ==> ResetSignalAsserted(domain_id, reset_state)
+  explicit_deassert           post: (Bits(flags, 0, 0) == 0 && Bits(flags, 1, 1) == 0) ==> !ResetSignalAsserted(domain_id, reset_state)
+               3.8.2.6.4 Footprint
+    ID                        Value
+    domain_state              ResetDomainState(domain_id)
+    reset_signal              ResetSignal(domain_id)

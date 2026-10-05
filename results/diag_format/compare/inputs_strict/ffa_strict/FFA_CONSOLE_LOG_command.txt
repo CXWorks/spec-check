@@ -1,0 +1,40 @@
+13.12 FFA_CONSOLE_LOG command
+               Lets an entity send debug logging to the console.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance          Valid conduits
+        1                   Secure physical        SMC
+        2                   Secure virtual         SMC, HVC, SVC
+               13.12.1 Interface
+               13.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0x8400008A or 0xC400008A
+        char_count          X1           31:8        UInt32                                Reserved (SBZ)
+        char_count          X1           7:0         UInt32                                Count of characters i provided in w2/x2-w7/x7. 1 <= i <= 24 if the SMC32 convention is used. i <= 128 if the SMC64 convention is used
+        characters          W2-W7        31:0        UInt32                                Tightly packed list of characters (SMC32 convention). Character i = Bits[M:N], M = ((8 x i) - 1), N = (8 x (i - 1))
+        characters          X2-X17       63:0        UInt64                                Tightly packed list of characters (SMC64 convention). Character i = Bits[M:N], M = ((8 x i) - 1), N = (8 x (i - 1))
+               13.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           31:0        UInt32                                FFA_SUCCESS without further parameters on success, otherwise FFA_ERROR
+        error_code          W2           31:0        Int32                                 Error code: INVALID_PARAMETERS, NOT_SUPPORTED or RETRY
+        logged_count        W3           31:0        UInt32                                Number of characters logged successfully, counted from the first character. Valid only with the RETRY error code, MBZ otherwise
+               13.12.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_CONSOLE_LOG)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  count_zero                  pre: Bits(char_count, 7, 0) == 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  count_smc32                 pre: IsSmc32Convention(fid) && Bits(char_count, 7, 0) > 24
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  count_smc64                 pre: IsSmc64Convention(fid) && Bits(char_count, 7, 0) > 128
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  not_logged                  pre: !AllCharactersLogged(characters, Bits(char_count, 7, 0))
+                              post: ResultEqual(result, RETRY)
+               13.12.2.1   Failure condition ordering
+               The FFA_CONSOLE_LOG command does not have any failure condition orderings.
+               13.12.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  logged                      post: CharactersLoggedToConsoleInFiniteTime(characters, Bits(char_count, 7, 0))
+               13.12.4 Footprint
+    ID                        Value
+    logged                    ConsoleOutput()

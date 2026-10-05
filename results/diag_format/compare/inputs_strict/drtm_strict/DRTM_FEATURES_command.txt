@@ -1,0 +1,39 @@
+3.3 DRTM_FEATURES command
+               Queries the DRTM implementation to find which DRTM capabilities the platform supports.
+               3.3.1 Interface
+               3.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FID, value 0xC4000111
+        id                  X1           63:0        UInt64                                DRTM function ID or feature ID to query.
+                                                                                           Bit[63] = 0: the parameter is the function ID of the DRTM interface to query.
+                                                                                           Bits[62:32] are reserved and must be zero. Bits[31:0] hold the function ID.
+                                                                                           Bit[63] = 1: the parameter is the ID of a feature supported by the DRTM implementation.
+                                                                                           Bits[62:8] are reserved and must be zero. Bits[7:0] hold the feature ID (see Table 6).
+               3.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status. 0 means the function ID or feature ID is implemented.
+                                                                                           A value greater than 0 means the feature ID is implemented and
+                                                                                           feature-specific capability bits are available in other return registers.
+                                                                                           NOT_SUPPORTED on error.
+        features            X1           63:0        Bits64                                Feature-specific capabilities for the queried feature ID (see Table 6)
+               3.3.2 Failure conditions
+  ID                          Condition
+  func_unsupported            pre: Bits(id, 63, 63) == 0 && !IsImplementedDrtmFunction(Bits(id, 31, 0))
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  feat_unsupported            pre: Bits(id, 63, 63) == 1 && !IsSupportedDrtmFeature(Bits(id, 7, 0))
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               3.3.2.1   Failure condition ordering
+               The DRTM_FEATURES command does not have any failure condition orderings.
+               3.3.3 Success conditions
+  ID                          Condition
+  result_ok                   post: result >= 0
+  feat_tpm                    post: (Bits(id, 63, 63) == 1 && Bits(id, 7, 0) == 1 && result > 0) ==> (Bits(features, 63, 37) == 0 && Bits(features, 36, 33) == SupportedPcrUsageSchemas() && Bits(features, 32, 32) == TpmBasedHashSupported() && Bits(features, 15, 0) == FirmwareHashAlgorithmId())
+  feat_mem                    post: (Bits(id, 63, 63) == 1 && Bits(id, 7, 0) == 2 && result > 0) ==> (Bits(features, 63, 32) == NormalWorldDceMinPages() && Bits(features, 31, 0) == DlmeDataMinPages())
+  feat_mem_no_dce             post: (Bits(id, 63, 63) == 1 && Bits(id, 7, 0) == 2 && result > 0 && !UsesNormalWorldDce()) ==> Bits(features, 63, 32) == 0
+  feat_dma                    post: (Bits(id, 63, 63) == 1 && Bits(id, 7, 0) == 3 && result > 0) ==> (Bits(features, 63, 24) == 0 && Bits(features, 7, 0) == DmaProtectionSupportBitmap())
+  feat_dma_regions            post: (Bits(id, 63, 63) == 1 && Bits(id, 7, 0) == 3 && result > 0 && RegionBasedDmaProtectionSupported()) ==> (Bits(features, 23, 8) == MaxDmaProtectedRegions() && Bits(features, 23, 8) != 0)
+  feat_boot_pe                post: (Bits(id, 63, 63) == 1 && Bits(id, 7, 0) == 4 && result > 0) ==> features == BootPeTargetCpuEncoding()
+  feat_tcb_hash               post: (Bits(id, 63, 63) == 1 && Bits(id, 7, 0) == 5 && result > 0) ==> (Bits(features, 63, 8) == 0 && Bits(features, 7, 0) == MaxTcbHashes())
+  feat_dlme_auth              post: (Bits(id, 63, 63) == 1 && Bits(id, 7, 0) == 6 && result > 0) ==> (Bits(features, 63, 1) == 0 && Bits(features, 0, 0) == DlmeImageAuthSupported())
+               3.3.4 Footprint
+               The DRTM_FEATURES command does not have a footprint.

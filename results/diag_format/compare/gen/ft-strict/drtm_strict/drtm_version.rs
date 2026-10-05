@@ -1,0 +1,15 @@
+pub open spec fn drtm_version_spec(result: UInt32, old_s: S, new_s: S) -> bool {
+  (!DrtmIsSupported(old_s) ==> ResultEqual(result, NOT_SUPPORTED))
+  && (result == NOT_SUPPORTED ==> Bits(result, 31, 31) == 0)
+  && (result == NOT_SUPPORTED ==> Bits(result, 30, 16) == 1)
+  && (result == NOT_SUPPORTED ==> Bits(result, 15, 0) == 4)
+  && (result == NOT_SUPPORTED ==> AllNonOptionalDrtmFunctionsImplemented())
+  && ((DrtmIsSupported(old_s))
+    ==> Bits(result, 31, 31) == 0)
+  && ((DrtmIsSupported(old_s))
+    ==> Bits(result, 30, 16) == 1)
+  && ((DrtmIsSupported(old_s))
+    ==> Bits(result, 15, 0) == 4)
+  && ((DrtmIsSupported(old_s))
+    ==> AllNonOptionalDrtmFunctionsImplemented())
+}

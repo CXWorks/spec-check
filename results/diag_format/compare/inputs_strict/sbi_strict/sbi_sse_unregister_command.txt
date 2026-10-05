@@ -1,0 +1,27 @@
+17.10 sbi_sse_unregister command
+               Unregisters the event handler for the given event_id. For a local event, the event is unregistered only for the calling hart. For a global event, it is unregistered for all harts.
+               17.10.1 Interface
+               17.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           31:0        UInt32                                FID, value 3
+        event_id            a0           31:0        UInt32                                Identifier of the software event to unregister
+               17.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    struct sbiret.error                   Command return status
+               17.10.2 Failure conditions
+  ID                          Condition
+  event_state                 pre: EventState(event_id, CallingHart()) != REGISTERED
+                              post: ResultIsError(error)
+               17.10.2.1   Failure condition ordering
+               The sbi_sse_unregister command does not have any failure condition orderings.
+               17.10.3 Success conditions
+  ID                          Condition
+  result                      post: ResultIsSuccess(error)
+  local_state                 post: IsLocalEvent(event_id) ==> EventState(event_id, CallingHart()) == UNUSED
+  global_state                post: IsGlobalEvent(event_id) ==> (forall|h: Hart| EventState(event_id, h) == UNUSED)
+  handler                     post: !HasRegisteredHandler(event_id, CallingHart())
+               17.10.4 Footprint
+    ID                        Value
+    local_state               EventState(event_id, CallingHart())
+    global_state              EventState(event_id, h) for every Hart h
+    handler                   EventHandler(event_id)

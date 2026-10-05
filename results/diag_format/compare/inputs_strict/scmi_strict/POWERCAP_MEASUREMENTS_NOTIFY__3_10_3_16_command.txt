@@ -1,0 +1,38 @@
+3.10.3.16 POWERCAP_MEASUREMENTS_NOTIFY command
+               Asks the platform to notify the calling agent when the MAI of a power capping domain changes, or when the domain's average power consumption goes outside the configured upper or lower power threshold. Average power consumption is measured over the latest power measurement averaging interval. The platform sends the POWERCAP_MEASUREMENTS_CHANGED notification (Section 3.10.5.2). Notification support is optional. Use PROTOCOL_MESSAGE_ATTRIBUTES to discover whether this command is implemented. The command is mandatory if any domain supports MAI or power measurements change notifications. These notifications are disabled by default during initial boot of the platform.
+               3.10.3.16.1 Interface
+               3.10.3.16.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0xB
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x18
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the power capping domain
+        notify_enable       Payload[1]   31:1        UInt32                                Reserved, must be zero
+        notify_enable       Payload[1]   0           Bits1                                 Notify enable. 0: the platform does not send POWERCAP_MEASUREMENTS_CHANGED messages to the calling agent. 1: the platform sends POWERCAP_MEASUREMENTS_CHANGED messages to the calling agent when the MAI of the domain changes, or when the average power consumption of the domain is outside the configured upper or lower power threshold
+        power_thresh_low    Payload[2]   31:0        UInt32                                Lower threshold, in the power units used by this domain. Replaces any lower threshold that the calling agent configured before
+        power_thresh_high   Payload[3]   31:0        UInt32                                Upper threshold, in the power units used by this domain. Replaces any upper threshold that the calling agent configured before
+               3.10.3.16.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4)
+               3.10.3.16.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  params_valid                pre: !AreValidMeasurementsNotifyParameters(domain_id, notify_enable, power_thresh_low, power_thresh_high)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.10.3.16.2.1   Failure condition ordering
+               The POWERCAP_MEASUREMENTS_NOTIFY command does not have any failure condition orderings.
+               3.10.3.16.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_state                post: MeasurementsNotifyEnabled(CallingAgent(), domain_id) == Bits(notify_enable, 0, 0)
+  thresh_low                  post: PowerThresholdLow(CallingAgent(), domain_id) == power_thresh_low
+  thresh_high                 post: PowerThresholdHigh(CallingAgent(), domain_id) == power_thresh_high
+  notify_low                  post: Bits(notify_enable, 0, 0) == 1 && AveragePowerOverMai(domain_id) < power_thresh_low ==> SendsMeasurementsChanged(CallingAgent(), domain_id)
+  notify_high                 post: Bits(notify_enable, 0, 0) == 1 && AveragePowerOverMai(domain_id) > power_thresh_high ==> SendsMeasurementsChanged(CallingAgent(), domain_id)
+  notify_mai                  post: Bits(notify_enable, 0, 0) == 1 && MaiChanged(domain_id) ==> SendsMeasurementsChanged(CallingAgent(), domain_id)
+  notify_off                  post: Bits(notify_enable, 0, 0) == 0 ==> !SendsMeasurementsChanged(CallingAgent(), domain_id)
+               3.10.3.16.4 Footprint
+    ID                        Value
+    notify_state              MeasurementsNotifyEnabled(CallingAgent(), domain_id)
+    thresh_low                PowerThresholdLow(CallingAgent(), domain_id)
+    thresh_high               PowerThresholdHigh(CallingAgent(), domain_id)

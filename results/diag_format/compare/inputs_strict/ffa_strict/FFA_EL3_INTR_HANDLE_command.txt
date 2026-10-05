@@ -1,0 +1,27 @@
+17.1 FFA_EL3_INTR_HANDLE command
+               Asks EL3 firmware to handle a pending interrupt. An S-EL2 or S-EL1 SPMC uses it to delegate handling of an EL3 interrupt to EL3 firmware. On a GICv3 system, when SCR_EL3.FIQ=0, the SPMC uses it to ask EL3 firmware to handle a pending Group 0 interrupt that cannot be handled at the same or a lower Exception level than the SPMC. The only valid FF-A instance is Secure physical FF-A, and the only valid conduit is SMC.
+               17.1.1 Interface
+               17.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400008C
+        reserved            W1-W7        31:0        UInt32                                Reserved (SBZ)
+               17.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                FFA_SUCCESS with no further parameters, or FFA_ERROR
+        error_code          W2           31:0        Int32                                 Error code, if result is FFA_ERROR
+               17.1.2 Failure conditions
+  ID                          Condition
+  ffa_instance                pre: !IsSupportedFfaInstance(ffa_instance, conduit)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  scr_fiq                     pre: (CallerEl == S_EL1 || CallerEl == S_EL2) && SCR_EL3.FIQ == 1
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               17.1.2.1   Failure condition ordering
+               The FFA_EL3_INTR_HANDLE command does not have any failure condition orderings.
+               17.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  intr_handled                post: PendingGroup0InterruptHandledByEl3()
+  no_sec_switch               post: !El3SwitchedSecurityState() && ReturnsToCallingElInSecureState()
+               17.1.4 Footprint
+    ID                        Value
+    intr_handled              PendingGroup0InterruptState()

@@ -1,0 +1,34 @@
+15.6 sbi_nacl_set_shmem command
+               Sets and enables the shared memory for nested acceleration on the calling hart. If both shmem_phys_lo and shmem_phys_hi are all-ones bitwise, the nested acceleration features are disabled instead. This function is mandatory in the SBI nested acceleration extension.
+               15.6.1 Interface
+               15.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 1
+        shmem_phys_lo       a0           XLEN-1:0    unsigned long                         Lower XLEN bits of the shared memory physical base address. All-ones in both shmem_phys_lo and shmem_phys_hi disables nested acceleration
+        shmem_phys_hi       a1           XLEN-1:0    unsigned long                         Upper XLEN bits of the shared memory physical base address. All-ones in both shmem_phys_lo and shmem_phys_hi disables nested acceleration
+        flags               a2           XLEN-1:0    unsigned long                         Reserved for future use. Must be zero
+               15.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    SbiErrorCode                          sbiret.error: command return status
+               15.6.2 Failure conditions
+  ID                          Condition
+  flags_nonzero               pre: flags != 0
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  shmem_align                 pre: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) && shmem_phys_lo % 4096 != 0
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  shmem_addr                  pre: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) && !ShmemSatisfiesRequirements(ShmemBase(shmem_phys_lo, shmem_phys_hi), 4096 + XLEN * 128)
+                              post: ResultEqual(result, SBI_ERR_INVALID_ADDRESS)
+  other_failure               pre: RequestFailedForUnspecifiedReason()
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+               15.6.2.1   Failure condition ordering
+               The sbi_nacl_set_shmem command does not have any failure condition orderings.
+               15.6.3 Success conditions
+  ID                          Condition
+  result_ok                   post: ResultEqual(result, SBI_SUCCESS)
+  shmem_set                   post: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> (NaclShmemEnabled(CurrentHart()) && NaclShmemBase(CurrentHart()) == ShmemBase(shmem_phys_lo, shmem_phys_hi))
+  shmem_disabled              post: (IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> !NaclFeaturesEnabled(CurrentHart())
+               15.6.4 Footprint
+    ID                        Value
+    shmem_set                 NaclShmemBase(CurrentHart())
+    shmem_enabled             NaclShmemEnabled(CurrentHart())
+    shmem_disabled            NaclFeaturesEnabled(CurrentHart())

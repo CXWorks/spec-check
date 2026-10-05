@@ -1,0 +1,34 @@
+8.3 sbi_remote_sfence_vma_asid command
+               Tells the remote harts to execute one or more SFENCE.VMA instructions. These cover virtual addresses from start_addr to start_addr + size, for the given ASID only.
+               8.3.1 Interface
+               8.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    unsigned long                         FID, value 2
+        hart_mask           a0           XLEN-1:0    unsigned long                         Mask of target harts, relative to hart_mask_base
+        hart_mask_base      a1           XLEN-1:0    unsigned long                         Base hartid from which hart_mask is applied
+        start_addr          a2           XLEN-1:0    unsigned long                         Start of the virtual address range
+        size                a3           XLEN-1:0    unsigned long                         Size of the virtual address range
+        asid                a4           XLEN-1:0    unsigned long                         ASID the fence applies to
+               8.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    long                                  sbiret.error: command return status
+               8.3.2 Failure conditions
+  ID                          Condition
+  addr_valid                  pre: !IsValidAddressRange(start_addr, size)
+                              post: ResultEqual(result, SBI_ERR_INVALID_ADDRESS)
+  asid_valid                  pre: !IsValidAsid(asid)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  hart_valid                  pre: exists|h: HartId| IsTargetedHart(hart_mask, hart_mask_base, h) && (!IsHartEnabledByPlatform(h) || !IsHartAvailableToSupervisor(h))
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  failed                      pre: RequestFailedForUnspecifiedReason(hart_mask, hart_mask_base, start_addr, size, asid)
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+               8.3.2.1   Failure condition ordering
+               The sbi_remote_sfence_vma_asid command does not have any failure condition orderings.
+               8.3.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  ipi_sent                    post: forall|h: HartId| IsTargetedHart(hart_mask, hart_mask_base, h) ==> IpiSentToHart(h)
+  sfence                      post: forall|h: HartId| IsTargetedHart(hart_mask, hart_mask_base, h) ==> SfenceVmaAsidRequested(h, start_addr, start_addr + size, asid)
+               8.3.4 Footprint
+    ID                        Value
+    sfence                    forall|h: HartId| IsTargetedHart(hart_mask, hart_mask_base, h) ==> AddressTranslationCache(h, start_addr, start_addr + size, asid)

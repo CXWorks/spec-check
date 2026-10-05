@@ -1,0 +1,41 @@
+3.2.2.12 BASE_SET_PROTOCOL_PERMISSIONS command
+               Sets whether an agent has permission to use a protocol to access the platform resources that are associated with a specific device.
+               message_id: 0xA
+               protocol_id: 0x10
+               This command is optional.
+               3.2.2.12.1 Interface
+               3.2.2.12.1.1   Input values
+        Name                Register          Bits        Type                                  Description
+        agent_id            Payload word 0    31:0        UInt32                                Identifier of the Agent
+        device_id           Payload word 1    31:0        UInt32                                Identifier of the device
+        command_id          Payload word 2    31:8        UInt32                                Reserved, must be zero
+                                              7:0         UInt8                                 Protocol ID. Should not be 0x10, because all agents must implement the Base protocol
+        flags               Payload word 3    31:1        UInt32                                Reserved, must be zero
+                                              0           Bit                                   Access Type: 0 = deny agent access to the protocol, 1 = allow agent access to the protocol
+               3.2.2.12.1.2   Output values
+        Name                Register          Bits        Type                                  Description
+        status              Payload word 0    31:0        Int32                                 Command return status
+               3.2.2.12.2 Failure conditions
+  ID                          Condition
+  cmd_supported               pre: !IsCommandSupported(BASE_SET_PROTOCOL_PERMISSIONS)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_exists                pre: !AgentExists(agent_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  device_exists               pre: !DeviceExists(device_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  protocol_exists             pre: !ProtocolExists(Bits(command_id, 7, 0))
+                              post: ResultEqual(status, NOT_FOUND)
+  flags_valid                 pre: !IsValidFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  caller_permitted            pre: !CallerMaySetProtocolPermissions(caller, agent_id)
+                              post: ResultEqual(status, DENIED)
+               3.2.2.12.2.1   Failure condition ordering
+               The BASE_SET_PROTOCOL_PERMISSIONS command does not have any failure condition orderings.
+               3.2.2.12.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  proto_perm                  post: ProtocolAccessAllowed(agent_id, device_id, Bits(command_id, 7, 0)) == (Bits(flags, 0, 0) == 1)
+  device_perm                 post: DeviceAccessAllowed(agent_id, device_id) == Old(DeviceAccessAllowed(agent_id, device_id))
+               3.2.2.12.4 Footprint
+    ID                        Value
+    proto_perm                ProtocolAccessAllowed(agent_id, device_id, Bits(command_id, 7, 0))

@@ -1,0 +1,28 @@
+16.1 sbi_steal_time_set_shmem command
+               Sets the shared memory physical base address for steal-time accounting of the calling virtual hart and enables steal-time information reporting. If both address arguments are all-ones, reporting stops instead.
+               16.1.1 Interface
+               16.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 0
+        shmem_phys_lo       a0           XLEN-1:0    UInt                                  Lower XLEN bits of the shared memory physical base address. Must be 64-byte aligned. If both shmem_phys_lo and shmem_phys_hi are all-ones, steal-time reporting stops.
+        shmem_phys_hi       a1           XLEN-1:0    UInt                                  Upper XLEN bits of the shared memory physical base address
+        flags               a2           XLEN-1:0    UInt                                  Reserved for future use. Must be zero.
+               16.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    struct sbiret.error                   Command return status
+        value               a1           XLEN-1:0    struct sbiret.value                   Return value
+               16.1.2 Failure conditions
+               The section does not define any failure conditions or error return codes for the sbi_steal_time_set_shmem command.
+               16.1.2.1   Failure condition ordering
+               The sbi_steal_time_set_shmem command does not have any failure condition orderings.
+               16.1.3 Success conditions
+  ID                          Condition
+  sta_enable                  post: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> StealTimeShmemBase(CallingHart()) == ShmemPhysAddr(shmem_phys_lo, shmem_phys_hi)
+  sta_report_on               post: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> StealTimeReportingEnabled(CallingHart())
+  sta_zeroed                  post: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> (forall|i: UInt64| i < 64 ==> MemByte(ShmemPhysAddr(shmem_phys_lo, shmem_phys_hi) + i) == 0)
+  sta_disable                 post: (IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> !StealTimeReportingEnabled(CallingHart())
+               16.1.4 Footprint
+    ID                        Value
+    sta_enable                StealTimeShmemBase(CallingHart())
+    sta_report                StealTimeReportingEnabled(CallingHart())
+    sta_zeroed                MemBytes(ShmemPhysAddr(shmem_phys_lo, shmem_phys_hi), 64)

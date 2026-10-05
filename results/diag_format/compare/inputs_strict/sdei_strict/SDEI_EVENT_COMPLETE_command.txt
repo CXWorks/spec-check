@@ -1,0 +1,30 @@
+5.1.6 SDEI_EVENT_COMPLETE command
+               Completes the handling of an event and resumes execution from the interrupted context.
+               5.1.6.1 Interface
+               5.1.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000025
+        status_code         X1           31:0        UInt32                                Event handling status: 0 = EV_HANDLED (the event was handled successfully), 1 = EV_FAILED (the event was not handled)
+               5.1.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Error return status. Returned only on error. On success the command does not return.
+               5.1.6.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  handler_running             pre: !HandlerRunning(CallingPe())
+                              post: ResultEqual(result, DENIED)
+               5.1.6.2.1   Failure condition ordering
+               The SDEI_EVENT_COMPLETE command does not have any failure condition orderings.
+               5.1.6.3 Success conditions
+  ID                          Condition
+  no_return                   post: !CallReturns(CallingPe())
+  resume                      post: ExecutionResumesAtInterruptedContext(CallingPe())
+  handler_running             post: !HandlerRunning(CallingPe())
+  private_complete            post: IsPrivateEvent(RunningEvent(CallingPe())) ==> EventHandlingCompleteForPe(RunningEvent(CallingPe()), CallingPe())
+  shared_complete             post: IsSharedEvent(RunningEvent(CallingPe())) ==> EventHandlingCompleteGlobally(RunningEvent(CallingPe()))
+               5.1.6.4 Footprint
+    ID                        Value
+    handler_running           HandlerRunning(CallingPe())
+    event_handling            EventHandlingState(RunningEvent(CallingPe()))
+    pe_context                ExecutionContext(CallingPe())

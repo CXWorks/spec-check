@@ -1,0 +1,28 @@
+10.1 sbi_system_reset command
+               Resets the system according to the provided reset_type and reset_reason. The call is synchronous and does not return if it succeeds.
+               10.1.1 Interface
+               10.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           31:0        UInt32                                FID, value 0
+        reset_type          a0           31:0        UInt32                                Type of reset. 0x00000000: Shutdown. 0x00000001: Cold reboot. 0x00000002: Warm reboot. 0x00000003 - 0xEFFFFFFF: Reserved for future use. 0xF0000000 - 0xFFFFFFFF: Vendor or platform specific reset type
+        reset_reason        a1           31:0        UInt32                                Optional reason for the reset. 0x00000000: No reason. 0x00000001: System failure. 0x00000002 - 0xDFFFFFFF: Reserved for future use. 0xE0000000 - 0xEFFFFFFF: SBI implementation specific reset reason. 0xF0000000 - 0xFFFFFFFF: Vendor or platform specific reset reason
+               10.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    sbiret.error                          Command return status. This value is returned only if the command fails.
+               10.1.2 Failure conditions
+               This excerpt does not include the error codes in Table 28 or the conditions that cause them. For that reason, no failure conditions are listed.
+               10.1.2.1   Failure condition ordering
+               The sbi_system_reset command does not have any failure condition orderings.
+               10.1.3 Success conditions
+  ID                          Condition
+  no_return                   post: !CallReturns()
+  shutdown                    post: reset_type == 0x00000000 ==> SystemShutdown()
+  cold_reboot                 post: reset_type == 0x00000001 ==> SystemColdReboot()
+  warm_reboot                 post: reset_type == 0x00000002 ==> SystemWarmReboot()
+  native_shutdown             post: reset_type == 0x00000000 && SupervisorRunsNatively() ==> PhysicalPowerDownOfEntireSystem()
+  native_cold                 post: reset_type == 0x00000001 && SupervisorRunsNatively() ==> PhysicalPowerCycleOfEntireSystem()
+  native_warm                 post: reset_type == 0x00000002 && SupervisorRunsNatively() ==> PowerCycleOfMainProcessorAndPartsOfSystem()
+               10.1.4 Footprint
+    ID                        Value
+    system_power              SystemPowerState()
+    processor_state           MainProcessorState()

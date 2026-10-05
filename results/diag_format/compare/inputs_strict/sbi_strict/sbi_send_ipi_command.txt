@@ -1,0 +1,26 @@
+7.1 sbi_send_ipi command
+               Sends an inter-processor interrupt to all the harts defined in hart_mask. The receiving harts see the IPI as a supervisor software interrupt.
+               7.1.1 Interface
+               7.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 0
+        hart_mask           a0           XLEN-1:0    UInt (unsigned long)                  Mask of the target harts, relative to hart_mask_base
+        hart_mask_base      a1           XLEN-1:0    UInt (unsigned long)                  Base hartid that hart_mask is relative to
+               7.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode (sbiret.error)           Command return status
+               7.1.2 Failure conditions
+  ID                          Condition
+  hart_valid                  pre: exists|h: HartId| IsTargetedHart(hart_mask, hart_mask_base, h) && !(IsHartEnabledByPlatform(h) && IsHartAvailableToSupervisor(h))
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  failed                      pre: RequestFailedForUnspecifiedReason()
+                              post: ResultEqual(error, SBI_ERR_FAILED)
+               7.1.2.1   Failure condition ordering
+               The sbi_send_ipi command does not have any failure condition orderings.
+               7.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  ipi_sent                    post: forall|h: HartId| IsTargetedHart(hart_mask, hart_mask_base, h) ==> SupervisorSoftwareInterruptPending(h)
+               7.1.4 Footprint
+    ID                        Value
+    ipi_sent                  SupervisorSoftwareInterruptPending(h) for each h with IsTargetedHart(hart_mask, hart_mask_base, h)

@@ -1,0 +1,28 @@
+13.7 FFA_RXTX_UNMAP command
+               Unmaps the RX/TX buffer pair of an endpoint or Hypervisor from the translation regime of the callee.
+               13.7.1 Interface
+               13.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x84000067
+        id                  W1           31:16       UInt16                                ID of VM that allocated the RX/TX buffer. Only valid at the Non-secure physical FF-A instance. MBZ otherwise
+        reserved            W1           15:0        UInt16                                Reserved (SBZ)
+        reserved            W2-W7        31:0        UInt32                                Reserved (SBZ)
+               13.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                FFA_SUCCESS on success, FFA_ERROR on failure
+        error_code          W2           31:0        Int32                                 Error code, valid when result is FFA_ERROR
+               13.7.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_RXTX_UNMAP, CurrentFfaInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  no_buffer_pair              pre: !IsRxTxBufferPairRegistered(CallerEndpoint(id))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               13.7.2.1   Failure condition ordering
+               The FFA_RXTX_UNMAP command does not have any failure condition orderings.
+               13.7.3 Success conditions
+  ID                          Condition
+  success                     post: ResultEqual(result, FFA_SUCCESS)
+  buffer_unmapped             post: !IsRxTxBufferPairMappedInCalleeRegime(CallerEndpoint(id))
+               13.7.4 Footprint
+    ID                        Value
+    buffer_unmapped           RxTxBufferPairMapping(CallerEndpoint(id))

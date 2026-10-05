@@ -1,0 +1,37 @@
+17.7 sbi_sse_read_attrs command
+               Reads a range of event attribute values from a software event.
+               17.7.1 Interface
+               17.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt64                                FID, value 0
+        event_id            a0           31:0        UInt32                                Software event ID
+        base_attr_id        a1           31:0        UInt32                                First event attribute ID in the range to read
+        attr_count          a2           31:0        UInt32                                Number of event attributes to read
+        output_phys_lo      a3           XLEN-1:0    Address                               Lower XLEN bits of the output shared memory physical address
+        output_phys_hi      a4           XLEN-1:0    Address                               Upper XLEN bits of the output shared memory physical address
+               17.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Command return status
+               17.7.2 Failure conditions
+  ID                          Condition
+  event_unsupported           pre: !IsReservedEventId(event_id) && IsValidEventId(event_id) && !PlatformSupportsEvent(event_id)
+                              post: ResultEqual(error, SBI_ERR_NOT_SUPPORTED)
+  event_invalid               pre: !IsValidEventId(event_id)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  attr_count_zero             pre: attr_count == 0
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  attr_reserved               pre: exists|i: UInt32| i < attr_count && IsReservedEventAttrId(base_attr_id + i)
+                              post: ResultEqual(error, SBI_ERR_BAD_RANGE)
+  shmem_invalid               pre: (output_phys_lo % (XLEN / 8) != 0) || !SatisfiesSharedMemoryRequirements(output_phys_lo, output_phys_hi, (XLEN / 8) * attr_count)
+                              post: ResultEqual(error, SBI_ERR_INVALID_ADDRESS)
+  read_failed                 pre: EventAttrReadFailed(event_id, base_attr_id, attr_count)
+                              post: ResultEqual(error, SBI_ERR_FAILED)
+               17.7.2.1   Failure condition ordering
+               The sbi_sse_read_attrs command does not have any failure condition orderings.
+               17.7.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  attr_values                 post: forall|i: UInt32| i < attr_count ==> SharedMemoryWordAt(output_phys_lo, output_phys_hi, (XLEN / 8) * (base_attr_id + i)) == EventAttrValue(event_id, base_attr_id + i)
+               17.7.4 Footprint
+    ID                        Value
+    attr_values               SharedMemory(output_phys_lo, output_phys_hi, (XLEN / 8) * attr_count)

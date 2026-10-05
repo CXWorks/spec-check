@@ -1,0 +1,30 @@
+13.4 FFA_RX_ACQUIRE command
+               Acquires ownership of an RX buffer before a message is written to it.
+               13.4.1 Interface
+               13.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x84000084
+        vm_id               W1           15:0        UInt16                                ID of the VM whose RX buffer ownership is to be acquired
+        reserved            W1           31:16       UInt16                                Reserved (SBZ)
+        reserved            W2-W7        31:0        UInt32                                Reserved (SBZ)
+               13.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                FFA_SUCCESS or FFA_ERROR function ID
+        error_code          W2           31:0        Int32                                 Error code, valid when result is FFA_ERROR
+               13.4.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_RX_ACQUIRE)
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, NOT_SUPPORTED)
+  no_buffer_pair              pre: !IsBufferPairRegistered(vm_id)
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, INVALID_PARAMETERS)
+  denied                      pre: !CalleeCanRelinquishRxBuffer(vm_id)
+                              post: ResultEqual(result, FFA_ERROR) && ResultEqual(error_code, DENIED)
+               13.4.2.1   Failure condition ordering
+               The FFA_RX_ACQUIRE command does not have any failure condition orderings.
+               13.4.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  rx_owner                    post: RxBufferOwnedByCaller(vm_id)
+               13.4.4 Footprint
+    ID                        Value
+    rx_owner                  RxBufferOwnership(vm_id)

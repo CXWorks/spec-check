@@ -1,0 +1,38 @@
+3.5.6.6 PERFORMANCE_QOS_CAPABILITY_SUBTYPES command
+               Returns the QoS capability Subtypes supported for a specified QoS capability Type. This command is mandatory if the platform supports QoS capabilities.
+               3.5.6.6.1 Interface
+               3.5.6.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0xD
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x13
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the performance domain
+        capability_type     Payload[1]   31:16       UInt32                                Reserved, must be zero
+                            Payload[1]   15          UInt32                                QoS capability Type range: 0 = architected range, 1 = OEM range
+                            Payload[1]   14:8        UInt32                                Reserved, must be zero
+                            Payload[1]   7:0         UInt32                                QoS capability Type bitmap. Only one bit must be set, and it indicates the target QoS capability Type
+               3.5.6.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        capability_subtypes Payload[1]   31:24       UInt32                                Reserved, must be zero
+                            Payload[1]   23:16       UInt32                                OEM QoS capability Subtype bitmap. Multiple bits may be set
+                            Payload[1]   15:8        UInt32                                Reserved, must be zero
+                            Payload[1]   7:0         UInt32                                Architected QoS capability Subtype bitmap. Multiple bits may be set
+               3.5.6.6.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerfDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  type_valid                  pre: !IsValidQosCapabilityType(domain_id, capability_type)
+                              post: ResultEqual(status, NOT_FOUND)
+  type_single                 pre: PopCount(Bits(capability_type, 7, 0)) > 1
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.5.6.6.2.1   Failure condition ordering
+  [domain_valid] < [type_valid]
+               3.5.6.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  subtypes_reserved_hi        post: Bits(capability_subtypes, 31, 24) == 0
+  subtypes_oem                post: Bits(capability_subtypes, 23, 16) == SupportedOemQosSubtypes(domain_id, capability_type)
+  subtypes_reserved_lo        post: Bits(capability_subtypes, 15, 8) == 0
+  subtypes_arch               post: Bits(capability_subtypes, 7, 0) == SupportedArchitectedQosSubtypes(domain_id, capability_type)
+               3.5.6.6.4 Footprint
+               The PERFORMANCE_QOS_CAPABILITY_SUBTYPES command does not modify any state.

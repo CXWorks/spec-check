@@ -1,0 +1,25 @@
+12.3 FFA_SUCCESS command
+               Returns results on successful completion of a previous invocation of an FF-A function.
+               12.3.1 Interface
+               12.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0x84000061 or 0xC4000061 (FFA_SUCCESS64)
+        target_info         X1           31:0        UInt32                                Information to identify the target SP/VM. Valid only when the SMC conduit is used at the Non-secure virtual FF-A instance. MBZ otherwise.
+        target_id           X1           31:16       UInt16                                ID of the SP/VM
+        target_vcpu_id      X1           15:0        UInt16                                ID of the vCPU of the SP/VM to deliver results to
+        results             X2-X7 / X2-X17  63:0     UInt32/UInt64                         FF-A function-specific return results. See the function definition for the result encoding. Reserved (SBZ) if not explicitly specified.
+               12.3.1.2   Output values
+               The FFA_SUCCESS command does not have any output values.
+               12.3.2 Failure conditions
+               The FFA_SUCCESS command does not have any failure conditions.
+               12.3.2.1   Failure condition ordering
+               The FFA_SUCCESS command does not have any failure condition orderings.
+               12.3.3 Success conditions
+  ID                          Condition
+  results_delivered           post: ResultsReturnedToInvoker(PreviousInvocation(), results)
+  target_vcpu                 post: (ConduitIsSmc() && InstanceIsNonSecureVirtual()) ==> ResultsDeliveredToVcpu(Bits(target_info, 31, 16), Bits(target_info, 15, 0), results)
+  target_info_mbz             post: !(ConduitIsSmc() && InstanceIsNonSecureVirtual()) ==> target_info == 0
+  fid_64                      post: fid == 0xC4000061 ==> (AnyResultIs64Bit(results) || CallerImplementsOnlySmc64Fids())
+               12.3.4 Footprint
+    ID                        Value
+    invoker_results           ResultRegisters(PreviousInvocation())

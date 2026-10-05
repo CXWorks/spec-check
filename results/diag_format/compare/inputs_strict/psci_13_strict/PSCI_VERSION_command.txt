@@ -1,0 +1,22 @@
+5.3 PSCI_VERSION command
+               Returns the current version of the PSCI interface.
+               5.3.1 Interface
+               5.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID of PSCI_VERSION
+               5.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        version             X0           30:0        UInt31                                Interface version. Bits 30:16 hold the major revision and bits 15:0 hold the minor revision
+               5.3.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !IsImplemented(PSCI_VERSION)
+                              post: ResultEqual(version, NOT_SUPPORTED)
+               5.3.2.1   Failure condition ordering
+               The PSCI_VERSION command does not have any failure condition orderings.
+               5.3.3 Success conditions
+  ID                          Condition
+  ver_major                   post: Bits(version, 30, 16) == ImplementedMajorRevision()
+  ver_minor                   post: Bits(version, 15, 0) == ImplementedMinorRevision()
+  ver_compat                  post: forall|f: PsciFunction| (IsInRevision(f, MajorRevision(version), MinorRevisionLowerThan(version)) ==> IsCompatibleInRevision(f, version))
+               5.3.4 Footprint
+               The PSCI_VERSION command does not modify any state.

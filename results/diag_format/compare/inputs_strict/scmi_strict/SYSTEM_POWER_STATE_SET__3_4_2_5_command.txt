@@ -1,0 +1,40 @@
+3.4.2.5 SYSTEM_POWER_STATE_SET command
+               Powers down or resets the system. Only agents other than a PSCI implementation may use system power-up, and only on systems that implement the OSPM system view (see Section 3.4.1). This command is mandatory.
+               3.4.2.5.1 Interface
+               3.4.2.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       —           UInt                                  Protocol identifier, value 0x12
+        message_id          Header       —           UInt                                  Message identifier, value 0x3
+        flags               Payload      31:0        UInt32                                Bits[31:1]: Reserved, must be zero.
+                                                                                           Bit[0]: Graceful request (ignored for power-up requests).
+                                                                                           1 = graceful request, 0 = forceful request
+        system_state        Payload      31:0        UInt32                                Requested system power state:
+                                                                                           0x0 System shutdown
+                                                                                           0x1 System cold reset
+                                                                                           0x2 System warm reset
+                                                                                           0x3 System power-up
+                                                                                           0x4 System suspend
+                                                                                           0x5 – 0x7FFFFFFF Reserved, must not be used
+                                                                                           0x80000000 – 0xFFFFFFFF Might be used for vendor-defined
+                                                                                           system power states, which can include additional parameters
+               3.4.2.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status (see Section 3.1.4)
+               3.4.2.5.2 Failure conditions
+  ID                          Condition
+  state_valid                 pre: !IsValidSystemPowerState(system_state)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  state_supported             pre: !IsSystemPowerStateSupportedForAgent(system_state, caller_agent)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  suspend_others_active       pre: system_state == 0x4 && (exists|cpu: ApplicationProcessor| cpu != caller_cpu && (CpuIsRunning(cpu) || CpuIsIdle(cpu)))
+                              post: ResultEqual(status, DENIED)
+               3.4.2.5.2.1   Failure condition ordering
+               The SYSTEM_POWER_STATE_SET command does not have any failure condition orderings.
+               3.4.2.5.3 Success conditions
+  ID                          Condition
+  power_up                    post: system_state == 0x3 ==> SystemPowerStateRequested(system_state)
+  graceful                    post: system_state != 0x3 && Bits(flags, 0, 0) == 1 ==> GracefulSystemPowerStateRequested(system_state)
+  forceful                    post: system_state != 0x3 && Bits(flags, 0, 0) == 0 ==> ForcefulSystemPowerStateRequested(system_state)
+               3.4.2.5.4 Footprint
+    ID                        Value
+    system_power_state        SystemPowerState()

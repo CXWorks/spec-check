@@ -1,0 +1,42 @@
+3.7.2.15 SENSOR_AXIS_NAME_GET command
+               Returns the extended names of the axes of a sensor, as an array of axis name descriptors. A single call might not return every descriptor. The number of descriptors returned depends on how many return values the transport supports. Callers can make more calls, and each call reports how many descriptors remain. Descriptors are returned in the normative order of the axes. For example, a triaxial accelerometer returns x, then y, then z.
+               This command is mandatory only if extended sensor axis names are supported. They are supported when Bit[9] of the axis_attributes_low field of SENSOR_AXIS_DESCRIPTION_GET is set to 1 (see Section 3.7.2.6).
+               3.7.2.15.1 Interface
+               3.7.2.15.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0xD
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x15
+        sensor_id           Payload[0]   31:0        UInt32                                Identifier for the sensor
+        axis_id             Payload[1]   31:0        UInt32                                Index of the first sensor axis to read in the sensor axis name descriptor array
+               3.7.2.15.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4)
+        flags               Payload[1]   31:26       UInt32                                Number of remaining axis name descriptors
+                                         25:6                                              Reserved, must be zero
+                                         5:0                                               Number of axis name descriptors returned by this call
+        desc                Payload[2..] -           AXIS_NAME_DESC[N]                     Array of axis name descriptors
+
+               AXIS_NAME_DESC structure
+        Name                Type         Description
+        axis_id             UInt32       Identifier for the axis of the sensor
+        name                UInt8[64]    NULL-terminated UTF-8 string of up to 64 bytes giving the axis extended name. The name should end with '_' followed by the sensor axis in uppercase, for example "acc_X" or "_X" for the x-axis of a triaxial accelerometer
+               3.7.2.15.2 Failure conditions
+  ID                          Condition
+  sensor_bound                pre: !IsValidSensor(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  axis_bound                  pre: !IsValidSensorAxis(sensor_id, axis_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  axis_support                pre: !SensorReportsValuesAlongAxis(sensor_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.7.2.15.2.1   Failure condition ordering
+               [sensor_bound] < [axis_bound]
+               3.7.2.15.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags_rsvd                  post: Bits(flags, 25, 6) == 0
+  desc_count                  post: Bits(flags, 5, 0) == DescriptorCount(desc)
+  desc_remaining              post: Bits(flags, 31, 26) == RemainingAxisNameDescriptors(sensor_id, axis_id, Bits(flags, 5, 0))
+  desc_order                  post: forall|i: UInt32| i < Bits(flags, 5, 0) ==> desc[i].axis_id == SensorAxisAtIndex(sensor_id, axis_id + i)
+  desc_name                   post: forall|i: UInt32| i < Bits(flags, 5, 0) ==> IsNullTerminatedUtf8(desc[i].name, 64)
+               3.7.2.15.4 Footprint
+               The SENSOR_AXIS_NAME_GET command does not have a footprint.

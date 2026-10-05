@@ -1,0 +1,26 @@
+3.3.2.7 POWER_STATE_GET command
+               Gets the current power state of a power domain. This command is mandatory.
+               Note: The returned power_state value may already be out of date when the command completes. Another state change request could have started and finished in the meantime.
+               3.3.2.7.1 Interface
+               3.3.2.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt32                                Message identifier, value 0x5
+        protocol_id         Header       —           UInt32                                Protocol identifier, value 0x11
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the power domain
+               3.3.2.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4 for more status codes)
+        power_state         Payload[1]   31:0        UInt32                                Platform-specific power state of this domain. For device power domains, encoded as described in Table 6
+               3.3.2.7.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowerDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.3.2.7.2.1   Failure condition ordering
+               The POWER_STATE_GET command does not have any failure condition orderings.
+               3.3.2.7.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  power_state                 post: ReportsCurrentPowerState(domain_id, power_state)
+  device_encoding             post: IsDevicePowerDomain(domain_id) ==> IsDevicePowerStateEncoding(power_state)
+               3.3.2.7.4 Footprint
+               The POWER_STATE_GET command does not modify any state.

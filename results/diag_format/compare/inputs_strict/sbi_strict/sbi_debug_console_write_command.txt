@@ -1,0 +1,31 @@
+12.1 sbi_debug_console_write command
+               Write bytes to the debug console from input memory.
+               12.1.1 Interface
+               12.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 0
+        num_bytes           a0           XLEN-1:0    UInt                                  Number of bytes in the input memory
+        base_addr_lo        a1           XLEN-1:0    Address                               Lower XLEN bits of the input memory physical base address
+        base_addr_hi        a2           XLEN-1:0    Address                               Upper XLEN bits of the input memory physical base address
+               12.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    SbiErrorCode                          Command return status (sbiret.error)
+        uvalue              a1           XLEN-1:0    UInt                                  Number of bytes written (sbiret.uvalue)
+               12.1.2 Failure conditions
+  ID                          Condition
+  mem_param                   pre: !IsValidSharedMemory(num_bytes, base_addr_lo, base_addr_hi)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  console_denied              pre: !DebugConsoleWriteAllowed()
+                              post: ResultEqual(result, SBI_ERR_DENIED)
+  console_io                  pre: DebugConsoleIoError()
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+               12.1.2.1   Failure condition ordering
+               The sbi_debug_console_write command does not have any failure condition orderings.
+               12.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  count                       post: uvalue <= num_bytes
+  written                     post: DebugConsoleWritten(PhysAddr(base_addr_hi, base_addr_lo), uvalue)
+               12.1.4 Footprint
+    ID                        Value
+    console                   DebugConsoleOutput()

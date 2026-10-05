@@ -1,0 +1,47 @@
+15.4 FFA_MSG_SEND_DIRECT_REQ2 command
+               Sends a Partition message in parameter registers as a request to a Receiver endpoint, runs the endpoint and blocks until a response is available. The UUID parameter is used as described in 6.2.3 Protocol UUID usage.
+               Valid FF-A instances and conduits: Non-secure physical (SMC); Secure physical (SMC, ERET); Non-secure virtual (SMC, HVC, ERET); Secure virtual (SMC, HVC, SVC, ERET).
+               15.4.1 Interface
+               15.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FID, value 0xC400008D
+        sender_id           W1           31:16       UInt16                                Sender endpoint ID
+        receiver_id         W1           15:0        UInt16                                Receiver endpoint ID
+        uuid_lo             X2           63:0        UInt64                                Bytes[0...7] of UUID, byte 0 in the low-order bits (6.2.3.2 UUID encodings)
+        uuid_hi             X3           63:0        UInt64                                Bytes[8...15] of UUID, byte 8 in the low-order bits (6.2.3.2 UUID encodings)
+        impdef_args         X4-X17       63:0        UInt64                                IMPLEMENTATION DEFINED values
+               15.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        ret_fid             W0           31:0        UInt32                                Function ID of the interface the callee invokes to complete the request
+        result              W2           31:0        Int32                                 Error code, when ret_fid is FFA_ERROR
+               15.4.2 Failure conditions
+  ID                          Condition
+  endpoint_id                 pre: !IsValidEndpointId(sender_id) || !IsValidEndpointId(receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  uuid                        pre: !IsRecognizedUuid(receiver_id, uuid_lo, uuid_hi)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  callee_state                pre: !CalleeCanHandleRequest(receiver_id)
+                              post: ResultEqual(result, DENIED)
+  caller_perm                 pre: !CallerMayInvokeDirectReq2(sender_id)
+                              post: ResultEqual(result, DENIED)
+  recv_support                pre: !SupportsDirectReqReceipt(receiver_id)
+                              post: ResultEqual(result, DENIED)
+  not_impl                    pre: !IsImplementedAtInstance(FFA_MSG_SEND_DIRECT_REQ2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  recv_busy                   pre: RuntimeState(receiver_id) == RUNNING || RuntimeState(receiver_id) == BLOCKED || RuntimeState(receiver_id) == PREEMPTED
+                              post: ResultEqual(result, BUSY)
+  recv_aborted                pre: EndpointHasAborted(receiver_id)
+                              post: ResultEqual(result, ABORTED)
+  recv_not_ready              pre: !EndpointReadyForRequest(receiver_id)
+                              post: ResultEqual(result, NOT_READY)
+               15.4.2.1   Failure condition ordering
+               The FFA_MSG_SEND_DIRECT_REQ2 command does not have any failure condition orderings.
+               15.4.3 Success conditions
+  ID                          Condition
+  completion                  post: ret_fid == FFA_MSG_SEND_DIRECT_RESP2 || ret_fid == FFA_INTERRUPT || ret_fid == FFA_YIELD || ret_fid == FFA_SUCCESS
+  interrupted                 post: ret_fid == FFA_INTERRUPT ==> MustResumeViaFfaRun(receiver_id)
+  yielded                     post: ret_fid == FFA_YIELD ==> RuntimeState(receiver_id) == BLOCKED && MustResumeViaFfaRun(receiver_id)
+  success_mbz                 post: ret_fid == FFA_SUCCESS ==> OtherParamRegistersAreZero()
+               15.4.4 Footprint
+    ID                        Value
+    recv_state                RuntimeState(receiver_id)

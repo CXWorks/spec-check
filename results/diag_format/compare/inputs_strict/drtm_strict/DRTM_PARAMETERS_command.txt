@@ -1,0 +1,68 @@
+3.13 DRTM_PARAMETERS command
+               Input parameters for the DRTM dynamic launch. The DCE preamble creates them. They describe the dynamic launch features, the DLME region and any Normal world DCE image.
+               3.13.1 Interface
+               3.13.1.1   Input values
+        Name                    Register     Bits        Type                Description
+        revision                Mem+0        15:0        UInt16              Revision of this data structure
+        reserved                Mem+2        15:0        UInt16              Reserved
+        launch_features         Mem+4        31:0        Bits32              Optional features selected for the dynamic launch
+        dlme_region_address     Mem+8        63:0        Address             Starting PA of the DLME region
+        dlme_region_size        Mem+16       63:0        UInt64              Size of the DLME region in bytes
+        dlme_image_start        Mem+24       63:0        UInt64              Offset in bytes to the start of the DLME image within the DLME region
+        dlme_entry_point_offset Mem+32       63:0        UInt64              Offset in bytes from the start of the DLME image to the DLME image entry point
+        dlme_image_size         Mem+40       63:0        UInt64              Size of the DLME executable image in bytes
+        dlme_data_offset        Mem+48       63:0        UInt64              Offset in bytes to the DLME data within the DLME region
+        nwd_dce_region_address  Mem+56       63:0        Address             PA of the Normal world DCE region
+        nwd_dce_region_size     Mem+64       63:0        UInt64              Size of the Normal world DCE region in bytes
+        mpt_address             Mem+72       63:0        Address             PA of the memory protection table
+        mpt_size                Mem+80       63:0        UInt64              Size of the memory protection table in bytes
+
+        launch_features bit fields:
+        Bits[31:8]  Reserved
+        Bit[7]      Request to disable Secure interrupts during dynamic launch (0: not requested, 1: requested)
+        Bit[6]      DLME image authentication (0: not requested, 1: requested)
+        Bits[5:3]   Memory protection type (0: All, complete DMA protection; 1: Region, region-based DMA protection; 2-7: Reserved)
+        Bits[2:1]   Requested PCR Usage Schema (0: Default Schema; 1: DLME Authorities Schema; 2-3: Reserved)
+        Bit[0]      Type of hashing (0: firmware-based hashing; 1: TPM-based hashing)
+               3.13.1.2   Output values
+               The DRTM_PARAMETERS command does not have any output values.
+               3.13.2 Failure conditions
+  ID                          Condition
+  revision                    pre: params.revision != 2
+                              post: DynamicLaunchFails(params)
+  reserved                    pre: params.reserved != 0
+                              post: DynamicLaunchFails(params)
+  feat_rsvd                   pre: Bits(params.launch_features, 31, 8) != 0
+                              post: DynamicLaunchFails(params)
+  params_ns                   pre: !IsNonSecureContiguous(ParamsAddr(params), DrtmParametersSize(params))
+                              post: DynamicLaunchFails(params)
+  params_align                pre: !IsAligned(ParamsAddr(params), 4096)
+                              post: DynamicLaunchFails(params)
+  range_overlap               pre: ParameterRangesOverlap(params)
+                              post: DynamicLaunchFails(params)
+  range_wrap                  pre: ParameterRangesWrap(params)
+                              post: DynamicLaunchFails(params)
+  image_bound                 pre: params.dlme_image_start + params.dlme_image_size > params.dlme_region_size
+                              post: DynamicLaunchFails(params)
+  entry_bound                 pre: params.dlme_entry_point_offset >= params.dlme_image_size
+                              post: DynamicLaunchFails(params)
+  dlme_region                 pre: !DlmeRegionIsValid(params.dlme_region_address, params.dlme_region_size)
+                              post: DynamicLaunchFails(params)
+  dce_ns                      pre: NwdDceInUse(params) && !IsNonSecureContiguous(params.nwd_dce_region_address, params.nwd_dce_region_size)
+                              post: DynamicLaunchFails(params)
+  dce_align                   pre: NwdDceInUse(params) && !IsAligned(params.nwd_dce_region_address, 4096)
+                              post: DynamicLaunchFails(params)
+  dce_unused                  pre: !NwdDceInUse(params) && (params.nwd_dce_region_address != 0 || params.nwd_dce_region_size != 0)
+                              post: DynamicLaunchFails(params)
+  schema_auth                 pre: Bits(params.launch_features, 2, 1) == 1 && Bits(params.launch_features, 6, 6) == 0
+                              post: DynamicLaunchFails(params)
+  mpt_align                   pre: !IsAligned(params.mpt_address, 4096)
+                              post: DynamicLaunchFails(params)
+  mpt_unused                  pre: Bits(params.launch_features, 5, 3) != 1 && (params.mpt_address != 0 || params.mpt_size != 0)
+                              post: DynamicLaunchFails(params)
+               3.13.2.1   Failure condition ordering
+               The DRTM_PARAMETERS command does not have any failure condition orderings.
+               3.13.3 Success conditions
+               The DRTM_PARAMETERS command does not have any success conditions.
+               3.13.4 Footprint
+               The DRTM_PARAMETERS command does not have a footprint.

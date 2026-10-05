@@ -1,0 +1,21 @@
+19.3 sbi_debug_read_triggers command
+               Reads the debug trigger state and configuration into shared memory for a range of debug triggers on the calling hart.
+               19.3.1 Interface
+               19.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt64                                FID, value 2
+        trig_idx_base       —            XLEN-1:0    unsigned long                         Index of the first debug trigger in the range
+        trig_count          —            XLEN-1:0    unsigned long                         Number of debug triggers in the range
+               19.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        ret                 —            —           struct sbiret                         Command return value
+               19.3.2 Failure conditions
+               This section does not define any failure conditions for the sbi_debug_read_triggers command.
+               19.3.2.1   Failure condition ordering
+               The sbi_debug_read_triggers command does not have any failure condition orderings.
+               19.3.3 Success conditions
+  ID                          Condition
+  trig_state                  post: forall|i: UInt64| (i < trig_count) ==> SharedMemoryHoldsTriggerStateLE(CallingHart(), trig_idx_base + i, i * (XLEN / 2), 4)
+               19.3.4 Footprint
+    ID                        Value
+    trig_state                SharedMemory(CallingHart())

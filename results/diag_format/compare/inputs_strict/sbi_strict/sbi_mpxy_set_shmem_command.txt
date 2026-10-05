@@ -1,0 +1,27 @@
+20.6 sbi_mpxy_set_shmem command
+               Sets the shared memory for sending and receiving messages on the calling hart. FID #1.
+               20.6.1 Interface
+               20.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        shmem_phys_lo       -            XLEN-1:0    unsigned long                         Lower XLEN bits of the shared memory physical base address. Must be 4096-byte aligned. All-ones in both shmem_phys_lo and shmem_phys_hi disables shared memory.
+        shmem_phys_hi       -            XLEN-1:0    unsigned long                         Upper XLEN bits of the shared memory physical base address. All-ones in both shmem_phys_lo and shmem_phys_hi disables shared memory.
+        flags               -            XLEN-1:0    unsigned long                         Shared memory setup configuration. Bits XLEN-1:2 are reserved and must be zero. Bits 1:0 select the shared memory setup mode.
+               20.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        ret                 -            -           struct sbiret                         Function return status
+               20.6.2 Failure conditions
+               The sbi_mpxy_set_shmem function does not have any failure conditions specified.
+               20.6.2.1   Failure condition ordering
+               The sbi_mpxy_set_shmem function does not have any failure condition orderings.
+               20.6.3 Success conditions
+  ID                          Condition
+  shmem_base                  post: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> SharedMemoryBase(CallingHart()) == ConcatPhysAddr(shmem_phys_hi, shmem_phys_lo)
+  shmem_size                  post: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> SharedMemorySize(CallingHart()) == MpxyGetShmemSize()
+  shmem_disabled              post: (IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) ==> SharedMemoryDisabled(CallingHart())
+  shmem_mode                  post: SharedMemorySetupMode(CallingHart()) == Bits(flags, 1, 0)
+               20.6.4 Footprint
+    ID                        Value
+    shmem_base                SharedMemoryBase(CallingHart())
+    shmem_size                SharedMemorySize(CallingHart())
+    shmem_disabled            SharedMemoryDisabled(CallingHart())
+    shmem_mode                SharedMemorySetupMode(CallingHart())

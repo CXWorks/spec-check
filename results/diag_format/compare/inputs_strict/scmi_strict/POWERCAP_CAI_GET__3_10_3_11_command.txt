@@ -1,0 +1,33 @@
+3.10.3.11 POWERCAP_CAI_GET command
+               Gets the power capping measurement averaging interval (CAI) that is currently enforced for a domain.
+               The returned CAI value can be stale by the time the command completes. Another CAI change request may have been started and completed in the meantime.
+               This command is mandatory if any domain supports reading the CAI.
+               3.10.3.11.1 Interface
+               3.10.3.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0xE
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x18
+        domain_id           Param[0]     31:0        UInt32                                Identifier for the power capping domain
+        cpli                Param[1]     31:0        UInt32                                Concurrent power limit identifier. Must be 0 if the domain does not support CPC
+               3.10.3.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status (see Section 3.1.4)
+        cai                 Return[1]    31:0        UInt32                                Power capping averaging interval set for the domain and cpli
+               3.10.3.11.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cpli_valid                  pre: !IsValidCpli(domain_id, cpli)
+                              post: ResultEqual(status, NOT_FOUND)
+  cpli_no_cpc                 pre: !DomainSupportsCpc(domain_id) && cpli != 0
+                              post: ResultEqual(status, NOT_FOUND)
+  supported                   pre: !IsCaiGetSupported(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.10.3.11.2.1   Failure condition ordering
+               The POWERCAP_CAI_GET command does not have any failure condition orderings.
+               3.10.3.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  cai_value                   post: cai == CurrentCai(domain_id, cpli)
+               3.10.3.11.4 Footprint
+               The POWERCAP_CAI_GET command does not modify any state.

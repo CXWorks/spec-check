@@ -1,0 +1,29 @@
+11.13 sbi_pmu_snapshot_set_shmem command
+               Sets and enables the PMU snapshot shared memory on the calling hart, or clears and disables it.
+               11.13.1 Interface
+               11.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 7
+        shmem_phys_lo       a0           XLEN-1:0    unsigned long                         Lower XLEN bits of the snapshot shared memory physical base address. Must be 4096-byte (page) aligned. If both this value and shmem_phys_hi are all-ones bitwise, the PMU snapshot shared memory is cleared and disabled.
+        shmem_phys_hi       a1           XLEN-1:0    unsigned long                         Upper XLEN bits of the snapshot shared memory physical base address. If both this value and shmem_phys_lo are all-ones bitwise, the PMU snapshot shared memory is cleared and disabled.
+        flags               a2           XLEN-1:0    unsigned long                         Flags
+               11.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    long                                  Error field of struct sbiret
+        value               a1           XLEN-1:0    unsigned long                         Value field of struct sbiret
+               11.13.2 Failure conditions
+               The section does not give any failure conditions or error codes.
+               11.13.2.1   Failure condition ordering
+               The sbi_pmu_snapshot_set_shmem command does not have any failure condition orderings.
+               11.13.3 Success conditions
+  ID                          Condition
+  shmem_enabled               post: !(shmem_phys_lo == ALL_ONES && shmem_phys_hi == ALL_ONES) ==> PmuSnapshotShmemEnabled(CallingHart())
+  shmem_base                  post: !(shmem_phys_lo == ALL_ONES && shmem_phys_hi == ALL_ONES) ==> PmuSnapshotShmemBase(CallingHart()) == ConcatXlen(shmem_phys_hi, shmem_phys_lo)
+  shmem_size                  post: !(shmem_phys_lo == ALL_ONES && shmem_phys_hi == ALL_ONES) ==> PmuSnapshotShmemSize(CallingHart()) == 4096
+  shmem_layout                post: !(shmem_phys_lo == ALL_ONES && shmem_phys_hi == ALL_ONES) ==> PmuSnapshotShmemLayoutMatchesTable45(CallingHart())
+  shmem_disabled              post: (shmem_phys_lo == ALL_ONES && shmem_phys_hi == ALL_ONES) ==> !PmuSnapshotShmemEnabled(CallingHart())
+  shmem_cleared               post: (shmem_phys_lo == ALL_ONES && shmem_phys_hi == ALL_ONES) ==> PmuSnapshotShmemCleared(CallingHart())
+               11.13.4 Footprint
+    ID                        Value
+    shmem_enabled             PmuSnapshotShmemEnabled(CallingHart())
+    shmem_base                PmuSnapshotShmemBase(CallingHart())

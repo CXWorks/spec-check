@@ -1,0 +1,41 @@
+3.5.6.8 PERFORMANCE_DESCRIBE_LEVELS command
+               Returns the discrete performance levels that the platform supports for a performance domain. For each level it gives the performance level value, power cost, transition latency, indicative clock frequency and level index.
+               3.5.6.8.1 Interface
+               3.5.6.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0x4
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x13
+        domain_id           Param[0]     31:0        UInt32                                Identifier for the performance domain
+        skip_index          Param[1]     31:0        UInt32                                Number of performance levels to skip over, in ascending order of level value, before the first level in the returned array. This is not the level index used in Level Indexing Mode
+               3.5.6.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status
+        num_levels          Return[1]    31:16       UInt32                                Number of remaining performance levels
+                                         15:12                                             Reserved, must be zero
+                                         11:0                                              Number of performance levels returned by this call (N)
+        perf_levels         Return[2..]  31:0        {UInt32, UInt32, UInt32, UInt32,      Array of N performance level entries in ascending order. Each entry has five 32-bit words:
+                                                     UInt32}[N]                            entry[0] Performance level value;
+                                                                                           entry[1] Power cost (0 = not reported);
+                                                                                           entry[2] Attributes: Bits[31:16] reserved, must be zero; Bits[15:0] worst-case transition latency in microseconds from any supported level to this level;
+                                                                                           entry[3] Indicative frequency in kHz (0 = not reported);
+                                                                                           entry[4] Level index (the agent ignores it when Bit[25] of the PERFORMANCE_DOMAIN_ATTRIBUTES attributes field is 0)
+               3.5.6.8.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerfDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.8.2.1   Failure condition ordering
+               The PERFORMANCE_DESCRIBE_LEVELS command does not have any failure condition orderings.
+               3.5.6.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  num_rsvd                    post: Bits(num_levels, 15, 12) == 0
+  levels_skip                 post: PerfLevelsStartAfterSkipped(domain_id, skip_index, perf_levels)
+  levels_remaining            post: Bits(num_levels, 31, 16) == NumRemainingPerfLevels(domain_id, skip_index, Bits(num_levels, 11, 0))
+  levels_order                post: forall|i: UInt32| (i + 1 < Bits(num_levels, 11, 0)) ==> PerfLevelValue(perf_levels, i) < PerfLevelValue(perf_levels, i + 1)
+  attr_rsvd                   post: forall|i: UInt32| (i < Bits(num_levels, 11, 0)) ==> Bits(PerfLevelAttributes(perf_levels, i), 31, 16) == 0
+  latency                     post: forall|i: UInt32| (i < Bits(num_levels, 11, 0)) ==> Bits(PerfLevelAttributes(perf_levels, i), 15, 0) == WorstCaseTransitionLatencyUs(domain_id, PerfLevelValue(perf_levels, i))
+  power_cost                  post: forall|i: UInt32| (i < Bits(num_levels, 11, 0)) ==> (PerfLevelPowerCost(perf_levels, i) == 0 || IsLinearPowerScale(domain_id, PerfLevelPowerCost(perf_levels, i)))
+  freq                        post: forall|i: UInt32| (i < Bits(num_levels, 11, 0) && PerfLevelIndicativeFreq(perf_levels, i) != 0) ==> PerfLevelIndicativeFreq(perf_levels, i) == DomainClockFrequencyKhz(domain_id, PerfLevelValue(perf_levels, i))
+  level_index                 post: forall|i: UInt32| (i < Bits(num_levels, 11, 0) && LevelIndexingModeEnabled(domain_id)) ==> PerfLevelIndex(perf_levels, i) == LevelIndexOf(domain_id, PerfLevelValue(perf_levels, i))
+               3.5.6.8.4 Footprint
+               The PERFORMANCE_DESCRIBE_LEVELS command does not modify any state.

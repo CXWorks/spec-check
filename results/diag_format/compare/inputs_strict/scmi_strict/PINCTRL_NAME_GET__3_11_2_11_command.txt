@@ -1,0 +1,28 @@
+3.11.2.11 PINCTRL_NAME_GET command
+               Returns the extended name associated with a pin, group, or function.
+               3.11.2.11.1 Interface
+               3.11.2.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x9
+        protocol_id         Header       7:0         UInt8                                 Protocol ID, value 0x19
+        identifier          Param[0]     31:0        UInt32                                Identifier for the pin, group, or function. Only bits[15:0] are used; the platform ignores bits[31:16]
+        flags               Param[1]     31:0        UInt32                                Bits[31:2]: Reserved, must be zero. Bits[1:0]: Selector (0 = Pin, 1 = Group, 2 = Function; other values reserved)
+               3.11.2.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status
+        flags               Return[1]    31:0        UInt32                                Reserved, must be zero
+        name                Return[2..]  64 bytes    UInt8[64]                             Null-terminated ASCII string of up to 64 bytes giving the extended pin, group, or function name
+               3.11.2.11.2 Failure conditions
+  ID                          Condition
+  ident_exists                pre: !PinctrlEntityExists(Bits(flags, 1, 0), Bits(identifier, 15, 0))
+                              post: ResultEqual(status, NOT_FOUND)
+               3.11.2.11.2.1   Failure condition ordering
+               The PINCTRL_NAME_GET command does not have any failure condition orderings.
+               3.11.2.11.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  name                        post: name == ExtendedName(Bits(flags, 1, 0), Bits(identifier, 15, 0))
+  name_term                   post: IsNullTerminatedAscii(name, 64)
+  out_flags                   post: flags == 0
+               3.11.2.11.4 Footprint
+               The PINCTRL_NAME_GET command does not modify any state.

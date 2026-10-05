@@ -1,0 +1,26 @@
+17.14 sbi_sse_inject command
+               Injects a software event (FID #7).
+               17.14.1 Interface
+               17.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 7
+        event_id            a0           31:0        uint32_t                              ID of the event to be injected
+        hart_id             a1           XLEN-1:0    unsigned long                         For local events, the hart on which the event is to be injected. Ignored for global events.
+               17.14.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    struct sbiret error                   Command return status
+               17.14.2 Failure conditions
+               The section does not specify any failure conditions with error codes. Table 87 lists only SBI_SUCCESS.
+               17.14.2.1   Failure condition ordering
+               The sbi_sse_inject command does not have any failure condition orderings.
+               17.14.3 Success conditions
+  ID                          Condition
+  result_ok                   post: ResultEqual(result, SBI_SUCCESS)
+  inject_allowed              post: EventAttributeAllowsInjection(event_id)
+  inject_local                post: IsLocalEvent(event_id) ==> EventInjectedOnHart(event_id, hart_id)
+  inject_global               post: IsGlobalEvent(event_id) ==> EventInjected(event_id)
+  prio_higher                 post: (InSseEventHandler() && EventReadyToRun(event_id) && EventPriority(event_id) > EventPriority(RunningSseEvent())) ==> EventHandledImmediately(event_id)
+  prio_lower                  post: (InSseEventHandler() && EventReadyToRun(event_id) && EventPriority(event_id) < EventPriority(RunningSseEvent())) ==> EventRunsAfterCompletionOf(event_id, RunningSseEvent())
+               17.14.4 Footprint
+    ID                        Value
+    event_inject              SseEventAt(event_id, hart_id).injected

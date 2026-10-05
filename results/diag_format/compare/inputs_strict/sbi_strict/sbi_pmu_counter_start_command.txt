@@ -1,0 +1,32 @@
+11.9 sbi_pmu_counter_start command
+               Starts or enables a set of counters on the calling hart with the specified initial value.
+               11.9.1 Interface
+               11.9.1.1   Input values
+        Name                Register     Bits          Type                 Description
+        fid                 a6           XLEN-1:0      UInt                 FID, value 3
+        counter_idx_base    a0           XLEN-1:0      unsigned long        Base index of the set of counters
+        counter_idx_mask    a1           XLEN-1:0      unsigned long        Mask that selects counters relative to counter_idx_base
+        start_flags         a2           XLEN-1:0      unsigned long        Start flags (see below)
+        initial_value       a3           63:0          uint64_t             Initial value of the counters
+               start_flags bit definitions:
+        Flag Name                               Bits          Description
+        SBI_PMU_START_SET_INIT_VALUE            0:0           Set the value of the counters from initial_value
+        SBI_PMU_START_FLAG_INIT_SNAPSHOT        1:1           Initialize the given counters from shared memory, if available
+        RESERVED                                XLEN-1:2      Reserved for future use; must be zero
+               11.9.1.2   Output values
+        Name                Register     Bits          Type                 Description
+        error               a0           XLEN-1:0      sbiret.error         Command return status
+               11.9.2 Failure conditions
+               The error codes in Table 40 (PMU Counter Start Errors) are not part of this excerpt, so no failure conditions are listed.
+               11.9.2.1   Failure condition ordering
+               The sbi_pmu_counter_start command does not have any failure condition orderings.
+               11.9.3 Success conditions
+  ID                          Condition
+  ctr_started                 post: forall|i: CounterIndex| InCounterSet(counter_idx_base, counter_idx_mask, i) ==> CounterStarted(i)
+  ctr_init_value              post: Bits(start_flags, 0, 0) == 1 ==> (forall|i: CounterIndex| InCounterSet(counter_idx_base, counter_idx_mask, i) ==> CounterValue(i) == initial_value)
+  ctr_init_snapshot           post: Bits(start_flags, 1, 1) == 1 ==> (forall|i: CounterIndex| (InCounterSet(counter_idx_base, counter_idx_mask, i) && IsValidCounter(i)) ==> CounterValue(i) == SnapshotShmemCounterValue(i))
+  ctr_value_kept              post: (Bits(start_flags, 0, 0) == 0 && Bits(start_flags, 1, 1) == 0) ==> (forall|i: CounterIndex| InCounterSet(counter_idx_base, counter_idx_mask, i) ==> CounterValue(i) == PreCounterValue(i))
+               11.9.4 Footprint
+    ID                        Value
+    ctr_started               CounterStarted(i) for each i with InCounterSet(counter_idx_base, counter_idx_mask, i)
+    ctr_value                 CounterValue(i) for each i with InCounterSet(counter_idx_base, counter_idx_mask, i)

@@ -1,0 +1,26 @@
+3.8.2.4 PROTOCOL_MESSAGE_ATTRIBUTES command
+               On success, returns the implementation details for one message in this protocol.
+               This command is mandatory.
+               3.8.2.4.1 Interface
+               3.8.2.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         -            -           UInt                                  Protocol identifier, value 0x16
+        command_id          -            -           UInt                                  Message identifier of this command, value 0x2
+        message_id          -            31:0        uint32                                message_id of the message being queried
+               3.8.2.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              -            31:0        int32                                 Command return status. Section 3.1.4 defines more status codes
+        attributes          -            31:0        uint32                                Reserved, must be zero
+               3.8.2.4.2 Failure conditions
+  ID                          Condition
+  msg_not_found               pre: !IsMessageProvided(protocol_id, message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.8.2.4.2.1   Failure condition ordering
+               The PROTOCOL_MESSAGE_ATTRIBUTES command has no failure condition orderings.
+               3.8.2.4.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  msg_available               post: IsMessageImplementedAndAvailable(protocol_id, message_id)
+  attributes                  post: attributes == 0
+               3.8.2.4.4 Footprint
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not modify any state.

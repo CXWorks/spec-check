@@ -1,0 +1,25 @@
+3.2.2.10 BASE_NOTIFY_ERRORS command
+               Lets an agent register for notifications of platform errors. Implementing this command is optional.
+               3.2.2.10.1 Interface
+               3.2.2.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x8
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x10
+        notify_enable       Payload[0]   31:0        UInt32                                Bits[31:1]: Reserved, must be zero. Bit[0]: Notify enable. If 0, the platform does not send any BASE_ERROR_EVENT messages to the calling agent. If 1, the platform sends BASE_ERROR_EVENT messages to the calling agent when it detects an error.
+               3.2.2.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status. See Section 3.1.4.
+               3.2.2.10.2 Failure conditions
+  ID                          Condition
+  notify_enable_valid         pre: !IsValidNotifyEnable(notify_enable)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.2.2.10.2.1   Failure condition ordering
+               The BASE_NOTIFY_ERRORS command does not have any failure condition orderings.
+               3.2.2.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_on                   post: (Bits(notify_enable, 0, 0) == 1) ==> ErrorEventNotificationsEnabled(CallingAgent())
+  notify_off                  post: (Bits(notify_enable, 0, 0) == 0) ==> !ErrorEventNotificationsEnabled(CallingAgent())
+               3.2.2.10.4 Footprint
+    ID                        Value
+    notify_state              ErrorEventNotificationsEnabled(CallingAgent())

@@ -1,0 +1,24 @@
+15.9 sbi_nacl_sync_sret command
+               Synchronizes CSRs and HFENCEs in the nested acceleration shared memory and emulates the SRET instruction. This optional function is only available if the SBI_NACL_FEAT_SYNC_SRET feature is available.
+               15.9.1 Interface
+               15.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 4
+               15.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          sbiret.error: Error code, returned only on failure
+               15.9.2 Failure conditions
+               The section does not list the failure conditions. It refers to Table 74 for the possible error codes returned in sbiret.error, but that table is not part of this section.
+               15.9.2.1   Failure condition ordering
+               The sbi_nacl_sync_sret command does not have any failure condition orderings.
+               15.9.3 Success conditions
+  ID                          Condition
+  sync_csr                    post: NaclSharedMemoryCsrsSynchronized()
+  sync_hfence                 post: NaclSharedMemoryHfencesSynchronized()
+  sret_emulated               post: SretEmulated()
+  no_return                   post: !ReturnsToCaller()
+               15.9.4 Footprint
+    ID                        Value
+    shmem_csr                 NaclSharedMemory().csrs
+    shmem_hfence              NaclSharedMemory().hfences
+    sret_state                SretEmulationState()

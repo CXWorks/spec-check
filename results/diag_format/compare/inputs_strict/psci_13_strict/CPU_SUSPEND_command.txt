@@ -1,0 +1,39 @@
+5.4 CPU_SUSPEND command
+               Moves a topology node into a low-power state. The function is called from a core in that topology node. It indicates that the caller intends to use the core in the future but has no current work for it.
+               5.4.1 Interface
+               5.4.1.1   Input values
+        Name                   Register     Bits        Type                  Description
+        fid                    X0           63:0        UInt64                FID of CPU_SUSPEND
+        power_state            X1           31:0        Bits32                Requested power state, in Original format or Extended StateID format. Original format: PowerLevel in bits 25:24, StateType in bit 16, StateID in bits 15:0, other bits reserved and zero. Extended StateID format: StateType in bit 30, StateID in bits 27:0, other bits reserved and zero.
+        entry_point_address    X2           63:0        Address               Address where execution resumes at wakeup. A PA, or an IPA for a guest OS. Valid only for a powerdown StateType.
+        context_id             X3           63:0        UInt64                Value that the caller defines. It is preserved and placed in R0, W0 or X0 at the first Non-secure Exception level after wakeup from powerdown. Valid only for a powerdown StateType.
+               5.4.1.2   Output values
+        Name                   Register     Bits        Type                  Description
+        result                 X0           63:0        PsciReturnCode        Command return status
+               5.4.2 Failure conditions
+  ID                          Condition
+  pstate_invalid              pre: !IsValidPowerState(power_state)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  osi_child_lowpower          pre: IsOsInitiatedMode() && PowerLevel(power_state) > CORE_POWER_LEVEL && (exists|c: Core| IsChildOfNode(c, RequestedNode(power_state)) && IsInLocalLowPowerState(c) && IsIncompatibleWithRequest(c, power_state))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  entry_addr                  pre: StateType(power_state) == POWERDOWN && IsKnownUnavailableToCaller(entry_point_address)
+                              post: ResultEqual(result, INVALID_ADDRESS)
+  osi_denied                  pre: IsOsInitiatedMode() && PowerLevel(power_state) > CORE_POWER_LEVEL && (exists|c: Core| IsChildOfNode(c, RequestedNode(power_state)) && IsIncompatibleWithRequest(c, power_state)) && (forall|c: Core| (IsChildOfNode(c, RequestedNode(power_state)) && IsIncompatibleWithRequest(c, power_state)) ==> IsRunning(c))
+                              post: ResultEqual(result, DENIED)
+               5.4.2.1   Failure condition ordering
+               The CPU_SUSPEND command does not have any failure condition orderings.
+               5.4.3 Success conditions
+  ID                          Condition
+  standby_result              post: StateType(power_state) == STANDBY ==> ResultEqual(result, SUCCESS)
+  standby_state               post: StateType(power_state) == STANDBY ==> CoreStateUnchangedExceptTimersCpuInterfaceAndSmcRegisters(CurrentCore())
+  powerdown_resume            post: StateType(power_state) == POWERDOWN ==> (ResultEqual(result, SUCCESS) || CoreRestartsAtEntryPoint(CurrentCore(), entry_point_address))
+  powerdown_context           post: (StateType(power_state) == POWERDOWN && CoreRestartsAtEntryPoint(CurrentCore(), entry_point_address)) ==> FirstNonSecureElReg0Equals(CurrentCore(), context_id)
+  pc_coordination             post: IsPlatformCoordinatedMode() ==> EnteredStateNoDeeperThan(CurrentCore(), power_state)
+  osi_compliance              post: IsOsInitiatedMode() ==> EnteredStateEquals(RequestedNode(power_state), power_state)
+  cache_clean                 post: StateType(power_state) == POWERDOWN ==> CachesCleanedAndCoherencyManaged(RequestedNode(power_state))
+               5.4.4 Footprint
+    ID                        Value
+    node_power_state          PowerStateOf(RequestedNode(power_state))
+    core_power_state          PowerStateOf(CurrentCore())
+    saved_context_id          SavedContextId(CurrentCore())
+    node_caches               CachesOf(RequestedNode(power_state))

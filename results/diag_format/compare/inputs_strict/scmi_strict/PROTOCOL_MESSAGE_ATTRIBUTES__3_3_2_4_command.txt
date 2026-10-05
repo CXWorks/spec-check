@@ -1,0 +1,28 @@
+3.3.2.4 PROTOCOL_MESSAGE_ATTRIBUTES command
+               Returns the implementation details associated with a specific message in this protocol.
+               3.3.2.4.1 Interface
+               3.3.2.4.1.1   Input values
+        Name                Register        Bits        Type        Description
+        protocol_id         Header          —           UInt32      Protocol identifier, value 0x11
+        message_id          Header          —           UInt32      Message identifier of this command, value 0x2
+        message_id          Payload[0]      31:0        UInt32      message_id of the message being queried
+               3.3.2.4.1.2   Output values
+        Name                Register        Bits        Type        Description
+        status              Payload[0]      31:0        Int32       Command return status
+        attributes          Payload[1]      31:0        UInt32      Flags associated with the queried message
+               3.3.2.4.2 Failure conditions
+  ID                          Condition
+  msg_valid                   pre: !IsValidMessageId(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  msg_impl                    pre: !IsMessageImplemented(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.3.2.4.2.1   Failure condition ordering
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not have any failure condition orderings.
+               3.3.2.4.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  msg_avail                   post: IsMessageImplemented(message_id) && IsMessageAvailableToCaller(message_id)
+  attributes                  post: attributes == 0
+  notify_support              post: (message_id == POWER_STATE_NOTIFY || message_id == POWER_STATE_CHANGE_REQUESTED_NOTIFY) ==> PowerStateNotificationsSupported(message_id)
+               3.3.2.4.4 Footprint
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not modify any state.

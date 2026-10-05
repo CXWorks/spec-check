@@ -1,0 +1,52 @@
+15.1 FFA_MSG_SEND2 command
+               Sends a partition message from the TX buffer of the caller endpoint to the RX buffer of the Receiver endpoint through Indirect messaging. It also notifies the Receiver's scheduler that the Receiver endpoint must be run.
+               15.1.1 Interface
+               15.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x84000086
+        sender_vm_id        W1           31:0        UInt32                                Bits[31:16]: Sender VM ID at the Non-secure physical instance; MBZ otherwise. The message is copied from this VM's TX buffer into the RX buffer of the target SP. Bits[15:0]: Reserved (SBZ)
+        flags               W2           31:0        UInt32                                Message flags. The callee must ignore this value when the SVC conduit is used. Bit[0]: Reserved (SBZ). Bit[1]: Delay Schedule Receiver interrupt flag. Bits[31:2]: Reserved (SBZ)
+        reserved            W3-W7        31:0        UInt32                                Reserved (SBZ)
+               15.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                FFA_SUCCESS with no further parameters on success; FFA_ERROR on failure
+        error_code          W2           31:0        Int32                                 Error code; valid only when result is FFA_ERROR
+               15.1.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_MSG_SEND2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  w1_nonzero                  pre: (IsVirtualInstance() || IsSecurePhysicalInstance()) && sender_vm_id != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  w1_invalid_vm               pre: IsNonSecurePhysicalInstance() && !IsValidSenderVmId(Bits(sender_vm_id, 31, 16))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  hdr_sender                  pre: !IsValidSenderId(MsgSender(caller, sender_vm_id))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  hdr_receiver                pre: !IsValidReceiverId(MsgReceiver(caller, sender_vm_id))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  hdr_offset                  pre: MsgOffset(caller, sender_vm_id) < PartitionMsgHeaderSize()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  payload_size                pre: !MsgPayloadFitsInTxBuffer(caller, sender_vm_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  hdr_uuid                    pre: !IsRecognizedUuid(MsgUuid(caller, sender_vm_id))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  rx_busy                     pre: !RxBufferIsFree(MsgReceiver(caller, sender_vm_id))
+                              post: ResultEqual(result, BUSY)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  caller_perm                 pre: !CallerMayInvoke(caller, FFA_MSG_SEND2)
+                              post: ResultEqual(result, DENIED)
+  rcv_indirect                pre: !SupportsIndirectMessaging(MsgReceiver(caller, sender_vm_id))
+                              post: ResultEqual(result, DENIED)
+  rx_space                    pre: !RxBufferHasSpaceForMsg(MsgReceiver(caller, sender_vm_id), caller, sender_vm_id)
+                              post: ResultEqual(result, NO_MEMORY)
+               15.1.2.1   Failure condition ordering
+               The FFA_MSG_SEND2 command does not have any failure condition orderings.
+               15.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  msg_copied                  post: RxBufferHoldsMsg(MsgReceiver(caller, sender_vm_id), SourceTxBuffer(caller, sender_vm_id))
+  sched_notified              post: ReceiverSchedulerNotifiedToRun(MsgReceiver(caller, sender_vm_id))
+               15.1.4 Footprint
+    ID                        Value
+    rx_buffer                 RxBuffer(MsgReceiver(caller, sender_vm_id))
+    rx_notification           RxBufferFullNotification(MsgReceiver(caller, sender_vm_id))

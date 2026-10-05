@@ -1,0 +1,26 @@
+3.6.2.13 CLOCK_RATE_CHANGE_REQUESTED_NOTIFY command
+               Enables or disables CLOCK_RATE_CHANGE_REQUESTED notifications to the calling agent for a clock device.
+               3.6.2.13.1 Interface
+               3.6.2.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0xA
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x14
+        clock_id            Payload[0]   31:0        UInt32                                Identifier for the clock device
+        notify_enable       Payload[1]   31:0        UInt32                                Bits[31:1]: reserved, must be zero. Bit[0]: notify enable. 0 means the platform does not send CLOCK_RATE_CHANGE_REQUESTED messages to the calling agent. 1 means the platform sends CLOCK_RATE_CHANGE_REQUESTED messages to the calling agent when another agent or entity in the system, including the platform itself, requests a change in the clock rate
+               3.6.2.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status
+               3.6.2.13.2 Failure conditions
+  ID                          Condition
+  clock_id                    pre: !IsValidClockId(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.6.2.13.2.1   Failure condition ordering
+               The CLOCK_RATE_CHANGE_REQUESTED_NOTIFY command does not have any failure condition orderings.
+               3.6.2.13.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_on                   post: Bits(notify_enable, 0, 0) == 1 ==> RateChangeRequestedNotifyEnabled(CallingAgent(), clock_id)
+  notify_off                  post: Bits(notify_enable, 0, 0) == 0 ==> !RateChangeRequestedNotifyEnabled(CallingAgent(), clock_id)
+               3.6.2.13.4 Footprint
+    ID                        Value
+    notify_state              RateChangeRequestedNotifyEnabled(CallingAgent(), clock_id)

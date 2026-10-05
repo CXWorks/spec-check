@@ -1,0 +1,58 @@
+16.10 FFA_NOTIFICATION_GET2 command
+               Retrieves the notifications pending in the notification bitmaps selected by the Flags parameter. Used by an FF-A component that supports Extended notifications.
+               16.10.1 Interface
+               16.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC4000097
+        receiver_id         W1           31:0        UInt32                                Receiver endpoint and vCPU ID. Bits[31:16]: Receiver vCPU ID. Bits[15:0]: Receiver endpoint ID
+        flags               X2           63:0        UInt64                                Bit[0]: return the SP notifications bitmap. Bit[1]: return the VM notifications bitmap (SBZ at the Non-secure physical instance). Bit[2]: return the SPM Framework notifications bitmap. Bit[3]: return the Hypervisor Framework notifications bitmap (SBZ at the Non-secure physical instance). Bits[63:4]: Reserved (SBZ)
+        sp_bitmask          X3-X8        383:0       Bitmask                               Notifications not to be retrieved from the SP notification bitmap. Bit i = Bit[i % 64] in X((i / 64) + 3). Bits above b, where b = number of supported notifications - 1, MBZ. SBZ if flags Bit[0] is clear
+        vm_bitmask          X9-X14       383:0       Bitmask                               Notifications not to be retrieved from the VM notification bitmap. Bit i = Bit[i % 64] in X((i / 64) + 9). Bits above b MBZ. SBZ if flags Bit[1] is clear
+        spmc_bitmask        X15          63:0        Bitmask                               Notifications not to be retrieved from the SPMC Framework notification bitmap. SBZ if flags Bit[2] is clear
+        hyp_bitmask         X16          63:0        Bitmask                               Notifications not to be retrieved from the Hypervisor Framework notification bitmap. SBZ if flags Bit[3] is clear
+        reserved            X17          63:0        UInt64                                Reserved (SBZ)
+               16.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                FFA_SUCCESS64 or FFA_ERROR
+        error_code          W2           31:0        Int32                                 Error code when the result is FFA_ERROR
+        reserved            X2           63:0        UInt64                                Reserved (MBZ) when the result is FFA_SUCCESS64
+        sp_bitmap           X3-X8        383:0       Bitmap                                SP notifications pending for the receiver. Bit i = Bit[i % 64] in X((i / 64) + 3). Caller ignores this field if flags Bit[0] is clear
+        vm_bitmap           X9-X14       383:0       Bitmap                                VM notifications pending for the receiver. Bit i = Bit[i % 64] in X((i / 64) + 9). Caller ignores this field if flags Bit[1] is clear
+        spmc_bitmap         X15          63:0        Bitmap                                SPM Framework notifications pending for the receiver. Caller ignores this field if flags Bit[2] is clear
+        hyp_bitmap          X16          63:0        Bitmap                                Hypervisor Framework notifications pending for the receiver. Caller ignores this field if flags Bit[3] is clear
+        reserved            X17          63:0        UInt64                                Reserved (SBZ)
+               16.10.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_GET2, CurrentInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  denied                      pre: !CallerAllowedToInvoke(Caller(), FFA_NOTIFICATION_GET2)
+                              post: ResultEqual(result, DENIED)
+  receiver_id                 pre: !IsRecognizedPartitionId(Bits(receiver_id, 15, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_reserved              pre: Bits(flags, 63, 4) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_ns_phys               pre: CurrentInstance() == NS_PHYSICAL && (Bits(flags, 1, 1) != 0 || Bits(flags, 3, 3) != 0)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  sp_mask_range               pre: Bits(flags, 0, 0) == 1 && ExceedsSupportedNotifications(sp_bitmask)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  vm_mask_range               pre: Bits(flags, 1, 1) == 1 && ExceedsSupportedNotifications(vm_bitmask)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  empty_bitmap                pre: EmptyNotificationBitmapSpecified(flags, receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               16.10.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_GET2 command does not have any failure condition orderings.
+               16.10.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS64)
+  reserved                    post: reserved == 0
+  sp_bitmap                   post: Bits(flags, 0, 0) == 1 ==> sp_bitmap == RetrievedNotifications(PendingSpNotifications(receiver_id), sp_bitmask)
+  vm_bitmap                   post: Bits(flags, 1, 1) == 1 ==> vm_bitmap == RetrievedNotifications(PendingVmNotifications(receiver_id), vm_bitmask)
+  spmc_bitmap                 post: Bits(flags, 2, 2) == 1 ==> spmc_bitmap == RetrievedNotifications(PendingSpmFrameworkNotifications(receiver_id), spmc_bitmask)
+  hyp_bitmap                  post: Bits(flags, 3, 3) == 1 ==> hyp_bitmap == RetrievedNotifications(PendingHypFrameworkNotifications(receiver_id), hyp_bitmask)
+  masked_unchanged            post: MaskedNotificationsRemainInCurrentState(receiver_id, sp_bitmask, vm_bitmask, spmc_bitmask, hyp_bitmask)
+               16.10.4 Footprint
+    ID                        Value
+    sp_pending                PendingSpNotifications(receiver_id)
+    vm_pending                PendingVmNotifications(receiver_id)
+    spmc_pending              PendingSpmFrameworkNotifications(receiver_id)
+    hyp_pending               PendingHypFrameworkNotifications(receiver_id)

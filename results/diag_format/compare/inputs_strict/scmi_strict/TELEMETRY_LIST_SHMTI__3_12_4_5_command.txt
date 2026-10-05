@@ -1,0 +1,32 @@
+3.12.4.5 TELEMETRY_LIST_SHMTI command
+               Returns the details of the shared-memory based telemetry interfaces (SHMTIs) that are available. The SHMTI descriptors can be returned over multiple calls.
+               3.12.4.5.1 Interface
+               3.12.4.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x3
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x1B
+        index               Payload[0]   31:0        UInt32                                Index of the first SHMTI descriptor to describe in the returned array
+               3.12.4.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        num_SHMTI           Payload[1]   31:16       UInt16                                Number of remaining SHMTIs
+        num_SHMTI           Payload[1]   15:0        UInt16                                Number of SHMTIs returned by this call
+        SHMTI_desc[N]       Payload[2..] -           {UInt32 x 5}[N]                       Array of SHMTI descriptors. N is Bits[15:0] of num_SHMTI. Each entry holds: entry[0] SHMTI ID; entry[1] SHMTI address low; entry[2] SHMTI address high; entry[3] SHMTI length in bytes; entry[4] SHMTI flags
+               3.12.4.5.2 Failure conditions
+  ID                          Condition
+  cmd_support                 pre: !IsRequestSupported(message_id, protocol_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  shmti_avail                 pre: NumShmtiAvailable() == 0
+                              post: ResultEqual(status, NOT_FOUND)
+               3.12.4.5.2.1   Failure condition ordering
+               The TELEMETRY_LIST_SHMTI command does not have any failure condition orderings.
+               3.12.4.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  num_returned                post: Bits(num_SHMTI, 15, 0) == NumDescriptors(SHMTI_desc)
+  num_remaining               post: Bits(num_SHMTI, 31, 16) == RemainingShmtiCount(index, Bits(num_SHMTI, 15, 0))
+  desc_content                post: forall|i: UInt32| i < Bits(num_SHMTI, 15, 0) ==> DescribesShmti(Entry(SHMTI_desc, i), index + i)
+  desc_addr_map               post: forall|i: UInt32| i < Bits(num_SHMTI, 15, 0) ==> IsInCallerMemoryMap(ShmtiAddress(Word(Entry(SHMTI_desc, i), 2), Word(Entry(SHMTI_desc, i), 1)))
+  desc_flags                  post: forall|i: UInt32| i < Bits(num_SHMTI, 15, 0) ==> Word(Entry(SHMTI_desc, i), 4) == 0
+               3.12.4.5.4 Footprint
+               The TELEMETRY_LIST_SHMTI command does not modify any state.

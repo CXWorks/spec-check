@@ -1,0 +1,32 @@
+17.11 sbi_sse_enable command
+               Enables the software event specified by event_id. For local events, the event is enabled only for the calling hart. For global events, the event is enabled for all harts.
+               17.11.1 Interface
+               17.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        eid                 a7           XLEN-1:0    UInt                                  Extension ID of the SSE extension
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 4
+        event_id            a0           31:0        UInt32                                Identifier of the software event to enable
+               17.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    SbiErrorCode                          Error code (sbiret.error)
+               17.11.2 Failure conditions
+  ID                          Condition
+  event_id_valid              pre: !IsValidEventId(event_id)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  event_supported             pre: IsValidEventId(event_id) && !IsReservedEventId(event_id) && !PlatformSupportsEvent(event_id)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED)
+  event_state                 pre: IsValidEventId(event_id) && EventAt(event_id).state != REGISTERED
+                              post: ResultEqual(result, SBI_ERR_INVALID_STATE)
+               17.11.2.1   Failure condition ordering
+  ID                          Ordering
+  event_id_valid              [event_id_valid] < [event_supported]
+  event_id_valid              [event_id_valid] < [event_state]
+               17.11.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  event_state                 post: EventAt(event_id).state == ENABLED
+  event_local                 post: IsLocalEvent(event_id) ==> EventEnabledOnHart(event_id, CallingHart())
+  event_global                post: IsGlobalEvent(event_id) ==> forall|h: Hart| EventEnabledOnHart(event_id, h)
+               17.11.4 Footprint
+    ID                        Value
+    event_state               EventAt(event_id).state

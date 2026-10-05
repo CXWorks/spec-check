@@ -1,0 +1,30 @@
+5.1.16 SDEI_EVENT_SIGNAL command
+               Signals a software event to a client PE.
+               5.1.16.1 Interface
+               5.1.16.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC400002F
+        event               X1           31:0        Int32                                 Event number, must be zero
+        target_pe           X2           63:0        UInt64                                MPIDR of the target PE, which can be the calling PE
+               5.1.16.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.16.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_num                   pre: event != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  target_pe                   pre: !IsValidMpidr(target_pe)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               5.1.16.2.1   Failure condition ordering
+               The SDEI_EVENT_SIGNAL command does not have any failure condition orderings.
+               5.1.16.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  event_pending               post: EventIsPending(target_pe, event)
+  event_private               post: EventIsPrivateTo(target_pe, event)
+  shared_data                 post: ClientSharedDataObservableBeforeEvent(target_pe, event)
+               5.1.16.4 Footprint
+    ID                        Value
+    event_pending             EventPendingState(target_pe, event)

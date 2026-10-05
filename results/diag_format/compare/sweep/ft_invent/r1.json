@@ -1,0 +1,1457 @@
+[
+ {
+  "file": "ft_invent/drtm/drtm_close_locality.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_dynamic_launch.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_enable_secure_interrupts.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_features.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_get_error.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_lock_tcb_hashes.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_parameters.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_set_error.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_set_tcb_hash.rs",
+  "verdict": "no_spec_fn"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_unprotect_memory.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/drtm/drtm_version.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_abort.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_console_log.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_el3_intr_handle.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_error.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_features.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_id_get.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_interrupt.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_msg_poll.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_msg_send.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_msg_send2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_msg_send_direct_req.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_msg_send_direct_req2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_msg_send_direct_resp.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_msg_send_direct_resp2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_msg_wait.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_normal_world_resume.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_bind.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_bind2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_bitmap_create.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_bitmap_destroy.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_get.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_get2.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> ffa_notification_get2_unsat.rs:238:80\n    |\n 29 | pub open spec fn ffa_notification_get2_spec(receiver_id: UInt32, flags: UInt64, sp_notification_bitmask: [UInt64; 6], vm_notification_bitmask: [UInt64; 6], spmc_framework_notification_bitmask: UInt64, hypervisor_framework_notification_bitmask: UInt64, result: FfaReturn, old_s: S, new_s: S) -> bool {\n    |                                                                                                                                                                                                                                                                                                            - closing delimiter possibly meant for this\n...\n238 |   && (result == FFA_ERROR(FFA_ERROR_INVALID_PARAMETERS) ==> result == FFA_ERROR(\n    |                                                                                ^ unclosed delimiter\n...\n245 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> ffa_notification_get2_unsat.rs:245:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_info_get.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_set.rs",
+  "unsat": "compile_error",
+  "error": "error[E0415]: identifier `notification_bitmap` is bound more than once in this parameter list\n  --> ffa_notification_set_unsat.rs:30:122\n   |\n30 | ... UInt32, notification_bitmap: UInt32, notification_bitmap: UInt32, result: Result<(), FfaStatusCode>, old_s: S, new_s: S) -> bool {\n   |                                          ^^^^^^^^^^^^^^^^^^^ used as parameter more than once\n\nerror[E0415]: identifier `notification_bitmap` is bound more than once in this parameter list\n  --> ffa_notification_set_unsat.rs:54:123\n   |\n54 | ... UInt32, notification_bitmap: UInt32, notification_bitmap: UInt32, result: Result<(), FfaStatusCode>, old_s: S, new_s: S)\n   |                                          ^^^^^^^^^^^^^^^^^^^ used as parameter more than once\n\nerror: aborting due to 2 previous errors; 1 warning emitted\n\nFor more information about this error, try `rustc --explain E0415`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_set2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_unbind.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_notification_unbind2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_ns_res_info_get.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_partition_info_get.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_partition_info_get_regs.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_run.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_rx_acquire.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_rx_release.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_rxtx_map.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_rxtx_unmap.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_spm_id_get.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_success.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/ffa/ffa_yield.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/affinity_info.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/cpu_default_suspend.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/cpu_freeze.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/cpu_off.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/cpu_on.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/psci_13/cpu_suspend.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/mem_protect.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/psci_13/mem_protect_check_range.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/psci_13/migrate.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/migrate_info_type.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/node_hw_state.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/psci_features.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/psci_set_suspend_mode.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/psci_13/psci_stat_count.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/psci_stat_residency.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/psci_version.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/system_off2.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/psci_13/system_reset.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/psci_13/system_reset2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/psci_13/system_suspend.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_cppc_probe.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_cppc_read.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_cppc_read_hi.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_cppc_write.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_console_write.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_console_write_byte.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_disable_triggers.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_enable_triggers.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_install_triggers.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_read_triggers.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_set_shmem.rs",
+  "unsat": "compile_error",
+  "error": "error[E0282]: type annotations needed\n  --> sbi_debug_set_shmem_unsat.rs:20:72\n   |\n20 |   (result == SBI_ERR_INVALID_PARAM && (flags != 0 || (shmem_phys_lo % (64 / 8)) != 0))\n   |                                                                        ^^ cannot infer type of the type parameter `hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat` declared on the function `spec_literal_integer`\n   |\nhelp: consider specifying the generic argument\n   |\n20 |   (result == SBI_ERR_INVALID_PARAM && (flags != 0 || (shmem_phys_lo % (64::<hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat> / 8)) != 0))\n   |                                                                          +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\nerror[E0282]: type annotations needed\n  --> sbi_debug_set_shmem_unsat.rs:23:42\n   |\n23 |   && ((!(flags != 0 || (shmem_phys_lo % (64 / 8)) != 0) &&\n   |                                          ^^ cannot infer type of the type parameter `hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat` declared on the function `spec_literal_integer`",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_uninstall_triggers.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_debug_update_triggers.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_fwft_get.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_fwft_set.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_get_impl_id.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_get_impl_version.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_get_marchid.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_get_mimpid.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_get_mvendorid.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_get_spec_version.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_hart_get_status.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sbi_hart_get_status_unsat.rs:17:40\n   |\n17 | pub spec const SBI_ERR_FAILED: Int64 = -1;\n   |                                -----   ^^ expected `i64`, found `int`\n   |                                |\n   |                                expected `i64` because of return type\n\nerror[E0308]: mismatched types\n  --> sbi_hart_get_status_unsat.rs:18:47\n   |\n18 | pub spec const SBI_ERR_NOT_SUPPORTED: Int64 = -2;\n   |                                       -----   ^^ expected `i64`, found `int`\n   |                                       |\n   |                                       expected `i64` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_hart_start.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_hart_stop.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_hart_suspend.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_mpxy_get_channel_ids.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_mpxy_get_notification_events.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_mpxy_get_shmem_size.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_mpxy_read_attributes.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_mpxy_send_message_with_response.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_mpxy_send_message_without_response.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> sbi_mpxy_send_message_without_response_unsat.rs:17:45\n   |\n17 | pub spec const SBI_ERR_INVALID_PARAM: i64 = -3;\n   |                                       ---   ^^ expected `i64`, found `int`\n   |                                       |\n   |                                       expected `i64` because of return type\n\nerror: aborting due to 1 previous error; 2 warnings emitted\n\nFor more information about this error, try `rustc --explain E0308`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_mpxy_set_shmem.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_mpxy_write_attributes.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_nacl_probe_feature.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_nacl_set_shmem.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_nacl_sync_csr.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_nacl_sync_hfence.rs",
+  "unsat": "compile_error",
+  "error": "error[E0282]: type annotations needed\n  --> sbi_nacl_sync_hfence_unsat.rs:24:77\n   |\n24 |   (result == SBI_ERR_INVALID_PARAM && (entry_index != -1 && entry_index >= (3840 / XLEN)) ==> true)\n   |                                                                             ^^^^ cannot infer type of the type parameter `hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat` declared on the function `spec_literal_integer`\n   |\nhelp: consider specifying the generic argument\n   |\n24 |   (result == SBI_ERR_INVALID_PARAM && (entry_index != -1 && entry_index >= (3840::<hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat> / XLEN)) ==> true)\n   |                                                                                 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\nerror[E0282]: type annotations needed\n  --> sbi_nacl_sync_hfence_unsat.rs:26:83\n   |\n26 |        (result == SBI_ERR_INVALID_PARAM || !(entry_index != -1 && entry_index >= (3840 / XLEN))))\n   |                                                                                   ^^^^ cannot infer type of the type parameter `hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat` declared on the function `spec_literal_integer`",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_nacl_sync_sret.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_pmu_counter_config_matching.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_pmu_counter_fw_read.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_pmu_counter_fw_read_hi.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_pmu_counter_get_info.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_pmu_counter_start.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_pmu_counter_stop.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_pmu_num_counters.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_pmu_snapshot_set_shmem.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_probe_extension.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_remote_fence_i.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_remote_hfence_gvma.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_remote_hfence_gvma_vmid.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_remote_hfence_vvma.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_remote_hfence_vvma_asid.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_remote_sfence_vma.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_remote_sfence_vma_asid.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_send_ipi.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_set_timer.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_complete.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_disable.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_enable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_hart_mask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_hart_unmask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_inject.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_read_attrs.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_sse_read_attrs_unsat.rs:21:133\n   |\n21 | ..._id: uint32_t, attr_count: uint32_t, output_phys_lo: unsigned long, output_phys_hi: unsigned long, result: SbiCommandReturnCode, ...\n   |                                                                  ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_register.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_unregister.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_sse_write_attrs.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sbi_sse_write_attrs_unsat.rs:30:133\n   |\n30 | ...r_id: uint32_t, attr_count: uint32_t, input_phys_lo: unsigned long, input_phys_hi: unsigned long, result: SbiCommandReturnCode, o...\n   |                                                                  ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_steal_time_set_shmem.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_system_reset.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sbi/sbi_system_suspend.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/base_discover_agent__3_2_2_9.rs",
+  "unsat": "compile_error",
+  "error": "error[E0415]: identifier `agent_id` is bound more than once in this parameter list\n  --> base_discover_agent__3_2_2_9_unsat.rs:15:85\n   |\n15 | pub open spec fn base_discover_agent__3_2_2_9_spec(agent_id: UInt32, status: int32, agent_id: UInt32, name: [uint8; 16], old_s: S, n...\n   |                                                                                     ^^^^^^^^ used as parameter more than once\n\nerror[E0415]: identifier `agent_id` is bound more than once in this parameter list\n  --> base_discover_agent__3_2_2_9_unsat.rs:27:86\n   |\n27 | proof fn zz_unsat_base_discover_agent__3_2_2_9_spec(agent_id: UInt32, status: int32, agent_id: UInt32, name: [uint8; 16], old_s: S, ...\n   |                                                                                      ^^^^^^^^ used as parameter more than once\n\nerror: aborting due to 2 previous errors\n\nFor more information about this error, try `rustc --explain E0415`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/scmi/base_discover_implementation_version__3_2_2_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/base_discover_list_protocols__3_2_2_8.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/base_discover_sub_vendor__3_2_2_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/base_discover_vendor__3_2_2_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/base_error_event__3_2_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/base_notify_errors__3_2_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/scmi/base_reset_agent_configuration__3_2_2_13.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/scmi/base_set_device_permissions__3_2_2_11.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/base_set_protocol_permissions__3_2_2_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/clock_attributes__3_6_2_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/clock_config_get__3_6_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/clock_describe_rates__3_6_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error: expected one of: `for`, parentheses, `fn`, `unsafe`, `extern`, `FnSpec`, `spec_fn`, `proof_fn`, identifier, `::`, `<`, `dyn`, square brackets, `*`, `&`, `!`, `impl`, `_`, lifetime\n  --> clock_describe_rates__3_6_2_6_unsat.rs:17:154\n   |\n17 | ... RsiCommandReturnCode, num_rates_flags: uint32, rates: [{uint32; uint32}; 1], old_s: S, new_s: S) -> bool {\n   |                                                            ^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/scmi/clock_get_permissions__3_6_2_17.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/clock_name_get__3_6_2_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/clock_parent_get__3_6_2_16.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/clock_possible_parents_get__3_6_2_14.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/clock_rate_change_requested_notify__3_6_2_13.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/scmi/clock_rate_changed__3_6_4_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/clock_rate_get__3_6_2_8.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/clock_rate_notify__3_6_2_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/clock_rate_set__3_6_2_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/clock_rate_set_complete__3_6_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_10_3_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_11_2_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_12_4_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_2_2_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_3_2_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_4_2_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_5_6_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_6_2_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_7_2_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_8_2_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/negotiate_protocol_version__3_9_2_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_describe_levels__3_5_6_8.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_domain_attributes__3_5_6_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_domain_name_get__3_5_6_19.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/performance_level_changed__3_5_8_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_level_get__3_5_6_12.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_level_set__3_5_6_11.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_limits_changed__3_5_8_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_limits_get__3_5_6_10.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_limits_set__3_5_6_9.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_notify_limits__3_5_6_16.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_qos_attributes__3_5_6_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_qos_capability_subtypes__3_5_6_6.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/performance_qos_config_complete__3_5_7_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/performance_qos_config_get__3_5_6_15.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/performance_qos_config_set__3_5_6_14.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/pinctrl_attributes__3_11_2_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/pinctrl_list_associations__3_11_2_6.rs",
+  "unsat": "compile_error",
+  "error": "error[E0615]: attempted to take value of method `len` on type `[u16; 4]`\n  --> pinctrl_list_associations__3_11_2_6_unsat.rs:22:39\n   |\n22 |   && (result == RSI_SUCCESS ==> array.len >= 0)\n   |                                       ^^^ method, not a field\n   |\nhelp: use parentheses to call the method\n   |\n22 |   && (result == RSI_SUCCESS ==> array.len() >= 0)\n   |                                          ++\n\nerror: aborting due to 1 previous error\n\nFor more information about this error, try `rustc --explain E0615`.\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_invent/scmi/pinctrl_name_get__3_11_2_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/pinctrl_release__3_11_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/pinctrl_request__3_11_2_9.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/scmi/pinctrl_settings_configure__3_11_2_8.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/power_domain_attributes__3_3_2_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/power_domain_name_get__3_3_2_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/power_state_change_requested__3_3_3_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/power_state_change_requested_notify__3_3_2_9.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/scmi/power_state_changed__3_3_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/power_state_get__3_3_2_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/power_state_notify__3_3_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/power_state_set__3_3_2_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_cai_get__3_10_3_11.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_cai_set__3_10_3_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_cap_changed__3_10_5_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_cap_get__3_10_3_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_cap_notify__3_10_3_15.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_cap_set__3_10_3_8.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_cap_set_complete__3_10_4_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_cpc_attributes__3_10_3_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_describe_fastchannel__3_10_3_17.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_domain_attributes__3_10_3_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_domain_name_get__3_10_3_13.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_mai_get__3_10_3_9.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_mai_set__3_10_3_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_measurements_changed__3_10_5_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_measurements_get__3_10_3_14.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/powercap_measurements_notify__3_10_3_16.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_10_3_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_11_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_12_4_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_2_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_3_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_4_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_5_6_3.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_6_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_7_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_8_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_attributes__3_9_2_3.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_10_3_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_11_2_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_12_4_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_2_2_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_3_2_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_4_2_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_5_6_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_6_2_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_7_2_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_8_2_4.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_message_attributes__3_9_2_4.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_10_3_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_11_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_12_4_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_2_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_3_2_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_4_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_5_6_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_6_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_7_2_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_8_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/protocol_version__3_9_2_1.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/reduce_sustained_performance_level__3_5_6_13.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/reset__3_8_2_6.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/scmi/reset_complete__3_8_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/reset_domain_attributes__3_8_2_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/reset_domain_name_get__3_8_2_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/reset_issued__3_8_4_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/reset_notify__3_8_2_7.rs",
+  "unsat": "refuted",
+  "vacuous": "proved",
+  "verdict": "vacuous"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_axis_description_get__3_7_2_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_axis_name_get__3_7_2_15.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_config_get__3_7_2_10.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_config_set__3_7_2_11.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_continuous_update_notify__3_7_2_13.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_description_get__3_7_2_5.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_name_get__3_7_2_14.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_reading_complete__3_7_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_reading_get__3_7_2_12.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_trip_point_config__3_7_2_9.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_trip_point_event__3_7_4_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_trip_point_notify__3_7_2_8.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/sensor_update__3_7_4_2.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/system_power_state_get__3_4_2_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/system_power_state_notifier__3_4_3_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/system_power_state_notify__3_4_2_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/system_power_state_set__3_4_2_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_config_set__3_12_4_10.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_de_configure__3_12_4_8.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_de_description__3_12_4_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_de_enabled_list__3_12_4_9.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_list_shmti__3_12_4_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_list_update_intervals__3_12_4_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_reading_complete__3_12_5_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_reset__3_12_4_12.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/telemetry_update__3_12_6_1.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/voltage_config_get__3_9_2_8.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/voltage_config_set__3_9_2_7.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/voltage_describe_levels__3_9_2_6.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/voltage_domain_attributes__3_9_2_5.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/voltage_domain_name_get__3_9_2_11.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/scmi/voltage_level_get__3_9_2_10.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/scmi/voltage_level_set__3_9_2_9.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_complete.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_complete_and_resume.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_context.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_disable.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_enable.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_get_info.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_register.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_routing_set.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_signal.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_status.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_event_unregister.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_features.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_interrupt_bind.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_interrupt_release.rs",
+  "unsat": "proved",
+  "vacuous": "refuted",
+  "verdict": "unsat"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_pe_mask.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_pe_unmask.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_private_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_shared_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_invent/sdei/sdei_version.rs",
+  "verdict": "vacuous_literal"
+ }
+]

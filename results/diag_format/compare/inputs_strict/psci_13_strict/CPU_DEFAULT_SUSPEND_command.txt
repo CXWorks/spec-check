@@ -1,0 +1,28 @@
+5.18 CPU_DEFAULT_SUSPEND command
+               Suspends the calling core in an IMPLEMENTATION DEFINED low-power state. This works like CPU_SUSPEND with a core powerdown power_state, but the caller does not pass a power_state parameter. Introduced in PSCI 1.0. This function is optional.
+               5.18.1 Interface
+               5.18.1.1   Input values
+        Name                   Register     Bits        Type                  Description
+        fid                    X0           63:0        UInt64                Function ID of CPU_DEFAULT_SUSPEND
+        entry_point_address    X1           63:0        Address               Physical address, from the caller's point of view, where the core resumes
+        context_id             X2           63:0        UInt64                Context identifier. It is meaningful only to the caller. The implementation preserves it and presents it to the core at the return Exception level
+               5.18.1.2   Output values
+        Name                   Register     Bits        Type                  Description
+        result                 X0           63:0        PsciReturnCode        Command return status
+               5.18.2 Failure conditions
+  ID                          Condition
+  entry_addr                  pre: IsKnownUnavailableAddress(entry_point_address)
+                              post: ResultEqual(result, INVALID_ADDRESS)
+               5.18.2.1   Failure condition ordering
+               The CPU_DEFAULT_SUSPEND command does not have any failure condition orderings.
+               5.18.3 Success conditions
+  ID                          Condition
+  ret_next                    post: ReturnedAtNextInstruction(calling_cpu) ==> ResultEqual(result, SUCCESS)
+  ret_entry                   post: ResumedAtEntryPoint(calling_cpu) ==> CoreRestartsAtEntryPoint(calling_cpu, entry_point_address)
+  ctx_id                      post: ResumedAtEntryPoint(calling_cpu) ==> ContextIdPresented(calling_cpu, context_id)
+  cache_mgmt                  post: CacheAndCoherencyManagedByImplementation(calling_cpu)
+  thermal                     post: AllCoresInDefaultSuspend() ==> !PlatformThermallyCritical()
+               5.18.4 Footprint
+    ID                        Value
+    core_power                PowerState(calling_cpu)
+    topology_power            PowerState(TopologyAncestors(calling_cpu))

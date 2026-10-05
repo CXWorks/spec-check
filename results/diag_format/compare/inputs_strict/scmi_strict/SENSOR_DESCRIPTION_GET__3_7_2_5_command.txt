@@ -1,0 +1,38 @@
+3.7.2.5 SENSOR_DESCRIPTION_GET command
+               Returns an array of Sensor Descriptors, for sensor discovery on the platform. This command is mandatory.
+               3.7.2.5.1 Interface
+               3.7.2.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x3
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x15
+        desc_index          Param[0]     31:0        UInt32                                Index of the first sensor descriptor to be read in the sensor descriptor array
+               3.7.2.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Ret[0]       31:0        Int32                                 Command return status, as defined in Section 3.1.4
+        num_sensor_flags    Ret[1]       31:16       UInt16                                Number of remaining sensor descriptors
+                            Ret[1]       15:12       Bits4                                 Reserved, must be zero
+                            Ret[1]       11:0        UInt12                                Number of sensor descriptors returned by this call
+        desc[N]             Ret[2..]     -           SENSOR_DESC[N]                        Array of sensor descriptors, in the Sensor Descriptor format
+               3.7.2.5.2 Failure conditions
+               This section does not define any specific failure conditions. Status codes are defined in Section 3.1.4.
+               3.7.2.5.2.1   Failure condition ordering
+               The SENSOR_DESCRIPTION_GET command does not have any failure condition orderings.
+               3.7.2.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags_rsvd                  post: Bits(num_sensor_flags, 15, 12) == 0
+  desc_count                  post: Bits(num_sensor_flags, 11, 0) == N
+  desc_remaining              post: Bits(num_sensor_flags, 31, 16) == NumRemainingSensorDescriptors(desc_index, Bits(num_sensor_flags, 11, 0))
+  desc_order                  post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> desc[i] == SensorDescriptorAt(desc_index + i)
+  desc_stable                 post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> SensorDescriptorIsSameOnRepeatedCalls(desc[i].sensor_id)
+  name_term                   post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> IsNullTerminatedUtf8(desc[i].sensor_name, 16)
+  axes_nonzero                post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> (Bits(desc[i].sensor_attributes_high, 8, 8) == 1 ==> Bits(desc[i].sensor_attributes_high, 21, 16) != 0)
+  ext_absent                  post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> (Bits(desc[i].sensor_attributes_low, 8, 8) == 0 ==> !ExtendedAttributesAllocated(desc[i]))
+  power_unrep                 post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> ((Bits(desc[i].sensor_attributes_low, 8, 8) == 1 && !SensorReportsPower(desc[i].sensor_id)) ==> desc[i].sensor_power == 0)
+  res_unrep                   post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> ((Bits(desc[i].sensor_attributes_low, 8, 8) == 1 && Bits(desc[i].sensor_attributes_high, 8, 8) == 0 && !SensorReportsResolution(desc[i].sensor_id)) ==> desc[i].sensor_resolution == 0x0)
+  min_low_unrep               post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> ((Bits(desc[i].sensor_attributes_low, 8, 8) == 1 && Bits(desc[i].sensor_attributes_high, 8, 8) == 0 && !SensorReportsMinRange(desc[i].sensor_id)) ==> desc[i].sensor_min_range_low == 0x0)
+  min_high_unrep              post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> ((Bits(desc[i].sensor_attributes_low, 8, 8) == 1 && Bits(desc[i].sensor_attributes_high, 8, 8) == 0 && !SensorReportsMinRange(desc[i].sensor_id)) ==> desc[i].sensor_min_range_high == 0x80000000)
+  max_low_unrep               post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> ((Bits(desc[i].sensor_attributes_low, 8, 8) == 1 && Bits(desc[i].sensor_attributes_high, 8, 8) == 0 && !SensorReportsMaxRange(desc[i].sensor_id)) ==> desc[i].sensor_max_range_low == 0xFFFFFFFF)
+  max_high_unrep              post: forall|i: UInt32| i < Bits(num_sensor_flags, 11, 0) ==> ((Bits(desc[i].sensor_attributes_low, 8, 8) == 1 && Bits(desc[i].sensor_attributes_high, 8, 8) == 0 && !SensorReportsMaxRange(desc[i].sensor_id)) ==> desc[i].sensor_max_range_high == 0x7FFFFFFF)
+               3.7.2.5.4 Footprint
+               The SENSOR_DESCRIPTION_GET command does not modify any state.

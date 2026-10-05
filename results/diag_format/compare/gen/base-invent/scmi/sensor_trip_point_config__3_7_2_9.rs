@@ -1,0 +1,4 @@
+pub open spec fn sensor_trip_point_config__3_7_2_9_spec(result: int32, old_s: S, new_s: S) -> bool {
+    (result == 0 ==> (old_s.sensor_count > 0 && old_s.sensor_id < old_s.sensor_count && old_s.trip_point_id < old_s.sensor_trip_points[old_s.sensor_id].count && old_s.trip_point_ev_ctrl < 4 && old_s.trip_point_val_low >= 0 && old_s.trip_point_val_high >= 0))
+    && (result != 0 ==> (old_s.sensor_count == 0 || old_s.sensor_id >= old_s.sensor_count || old_s.trip_point_id >= old_s.sensor_trip_points[old_s.sensor_id].count || old_s.trip_point_ev_ctrl >= 4 || old_s.trip_point_val_low < 0 || old_s.trip_point_val_high < 0))
+}

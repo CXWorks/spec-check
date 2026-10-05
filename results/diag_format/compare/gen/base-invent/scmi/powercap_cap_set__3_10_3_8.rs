@@ -1,0 +1,11 @@
+pub open spec fn powercap_cap_set__3_10_3_8_spec(result: int32, old_s: S, new_s: S) -> bool {
+    (!((old_s.powercap_domains[old_s.domain_id].cpli != 0) && (old_s.powercap_domains[old_s.domain_id].supports_cpc == false)) ==> ResultEqual(result, NOT_FOUND))
+    && (!((old_s.powercap_domains[old_s.domain_id].flags & 0x3) != 0) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!((old_s.powercap_domains[old_s.domain_id].flags & 0x2) != 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x1) != 0) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!((old_s.powercap_domains[old_s.domain_id].flags & 0x2) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x1) != 0) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!((old_s.powercap_domains[old_s.domain_id].flags & 0x2) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x1) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x3) != 0) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!((old_s.powercap_domains[old_s.domain_id].flags & 0x2) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x1) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x3) == 0) ==> ResultEqual(result, SUCCESS))
+    && ((old_s.powercap_domains[old_s.domain_id].flags & 0x2) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x1) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x3) == 0 ==> (new_s.powercap_domains[old_s.domain_id].power_cap == old_s.powercap_domains[old_s.domain_id].power_cap))
+    && ((old_s.powercap_domains[old_s.domain_id].flags & 0x2) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x1) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x3) == 0 ==> (new_s.powercap_domains[old_s.domain_id].cpli == old_s.powercap_domains[old_s.domain_id].cpli))
+    && ((old_s.powercap_domains[old_s.domain_id].flags & 0x2) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x1) == 0 && (old_s.powercap_domains[old_s.domain_id].flags & 0x3) == 0 ==> (new_s.powercap_domains[old_s.domain_id].flags == old_s.powercap_domains[old_s.domain_id].flags))
+}

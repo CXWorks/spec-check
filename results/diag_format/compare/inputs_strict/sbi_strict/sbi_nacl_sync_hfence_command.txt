@@ -1,0 +1,28 @@
+15.8 sbi_nacl_sync_hfence command
+               Synchronizes HFENCEs in the nested acceleration shared memory. This is an optional function. It is only available if the SBI_NACL_FEAT_SYNC_HFENCE feature is available.
+               15.8.1 Interface
+               15.8.1.1   Input values
+        Name                Register     Bits          Type                  Description
+        fid                 a6           XLEN-1:0      UInt                  FID, value 3
+        entry_index         a0           XLEN-1:0      unsigned long         Set of nested HFENCE entries to synchronize. All-ones bitwise selects all entries. A value less than (3840 / XLEN) selects the single entry with that index.
+               15.8.1.2   Output values
+        Name                Register     Bits          Type                  Description
+        result              a0           XLEN-1:0      sbiret.error          Command return status
+               15.8.2 Failure conditions
+  ID                          Condition
+  feat_sync_hfence            pre: !NaclFeatureAvailable(SBI_NACL_FEAT_SYNC_HFENCE)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED)
+  entry_index                 pre: !IsAllOnes(entry_index) && entry_index >= (3840 / XLEN)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  shmem                       pre: !NaclSharedMemoryAvailable()
+                              post: ResultEqual(result, SBI_ERR_NO_SHMEM)
+               15.8.2.1   Failure condition ordering
+               The sbi_nacl_sync_hfence command does not have any failure condition orderings.
+               15.8.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  sync_all                    post: IsAllOnes(entry_index) ==> AllNestedHfenceEntriesSynchronized()
+  sync_single                 post: entry_index < (3840 / XLEN) ==> NestedHfenceEntrySynchronized(entry_index)
+               15.8.4 Footprint
+    ID                        Value
+    hfence_entries            NestedHfenceEntries(NaclSharedMemory())

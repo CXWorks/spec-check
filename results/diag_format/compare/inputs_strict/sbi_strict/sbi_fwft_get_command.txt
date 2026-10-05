@@ -1,0 +1,27 @@
+18.2 sbi_fwft_get command
+               Returns the configuration value of a firmware feature.
+               18.2.1 Interface
+               18.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           31:0        UInt32                                FID, value 1
+        feature             a0           31:0        UInt32                                ID of the firmware feature to read
+               18.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    SbiErrorCode                          sbiret.error: command return status
+        value               a1           XLEN-1:0    UInt                                  sbiret.value: feature configuration value (Table 93)
+               18.2.2 Failure conditions
+  ID                          Condition
+  feat_unsupported            pre: !IsReservedFeature(feature) && IsValidFeature(feature) && !PlatformSupportsFeature(feature)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED) && value == 0
+  feat_denied                 pre: IsReservedFeature(feature) || (IsPlatformSpecificFeature(feature) && !IsImplementedFeature(feature))
+                              post: ResultEqual(result, SBI_ERR_DENIED) && value == 0
+  get_failed                  pre: FeatureGetFailed(feature)
+                              post: ResultEqual(result, SBI_ERR_FAILED) && value == 0
+               18.2.2.1   Failure condition ordering
+               The sbi_fwft_get command does not have any failure condition orderings.
+               18.2.3 Success conditions
+  ID                          Condition
+  get_result                  post: ResultEqual(result, SBI_SUCCESS)
+  get_value                   post: value == FeatureConfigValue(feature)
+               18.2.4 Footprint
+               The sbi_fwft_get command does not modify any state.

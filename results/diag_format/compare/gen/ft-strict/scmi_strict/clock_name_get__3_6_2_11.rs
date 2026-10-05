@@ -1,0 +1,17 @@
+pub open spec fn clock_name_get__3_6_2_11_spec(clock_id: UInt32, status: Int32, flags: UInt32, name: [UInt8; 64], old_s: S, new_s: S) -> bool {
+  (!ClockExists(old_s, clock_id) ==> ResultEqual(status, NOT_FOUND))
+  && (ResultEqual(status, SUCCESS) ==> ResultEqual(status, SUCCESS))
+  && (ResultEqual(status, SUCCESS) ==> (flags & 0) == 0)
+  && (ResultEqual(status, SUCCESS) ==> IsClockExtendedName(name, clock_id))
+  && (ResultEqual(status, SUCCESS) ==> IsNullTerminatedAscii(name, 64))
+  && ((ClockExists(old_s, clock_id))
+    ==> ResultEqual(status, SUCCESS))
+  && (result: ResultEqual(status, NOT_FOUND)
+    ==> (flags & 0) == 0)
+  && (result: ResultEqual(status, NOT_FOUND)
+    ==> IsClockExtendedName(name, clock_id))
+  && (result: ResultEqual(status, NOT_FOUND)
+    ==> IsNullTerminatedAscii(name, 64))
+  && ((!(ClockExists(old_s, clock_id)))
+    ==> ResultEqual(status, SUCCESS))
+}

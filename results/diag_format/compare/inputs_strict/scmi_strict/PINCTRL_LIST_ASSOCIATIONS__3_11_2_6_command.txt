@@ -1,0 +1,38 @@
+3.11.2.6 PINCTRL_LIST_ASSOCIATIONS command
+               Returns a list of associations: the pins associated with a group, the groups that can enable a function, or the pins that can enable a single-pin function. The list can be returned across multiple calls.
+               3.11.2.6.1 Interface
+               3.11.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0x4
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x19
+        identifier          Param[0]     31:0        UInt32                                Identifier of the function or group
+        flags               Param[1]     31:2        UInt32                                Reserved, must be zero
+                            Param[1]     1:0         UInt32                                Selector: whether identifier refers to a group or a function. 0: Reserved; 1: Group; 2: Function. All other values are reserved for future use
+        index               Param[2]     31:0        UInt32                                If identifier refers to a group, or to a single-pin function that only individual pins support: index of the first pin to describe in the return array. Otherwise: index of the first group to describe in the return array
+               3.11.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              Return[0]    31:0        Int32                                 Command return status (status)
+        out_flags           Return[1]    31:16       UInt32                                Number of groups or pins remaining
+                            Return[1]    15:12       UInt32                                Reserved, must be zero
+                            Return[1]    11:0        UInt32                                Number of group or pin identifiers returned by this call
+        array               Return[2..]  -           UInt16[N]                             Group or pin identifiers in ascending numerical order. N is given by Bits[11:0] of out_flags
+               3.11.2.6.2 Failure conditions
+  ID                          Condition
+  ident_exists                pre: !GroupOrFunctionExists(identifier, Bits(flags, 1, 0))
+                              post: ResultEqual(result, NOT_FOUND)
+  supported                   pre: !IsRequestSupported(identifier, flags, index)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  permission                  pre: !AgentMayListAssociations(CallingAgent(), identifier, Bits(flags, 1, 0))
+                              post: ResultEqual(result, DENIED)
+               3.11.2.6.2.1   Failure condition ordering
+               The PINCTRL_LIST_ASSOCIATIONS command does not have any failure condition orderings.
+               3.11.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(result, SUCCESS)
+  count                       post: Bits(out_flags, 11, 0) == ArrayLength(array)
+  remaining                   post: Bits(out_flags, 31, 16) == AssociationCount(identifier, Bits(flags, 1, 0)) - index - Bits(out_flags, 11, 0)
+  reserved                    post: Bits(out_flags, 15, 12) == 0
+  contents                    post: forall|i: UInt32| i < Bits(out_flags, 11, 0) ==> ArrayAt(array, i) == AssociationAt(identifier, Bits(flags, 1, 0), index + i)
+  order                       post: forall|i: UInt32| i + 1 < Bits(out_flags, 11, 0) ==> ArrayAt(array, i) < ArrayAt(array, i + 1)
+               3.11.2.6.4 Footprint
+               The PINCTRL_LIST_ASSOCIATIONS command does not modify any state.

@@ -1,0 +1,23 @@
+20.5 sbi_mpxy_get_shmem_size command
+               Gets the shared memory size, in bytes, for sending and receiving messages.
+               20.5.1 Interface
+               20.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 0
+               20.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           63:0        SbiReturnCode                         Command return status (sbiret.error)
+        uvalue              a1           63:0        UInt64                                Shared memory size in bytes (sbiret.uvalue)
+               20.5.2 Failure conditions
+               The sbi_mpxy_get_shmem_size command does not have any failure conditions.
+               20.5.2.1   Failure condition ordering
+               The sbi_mpxy_get_shmem_size command does not have any failure condition orderings.
+               20.5.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  size_same_harts             post: forall|h: Hart| MpxyShmemSize(h) == uvalue
+  size_min                    post: uvalue >= 4096
+  size_multiple               post: uvalue % 4096 == 0
+  size_msg_data               post: forall|c: MpxyChannel| uvalue >= MsgDataMaxLen(c)
+               20.5.4 Footprint
+               The sbi_mpxy_get_shmem_size command does not modify any state.

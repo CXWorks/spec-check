@@ -1,0 +1,31 @@
+5.1.8 SDEI_EVENT_UNREGISTER command
+               Unregisters an event handler.
+               5.1.8.1 Interface
+               5.1.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000027
+        event               X1           31:0        Int32                                 Event number
+               5.1.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.8.2 Failure conditions
+  ID                          Condition
+  sdei_supp                   pre: !IsSdeiSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  ev_valid                    pre: !IsValidEventNumber(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  ev_registered               pre: !IsEventRegisteredByClient(event)
+                              post: ResultEqual(result, DENIED)
+  ev_running                  pre: IsHandlerRunning(event) || IsUnregisterPending(event)
+                              post: ResultEqual(result, PENDING)
+               5.1.8.2.1   Failure condition ordering
+  ev_valid < ev_registered
+               5.1.8.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  ev_shared                   post: IsSharedEvent(event) ==> !IsEventRegisteredGlobally(event)
+  ev_private                  post: IsPrivateEvent(event) ==> !IsEventRegisteredOnPe(event, CurrentPe())
+  ev_delivery                 post: !IsEventDeliverableToClient(event)
+               5.1.8.4 Footprint
+    ID                        Value
+    ev_state                  EventHandlerState(event)

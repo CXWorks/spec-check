@@ -1,0 +1,27 @@
+3.7.2.14 SENSOR_NAME_GET command
+               Returns the extended name associated with a specific sensor.
+               3.7.2.14.1 Interface
+               3.7.2.14.1.1   Input values
+        Name                Register        Bits        Type                Description
+        message_id          Header          -           UInt32              Message identifier, value 0xC
+        protocol_id         Header          -           UInt32              Protocol identifier, value 0x15
+        sensor_id           Payload[0]      31:0        UInt32              Identifier for the sensor
+               3.7.2.14.1.2   Output values
+        Name                Register        Bits        Type                Description
+        status              Payload[0]      31:0        Int32               Command return status
+        flags               Payload[1]      31:0        UInt32              Reserved, must be zero
+        name                Payload[2..17]  511:0       UInt8[64]           Null-terminated UTF-8 string of up to 64 bytes describing the sensor extended name
+               3.7.2.14.2 Failure conditions
+  ID                          Condition
+  sensor_exists               pre: !SensorExists(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.7.2.14.2.1   Failure condition ordering
+               The SENSOR_NAME_GET command does not have any failure condition orderings.
+               3.7.2.14.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags                       post: flags == 0
+  name_value                  post: IsValidSensorExtendedName(sensor_id, name)
+  name_format                 post: IsNullTerminatedUtf8String(name, 64)
+               3.7.2.14.4 Footprint
+               The SENSOR_NAME_GET command does not modify any state.

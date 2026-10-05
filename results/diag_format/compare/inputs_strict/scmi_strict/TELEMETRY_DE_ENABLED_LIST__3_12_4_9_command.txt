@@ -1,0 +1,34 @@
+3.12.4.9 TELEMETRY_DE_ENABLED_LIST command
+               Lists the DEs or event groups that have been enabled.
+               This command is mandatory.
+               3.12.4.9.1 Interface
+               3.12.4.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x7
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x1B
+        index               Payload[0]   31:0        UInt32                                Index of the first enabled element to describe in the return array
+        flags               Payload[1]   31:1        UInt32                                Reserved, must be zero
+        flags               Payload[1]   0           UInt32                                Selector. Says whether index refers to a DE or an event group: 0 = DE (including DEs associated with event groups), 1 = Event group
+               3.12.4.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        ret_flags           Payload[1]   31:16       UInt32                                Number of enabled DE array elements still remaining
+        ret_flags           Payload[1]   15:0        UInt32                                Number of DE array elements returned by this call (N)
+        array               Payload[2..] -           {UInt32, UInt32}[N]                   Enabled array of DEs or event groups with their mode. Each entry is 2 32-bit words. entry[0] is the DE or event group ID. entry[1] bits 31:2 are reserved and must be zero. entry[1] bits 1:0 are the Mode: 1 = enabled without timestamps, 2 = enabled with timestamps, all other values reserved
+               3.12.4.9.2 Failure conditions
+  ID                          Condition
+  index_range                 pre: !IsValidEnabledListIndex(index, Bits(flags, 0, 0))
+                              post: ResultEqual(status, OUT_OF_RANGE)
+               3.12.4.9.2.1   Failure condition ordering
+               The TELEMETRY_DE_ENABLED_LIST command does not have any failure condition orderings.
+               3.12.4.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  num_returned                post: Bits(ret_flags, 15, 0) == ArrayLength(array)
+  num_remaining               post: Bits(ret_flags, 31, 16) == RemainingEnabledElements(index, Bits(flags, 0, 0), Bits(ret_flags, 15, 0))
+  entry_id                    post: forall|i: UInt32| i < Bits(ret_flags, 15, 0) ==> IsEnabledElement(ArrayEntryWord(array, i, 0), Bits(flags, 0, 0))
+  entry_reserved              post: forall|i: UInt32| i < Bits(ret_flags, 15, 0) ==> Bits(ArrayEntryWord(array, i, 1), 31, 2) == 0
+  entry_mode                  post: forall|i: UInt32| i < Bits(ret_flags, 15, 0) ==> (Bits(ArrayEntryWord(array, i, 1), 1, 0) == 1 || Bits(ArrayEntryWord(array, i, 1), 1, 0) == 2)
+  entry_mode_ts               post: forall|i: UInt32| i < Bits(ret_flags, 15, 0) ==> (Bits(ArrayEntryWord(array, i, 1), 1, 0) == 2) == IsEnabledWithTimestamps(ArrayEntryWord(array, i, 0), Bits(flags, 0, 0))
+               3.12.4.9.4 Footprint
+               The TELEMETRY_DE_ENABLED_LIST command does not modify any state.

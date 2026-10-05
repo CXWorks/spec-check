@@ -1,0 +1,26 @@
+11.12 sbi_pmu_counter_fw_read_hi command
+               Reads the upper 32 bits of a firmware counter.
+               11.12.1 Interface
+               11.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 6
+        counter_idx         a0           XLEN-1:0    UInt                                  Index of the firmware counter to read
+               11.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Command return status
+        value               a1           XLEN-1:0    UInt                                  Upper 32 bits of the current firmware counter value. Always zero on RV64 or wider systems.
+               11.12.2 Failure conditions
+  ID                          Condition
+  ctr_hw                      pre: IsHardwareCounter(counter_idx)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  ctr_valid                   pre: !IsValidCounter(counter_idx)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+               11.12.2.1   Failure condition ordering
+               The sbi_pmu_counter_fw_read_hi command does not have any failure condition orderings.
+               11.12.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  value_rv32                  post: (Xlen() == 32) ==> (value == Bits(FirmwareCounterValue(counter_idx), 63, 32))
+  value_rv64                  post: (Xlen() >= 64) ==> (value == 0)
+               11.12.4 Footprint
+               The sbi_pmu_counter_fw_read_hi command does not modify any state.

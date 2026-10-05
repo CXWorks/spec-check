@@ -1,0 +1,29 @@
+5.5 CPU_OFF command
+               Powers down the calling core. The call is not expected to return.
+               5.5.1 Interface
+               5.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                Function ID of CPU_OFF
+               5.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        PsciReturnCode                        Command return status. Returned only on failure
+               5.5.2 Failure conditions
+  ID                          Condition
+  trusted_os                  pre: IsTrustedOsResidentCore(calling_cpu)
+                              post: ResultEqual(result, DENIED)
+               5.5.2.1   Failure condition ordering
+               The CPU_OFF command does not have any failure condition orderings.
+               5.5.3 Success conditions
+  ID                          Condition
+  core_off                    post: CorePoweredDown(calling_cpu)
+  no_return                   post: !CallReturns(calling_cpu)
+  cache_clean                 post: forall|n: TopologyNode| NodePoweredDown(n) ==> CachesCleaned(n)
+  coherency                   post: !CoreInCoherency(calling_cpu)
+  cluster_coherency           post: forall|n: TopologyNode| (IsCluster(n) && NodePoweredDown(n)) ==> !ClusterInCoherency(n)
+  node_off                    post: forall|n: TopologyNode| (ContainsCore(n, calling_cpu) && forall|c: Core| ContainsCore(n, c) ==> (CalledCpuOff(c) || RequestedPowerdownAtOrAbove(c, PowerLevel(n)))) ==> NodePoweredDown(n)
+               5.5.4 Footprint
+    ID                        Value
+    core_off                  CorePowerState(calling_cpu)
+    cache_clean               CacheState(calling_cpu)
+    coherency                 CoherencyState(calling_cpu)
+    node_off                  NodePowerState(AncestorNodes(calling_cpu))

@@ -1,0 +1,22 @@
+20.9 sbi_mpxy_write_attributes command
+               Writes message channel attributes.
+               20.9.1 Interface
+               20.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           31:0        UInt32                                FID, value 4
+        channel_id          a0           31:0        uint32_t                              Message channel
+        base_attribute_id   a1           31:0        uint32_t                              Starting attribute ID of the contiguous attribute range
+        attribute_count     a2           31:0        uint32_t                              Number of attributes in the contiguous attribute range
+               20.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           31:0        sbiret.error                          Command return status
+               20.9.2 Failure conditions
+               The error codes listed in Table 114 (MPXY Write Channel Attributes Errors) are not given in this section, so no failure conditions are listed here.
+               20.9.2.1   Failure condition ordering
+               The sbi_mpxy_write_attributes command does not have any failure condition orderings.
+               20.9.3 Success conditions
+  ID                          Condition
+  attr_write                  post: forall|i: UInt32| (i < attribute_count) ==> (ChannelAttribute(channel_id, base_attribute_id + i) == SharedMemoryWord(CallingHart(), 4 * i))
+               20.9.4 Footprint
+    ID                        Value
+    attr_write                ChannelAttributeRange(channel_id, base_attribute_id, attribute_count)

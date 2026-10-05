@@ -1,0 +1,51 @@
+15.2 FFA_MSG_SEND_DIRECT_REQ command
+               Sends a Partition or Framework message in parameter registers as a request to a Receiver endpoint. The command runs the endpoint and blocks until a response is available.
+               15.2.1 Interface
+               15.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400006F or 0xC400006F
+        sender_receiver_ids W1           31:0        UInt32                                Sender and Receiver endpoint IDs. Bits[31:16]: Sender endpoint ID. Bits[15:0]: Receiver endpoint ID
+        flags               W2           31:0        UInt32                                Message flags. Bit[31]: Message type (b'0: partition message, b'1: framework message). Bits[30:8]: Reserved (SBZ). Bits[7:0]: Reserved (MBZ) if bit[31] == b'0. Framework message type if bit[31] == b'1
+        impdef_args         W3-W7        31:0        UInt32                                IMPLEMENTATION DEFINED values
+        impdef_args64       X3-X17       63:0        UInt64                                IMPLEMENTATION DEFINED values, when using the SMC64, HVC64 or SVC64 convention
+               15.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                Function ID of the completing interface: FFA_MSG_SEND_DIRECT_RESP, FFA_INTERRUPT, FFA_YIELD, FFA_SUCCESS or FFA_ERROR
+        error_code          W2           31:0        Int32                                 Error code, when result is FFA_ERROR
+               15.2.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_MSG_SEND_DIRECT_REQ, CurrentFfaInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  sender_id                   pre: !IsValidEndpointId(Bits(sender_receiver_ids, 31, 16))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  receiver_id                 pre: !IsValidEndpointId(Bits(sender_receiver_ids, 15, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_sbz                   pre: Bits(flags, 30, 8) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_mbz                   pre: Bits(flags, 31, 31) == 0 && Bits(flags, 7, 0) != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_fwk_type              pre: Bits(flags, 31, 31) == 1 && !IsValidFrameworkMessageType(Bits(flags, 7, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  recv_support                pre: !SupportsDirectRequestReceipt(Bits(sender_receiver_ids, 15, 0))
+                              post: ResultEqual(result, DENIED)
+  recv_busy                   pre: Endpoint(Bits(sender_receiver_ids, 15, 0)).runtime_state == RUNNING || Endpoint(Bits(sender_receiver_ids, 15, 0)).runtime_state == BLOCKED || Endpoint(Bits(sender_receiver_ids, 15, 0)).runtime_state == PREEMPTED
+                              post: ResultEqual(result, BUSY)
+  recv_aborted                pre: EndpointHasAborted(Bits(sender_receiver_ids, 15, 0))
+                              post: ResultEqual(result, ABORTED)
+  recv_not_ready              pre: !EndpointIsReady(Bits(sender_receiver_ids, 15, 0))
+                              post: ResultEqual(result, NOT_READY)
+               15.2.2.1   Failure condition ordering
+               The FFA_MSG_SEND_DIRECT_REQ command does not have any failure condition orderings.
+               15.2.3 Success conditions
+  ID                          Condition
+  completion                  post: ResultEqual(result, FFA_MSG_SEND_DIRECT_RESP) || ResultEqual(result, FFA_INTERRUPT) || ResultEqual(result, FFA_YIELD) || ResultEqual(result, FFA_SUCCESS)
+  resp                        post: ResultEqual(result, FFA_MSG_SEND_DIRECT_RESP) ==> IsDirectResponseTo(Bits(sender_receiver_ids, 31, 16), Bits(sender_receiver_ids, 15, 0))
+  interrupted                 post: ResultEqual(result, FFA_INTERRUPT) ==> MustResumeViaFfaRun(Bits(sender_receiver_ids, 15, 0))
+  yielded_state               post: ResultEqual(result, FFA_YIELD) ==> Endpoint(Bits(sender_receiver_ids, 15, 0)).runtime_state == BLOCKED
+  yielded_resume              post: ResultEqual(result, FFA_YIELD) ==> MustResumeViaFfaRun(Bits(sender_receiver_ids, 15, 0))
+  success_mbz                 post: ResultEqual(result, FFA_SUCCESS) ==> OtherParameterRegistersAreZero()
+               15.2.4 Footprint
+    ID                        Value
+    recv_state                Endpoint(Bits(sender_receiver_ids, 15, 0)).runtime_state

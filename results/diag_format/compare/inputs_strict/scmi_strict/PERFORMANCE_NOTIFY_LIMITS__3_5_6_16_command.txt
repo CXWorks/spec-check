@@ -1,0 +1,30 @@
+3.5.6.16 PERFORMANCE_NOTIFY_LIMITS command
+               Requests that the platform enable or disable PERFORMANCE_LIMITS_CHANGED notifications to the calling agent when the allowed maximum and minimum performance levels of a performance domain change. This command is optional.
+               3.5.6.16.1 Interface
+               3.5.6.16.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message identifier, value 0x9
+        protocol_id         Header       -           UInt                                  Protocol identifier, value 0x13
+        domain_id           Payload      31:0        UInt32                                Identifier for the performance domain
+        notify_enable       Payload      31:0        UInt32                                Bits[31:1]: reserved, must be zero. Bit[0]: notify enable (0 = do not send PERFORMANCE_LIMITS_CHANGED messages to the agent, 1 = send PERFORMANCE_LIMITS_CHANGED messages to the agent)
+               3.5.6.16.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status
+               3.5.6.16.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerfDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  notify_supported            pre: !PerfDomainSupportsLimitsNotify(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  notify_enable_valid         pre: !IsValidNotifyEnable(notify_enable)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.5.6.16.2.1   Failure condition ordering
+               The PERFORMANCE_NOTIFY_LIMITS command does not have any failure condition orderings.
+               3.5.6.16.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_on                   post: Bits(notify_enable, 0, 0) == 1 ==> LimitsNotifyEnabled(CallingAgent(), domain_id)
+  notify_off                  post: Bits(notify_enable, 0, 0) == 0 ==> !LimitsNotifyEnabled(CallingAgent(), domain_id)
+               3.5.6.16.4 Footprint
+    ID                        Value
+    notify_state              LimitsNotifyEnabled(CallingAgent(), domain_id)

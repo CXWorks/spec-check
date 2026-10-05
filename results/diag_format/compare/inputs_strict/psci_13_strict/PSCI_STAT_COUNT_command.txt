@@ -1,0 +1,30 @@
+5.22 PSCI_STAT_RESIDENCY/COUNT command
+               Returns residency statistics for a local low-power state used by a node of the processor power topology. PSCI_STAT_COUNT returns how many times the node has used the state. PSCI_STAT_RESIDENCY returns how long the node has spent in the state, in microseconds. Both functions are optional and are introduced in PSCI 1.0. If an implementation supports statistics, it must implement both functions together.
+               5.22.1 Interface
+               5.22.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID of PSCI_STAT_RESIDENCY or PSCI_STAT_COUNT
+        target_cpu          X1           63:0        UInt64                                Node to query. Same format as the target_cpu parameter of CPU_ON (see section 5.1.4)
+        power_state         X2           63:0        UInt64                                Identifier for a specific local state. Generally the same form as the power_state parameter of CPU_SUSPEND (see section 5.4.2)
+               5.22.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        UInt64                                PSCI_STAT_COUNT: number of times the state has been used. PSCI_STAT_RESIDENCY: time spent in the state, in microseconds. Uses the full resolution of the register and wraps on overflow
+               5.22.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !StatFunctionsImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  node_absent                 pre: !IsNodePresent(target_cpu)
+                              post: ResultEqual(result, 0)
+  state_unsupported           pre: !NodeSupportsState(target_cpu, power_state)
+                              post: ResultEqual(result, 0)
+               5.22.2.1   Failure condition ordering
+               The PSCI_STAT_RESIDENCY/COUNT command does not have any failure condition orderings.
+               5.22.3 Success conditions
+  ID                          Condition
+  count                       post: IsStatCountFid(fid) ==> ResultEqual(result, StatCount(target_cpu, HighestLevelLocalState(power_state)) % ResultModulus(fid))
+  residency                   post: IsStatResidencyFid(fid) ==> ResultEqual(result, StatResidencyMicroseconds(target_cpu, HighestLevelLocalState(power_state)) % ResultModulus(fid))
+  osi_last_man                post: IsOsInitiatedMode() ==> HighestLevelLocalState(power_state) == HighestLevelLocalState(IgnoreLastManField(power_state))
+  local_only                  post: !IsRunState(HighestLevelLocalState(power_state))
+  any_entry                   post: StatsIncludeAllEntryMethods(target_cpu, HighestLevelLocalState(power_state))
+               5.22.4 Footprint
+               The PSCI_STAT_RESIDENCY/COUNT command does not modify any state.

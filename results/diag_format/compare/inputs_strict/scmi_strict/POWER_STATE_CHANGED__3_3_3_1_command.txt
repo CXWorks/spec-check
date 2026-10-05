@@ -1,0 +1,26 @@
+3.3.3.1 POWER_STATE_CHANGED command
+               Notifies an agent that the power state of a power domain has changed. The notification is sent only to an agent that has registered for power state change notifications for the power domain identified by domain_id. Transitions to an ON state are included.
+               The notified power state can differ from the state the notified agent requested, because the platform coordinates that request with other requests on the same domain.
+               This command is optional.
+               3.3.3.1.1 Interface
+               3.3.3.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt                                  Message identifier, value 0x0
+        protocol_id         Header       —           UInt                                  Protocol identifier, value 0x11
+        agent_id            Param[0]     31:0        UInt32                                Identifier of the agent that caused the power transition
+        domain_id           Param[1]     31:0        UInt32                                Identifier of the power domain whose power state changed
+        power_state         Param[2]     31:0        UInt32                                Power state that the power domain transitioned to
+               3.3.3.1.1.2   Output values
+               The POWER_STATE_CHANGED command does not have any output values.
+               3.3.3.1.2 Failure conditions
+               The POWER_STATE_CHANGED command does not have any failure conditions.
+               3.3.3.1.2.1   Failure condition ordering
+               The POWER_STATE_CHANGED command does not have any failure condition orderings.
+               3.3.3.1.3 Success conditions
+  ID                          Condition
+  notify_target               pre: !AgentRegisteredForPowerStateNotification(recipient, domain_id)
+                              post: !NotificationSentTo(recipient, domain_id)
+  trans_done                  post: PowerStateTransitionCompleted(domain_id, power_state)
+  trans_cause                 post: PowerTransitionCausedBy(domain_id, agent_id)
+               3.3.3.1.4 Footprint
+               The POWER_STATE_CHANGED command does not have a footprint.

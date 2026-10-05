@@ -1,0 +1,20 @@
+4.7 sbi_get_mimpid command
+               Returns a value that is legal for the mimpid CSR. 0 is always a legal value for this CSR.
+               4.7.1 Interface
+               4.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 6
+               4.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    Int                                   Error field of struct sbiret
+        value               a1           XLEN-1:0    UInt                                  Value that is legal for the mimpid CSR
+               4.7.2 Failure conditions
+               The sbi_get_mimpid command does not have any failure conditions.
+               4.7.2.1   Failure condition ordering
+               The sbi_get_mimpid command does not have any failure condition orderings.
+               4.7.3 Success conditions
+  ID                          Condition
+  value_legal                 post: IsLegalMimpidValue(value)
+  zero_legal                  post: IsLegalMimpidValue(0)
+               4.7.4 Footprint
+               The sbi_get_mimpid command does not modify any state.

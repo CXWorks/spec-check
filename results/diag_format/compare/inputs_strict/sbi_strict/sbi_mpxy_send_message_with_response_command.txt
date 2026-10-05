@@ -1,0 +1,27 @@
+20.10 sbi_mpxy_send_message_with_response command
+               Sends a message to an MPXY channel and waits until the channel returns a message response.
+               20.10.1 Interface
+               20.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 5
+        channel_id          a0           31:0        UInt32                                ID of the target MPXY channel
+        message_id          a1           31:0        UInt32                                Protocol-specific ID of the message to send
+        message_data_len    a2           XLEN-1:0    UInt                                  Length in bytes of the message data at offset 0x0 of the calling hart's shared memory
+               20.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Command return status
+        uvalue              a1           XLEN-1:0    UInt                                  Length in bytes of the message response data
+               20.10.2 Failure conditions
+               The section does not define any failure conditions.
+               20.10.2.1   Failure condition ordering
+               The sbi_mpxy_send_message_with_response command does not have any failure condition orderings.
+               20.10.3 Success conditions
+  ID                          Condition
+  resp_recv                   post: MessageResponseReceived(channel_id, message_id)
+  resp_data                   post: SharedMemResponseWritten(CallingHart(), 0, uvalue)
+  resp_len                    post: uvalue == MessageResponseDataLen(channel_id, message_id)
+  cap_bit                     post: ChannelCapabilitySendWithResponseBit(channel_id) == 1
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+               20.10.4 Footprint
+    ID                        Value
+    resp_data                 SharedMemRegion(CallingHart(), 0, uvalue)

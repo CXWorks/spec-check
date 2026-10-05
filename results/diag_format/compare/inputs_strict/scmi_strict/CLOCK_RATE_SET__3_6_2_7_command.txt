@@ -1,0 +1,43 @@
+3.6.2.7 CLOCK_RATE_SET command
+               Selects the clock rate of a clock, either synchronously or asynchronously.
+               3.6.2.7.1 Interface
+               3.6.2.7.1.1   Input values
+        Name                Register          Bits        Type                                  Description
+        message_id          Message header    -           UInt                                  Message ID, value 0x5
+        protocol_id         Message header    -           UInt                                  Protocol ID, value 0x14
+        flags               Parameter 0       31:0        UInt32                                Bits[31:4]: Reserved, must be zero.
+                                                                                                Bits[3:2]: Round up/down. If Bit[3] == 1, the platform rounds up or down by itself to the physical rate closest to the requested rate, and Bit[2] is ignored. If Bit[3] == 0, the platform rounds up if Bit[2] == 1 and rounds down if Bit[2] == 0.
+                                                                                                Bit[1]: Ignore delayed response. Used only when Bit[0] == 1. If 1, no CLOCK_RATE_SET delayed response is sent. If 0, a CLOCK_RATE_SET delayed response is sent.
+                                                                                                Bit[0]: Async flag. 1 = set the rate asynchronously. 0 = set the rate synchronously.
+        clock_id            Parameter 1       31:0        UInt32                                Identifier for the clock device
+        rate[0]             Parameter 2       31:0        UInt32                                Lower 32 bits of the physical rate in Hertz
+        rate[1]             Parameter 3       31:0        UInt32                                Upper 32 bits of the physical rate in Hertz
+               3.6.2.7.1.2   Output values
+        Name                Register          Bits        Type                                  Description
+        status              Return value 0    31:0        Int32                                 Command return status
+               3.6.2.7.2 Failure conditions
+  ID                          Condition
+  clock_exists                pre: !ClockExists(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  rate_supported              pre: !ClockSupportsRate(clock_id, RequestedRate(rate))
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  flags_valid                 pre: !IsValidClockRateSetFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  async_busy                  pre: Bits(flags, 0, 0) == 1 && PendingAsyncClockRateChanges() >= MaxPendingAsyncClockRateChanges()
+                              post: ResultEqual(status, BUSY)
+  dependencies                pre: ClockRateChangeBlockedByDependencies(clock_id)
+                              post: ResultEqual(status, DENIED)
+               3.6.2.7.2.1   Failure condition ordering
+               The CLOCK_RATE_SET command does not have any failure condition orderings.
+               3.6.2.7.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  sync_rate                   post: Bits(flags, 0, 0) == 0 && ClockIsEnabled(clock_id) ==> ClockRate(clock_id) == SelectPhysicalRate(clock_id, RequestedRate(rate), Bits(flags, 3, 2))
+  sync_disabled               post: Bits(flags, 0, 0) == 0 && !ClockIsEnabled(clock_id) ==> RateTakesEffectOnReEnable(clock_id, SelectPhysicalRate(clock_id, RequestedRate(rate), Bits(flags, 3, 2)))
+  async_queued                post: Bits(flags, 0, 0) == 1 ==> AsyncClockRateChangeQueued(clock_id, SelectPhysicalRate(clock_id, RequestedRate(rate), Bits(flags, 3, 2)))
+  async_resp                  post: Bits(flags, 0, 0) == 1 && Bits(flags, 1, 1) == 0 ==> DelayedResponseSent(CLOCK_RATE_SET_COMPLETE, clock_id)
+  async_no_resp               post: Bits(flags, 0, 0) == 1 && Bits(flags, 1, 1) == 1 ==> !DelayedResponseSent(CLOCK_RATE_SET_COMPLETE, clock_id)
+               3.6.2.7.4 Footprint
+    ID                        Value
+    clock_rate                ClockRate(clock_id)
+    async_pending             PendingAsyncClockRateChanges()

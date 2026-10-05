@@ -1,0 +1,28 @@
+3.4.2.6 SYSTEM_POWER_STATE_GET command
+               Gets the power state of the system.
+               This command is available only to agents other than a PSCI implementation, on systems that implement an OSPM view (Section 3.4.1). It is mandatory in an OSPM view implementation.
+               3.4.2.6.1 Interface
+               3.4.2.6.1.1   Input values
+        Name                Register        Bits        Type        Description
+        message_id          Message header  -           UInt32      Message ID, value 0x4
+        protocol_id         Message header  -           UInt32      Protocol ID, value 0x12
+               3.4.2.6.1.2   Output values
+        Name                Register        Bits        Type        Description
+        status              Payload word 0  31:0        Int32       Command return status. Status codes are defined in Section 3.1.4.
+        system_state        Payload word 1  31:0        UInt32      Power state of the system:
+                                                                    0x0: System shutdown.
+                                                                    0x3: System power-up.
+                                                                    0x4: System suspend.
+                                                                    0x5 to 0x7FFFFFFF: Reserved, must not be used.
+                                                                    0x80000000 to 0xFFFFFFFF: Available for vendor-defined states.
+               3.4.2.6.2 Failure conditions
+               The section does not define any failure conditions or the status codes that go with them.
+               3.4.2.6.2.1   Failure condition ordering
+               The SYSTEM_POWER_STATE_GET command does not have any failure condition orderings.
+               3.4.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: IsSuccessStatus(status)
+  state_value                 post: system_state == CurrentSystemPowerState()
+  state_range                 post: system_state == 0x0 || system_state == 0x3 || system_state == 0x4 || system_state >= 0x80000000
+               3.4.2.6.4 Footprint
+               The SYSTEM_POWER_STATE_GET command does not modify any state.

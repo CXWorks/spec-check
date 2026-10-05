@@ -1,0 +1,31 @@
+3.7.2.8 SENSOR_TRIP_POINT_NOTIFY command
+               Globally controls whether notifications are sent when the sensor value crosses the trip-points configured with SENSOR_TRIP_POINT_CONFIG. The agent uses this command. This command is optional.
+               3.7.2.8.1 Interface
+               3.7.2.8.1.1   Input values
+        Name                  Register       Bits        Type        Description
+        message_id            Header         -           UInt        Message identifier, value 0x4
+        protocol_id           Header         -           UInt        Protocol identifier, value 0x15
+        sensor_id             Payload[0]     31:0        UInt32      Identifier for the sensor
+        sensor_event_control  Payload[1]     31:1        UInt32      Reserved
+                              Payload[1]     0           UInt32      Global control of notifications for crossings of the configured trip-points of the specified sensor: 1 = notifications sent whenever the sensor value crosses any configured trip-point; 0 = no notifications sent for any trip-point
+               3.7.2.8.1.2   Output values
+        Name                  Register       Bits        Type        Description
+        status                Payload[0]     31:0        Int32       Command return status
+               3.7.2.8.2 Failure conditions
+  ID                          Condition
+  sensor_exists               pre: !SensorExists(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  event_control_valid         pre: !IsValidSensorEventControl(sensor_event_control)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  notify_supported            pre: !SupportsTripPointEventNotifications(sensor_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.7.2.8.2.1   Failure condition ordering
+               The SENSOR_TRIP_POINT_NOTIFY command does not have any failure condition orderings.
+               3.7.2.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_enabled              post: Bits(sensor_event_control, 0, 0) == 1 ==> TripPointNotificationsEnabled(sensor_id)
+  notify_disabled             post: Bits(sensor_event_control, 0, 0) == 0 ==> !TripPointNotificationsEnabled(sensor_id)
+               3.7.2.8.4 Footprint
+    ID                        Value
+    notify_enabled            TripPointNotificationsEnabled(sensor_id)

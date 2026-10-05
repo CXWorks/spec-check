@@ -1,0 +1,26 @@
+3.7.3.1 SENSOR_READING_COMPLETE command
+               The platform sends this delayed response to an asynchronous SENSOR_READING_GET command that an agent issued.
+               3.7.3.1.1 Interface
+               3.7.3.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          —            —           UInt32                                Message identifier, value 0x6
+        protocol_id         —            —           UInt32                                Protocol identifier, value 0x15
+               3.7.3.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              —            —           Int32                                 Status code, as described in Section 3.1.4
+        sensor_id           —            —           UInt32                                Identifier for the sensor
+        readings            —            —           SENSOR_READING[N]                     Array of sensor readings in the format given by the Sensor Reading Descriptor. N is the number of sensor axes. All axes are reported in order.
+               3.7.3.1.2 Failure conditions
+  ID                          Condition
+  sensor_hw_fault             pre: SensorHasHardwareFault(sensor_id)
+                              post: ResultEqual(status, HARDWARE_ERROR)
+               3.7.3.1.2.1   Failure condition ordering
+               The SENSOR_READING_COMPLETE command does not have any failure condition orderings.
+               3.7.3.1.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  async_origin                post: IsResponseToAsyncSensorReadingGet(sensor_id)
+  axis_count                  post: ReadingCount(readings) == SensorAxisCount(sensor_id)
+  axis_order                  post: forall|i: UInt32| i < SensorAxisCount(sensor_id) ==> ReadingAt(readings, i) == SensorAxisReading(sensor_id, i)
+               3.7.3.1.4 Footprint
+               The section does not describe any state that the SENSOR_READING_COMPLETE command modifies.

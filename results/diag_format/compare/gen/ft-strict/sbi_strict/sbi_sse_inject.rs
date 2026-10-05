@@ -1,0 +1,21 @@
+pub open spec fn sbi_sse_inject_spec(event_id: uint32_t, hart_id: unsigned long, result: struct sbiret, old_s: S, new_s: S) -> bool {
+  (result == SBI_SUCCESS ==> EventAttributeAllowsInjection(new_s, event_id))
+  && (result == SBI_SUCCESS && IsLocalEvent(new_s, event_id) ==> EventInjectedOnHart(new_s, event_id, hart_id))
+  && (result == SBI_SUCCESS && IsGlobalEvent(new_s, event_id) ==> EventInjected(new_s, event_id))
+  && (result == SBI_SUCCESS && InSseEventHandler(new_s) && EventReadyToRun(new_s, event_id) && EventPriority(new_s, event_id) > EventPriority(new_s, RunningSseEvent(new_s)) ==> EventHandledImmediately(new_s, event_id))
+  && (result == SBI_SUCCESS && InSseEventHandler(new_s) && EventReadyToRun(new_s, event_id) && EventPriority(new_s, event_id) < EventPriority(new_s, RunningSseEvent(new_s)) ==> EventRunsAfterCompletionOf(new_s, event_id, RunningSseEvent(new_s)))
+  && ((!(result == SBI_SUCCESS))
+    ==> EventAttributeAllowsInjection(new_s, event_id))
+  && ((!(result == SBI_SUCCESS))
+    ==> EventInjectedOnHart(new_s, event_id, hart_id))
+  && ((!(result == SBI_SUCCESS))
+    ==> EventInjected(new_s, event_id))
+  && ((!(result == SBI_SUCCESS))
+    ==> EventHandledImmediately(new_s, event_id))
+  && ((!(result == SBI_SUCCESS))
+    ==> EventRunsAfterCompletionOf(new_s, event_id, RunningSseEvent(new_s)))
+  && ((!(result == SBI_SUCCESS) && !(InSseEventHandler(new_s) && EventReadyToRun(new_s, event_id) && EventPriority(new_s, event_id) > EventPriority(new_s, RunningSseEvent(new_s))))
+    ==> EventHandledImmediately(new_s, event_id))
+  && (result != SBI_SUCCESS
+    ==> SseEventAt(new_s, event_id, hart_id).injected == SseEventAt(old_s, event_id, hart_id).injected)
+}

@@ -1,0 +1,21 @@
+14.2 sbi_cppc_read command
+               Reads the CPPC register specified by cppc_reg_id.
+               14.2.1 Interface
+               14.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 1
+        cppc_reg_id         a0           31:0        UInt32                                ID of the CPPC register to read
+               14.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           63:0        Int64                                 Command return status
+        value               a1           63:0        UInt64                                Value of the CPPC register. When supervisor mode XLEN is 32, holds only the lower 32 bits of the register
+               14.2.2 Failure conditions
+               The sbi_cppc_read command does not have any failure conditions.
+               14.2.2.1   Failure condition ordering
+               The sbi_cppc_read command does not have any failure condition orderings.
+               14.2.3 Success conditions
+  ID                          Condition
+  value_full                  post: (SupervisorXlen() != 32) ==> (value == CppcRegisterValue(cppc_reg_id))
+  value_low32                 post: (SupervisorXlen() == 32) ==> (value == Bits(CppcRegisterValue(cppc_reg_id), 31, 0))
+               14.2.4 Footprint
+               The sbi_cppc_read command does not have any footprint.

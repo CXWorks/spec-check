@@ -1,0 +1,46 @@
+13.2 FFA_VERSION command
+               Returns the version of the Firmware Framework implementation at an FF-A instance. Depending on the Version query type, it negotiates a version with the callee, queries a compatible version, or queries the negotiated version.
+               13.2.1 Interface
+               13.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000063
+        version             w1           31:0        UInt32                                Input version number. Bit[31]: must be 0. Bits[30:16]: Major Version number. Bits[15:0]: Minor Version number. Reserved (SBZ) when the Version query type is b'10
+        flags               w2           31:0        UInt32                                Input flags. Bits[31:2]: Reserved (SBZ). Bits[1:0]: Version query type (b'00: negotiate version, b'01: query compatible version, b'10: query negotiated version, other values reserved)
+        reserved            w3-w7        31:0        UInt32                                Reserved (SBZ)
+               13.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        Int32                                 Output version number (Bit[31]: 0, Bits[30:16]: Major Version number, Bits[15:0]: Minor Version number), or SMCCC error code
+        reserved            w1-w7        31:0        UInt32                                Reserved (MBZ)
+               13.2.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !CalleeImplementsFfa()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  version_bit31               pre: Bits(version, 31, 31) != 0
+                              post: ResultEqual(result, INVALID_PARAMETER)
+  query_type                  pre: Bits(flags, 1, 0) > 2
+                              post: ResultEqual(result, INVALID_PARAMETER)
+               13.2.2.1   Failure condition ordering
+               The FFA_VERSION command does not have any failure condition orderings.
+               13.2.3 Success conditions
+  ID                          Condition
+  out_bit31                   post: Bits(result, 31, 31) == 0
+  out_regs                    post: ReservedResultRegsAreZero()
+  neg_in_use                  post: Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(caller) && FfaInUse(caller) ==> result == NULL_VERSION
+  neg_downgrade               post: Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(caller) && !FfaInUse(caller) && VersionLess(version, PrevNegotiatedVersion(caller)) && !DowngradeAllowed(caller) ==> result == NULL_VERSION
+  neg_lower                   post: Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(caller) && OnlyIncompatibleLowerVersions(version) ==> result == HighestIncompatibleVersion(version)
+  neg_higher                  post: Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(caller) && OnlyIncompatibleHigherVersions(version) ==> result == LowestIncompatibleVersion(version) || ResultEqual(result, NOT_SUPPORTED)
+  neg_both                    post: Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(caller) && OnlyIncompatibleHigherAndLowerVersions(version) ==> result == HighestIncompatibleVersion(version)
+  neg_ok_result               post: Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(caller) && NegotiationSucceeds(caller, version) ==> IsCompatible(version, result) && !VersionLess(result, version)
+  neg_ok_state                post: Bits(flags, 1, 0) == 0 && !IsSpmcCallerAtSeparateEl(caller) && NegotiationSucceeds(caller, version) ==> NegotiatedVersion(caller) == version
+  neg_fail_state              post: Bits(flags, 1, 0) == 0 && !NegotiationSucceeds(caller, version) ==> NegotiatedVersion(caller) == PrevNegotiatedVersion(caller)
+  neg_spmc                    post: Bits(flags, 1, 0) == 0 && IsSpmcCallerAtSeparateEl(caller) ==> result == SpmcStartNegotiatedVersion() && NegotiatedVersion(caller) == PrevNegotiatedVersion(caller)
+  compat_ok                   post: Bits(flags, 1, 0) == 1 && HasCompatibleVersion(version) ==> IsCompatible(version, result) && !VersionLess(result, version)
+  compat_lower                post: Bits(flags, 1, 0) == 1 && OnlyIncompatibleLowerVersions(version) ==> result == HighestIncompatibleVersion(version)
+  compat_higher               post: Bits(flags, 1, 0) == 1 && OnlyIncompatibleHigherVersions(version) ==> result == LowestIncompatibleVersion(version)
+  compat_both                 post: Bits(flags, 1, 0) == 1 && OnlyIncompatibleHigherAndLowerVersions(version) ==> result == HighestIncompatibleVersion(version)
+  compat_state                post: Bits(flags, 1, 0) == 1 ==> NegotiatedVersion(caller) == PrevNegotiatedVersion(caller)
+  query_neg                   post: Bits(flags, 1, 0) == 2 ==> result == NegotiatedVersion(caller)
+  query_state                 post: Bits(flags, 1, 0) == 2 ==> NegotiatedVersion(caller) == PrevNegotiatedVersion(caller)
+               13.2.4 Footprint
+    ID                        Value
+    neg_version               NegotiatedVersion(caller)

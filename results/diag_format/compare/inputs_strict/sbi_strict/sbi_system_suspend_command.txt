@@ -1,0 +1,37 @@
+13.1 sbi_system_suspend command
+               Suspends the system and resumes the calling hart at resume_addr after wake-up.
+               13.1.1 Interface
+               13.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 0
+        sleep_type          a0           31:0        UInt32                                Sleep type
+        resume_addr         a1           63:0        Address                               Address where the hart resumes in supervisor-mode
+        opaque              a2           63:0        UInt64                                Opaque value passed back in a1 on resume
+               13.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           63:0        SbiErrorCode                          Error code from Table 56. Set only if the call returns.
+               13.1.2 Failure conditions
+               The section does not list the individual error cases. It states only that if sbi_system_suspend() returns, the call failed, and sbiret.error holds an error code from Table 56.
+               13.1.2.1   Failure condition ordering
+               The sbi_system_suspend command does not have any failure condition orderings.
+               13.1.3 Success conditions
+               On success the call does not return to the caller, so there is no success return code.
+  ID                          Condition
+  resume_state                post: HartResumesFromState(CallingHart(), STOPPED)
+  resume_mode                 post: HartPrivilegeMode(CallingHart()) == SUPERVISOR
+  resume_addr                 post: HartResumesAtAddress(CallingHart(), resume_addr)
+  resume_satp                 post: satp == 0
+  resume_sie                  post: sstatus.SIE == 0
+  resume_a0                   post: a0 == HartId(CallingHart())
+  resume_a1                   post: a1 == opaque
+  resume_other                post: OtherRegistersUndefined(CallingHart())
+               13.1.4 Footprint
+    ID                        Value
+    hart_state                HartState(CallingHart())
+    hart_mode                 HartPrivilegeMode(CallingHart())
+    hart_pc                   HartPc(CallingHart())
+    satp                      satp
+    sstatus_sie               sstatus.SIE
+    a0                        a0
+    a1                        a1
+    other_regs                OtherRegisters(CallingHart())

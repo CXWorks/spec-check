@@ -1,0 +1,30 @@
+5.21 PSCI_SET_SUSPEND_MODE command
+               Switches between the platform-coordinated and OS-initiated power state coordination modes. Introduced in PSCI 1.0, this function is optional. The platform boots in platform-coordinated mode.
+               5.21.1 Interface
+               5.21.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID of PSCI_SET_SUSPEND_MODE
+        mode                X1           63:0        UInt64                                Requested power state coordination mode (valid values are 0 and 1)
+               5.21.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        PsciReturnCode                        Command return status
+               5.21.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsFunctionImplemented(PSCI_SET_SUSPEND_MODE)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  mode_valid                  pre: mode != 0 && mode != 1
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  to_osi_core_state           pre: CurrentSuspendMode() == PLATFORM_COORDINATED && SuspendModeOf(mode) == OS_INITIATED && !(forall|c: Core| CoreIsRunning(c) || CoreIsOffViaCpuOffOrNotBooted(c) || CoreIsSuspendedViaCpuDefaultSuspend(c))
+                              post: ResultEqual(result, DENIED)
+  to_osi_cpu_suspend          pre: CurrentSuspendMode() == PLATFORM_COORDINATED && SuspendModeOf(mode) == OS_INITIATED && (exists|c: Core| CpuSuspendCalledSinceLastModeChangeOrBoot(c))
+                              post: ResultEqual(result, DENIED)
+  to_pc_core_state            pre: CurrentSuspendMode() == OS_INITIATED && SuspendModeOf(mode) == PLATFORM_COORDINATED && !(forall|c: Core| c != CallingCore() ==> CoreIsOffViaCpuOffOrNotBooted(c))
+                              post: ResultEqual(result, DENIED)
+               5.21.2.1   Failure condition ordering
+               The PSCI_SET_SUSPEND_MODE command does not have any failure condition orderings.
+               5.21.3 Success conditions
+  ID                          Condition
+  mode_set                    post: CurrentSuspendMode() == SuspendModeOf(mode)
+               5.21.4 Footprint
+    ID                        Value
+    mode_set                  CurrentSuspendMode()

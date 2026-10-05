@@ -1,0 +1,33 @@
+3.5.7.1 PERFORMANCE_QOS_CONFIG_COMPLETE command
+               Delayed response the platform sends to an agent when an asynchronous QoS setting request made through PERFORMANCE_QOS_CONFIG_SET has completed. The request changed the QoS configuration for a QoS capability of a performance domain. This command is optional.
+               3.5.7.1.1 Interface
+               3.5.7.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x20
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x13
+               3.5.7.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Status of the completed request. One of, but not limited to: SUCCESS. See Section 3.1.4 for more status codes
+        domain_id           Payload[1]   31:0        UInt32                                Performance domain whose QoS configuration was set or reset. Set to 0xFFFFFFFF if flags Bit[4] is 1
+        capability          Payload[2]   31:0        UInt32                                QoS capability, as described by Table 14
+        flags               Payload[3]   31:0        UInt32                                Bits[31:5] reserved, must be zero; Bit[4] platform QoS configuration reset; Bit[3] sibling domains QoS configuration reset; Bit[2] domain QoS configuration reset; Bits[1:0] reserved, must be zero
+        qos_value           Payload[4]   31:0        UInt32                                QoS configuration the domain has been set to for the given capability. The agent ignores this field if flags Bit[2], Bit[3] or Bit[4] is 1
+               3.5.7.1.2 Failure conditions
+               The PERFORMANCE_QOS_CONFIG_COMPLETE command does not have any failure conditions.
+               3.5.7.1.2.1   Failure condition ordering
+               The PERFORMANCE_QOS_CONFIG_COMPLETE command does not have any failure condition orderings.
+               3.5.7.1.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags_rsvd_hi               post: Bits(flags, 31, 5) == 0
+  flags_rsvd_lo               post: Bits(flags, 1, 0) == 0
+  platform_domain_id          post: Bit(flags, 4) == 1 ==> domain_id == 0xFFFFFFFF
+  platform_reset              post: Bit(flags, 4) == 1 ==> (forall|d: PerfDomainId| QosValue(d, capability) == PlatformDefaultQos(d, capability))
+  sibling_reset               post: Bit(flags, 3) == 1 ==> (forall|d: PerfDomainId| (d == domain_id || IsSiblingDomain(d, domain_id)) ==> QosValue(d, capability) == PlatformDefaultQos(d, capability))
+  domain_reset                post: Bit(flags, 2) == 1 ==> QosValue(domain_id, capability) == PlatformDefaultQos(domain_id, capability)
+  qos_set                     post: (Bit(flags, 2) == 0 && Bit(flags, 3) == 0 && Bit(flags, 4) == 0) ==> QosValue(domain_id, capability) == qos_value
+               3.5.7.1.4 Footprint
+    ID                        Value
+    qos_value                 QosValue(domain_id, capability)
+    qos_sibling               forall|d: PerfDomainId| IsSiblingDomain(d, domain_id) ==> QosValue(d, capability)
+    qos_platform              forall|d: PerfDomainId| QosValue(d, capability)

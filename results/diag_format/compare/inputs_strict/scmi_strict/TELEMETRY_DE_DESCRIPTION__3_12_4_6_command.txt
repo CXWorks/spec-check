@@ -1,0 +1,36 @@
+3.12.4.6 TELEMETRY_DE_DESCRIPTION command
+               Discovers the Data Events (DEs) on the platform. On success, the command returns an array of DE descriptors.
+               3.12.4.6.1 Interface
+               3.12.4.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x4
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x1B
+        desc_index          Param[0]     31:0        UInt32                                Index of the first DE descriptor to read in the DE descriptor array
+               3.12.4.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Ret[0]       31:0        Int32                                 Command return status (see Section 3.1.4)
+        num_desc            Ret[1]       31:16       UInt16                                Number of DE descriptors that remain
+        num_desc            Ret[1]       15:0        UInt16                                Number of DE descriptors returned by this call
+        desc                Ret[2..]     -           DE_DESC[N]                            Array of DE descriptors
+               3.12.4.6.2 Failure conditions
+               This section does not define any failure conditions for the TELEMETRY_DE_DESCRIPTION command.
+               3.12.4.6.2.1   Failure condition ordering
+               The TELEMETRY_DE_DESCRIPTION command does not have any failure condition orderings.
+               3.12.4.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  desc_count                  post: Bits(num_desc, 15, 0) == N
+  desc_remaining              post: Bits(num_desc, 31, 16) == RemainingDeDescriptors(desc_index, Bits(num_desc, 15, 0))
+  desc_content                post: forall|i: UInt32| i < Bits(num_desc, 15, 0) ==> desc[i] == DeDescriptorAt(desc_index + i)
+  desc_attr1_rsvd             post: forall|i: UInt32| i < Bits(num_desc, 15, 0) ==> Bits(desc[i].de_attributes_1, 4, 2) == 0
+  desc_ts_support             post: forall|i: UInt32| i < Bits(num_desc, 15, 0) ==> Bits(desc[i].de_attributes_1, 1, 0) <= 2
+  desc_attr3_rsvd             post: forall|i: UInt32| i < Bits(num_desc, 15, 0) ==> desc[i].de_attributes_3 == 0
+  desc_line_ts                post: forall|i: UInt32| i < Bits(num_desc, 15, 0) ==> (DeDescHasLineTsRate(desc[i]) == (Bits(desc[i].de_attributes_1, 1, 0) == 1))
+  desc_fastchannel            post: forall|i: UInt32| i < Bits(num_desc, 15, 0) ==> (DeDescHasFastChannelFields(desc[i]) == (Bits(desc[i].de_attributes_1, 30, 30) == 1))
+  desc_fc_size                post: forall|i: UInt32| i < Bits(num_desc, 15, 0) && Bits(desc[i].de_attributes_1, 30, 30) == 1 ==> FastChannelSizeSufficient(desc[i])
+  desc_name                   post: forall|i: UInt32| i < Bits(num_desc, 15, 0) ==> (DeDescHasName(desc[i]) == (Bits(desc[i].de_attributes_1, 31, 31) == 1))
+  desc_name_fmt               post: forall|i: UInt32| i < Bits(num_desc, 15, 0) && Bits(desc[i].de_attributes_1, 31, 31) == 1 ==> IsNullTerminatedUtf8(desc[i].name, 16)
+  desc_data_size              post: forall|i: UInt32| i < Bits(num_desc, 15, 0) ==> DeDataSpaceSufficient(desc[i])
+               3.12.4.6.4 Footprint
+    ID                        Value
+               The TELEMETRY_DE_DESCRIPTION command does not modify any state.

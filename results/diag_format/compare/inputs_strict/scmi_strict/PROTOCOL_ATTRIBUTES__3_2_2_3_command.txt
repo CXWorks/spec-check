@@ -1,0 +1,25 @@
+3.2.2.3 PROTOCOL_ATTRIBUTES command
+               Returns the implementation details that are associated with this protocol.
+               3.2.2.3.1 Interface
+               3.2.2.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0x1
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x10
+               3.2.2.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        attributes          Payload      31:0        UInt32                                Bits[31:16]: Reserved, must be zero.
+                                                                                           Bits[15:8]: Number of agents in the system.
+                                                                                           Bits[7:0]: Number of protocols that are implemented, excluding the Base protocol.
+               3.2.2.3.2 Failure conditions
+               The PROTOCOL_ATTRIBUTES command does not have any failure conditions. This command is mandatory.
+               3.2.2.3.2.1   Failure condition ordering
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+               3.2.2.3.3 Success conditions
+  ID                          Condition
+  attr_reserved               post: Bits(attributes, 31, 16) == 0
+  attr_num_agents             post: PlatformSupportsAgentDiscovery() ==> Bits(attributes, 15, 8) == NumAgentsInSystem()
+  attr_no_discovery           post: !PlatformSupportsAgentDiscovery() ==> Bits(attributes, 15, 8) == 0
+  attr_num_protocols          post: Bits(attributes, 7, 0) == NumImplementedProtocolsExcludingBase()
+               3.2.2.3.4 Footprint
+               The PROTOCOL_ATTRIBUTES command does not modify any state.

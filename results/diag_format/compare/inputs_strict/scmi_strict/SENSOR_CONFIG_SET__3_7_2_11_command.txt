@@ -1,0 +1,42 @@
+3.7.2.11 SENSOR_CONFIG_SET command
+               Configures the sensor update interval, enables or disables timestamping of sensor values, and enables or disables the sensor.
+               3.7.2.11.1 Interface
+               3.7.2.11.1.1   Input values
+        Name                     Register     Bits        Type      Description
+        message_id               Header       -           UInt32    Message identifier, value 0xA
+        protocol_id              Header       -           UInt32    Protocol identifier, value 0x15
+        sensor_id                Param[0]     31:0        UInt32    Identifier for the sensor
+        sec                      Param[1]     31:16       UInt16    sensor_update_interval seconds field. The interval is sec x 10^exponent seconds. sensor_update_interval (Bits[31:11]) is set to 0 if the interval does not need to be updated or the sensor does not support configuring it
+        exponent                 Param[1]     15:11       Int5      sensor_update_interval exponent, two's complement power-of-10 multiplier applied to sec
+        round_auto               Param[1]     10          Bool      1: platform rounds autonomously to the supported interval closest to the requested one, and round_up is ignored
+        round_up                 Param[1]     9           Bool      Used when round_auto is 0. 1: round up, 0: round down
+        reserved                 Param[1]     8:2         Bits7     Reserved
+        timestamp                Param[1]     1           Bool      1: platform timestamps sensor values, 0: no timestamping. Set to 0 if the sensor does not support timestamp reporting or its configuration
+        sensor_state             Param[1]     0           Bool      1: enable the sensor, 0: disable the sensor
+               3.7.2.11.1.2   Output values
+        Name                     Register     Bits        Type      Description
+        status                   Ret[0]       31:0        Int32     Command return status
+               3.7.2.11.2 Failure conditions
+  ID                          Condition
+  sensor_exists               pre: !SensorExists(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  config_valid                pre: !IsValidSensorConfig(sensor_id, sensor_config)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  config_supported            pre: !SensorSupportsConfig(sensor_id, sensor_config)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.7.2.11.2.1   Failure condition ordering
+               The SENSOR_CONFIG_SET command does not have any failure condition orderings.
+               3.7.2.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  sensor_state                post: SensorAt(sensor_id).enabled == (Bits(sensor_config, 0, 0) == 1)
+  timestamp                   post: SensorAt(sensor_id).timestamp_enabled == (Bits(sensor_config, 1, 1) == 1)
+  interval_unchanged          post: Bits(sensor_config, 31, 11) == 0 ==> UpdateIntervalUnchanged(sensor_id)
+  interval_auto               post: (Bits(sensor_config, 31, 11) != 0 && Bits(sensor_config, 10, 10) == 1) ==> SensorAt(sensor_id).update_interval == ClosestSupportedInterval(sensor_id, RequestedInterval(Bits(sensor_config, 31, 16), Bits(sensor_config, 15, 11)))
+  interval_round_up           post: (Bits(sensor_config, 31, 11) != 0 && Bits(sensor_config, 10, 10) == 0 && Bits(sensor_config, 9, 9) == 1) ==> SensorAt(sensor_id).update_interval == RoundUpSupportedInterval(sensor_id, RequestedInterval(Bits(sensor_config, 31, 16), Bits(sensor_config, 15, 11)))
+  interval_round_down         post: (Bits(sensor_config, 31, 11) != 0 && Bits(sensor_config, 10, 10) == 0 && Bits(sensor_config, 9, 9) == 0) ==> SensorAt(sensor_id).update_interval == RoundDownSupportedInterval(sensor_id, RequestedInterval(Bits(sensor_config, 31, 16), Bits(sensor_config, 15, 11)))
+               3.7.2.11.4 Footprint
+    ID                        Value
+    sensor_state              SensorAt(sensor_id).enabled
+    timestamp                 SensorAt(sensor_id).timestamp_enabled
+    update_interval           SensorAt(sensor_id).update_interval

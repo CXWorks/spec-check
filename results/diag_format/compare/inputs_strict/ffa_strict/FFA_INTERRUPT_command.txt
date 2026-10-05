@@ -1,0 +1,37 @@
+14.4 FFA_INTERRUPT command
+               Returns control from the caller to the callee in response to an interrupt.
+               14.4.1 Interface
+               14.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x84000062 or 0xC4000062
+        endpoint_id         W1           31:16       UInt16                                Endpoint ID of the caller in a valid usage scenario, MBZ otherwise
+        vcpu_id             W1           15:0        UInt16                                vCPU ID of the caller in a valid usage scenario, MBZ otherwise
+        interrupt_id        W2           31:0        UInt32                                Interrupt ID in a valid usage scenario, MBZ otherwise
+        reserved            W3-W7        31:0        UInt32                                Reserved, SBZ
+        reserved            X3-X17       63:0        UInt64                                Reserved, SBZ
+               14.4.1.2   Output values
+               The FFA_INTERRUPT command does not have any output values.
+               14.4.2 Failure conditions
+               The FFA_INTERRUPT command does not have any failure conditions.
+               14.4.2.1   Failure condition ordering
+               The FFA_INTERRUPT command does not have any failure condition orderings.
+               14.4.3 Success conditions
+  ID                          Condition
+  fid                         post: fid == 0x84000062 || fid == 0xC4000062
+  conduit_ns_phys             post: instance == NS_PHYSICAL ==> conduit == ERET
+  conduit_virt                post: (instance == NS_VIRTUAL || instance == S_VIRTUAL) ==> conduit == ERET
+  conduit_s_phys              post: instance == S_PHYSICAL ==> (conduit == SMC || conduit == ERET)
+  smc_usage                   post: conduit == SMC ==> (IsSel1OrSel2Spmc(caller) && IsSpmd(callee) && instance == S_PHYSICAL && IsNsInterruptPreemptingSp(caller))
+  smc_ids                     post: conduit == SMC ==> (endpoint_id == PreemptedSpId(caller) && vcpu_id == PreemptedSpExecutionContextId(caller))
+  smc_intid                   post: conduit == SMC ==> interrupt_id == 0
+  blocked_combo               post: IsBlockedCalleePreemption(caller, callee) ==> IsValidBlockedCombination(caller, callee, instance)
+  blocked_ids                 post: (IsBlockedCalleePreemption(caller, callee) && !IsSel0(callee)) ==> (endpoint_id == PreemptedPartitionId(callee) && vcpu_id == PreemptedExecutionContextId(callee))
+  blocked_intid               post: IsBlockedCalleePreemption(caller, callee) ==> interrupt_id == 0
+  waiting_combo               post: IsWaitingCalleeDelegation(caller, callee) ==> IsValidWaitingCombination(caller, callee, instance)
+  waiting_intid               post: (IsWaitingCalleeDelegation(caller, callee) && !IsSel0(callee) && !(IsSpmd(caller) && IsSpmc(callee))) ==> interrupt_id == PendingInterruptId(callee)
+  waiting_ids                 post: IsWaitingCalleeDelegation(caller, callee) ==> (endpoint_id == 0 && vcpu_id == 0)
+  reserved                    post: ReservedParameterRegistersZero()
+  control                     post: ControlReturnedToCallee(caller, callee)
+               14.4.4 Footprint
+    ID                        Value
+    control                   ExecutionControl(callee)

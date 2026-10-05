@@ -1,0 +1,25 @@
+3.6.4.2 CLOCK_RATE_CHANGE_REQUESTED command
+               This is a notification. The platform sends it to an agent that has subscribed to it through CLOCK_RATE_CHANGE_REQUESTED_NOTIFY. The platform sends it when it receives a request to change the rate of a clock device. The request can come from a different agent or entity in the system, including the platform itself.
+               This command is optional.
+               For more details on how CLOCK_RATE_CHANGE_REQUESTED notifications can be used, see Section 3.6.2.13.
+               3.6.4.2.1 Interface
+               3.6.4.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0x1
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x14
+        agent_id            Payload[0]   31:0        UInt32                                Identifier of the agent that requested the clock rate change
+        domain_id           Payload[1]   31:0        UInt32                                Identifier of the clock device
+        rate_lower          Payload[2]   31:0        UInt32                                rate[0]: lower 32 bits of the requested physical clock rate, in Hertz
+        rate_upper          Payload[3]   31:0        UInt32                                rate[1]: upper 32 bits of the requested physical clock rate, in Hertz
+               3.6.4.2.1.2   Output values
+               The CLOCK_RATE_CHANGE_REQUESTED notification does not have any output values.
+               3.6.4.2.2 Failure conditions
+               The CLOCK_RATE_CHANGE_REQUESTED notification does not have any failure conditions.
+               3.6.4.2.2.1   Failure condition ordering
+               The CLOCK_RATE_CHANGE_REQUESTED notification does not have any failure condition orderings.
+               3.6.4.2.3 Success conditions
+  ID                          Condition
+  notify_sent                 post: forall|a: Agent| IsSubscribedToClockRateChangeRequested(a, domain_id) ==> NotificationDelivered(a, agent_id, domain_id, rate_lower, rate_upper)
+  rate_value                  post: RequestedClockRate(agent_id, domain_id) == rate_lower + rate_upper * 4294967296
+               3.6.4.2.4 Footprint
+               The CLOCK_RATE_CHANGE_REQUESTED notification does not modify any state.

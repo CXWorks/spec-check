@@ -1,0 +1,49 @@
+13.8 FFA_PARTITION_INFO_GET command
+               Returns information about FF-A components implemented in the system. Depending on the Return information type flag, the caller gets one of two results. With the flag set to b'0, partition information descriptors for the specified UUID are written to the caller's RX buffer. With the flag set to b'1, the call returns the count of partitions deployed in the system for the specified UUID.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                  Valid conduits
+        1                   Non-secure physical            SMC
+        2                   Secure physical                SMC, ERET
+        3                   Non-secure virtual             SMC, HVC
+        4                   Secure virtual                 SMC, HVC, SVC
+               13.8.1 Interface
+               13.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000068
+        uuid                w1-w4        127:0       UInt128                               UUID, specified as described in Section 5.3 of [5]
+        flags               w5           31:0        UInt32                                Bit[0]: Return information type flag. b'1: return the count of partitions deployed in the system corresponding to uuid. b'0: return partition information descriptors corresponding to uuid in the RX buffer of the caller. Bit[31:1]: Reserved (SBZ)
+        reserved            w6-w7        31:0        UInt32                                Reserved (SBZ)
+               13.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0, w2       31:0        FfaReturnStatus                       Command return status: FFA_SUCCESS, or FFA_ERROR with the error code in w2
+        count               w2           31:0        UInt32                                On success: if flags Bit[0] = b'0, the count of partition information descriptors corresponding to uuid that are populated in the RX buffer of the caller. If flags Bit[0] = b'1, the count of partitions deployed in the system corresponding to uuid
+        size                w3           31:0        UInt32                                On success: if flags Bit[0] = b'0, the size of each partition information descriptor populated in the RX buffer of the caller. If flags Bit[0] = b'1, MBZ
+        reserved            w4-w7        31:0        UInt32                                On success: Reserved (SBZ)
+               13.8.2 Failure conditions
+  ID                          Condition
+  rx_busy                     pre: Bits(flags, 0, 0) == 0 && (!RxBufferFree(caller) || !RxBufferMapped(caller))
+                              post: ResultEqual(result, BUSY)
+  uuid_valid                  pre: !IsValidUuid(uuid)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  rx_size                     pre: Bits(flags, 0, 0) == 0 && !PartitionInfoFitsInRxBuffer(caller, uuid)
+                              post: ResultEqual(result, NO_MEMORY)
+  callee_state                pre: !CalleeInStateToHandleRequest(callee)
+                              post: ResultEqual(result, DENIED)
+  impl                        pre: !IsImplementedAtInstance(FFA_PARTITION_INFO_GET, instance)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  callee_ready                pre: !CalleeReadyToHandleRequest(callee)
+                              post: ResultEqual(result, NOT_READY)
+               13.8.2.1   Failure condition ordering
+               The FFA_PARTITION_INFO_GET command does not have any failure condition orderings.
+               13.8.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  count_min                   post: count >= 1
+  desc_count                  post: Bits(flags, 0, 0) == 0 ==> count == PartitionInfoDescriptorCount(uuid)
+  desc_rx                     post: Bits(flags, 0, 0) == 0 ==> RxBufferHoldsPartitionInfoDescriptors(caller, uuid, count, size)
+  desc_size                   post: Bits(flags, 0, 0) == 0 ==> size == PartitionInfoDescriptorSize(uuid)
+  part_count                  post: Bits(flags, 0, 0) == 1 ==> count == DeployedPartitionCount(uuid)
+  part_size                   post: Bits(flags, 0, 0) == 1 ==> size == 0
+               13.8.4 Footprint
+    ID                        Value
+    desc_rx                   RxBuffer(caller).contents

@@ -1,0 +1,43 @@
+3.7.2.12 SENSOR_READING_GET command
+               Requests the current value of the sensor identified by sensor_id. For synchronous accesses, the platform returns the reading in the response to this command. For asynchronous accesses, the platform returns the value in the SENSOR_READING_COMPLETE delayed response. This command is mandatory.
+               3.7.2.12.1 Interface
+               3.7.2.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x6
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x15
+        sensor_id           Param[0]     31:0        UInt32                                Identifier of the sensor to be read
+        flags               Param[1]     31:0        UInt32                                Bits[31:1]: Reserved. Bit[0]: Async flag. 1 means read asynchronously. 0 means read synchronously.
+               3.7.2.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status
+        readings            Return[1..4N] 31:0       SENSOR_READING[N]                     Array of sensor readings. N is 1 for scalar sensors. Otherwise N is the number of sensor axes, reported in order.
+               3.7.2.12.1.3   SENSOR_READING descriptor
+        Name                Register     Bits        Type                                  Description
+        sensor_value_low    Word[0]      31:0        Int32                                 Lower 32 bits of the sensor value. Invalid if an error status is returned.
+        sensor_value_high   Word[1]      31:0        Int32                                 Higher 32 bits of the sensor value. Invalid if an error status is returned.
+        timestamp_low       Word[2]      31:0        UInt32                                Lower 32 bits of the sample timestamp. 0 if no timestamp is collected.
+        timestamp_high      Word[3]      31:0        UInt32                                Higher 32 bits of the sample timestamp. 0 if no timestamp is collected.
+               3.7.2.12.2 Failure conditions
+  ID                          Condition
+  sensor_exists               pre: !SensorExists(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  flags_valid                 pre: !IsValidReadingFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  sensor_enabled              pre: !SensorIsEnabled(sensor_id)
+                              post: ResultEqual(status, PROTOCOL_ERROR)
+  sensor_hw_fault             pre: Bits(flags, 0, 0) == 0 && SensorHardwareFault(sensor_id)
+                              post: ResultEqual(status, HARDWARE_ERROR)
+               3.7.2.12.2.1   Failure condition ordering
+               The SENSOR_READING_GET command does not have any failure condition orderings.
+               3.7.2.12.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  sync_reading                post: Bits(flags, 0, 0) == 0 ==> ReadingsMatchCurrentSensorValue(readings, sensor_id)
+  async_enqueued              post: Bits(flags, 0, 0) == 1 ==> SensorReadingCompleteEnqueued(sensor_id)
+  count_scalar                post: SensorIsScalar(sensor_id) ==> ReadingCount(readings) == 1
+  count_axes                  post: !SensorIsScalar(sensor_id) ==> ReadingCount(readings) == SensorAxisCount(sensor_id)
+  axes_order                  post: !SensorIsScalar(sensor_id) ==> ReadingsInAxisOrder(readings, sensor_id)
+  no_timestamp                post: forall|i: UInt32| (i < ReadingCount(readings) && !TimestampCollected(sensor_id)) ==> (readings[i].timestamp_low == 0 && readings[i].timestamp_high == 0)
+               3.7.2.12.4 Footprint
+    ID                        Value
+    async_enqueued            SensorAt(sensor_id).pending_reading_complete

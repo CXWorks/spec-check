@@ -1,0 +1,18 @@
+pub open spec fn sensor_trip_point_event__3_7_4_1_spec(agent_id: UInt32, sensor_id: UInt32, trip_point_desc: UInt32, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+  (agent_id == 0)
+  && (TripPointEventRequested(new_s, sensor_id, Bits(trip_point_desc, 7, 0 as int)))
+  && (TripPointReachedOrCrossed(new_s, sensor_id, Bits(trip_point_desc, 7, 0 as int)))
+  && ((Bits(trip_point_desc, 16, 16) == 1) ==> TripPointCrossedInPositiveDirection(new_s, sensor_id, Bits(trip_point_desc, 7, 0 as int)))
+  && ((Bits(trip_point_desc, 16, 16) == 0) ==> TripPointCrossedInNegativeDirection(new_s, sensor_id, Bits(trip_point_desc, 7, 0 as int)))
+  && (MultipleTripPointCrossingsMayBeReportedByOneNotification(new_s, sensor_id))
+  && ((!(agent_id == 0))
+    ==> TripPointEventRequested(new_s, sensor_id, Bits(trip_point_desc, 7, 0 as int)))
+  && ((!(TripPointEventRequested(old_s, sensor_id, Bits(trip_point_desc, 7, 0 as int))))
+    ==> TripPointReachedOrCrossed(new_s, sensor_id, Bits(trip_point_desc, 7, 0 as int)))
+  && ((!(Bits(trip_point_desc, 16, 16) == 1))
+    ==> TripPointCrossedInPositiveDirection(new_s, sensor_id, Bits(trip_point_desc, 7, 0 as int)))
+  && ((!(Bits(trip_point_desc, 16, 16) == 0))
+    ==> TripPointCrossedInNegativeDirection(new_s, sensor_id, Bits(trip_point_desc, 7, 0 as int)))
+  && (result.is_Ok()
+    ==> MultipleTripPointCrossingsMayBeReportedByOneNotification(new_s, sensor_id))
+}

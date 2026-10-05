@@ -1,0 +1,23 @@
+3.10.3.3 PROTOCOL_ATTRIBUTES command
+               Returns the implementation details associated with this protocol.
+               This command is mandatory.
+               3.10.3.3.1 Interface
+               3.10.3.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message identifier, value 0x1
+        protocol_id         Header       -           UInt                                  Protocol identifier, value 0x18
+               3.10.3.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        attributes          Payload      31:16       uint32                                Reserved, must be zero
+                            Payload      15:0        uint32                                Number of power capping domains
+               3.10.3.3.2 Failure conditions
+               The PROTOCOL_ATTRIBUTES command does not have any failure conditions.
+               3.10.3.3.2.1   Failure condition ordering
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+               3.10.3.3.3 Success conditions
+  ID                          Condition
+  attr_reserved               post: Bits(attributes, 31, 16) == 0
+  attr_num_domains            post: Bits(attributes, 15, 0) == NumPowerCappingDomains()
+               3.10.3.3.4 Footprint
+               The PROTOCOL_ATTRIBUTES command does not modify any state.

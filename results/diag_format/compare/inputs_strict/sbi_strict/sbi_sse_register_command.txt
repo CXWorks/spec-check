@@ -1,0 +1,37 @@
+17.9 sbi_sse_register command
+               Registers an event handler for the software event.
+               17.9.1 Interface
+               17.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt64                                FID, value 2
+        event_id            a0           31:0        UInt32                                ID of the event whose handler is being registered
+        handler_entry_pc    a1           XLEN-1:0    Address                               ENTRY_PC event attribute of the software event
+        handler_entry_arg   a2           XLEN-1:0    UInt64                                ENTRY_ARG event attribute of the software event
+               17.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    SbiReturnCode                         Command return status
+               17.9.2 Failure conditions
+  ID                          Condition
+  event_valid                 pre: !IsValidEventId(event_id)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  pc_align                    pre: handler_entry_pc % 2 != 0
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  event_support               pre: IsReservedEventId(event_id) && IsValidEventId(event_id) && !PlatformSupportsEvent(event_id)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED)
+  event_state                 pre: EventState(event_id) != UNUSED
+                              post: ResultEqual(result, SBI_ERR_INVALID_STATE)
+               17.9.2.1   Failure condition ordering
+  [event_valid] < [event_support]
+  [event_valid] < [event_state]
+               17.9.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  state_local                 post: IsLocalEvent(event_id) ==> EventStateForHart(event_id, CallingHart()) == REGISTERED
+  state_global                post: IsGlobalEvent(event_id) ==> forall|h: Hart| EventStateForHart(event_id, h) == REGISTERED
+  entry_pc                    post: EventAttribute(event_id, ENTRY_PC) == handler_entry_pc
+  entry_arg                   post: EventAttribute(event_id, ENTRY_ARG) == handler_entry_arg
+               17.9.4 Footprint
+    ID                        Value
+    event_state               EventState(event_id)
+    entry_pc                  EventAttribute(event_id, ENTRY_PC)
+    entry_arg                 EventAttribute(event_id, ENTRY_ARG)

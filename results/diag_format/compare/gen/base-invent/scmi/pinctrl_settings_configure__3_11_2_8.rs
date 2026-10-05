@@ -1,0 +1,15 @@
+pub open spec fn pinctrl_settings_configure__3_11_2_8_spec(result: int32, old_s: S, new_s: S) -> bool {
+    (result == NOT_FOUND ==> !IsPinOrGroupValid(old_s, identifier))
+    && (result == INVALID_PARAMETERS ==> (attributes_bits_31_11 != 0 || (num_configs == 0 && function_id_valid == 1) || (num_configs > 0 && (attributes_bits_9_2 as int) > transport_max_configs || (attributes_bits_1_0 as int) > 1)))
+    && (result == NOT_SUPPORTED ==> !IsConfigSupported(old_s, identifier, function_id, configs))
+    && (result == DENIED ==> !IsAgentAllowedToSetConfig(old_s, identifier))
+    && (result == IN_USE ==> IsPinOrGroupInUse(old_s, identifier))
+    && (result == PROTOCOL_ERROR ==> (num_configs as int) > transport_max_configs)
+    && (result == SUCCESS ==> (IsPinOrGroupValid(old_s, identifier) && IsAgentAllowedToSetConfig(old_s, identifier) && !IsPinOrGroupInUse(old_s, identifier) && IsConfigSupported(old_s, identifier, function_id, configs) && (attributes_bits_31_11 == 0) && (num_configs == 0 || (function_id_valid == 1 || function_id == 0xFFFFFFFF)) && (num_configs == 0 || (attributes_bits_1_0 as int) == 0 || (attributes_bits_1_0 as int) == 1)))
+    && (result == SUCCESS ==> (new_s.pin_or_group_configs == old_s.pin_or_group_configs))
+    && (result == SUCCESS ==> (new_s.pin_or_group_function_selection == old_s.pin_or_group_function_selection))
+    && (result == SUCCESS ==> (new_s.pin_or_group_attributes == old_s.pin_or_group_attributes))
+    && (result == SUCCESS ==> (new_s.pin_or_group_in_use == old_s.pin_or_group_in_use))
+    && (result == SUCCESS ==> (new_s.agent_permissions == old_s.agent_permissions))
+    && (result == SUCCESS ==> (new_s.transport_capacity == old_s.transport_capacity))
+}

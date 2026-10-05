@@ -1,0 +1,22 @@
+20.8 sbi_mpxy_read_attributes command
+               Reads message channel attributes.
+               20.8.1 Interface
+               20.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           31:0        UInt32                                FID, value 3
+        channel_id          a0           31:0        UInt32                                Message channel to read
+        base_attribute_id   a1           31:0        UInt32                                First attribute ID in the range to read
+        attribute_count     a2           31:0        UInt32                                Number of attribute IDs in the range to read
+               20.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    Int                                   sbiret.error: command return status
+        value               a1           XLEN-1:0    UInt                                  sbiret.value
+               20.8.2 Failure conditions
+               The sbi_mpxy_read_attributes command does not have any failure conditions defined in this section.
+               20.8.2.1   Failure condition ordering
+               The sbi_mpxy_read_attributes command does not have any failure condition orderings.
+               20.8.3 Success conditions
+  ID                          Condition
+  attr_read                   post: ChannelAttributesRead(channel_id, base_attribute_id, attribute_count)
+               20.8.4 Footprint
+               The sbi_mpxy_read_attributes command does not have any footprint defined in this section.

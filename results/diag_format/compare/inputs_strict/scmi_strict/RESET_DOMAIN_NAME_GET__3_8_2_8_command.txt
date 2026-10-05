@@ -1,0 +1,27 @@
+3.8.2.8 RESET_DOMAIN_NAME_GET command
+               Returns the extended name associated with a specific reset domain.
+               3.8.2.8.1 Interface
+               3.8.2.8.1.1   Input values
+        Name                Register        Bits        Type                Description
+        message_id          Header          7:0         UInt8               Message identifier, value 0x6
+        protocol_id         Header          17:10       UInt8               Protocol identifier, value 0x16
+        domain_id           Param[0]        31:0        UInt32              Identifier for the reset domain
+               3.8.2.8.1.2   Output values
+        Name                Register        Bits        Type                Description
+        status              Return[0]       31:0        Int32               Command return status
+        flags               Return[1]       31:0        UInt32              Reserved, must be zero
+        name                Return[2:17]    511:0       UInt8[64]           Null-terminated ASCII string of up to 64 bytes describing the reset domain extended name
+               3.8.2.8.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !ResetDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.8.2.8.2.1   Failure condition ordering
+               The RESET_DOMAIN_NAME_GET command does not have any failure condition orderings.
+               3.8.2.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags                       post: flags == 0
+  name                        post: name == ResetDomainExtendedName(domain_id)
+  name_term                   post: IsNullTerminatedAscii(name, 64)
+               3.8.2.8.4 Footprint
+               The RESET_DOMAIN_NAME_GET command does not modify any state.

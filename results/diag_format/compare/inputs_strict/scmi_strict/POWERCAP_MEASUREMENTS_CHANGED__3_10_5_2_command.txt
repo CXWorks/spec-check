@@ -1,0 +1,28 @@
+3.10.5.2 POWERCAP_MEASUREMENTS_CHANGED command
+               The platform sends this notification to an agent that has registered for MAI or power measurement change notifications for the power capping domain identified by domain_id. It is sent when the MAI changes, or when the average power of the domain over the MAI goes outside the lower or higher power threshold set at registration.
+               This command is optional if no domain supports MAI and power measurements change notifications.
+               3.10.5.2.1 Interface
+               3.10.5.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x1
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x18
+               3.10.5.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        agent_id            Payload[0]   31:0        UInt32                                ID of the agent that caused this change event. In this version of the specification it is 0, meaning the platform generated the event
+        domain_id           Payload[1]   31:0        UInt32                                ID of the power capping domain
+        power               Payload[2]   31:0        UInt32                                Average power of the domain when the upper or lower power threshold was breached. If the MAI changed, this is the average power of the domain at the time of the change
+        mai                 Payload[3]   31:0        UInt32                                Power measurement averaging interval set for the domain
+               3.10.5.2.2 Failure conditions
+               The POWERCAP_MEASUREMENTS_CHANGED command does not have any failure conditions.
+               3.10.5.2.2.1   Failure condition ordering
+               The POWERCAP_MEASUREMENTS_CHANGED command does not have any failure condition orderings.
+               3.10.5.2.3 Success conditions
+  ID                          Condition
+  registered                  post: IsRegisteredForMeasurementsChangedNotification(recipient_agent, domain_id)
+  trigger                     post: MaiChanged(domain_id) || AveragePowerBelowLowerThreshold(domain_id) || AveragePowerAboveHigherThreshold(domain_id)
+  agent                       post: agent_id == 0
+  power_threshold             post: !MaiChanged(domain_id) ==> power == AveragePowerAtThresholdBreach(domain_id)
+  power_mai                   post: MaiChanged(domain_id) ==> power == AveragePowerAtMaiChange(domain_id)
+  mai                         post: mai == PowerCapMai(domain_id)
+               3.10.5.2.4 Footprint
+               The POWERCAP_MEASUREMENTS_CHANGED command does not modify any state.

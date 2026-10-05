@@ -1,0 +1,30 @@
+14.3 sbi_cppc_read_hi command
+               Reads the upper 32 bits of a CPPC register.
+               14.3.1 Interface
+               14.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           31:0        UInt32                                FID, value 2
+        cppc_reg_id         a0           31:0        UInt32                                Identifier of the CPPC register to read
+               14.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Command return status
+        value               a1           XLEN-1:0    UInt                                  Upper 32 bits of the CPPC register value
+               14.3.2 Failure conditions
+  ID                          Condition
+  reg_reserved                pre: IsReservedCppcReg(cppc_reg_id)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  reg_not_impl                pre: !IsImplementedCppcReg(cppc_reg_id)
+                              post: ResultEqual(error, SBI_ERR_NOT_SUPPORTED)
+  reg_write_only              pre: IsWriteOnlyCppcReg(cppc_reg_id)
+                              post: ResultEqual(error, SBI_ERR_DENIED)
+  read_failed                 pre: CppcReadRequestFailed(cppc_reg_id)
+                              post: ResultEqual(error, SBI_ERR_FAILED)
+               14.3.2.1   Failure condition ordering
+               The sbi_cppc_read_hi command does not have any failure condition orderings.
+               14.3.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  value_xlen64                post: SupervisorXlen() >= 64 ==> value == 0
+  value_xlen32                post: SupervisorXlen() < 64 ==> value == Bits(CppcRegValue(cppc_reg_id), 63, 32)
+               14.3.4 Footprint
+               The sbi_cppc_read_hi command does not have a footprint.

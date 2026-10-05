@@ -1,0 +1,38 @@
+5.6 CPU_ON command
+               Powers up a core and restarts its execution at a caller-supplied entry point address, passing it a context identifier. It is intended for dynamic addition of cores, for example in secondary boot or hotplug.
+               5.6.1 Interface
+               5.6.1.1   Input values
+        Name                   Register     Bits        Type                                  Description
+        target_cpu             -            -           Mpidr                                 MPIDR of the target core
+        entry_point_address    -            -           Address                               Physical address, from the point of view of the caller, where the target core restarts execution
+        context_id             -            -           UInt64                                Context identifier that is meaningful only to the caller. The implementation preserves it and places it in R0, W0 or X0 when the core first enters the return Exception level
+               5.6.1.2   Output values
+        Name                   Register     Bits        Type                                  Description
+        result                 -            -           PsciReturnCode                        Command return status
+               5.6.2 Failure conditions
+  ID                          Condition
+  mpidr_valid                 pre: !IsValidMpidr(target_cpu)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  entry_addr                  pre: IsKnownUnavailableToCaller(entry_point_address)
+                              post: ResultEqual(result, INVALID_ADDRESS)
+  core_on                     pre: CoreState(target_cpu) == ON
+                              post: ResultEqual(result, ALREADY_ON)
+  core_on_pending             pre: CoreState(target_cpu) == ON_PENDING
+                              post: ResultEqual(result, ON_PENDING)
+  core_power                  pre: !CanBePhysicallyPoweredUp(target_cpu)
+                              post: ResultEqual(result, INTERNAL_FAILURE)
+  core_policy                 pre: !IsAvailableForOsUsage(target_cpu)
+                              post: ResultEqual(result, DENIED)
+               5.6.2.1   Failure condition ordering
+               The CPU_ON command does not have any failure condition orderings.
+               5.6.3 Success conditions
+  ID                          Condition
+  core_restart                post: CoreRestartsAtEntryPoint(target_cpu, entry_point_address)
+  context_id                  post: ContextIdPresentedAtReturnExceptionLevel(target_cpu, context_id)
+  cache_inval                 post: CachesInvalidatedOnBoot(target_cpu) || HardwareInvalidatesCachesOnBoot(target_cpu)
+  coherency                   post: CoherencyManaged(target_cpu)
+               5.6.4 Footprint
+    ID                        Value
+    core_state                CoreState(target_cpu)
+    core_power                CorePowerState(target_cpu)
+    core_caches               CoreCaches(target_cpu)

@@ -1,0 +1,45 @@
+16.4 FFA_NOTIFICATION_UNBIND command
+               Asks the partition manager to unbind the notifications in the Notification bitmap from the Sender endpoint. When the Hypervisor calls it at the Non-secure physical FF-A instance, the SPMC unbinds SP notifications from the SP given in the Sender endpoint ID.
+               16.4.1 Interface
+               16.4.1.1   Input values
+        Name                    Register     Bits        Type                Description
+        fid                     W0           31:0        UInt32              Function ID, value 0x84000080
+        sender_receiver_ids     W1           31:0        UInt32              Sender and Receiver endpoint IDs
+        sender_id               W1           31:16       UInt16              Sender endpoint ID
+        receiver_id             W1           15:0        UInt16              Receiver endpoint ID
+        reserved                W2/X2        31:0/63:0   UInt32/UInt64       Reserved (SBZ)
+        bitmap_lo               W3           31:0        UInt32              Bits[31:0] of the Notification bitmap. A 1 bit means the Sender endpoint cannot signal that notification. A 0 bit has no effect
+        bitmap_hi               W4           31:0        UInt32              Bits[63:32] of the Notification bitmap. A 1 bit means the Sender endpoint cannot signal that notification. A 0 bit has no effect
+        reserved                W5-W7        31:0        UInt32              Reserved (SBZ)
+               16.4.1.2   Output values
+        Name                    Register     Bits        Type                Description
+        result                  W0           31:0        UInt32              FFA_SUCCESS on success, with no further parameters. FFA_ERROR on failure
+        error_code              W2           31:0        Int32               Error code, returned only with FFA_ERROR
+               16.4.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_UNBIND, CurrentFfaInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  sender_id                   pre: !IsValidPartitionId(Bits(sender_receiver_ids, 31, 16))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  receiver_id                 pre: !IsValidPartitionId(Bits(sender_receiver_ids, 15, 0))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bitmap                      pre: !IsValidNotificationBitmap(bitmap_lo, bitmap_hi)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  caller                      pre: !IsCallerAllowedToInvoke(FFA_NOTIFICATION_UNBIND)
+                              post: ResultEqual(result, DENIED)
+  bound_other                 pre: exists|n: NotificationId| IsBitSet(Bitmap64(bitmap_hi, bitmap_lo), n) && IsNotificationBound(Bits(sender_receiver_ids, 15, 0), n) && BoundSender(Bits(sender_receiver_ids, 15, 0), n) != Bits(sender_receiver_ids, 31, 16)
+                              post: ResultEqual(result, DENIED)
+  pending                     pre: exists|n: NotificationId| IsBitSet(Bitmap64(bitmap_hi, bitmap_lo), n) && IsNotificationPending(Bits(sender_receiver_ids, 15, 0), n)
+                              post: ResultEqual(result, DENIED)
+  aborted                     pre: HasPartitionAborted(Bits(sender_receiver_ids, 31, 16))
+                              post: ResultEqual(result, ABORTED)
+               16.4.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_UNBIND command does not have any failure condition orderings.
+               16.4.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  unbound                     post: forall|n: NotificationId| IsBitSet(Bitmap64(bitmap_hi, bitmap_lo), n) ==> !CanSenderSignal(Bits(sender_receiver_ids, 31, 16), Bits(sender_receiver_ids, 15, 0), n)
+  unchanged                   post: forall|n: NotificationId| !IsBitSet(Bitmap64(bitmap_hi, bitmap_lo), n) ==> NotificationBinding(Bits(sender_receiver_ids, 15, 0), n) == PreNotificationBinding(Bits(sender_receiver_ids, 15, 0), n)
+               16.4.4 Footprint
+    ID                        Value
+    bindings                  NotificationBindings(Bits(sender_receiver_ids, 15, 0))

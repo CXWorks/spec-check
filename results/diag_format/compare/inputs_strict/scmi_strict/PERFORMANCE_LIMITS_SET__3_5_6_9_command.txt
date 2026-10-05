@@ -1,0 +1,41 @@
+3.5.6.9 PERFORMANCE_LIMITS_SET command
+               Sets limits on the performance level of a domain. If the platform uses Level Indexing Mode, the limits are given as level indexes, not as performance levels.
+               This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES command is 0 for any domain.
+               3.5.6.9.1 Interface
+               3.5.6.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt32                                Message ID, value 0x5
+        protocol_id         Header       —           UInt32                                Protocol ID, value 0x13
+        domain_id           Param[0]     31:0        UInt32                                Identifier of the performance domain
+        range_max           Param[1]     31:0        UInt32                                Maximum allowed performance level, or level index. 0 means the platform ignores this field
+        range_min           Param[2]     31:0        UInt32                                Minimum allowed performance level, or level index. 0 means the platform ignores this field
+               3.5.6.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status
+               3.5.6.9.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PerfDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  both_zero                   pre: range_max == 0 && range_min == 0
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  max_range                   pre: range_max != 0 && !IsWithinDescribedLevels(domain_id, range_max)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  min_range                   pre: range_min != 0 && !IsWithinDescribedLevels(domain_id, range_min)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  permission                  pre: !CallerMayChangePerfLimits(domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.5.6.9.2.1   Failure condition ordering
+               The PERFORMANCE_LIMITS_SET command does not have any failure condition orderings.
+               3.5.6.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  max_set                     post: range_max != 0 ==> PerfLimitMax(domain_id) == LimitFieldToLevel(domain_id, range_max)
+  max_unchanged               post: range_max == 0 ==> PerfLimitMax(domain_id) == PrevPerfLimitMax(domain_id)
+  min_set                     post: range_min != 0 ==> PerfLimitMin(domain_id) == LimitFieldToLevel(domain_id, range_min)
+  min_unchanged               post: range_min == 0 ==> PerfLimitMin(domain_id) == PrevPerfLimitMin(domain_id)
+  level_change                post: PerfLevelEventuallyWithinLimits(domain_id)
+               3.5.6.9.4 Footprint
+    ID                        Value
+    max_set                   PerfLimitMax(domain_id)
+    min_set                   PerfLimitMin(domain_id)
+    level_change              PerfLevel(domain_id)

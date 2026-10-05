@@ -1,0 +1,24 @@
+11.7 sbi_pmu_counter_get_info command
+               Returns details of the specified counter: the underlying CSR number, the counter width and whether the counter is hardware or firmware.
+               11.7.1 Interface
+               11.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 1
+        counter_idx         a0           XLEN-1:0    UInt                                  Index of the counter to query
+               11.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Error code (see Table 36)
+        value               a1           XLEN-1:0    CounterInfo                           counter_info encoding of the queried counter
+               11.7.2 Failure conditions
+               This section refers to Table 36 for the sbi_pmu_counter_get_info error codes but does not give the table entries, so no failure conditions are listed here.
+               11.7.2.1   Failure condition ordering
+               The sbi_pmu_counter_get_info command does not have any failure condition orderings.
+               11.7.3 Success conditions
+  ID                          Condition
+  info_type                   post: Bits(value, XLEN - 1, XLEN - 1) == CounterTypeEncoding(counter_idx)
+  info_type_hw                post: (Bits(value, XLEN - 1, XLEN - 1) == 0) == IsHardwareCounter(counter_idx)
+  info_type_fw                post: (Bits(value, XLEN - 1, XLEN - 1) == 1) == IsFirmwareCounter(counter_idx)
+  info_csr                    post: Bits(value, XLEN - 1, XLEN - 1) == 0 ==> Bits(value, 11, 0) == CounterCsrNumber(counter_idx)
+  info_width                  post: Bits(value, XLEN - 1, XLEN - 1) == 0 ==> Bits(value, 17, 12) == CounterBitWidth(counter_idx) - 1
+               11.7.4 Footprint
+               The sbi_pmu_counter_get_info command does not modify any state.

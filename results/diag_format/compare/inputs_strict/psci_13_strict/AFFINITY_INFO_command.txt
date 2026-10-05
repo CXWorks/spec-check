@@ -1,0 +1,29 @@
+5.7 AFFINITY_INFO command
+               Returns the state of an affinity instance.
+               5.7.1 Interface
+               5.7.1.1   Input values
+        Name                     Register     Bits        Type                  Description
+        fid                      X0           63:0        UInt64                FID
+        target_affinity          X1           63:0        UInt64                Affinity of the target affinity instance
+        lowest_affinity_level    X2           63:0        UInt64                Lowest affinity level of the target affinity instance
+               5.7.1.2   Output values
+        Name                     Register     Bits        Type                  Description
+        result                   X0           63:0        PsciReturnCode        Command return status: ON, OFF, ON_PENDING, INVALID_PARAMETERS or DISABLED
+               5.7.2 Failure conditions
+  ID                          Condition
+  aff_present                 pre: !AffinityInstanceIsPresent(target_affinity, lowest_affinity_level)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  aff_level                   pre: lowest_affinity_level > 0 && !SupportsAffinityLevelAboveZero()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  aff_disabled                pre: AffinityInstanceIsDisabled(target_affinity, lowest_affinity_level)
+                              post: ResultEqual(result, DISABLED)
+               5.7.2.1   Failure condition ordering
+               [aff_present] < [aff_disabled]
+               5.7.3 Success conditions
+  ID                          Condition
+  aff_result                  post: ResultEqual(result, ON) || ResultEqual(result, OFF) || ResultEqual(result, ON_PENDING)
+  aff_on                      post: (exists|c: Core| InAffinityInstance(c, target_affinity, lowest_affinity_level) && (CoreEnabledByCpuOn(c) || IsColdBootPrimaryCore(c)) && !CoreHasCalledCpuOff(c)) ==> ResultEqual(result, ON)
+  aff_off                     post: (forall|c: Core| InAffinityInstance(c, target_affinity, lowest_affinity_level) ==> CpuOffProcessed(c)) ==> ResultEqual(result, OFF)
+  aff_on_pending              post: ((exists|c: Core| InAffinityInstance(c, target_affinity, lowest_affinity_level) && CoreIsOnPending(c)) && (forall|c: Core| InAffinityInstance(c, target_affinity, lowest_affinity_level) ==> (CoreIsOnPending(c) || CpuOffProcessed(c)))) ==> ResultEqual(result, ON_PENDING)
+               5.7.4 Footprint
+               The AFFINITY_INFO command does not have any footprint.

@@ -1,0 +1,29 @@
+3.2.2.9 BASE_DISCOVER_AGENT command
+               Discovers the name of an agent, described through an ASCII string of up to 16 bytes. This command is optional; message_id 0x7, protocol_id 0x10.
+               3.2.2.9.1 Interface
+               3.2.2.9.1.1   Input values
+        Name                Register        Bits        Type                Description
+        message_id          Header          -           UInt                Message identifier, value 0x7
+        protocol_id         Header          -           UInt                Protocol identifier, value 0x10
+        agent_id            Payload[0]      31:0        UInt32              Identifier of the agent whose identification is requested
+               3.2.2.9.1.2   Output values
+        Name                Register        Bits        Type                Description
+        status              Payload[0]      31:0        Int32               Command return status
+        out_agent_id        Payload[1]      31:0        UInt32              ID of the agent whose identity is requested
+        name                Payload[2:5]    127:0       UInt8[16]           Null terminated ASCII string of up to 16 bytes in length
+               3.2.2.9.2 Failure conditions
+  ID                          Condition
+  agent_valid                 pre: agent_id != 0xFFFFFFFF && !IsValidAgentId(agent_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.2.2.9.2.1   Failure condition ordering
+               The BASE_DISCOVER_AGENT command does not have any failure condition orderings.
+               3.2.2.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  self_id                     post: agent_id == 0xFFFFFFFF ==> out_agent_id == CallingAgentId()
+  echo_id                     post: agent_id != 0xFFFFFFFF ==> out_agent_id == agent_id
+  name_value                  post: name == AgentName(out_agent_id)
+  name_format                 post: IsNullTerminatedAscii(name, 16)
+  platform_name               post: out_agent_id == 0 ==> NameStartsWithPlatform(name)
+               3.2.2.9.4 Footprint
+               The BASE_DISCOVER_AGENT command does not modify any state.

@@ -1,0 +1,16 @@
+pub open spec fn powercap_measurements_changed__3_10_5_2_spec(agent_id: UInt32, domain_id: UInt32, power: UInt32, mai: UInt32, result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {
+  (result == RSI_SUCCESS ==> IsRegisteredForMeasurementsChangedNotification(new_s, recipient_agent(new_s), domain_id))
+  && (result == RSI_SUCCESS ==> MaiChanged(new_s, domain_id) || AveragePowerBelowLowerThreshold(new_s, domain_id) || AveragePowerAboveHigherThreshold(new_s, domain_id))
+  && (result == RSI_SUCCESS ==> agent_id == 0)
+  && (result == RSI_SUCCESS ==> !MaiChanged(new_s, domain_id) ==> power == AveragePowerAtThresholdBreach(new_s, domain_id))
+  && (result == RSI_SUCCESS ==> MaiChanged(new_s, domain_id) ==> power == AveragePowerAtMaiChange(new_s, domain_id))
+  && (result == RSI_SUCCESS ==> mai == PowerCapMai(new_s, domain_id))
+  && ((!(result == RSI_SUCCESS)) ==> IsRegisteredForMeasurementsChangedNotification(new_s, recipient_agent(new_s), domain_id) == IsRegisteredForMeasurementsChangedNotification(old_s, recipient_agent(old_s), domain_id))
+  && ((!(result == RSI_SUCCESS)) ==> MaiChanged(new_s, domain_id) == MaiChanged(old_s, domain_id))
+  && ((!(result == RSI_SUCCESS)) ==> AveragePowerBelowLowerThreshold(new_s, domain_id) == AveragePowerBelowLowerThreshold(old_s, domain_id))
+  && ((!(result == RSI_SUCCESS)) ==> AveragePowerAboveHigherThreshold(new_s, domain_id) == AveragePowerAboveHigherThreshold(old_s, domain_id))
+  && ((!(result == RSI_SUCCESS)) ==> agent_id == 0)
+  && ((!(result == RSI_SUCCESS)) ==> !MaiChanged(new_s, domain_id) ==> power == AveragePowerAtThresholdBreach(new_s, domain_id))
+  && ((!(result == RSI_SUCCESS)) ==> MaiChanged(new_s, domain_id) ==> power == AveragePowerAtMaiChange(new_s, domain_id))
+  && ((!(result == RSI_SUCCESS)) ==> mai == PowerCapMai(new_s, domain_id))
+}

@@ -1,0 +1,35 @@
+14.2 FFA_YIELD command
+               Yields execution of the calling endpoint execution context back to the FF-A component that scheduled it.
+               14.2.1 Interface
+               14.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400006C or 0xC400006C
+        ids                 W1           31:0        UInt32                                Endpoint and vCPU IDs of the caller endpoint. Bits[31:16]: Endpoint ID. Bits[15:0]: vCPU ID. Used by an SPMC at the Secure physical FF-A instance with the SMC conduit, or at the Secure virtual FF-A instance with the ERET conduit. Used by the SPMD at the Non-secure physical FF-A instance with the ERET conduit. Used by the Hypervisor at the Non-secure virtual FF-A instance with the ERET conduit. Reserved (MBZ) in all other cases.
+        timeout_lo          W2           31:0        UInt32                                Bits[31:0] of an interval in nanoseconds after which the vCPU of the endpoint given in ids must be run. MBZ if the caller does not specify a timeout. Used by the Hypervisor at the Non-secure virtual FF-A instance with the ERET conduit. Reserved (MBZ) in all other cases.
+        timeout_hi          W3           31:0        UInt32                                Bits[63:32] of an interval in nanoseconds after which the vCPU of the endpoint given in ids must be run. MBZ if the caller does not specify a timeout. Used by the Hypervisor at the Non-secure virtual FF-A instance with the ERET conduit. Reserved (MBZ) in all other cases.
+        reserved            W4-W7, X4-X17  -         -                                     Reserved (SBZ)
+               14.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                Function ID of the completing transition: FFA_RUN, FFA_INTERRUPT or FFA_ERROR
+        status              W2           31:0        Int32                                 Error status code when result is FFA_ERROR
+               14.2.2 Failure conditions
+  ID                          Condition
+  ids_invalid                 pre: ConduitIsEret() && (!IsRecognizedEndpointId(Bits(ids, 31, 16)) || !IsRecognizedVcpuId(Bits(ids, 31, 16), Bits(ids, 15, 0)))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  not_impl                    pre: !IsImplementedAtInstance(FFA_YIELD)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               14.2.2.1   Failure condition ordering
+               The FFA_YIELD command does not have any failure condition orderings.
+               14.2.3 Success conditions
+  ID                          Condition
+  ctx_yield                   post: ExecutionYieldedToScheduler(CallerContext())
+  ctx_state                   post: ExecutionContextState(CallerContext()) == RUNNING
+  result                      post: ResultEqual(result, FFA_RUN) || ResultEqual(result, FFA_INTERRUPT)
+  result_sel0                 post: IsSEL0Endpoint(CallerContext()) ==> ResultEqual(result, FFA_RUN)
+  timeout                     post: (IsVmVcpu(CallerContext()) && Timeout64(timeout_hi, timeout_lo) != 0) ==> VcpuRunAfterTimeout(Bits(ids, 31, 16), Bits(ids, 15, 0), Timeout64(timeout_hi, timeout_lo))
+               14.2.4 Footprint
+    ID                        Value
+    ctx_state                 ExecutionContextState(CallerContext())
+    timeout                   VcpuSchedule(Bits(ids, 31, 16), Bits(ids, 15, 0))

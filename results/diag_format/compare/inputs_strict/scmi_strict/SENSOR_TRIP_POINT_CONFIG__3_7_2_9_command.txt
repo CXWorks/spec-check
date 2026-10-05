@@ -1,0 +1,39 @@
+3.7.2.9 SENSOR_TRIP_POINT_CONFIG command
+               Selects and configures a trip point of a sensor. Once this command succeeds, the platform generates the SENSOR_TRIP_POINT_EVENT event whenever the sensor value crosses the programmed trip point value. This happens only if trip-point notifications are enabled globally with the SENSOR_TRIP_POINT_NOTIFY command. For a sensor that reports values on multiple axes, the event is generated when any axis crosses the configured threshold. This command is mandatory if at least one of the platform's sensors supports trip points.
+               3.7.2.9.1 Interface
+               3.7.2.9.1.1   Input values
+        Name                  Register        Bits        Type        Description
+        message_id            Header          -           UInt        Message identifier, value 0x5
+        protocol_id           Header          -           UInt        Protocol identifier, value 0x15
+        sensor_id             Payload[0]      31:0        UInt32      Identifier for the sensor
+        trip_point_ev_ctrl    Payload[1]      31:12       UInt32      Reserved
+                                              11:4                    trip_point_id: identifier for the selected trip point. Should be less than or equal to the total number of trip points this sensor supports, as advertised in its descriptor
+                                              3:2                     Reserved for future use
+                                              1:0                     Event control: 0 = disable event generation (default); 1 = enable when the value is reached or crossed in a positive direction; 2 = enable when the value is reached or crossed in a negative direction; 3 = enable when the value is reached or crossed in either direction
+        trip_point_val_low    Payload[2]      31:0        UInt32      Lower 32 bits of the sensor value for this trip point. Default 0
+        trip_point_val_high   Payload[3]      31:0        UInt32      Higher 32 bits of the sensor value for this trip point. Default 0
+               3.7.2.9.1.2   Output values
+        Name                  Register        Bits        Type        Description
+        status                Payload[0]      31:0        Int32       Command return status (see Section 3.1.4)
+               3.7.2.9.2 Failure conditions
+  ID                          Condition
+  sensor_exists               pre: !SensorExists(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  tp_id_bound                 pre: Bits(trip_point_ev_ctrl, 11, 4) > NumTripPoints(sensor_id)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  params_valid                pre: !TripPointConfigParamsValid(sensor_id, trip_point_ev_ctrl, trip_point_val_low, trip_point_val_high)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  tp_supported                pre: !SensorSupportsTripPointEvents(sensor_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.7.2.9.2.1   Failure condition ordering
+               The SENSOR_TRIP_POINT_CONFIG command does not have any failure condition orderings.
+               3.7.2.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  tp_ev_ctrl                  post: TripPoint(sensor_id, Bits(trip_point_ev_ctrl, 11, 4)).ev_ctrl == Bits(trip_point_ev_ctrl, 1, 0)
+  tp_value                    post: TripPoint(sensor_id, Bits(trip_point_ev_ctrl, 11, 4)).value == trip_point_val_high * 4294967296 + trip_point_val_low
+  tp_event                    post: TripPointNotifyEnabled(sensor_id) ==> GeneratesTripPointEventOnCrossing(sensor_id, Bits(trip_point_ev_ctrl, 11, 4))
+               3.7.2.9.4 Footprint
+    ID                        Value
+    tp_ev_ctrl                TripPoint(sensor_id, Bits(trip_point_ev_ctrl, 11, 4)).ev_ctrl
+    tp_value                  TripPoint(sensor_id, Bits(trip_point_ev_ctrl, 11, 4)).value
