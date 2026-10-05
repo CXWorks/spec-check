@@ -1,0 +1,37 @@
+5.22 PSCI_STAT_RESIDENCY/COUNT command
+               Return residency statistics for a power state the platform has used. PSCI_STAT_COUNT returns how many times the state has been used. PSCI_STAT_RESIDENCY returns the time spent in the state, in microseconds. Both functions were introduced in PSCI 1.0 and are optional. If statistics are supported, both functions must be implemented together.
+               5.22.1 Interface
+               5.22.1.1   Input values
+        Name                Register     Bits             Type                     Description
+        fid                 X0 / W0      63:0 / 31:0      UInt64 / UInt32          Function ID of PSCI_STAT_COUNT or PSCI_STAT_RESIDENCY
+        target_cpu          X1 / W1      63:0 / 31:0      Mpidr                    Target node. Uses the same format as the target_cpu parameter of CPU_ON (see 5.1.4)
+        power_state         X2 / W2      63:0 / 31:0      PowerState               Identifier for a specific local state. Usually takes the same form as the power_state parameter of CPU_SUSPEND (see 5.4.2)
+               5.22.1.2   Output values
+        Name                Register     Bits             Type                     Description
+        result              X0 / W0      63:0 / 31:0      UInt64 / UInt32          PSCI_STAT_COUNT: number of times power_state has been used. PSCI_STAT_RESIDENCY: time spent in power_state, in microseconds
+               5.22.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !StatFunctionsImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  node_absent                 pre: !IsPresentNode(target_cpu)
+                              post: result == 0
+  state_unsupported           pre: !NodeSupportsState(target_cpu, power_state)
+                              post: result == 0
+               The callee does not use error codes for these functions because the returned count or residency uses the full resolution of the return value. The caller cannot rely on NOT_SUPPORTED to find out whether the functions are implemented. It must use PSCI_FEATURES instead (see 5.1.15).
+               5.22.2.1   Failure condition ordering
+               The PSCI_STAT_RESIDENCY/COUNT command does not have any failure condition orderings.
+               5.22.3 Success conditions
+  ID                          Condition
+  stat_count                  post: (fid == PSCI_STAT_COUNT) ==> result == StatCount(target_cpu, HighestLevelLocalState(power_state))
+  stat_residency              post: (fid == PSCI_STAT_RESIDENCY) ==> result == StatResidencyMicroseconds(target_cpu, HighestLevelLocalState(power_state))
+  osi_last_man                post: IsOsInitiatedMode() ==> LastManLevelField(power_state) is disregarded when the local state is selected
+  local_only                  post: Only local low-power states are tracked. Run states are not tracked
+  any_entry                   post: The statistics include low-power states entered by any PSCI call, including CPU_OFF, CPU_FREEZE and SYSTEM_SUSPEND
+  wrap                        post: The result wraps when it overflows the resolution of the return register. For SMC32 PSCI_STAT_RESIDENCY, this can happen after just over 1 hour, 11 minutes and 34 seconds
+               5.22.3.1   IMPLEMENTATION DEFINED behaviour
+               It is IMPLEMENTATION DEFINED whether PSCI_STAT_COUNT updates when a node enters a power state or when it exits it.
+               It is IMPLEMENTATION DEFINED whether PSCI_STAT_RESIDENCY includes the time since the node last entered the state while the node is still in that state.
+               5.22.3.2   Statistics reset
+               The statistics are set to zero at cold boot. SYSTEM_RESET and SYSTEM_SHUTDOWN have the same effect, because the next boot is a cold boot.
+               5.22.4 Footprint
+               The PSCI_STAT_RESIDENCY/COUNT command does not modify any state.

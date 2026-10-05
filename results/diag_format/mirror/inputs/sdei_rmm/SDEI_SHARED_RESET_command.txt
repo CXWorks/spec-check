@@ -1,0 +1,31 @@
+5.1.19 SDEI_SHARED_RESET command
+               Resets shared SDEI data.
+               5.1.19.1 Interface
+               5.1.19.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                Function ID, value 0xC4000032
+               5.1.19.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.19.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  shared_running              pre: AnySharedEventHandlerRunning()
+                              post: ResultEqual(result, DENIED)
+  binding_registered          pre: AnyInterruptEventBindingRegistered()
+                              post: ResultEqual(result, DENIED)
+               5.1.19.2.1   Failure condition ordering
+               The SDEI_SHARED_RESET command does not have any failure condition orderings.
+               5.1.19.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  shared_unreg                post: !AnySharedEventRegistered()
+  irq_release                 post: !AnyInterruptBoundToEvent()
+  aux_clear                   post: SharedEventAuxInfoCleared() && InterruptBindingAuxInfoCleared()
+  private_events              post: PrivateEventState() == old(PrivateEventState())
+               5.1.19.4 Footprint
+    ID                        Value
+    shared_unreg              SharedEventRegistrations()
+    irq_release               InterruptEventBindings()
+    aux_clear                 SharedEventAuxInfo(), InterruptBindingAuxInfo()

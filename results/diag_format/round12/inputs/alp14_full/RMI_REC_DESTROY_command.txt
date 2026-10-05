@@ -1,0 +1,35 @@
+B4.3.29 RMI_REC_DESTROY
+
+B4.3.29.1 Intended use
+RMI_REC_DESTROY destroys a REC. The caller provides the physical address of the target REC.
+
+The command operates on the following:
+• The target REC, which is the REC at rec_ptr. The command uses the REC both as it was before the command ran and as it is after the command completes.
+• The owning Realm of the target REC. Its RD address is the owner recorded in the REC before the command ran. The command uses the Realm both as it was before the command ran and as it is after the command completes.
+
+B4.3.29.2 Parameters
+• fid, passed in X0 (bits 63:0): the function identifier, value 0xC400015B.
+• rec_ptr, passed in X1 (bits 63:0): the physical address (PA) of the target REC.
+
+B4.3.29.3 Return values
+• result, returned in X0 (bits 63:0): the command return status.
+
+B4.3.29.4 Caller responsibilities
+RMI_REC_DESTROY can return the following errors:
+• RMI_ERROR_INPUT is returned if rec_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rec_ptr is not a physical address that can be delegated.
+• RMI_ERROR_INPUT is returned if the Granule at rec_ptr is not in the REC state.
+• RMI_ERROR_REC is returned if the REC is in the REC_RUNNING state.
+
+The RMM checks that rec_ptr can be delegated, and that the Granule at rec_ptr is in the REC state, before it checks whether the REC is in the REC_RUNNING state. If rec_ptr fails either of the first two checks, RMI_ERROR_INPUT is returned, not RMI_ERROR_REC. This ordering does not cover the check that rec_ptr is Granule-aligned.
+
+B4.3.29.5 Implementation responsibilities
+On success, the following are true after RMI_REC_DESTROY completes:
+• The Granule at rec_ptr is in the DELEGATED state.
+• Each auxiliary Granule of the REC is in the DELEGATED state. These are the auxiliary Granules the REC had before the command ran. Their number is the REC auxiliary Granule count for the owning Realm, as it was before the command ran.
+• The Realm's REC count, num_recs, is one less than it was before the command ran.
+
+RMI_REC_DESTROY may modify only the following state:
+• rec_state: the state of the Granule at rec_ptr.
+• rec_aux_state: the states of the REC's auxiliary Granules. These are the auxiliary Granules the REC had before the command ran. Their number is the REC auxiliary Granule count for the owning Realm before the command ran.
+• num_recs: the Realm's REC count.

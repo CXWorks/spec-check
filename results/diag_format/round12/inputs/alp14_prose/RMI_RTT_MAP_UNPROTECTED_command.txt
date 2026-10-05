@@ -1,0 +1,75 @@
+B4.3.42 RMI_RTT_MAP_UNPROTECTED command
+                Creates a mapping from an Unprotected IPA to a Non-secure PA in a primary RTT.
+                B4.3.42.1 Interface
+                B4.3.42.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400015F
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               IPA at which the memory will be
+                                                                                            mapped in the target Realm
+        level                 X3          63:0        Int64                                 RTT level
+        desc                  X4          63:0        Bits64         T                      RTTE descriptor
+                The layout and encoding of fields in the desc input value match “Attribute fields in stage 2 VMSAv8-64 Block
+                and Page descriptors” in Arm Architecture Reference Manual for A-Profile architecture [3].
+                B4.3.42.1.2   Context
+                The RMI_RTT_MAP_UNPROTECTED command operates on the following context.
+        Name                  Type                       Value                                      Before    Description
+        realm                 RmmRealm                   RealmAt(rd)                                false     Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                             realm, ipa, level,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false     RTTE index
+                                                             ipa, walk.level)
+        rtte                  RmmRttEntry                RttDescriptorDecode(                       false     RTT entry
+                                                             desc,
+                                                             realm.rtt_s2ap_encoding
+                                                         )
+                B4.3.42.1.3   Output values
+         Name                   Register     Bits           Type                                          Description
+         result                 X0           63:0           RmiCommandReturnCode                          Command return status
+               B4.3.42.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if desc is not a valid RTT entry descriptor for an Unprotected IPA.
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if level is not a valid RTT level for the Realm, or if level is less than 1.
+
+RMI_ERROR_INPUT is returned if the output address in desc (the addr field) is not aligned to the size of the address range that an RTT entry at level maps.
+
+RMI_ERROR_INPUT is returned if the Realm does not support LPA2 (feat_lpa2 is FEATURE_FALSE) and the output address in desc is 2^48 or greater.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that an RTT entry at level maps.
+
+RMI_ERROR_INPUT is returned if ipa is 2 to the power of the Realm's IPA width or greater, or if ipa is a Protected IPA of the Realm.
+
+RMI_ERROR_INPUT is returned if the Realm uses the S2AP_INDIRECT stage 2 access permission encoding and the indirect base index in desc is not S2AP_NO_ACCESS, S2AP_RO, S2AP_WO or S2AP_RW.
+
+RMI_ERROR_RTT is returned if the RTT walk to ipa ends at a level lower than level. The level at which the walk ended is also returned.
+
+RMI_ERROR_RTT is returned if the RTT entry that the walk to ipa reaches is not in the UNASSIGNED_NS state. The level at which the walk ended is also returned.
+
+               B4.3.42.2.1      Failure condition ordering
+
+The checks that rd is a delegable physical address and that the Granule at rd is in the RD state are both made before the RTT walk check and the RTT entry state check.
+
+The checks on level, on the bounds of ipa, and on the indirect base index in desc are all made before the RTT walk check and the RTT entry state check.
+
+               B4.3.42.3 Success conditions
+
+The RTT entry that the walk to ipa reaches is in the ASSIGNED_NS state.
+
+The Unprotected attributes of that RTT entry are equal to the Unprotected attributes in desc.
+
+If the Realm uses the S2AP_DIRECT stage 2 access permission encoding, the read and write permissions of the RTT entry are equal to the read and write permissions in desc.
+
+If the Realm uses the S2AP_INDIRECT stage 2 access permission encoding, the indirect base index of the RTT entry is equal to the indirect base index in desc, and the overlay index of the RTT entry is 15.
+
+The output address of the RTT entry is equal to the output address in desc.
+               B4.3.42.4 Footprint
+    ID                        Value
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

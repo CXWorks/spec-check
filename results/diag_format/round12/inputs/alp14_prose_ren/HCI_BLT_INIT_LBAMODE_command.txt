@@ -1,0 +1,89 @@
+B4.3.41 HCI_BLT_INIT_LBAMODE command
+               Set the LBAMODE of a target LBA range to RAM, for a Vault in the VAULT_NEW state.
+               B4.3.41.1 Interface
+               B4.3.41.1.1   Input values
+        Name                 Register     Bits        Type                                  Description
+        fid                  R0           63:0        UInt64                                FID, value 0xC4000168
+        vd                   R1           63:0        Address                               DPA of the VD for the target Vault
+        base                 R2           63:0        Address                               Base of target LBA region
+        top                  R3           63:0        Address                               Top of target LBA region
+               B4.3.41.1.2   Context
+               The HCI_BLT_INIT_LBAMODE command operates on the following context.
+        Name                 Type                        Value                                      Before    Description
+        vault_pre            Keepervault                    Vaultat(vd)                                true      Vault
+        vault                Keepervault                    Vaultat(vd)                                false     Vault
+        walk                 Keeperbltwalkresult            Bltwalk(                                   false     BLT walk result
+                                                             vault, base,
+                                                             KEEPER_BLT_PAGE_LEVEL,
+                                                             KEEPER_BLT_TREE_PRIMARY)
+        walk_top             Address                     Bltskipentriesifnotstate(                  false     Top LBA of
+                                                             Bltat(walk.blt_addr),                            UNASSIGNED
+                                                             walk.level,                                      entries, starting from
+                                                             base, top, UNASSIGNED)                           entry at which the
+                                                                                                              BLT walk terminated
+               B4.3.41.1.3   Output values
+        Name                 Register     Bits        Type                                  Description
+        result               R0           63:0        Hcicommandreturncode                  Command return status
+        out_top              R1           63:0        Address                               Top LBA of range whose LBAMODE was
+                                                                                            modified
+               The out_top output value is valid only when the command result is HCI_SUCCESS.
+               When the out_top output value is valid, it is aligned to the size of the address range described by the BLT entry
+               at the level where the BLT walk terminated.
+                B4.3.41.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not the address of a Extent that can be enrolled.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if top is less than or equal to base.
+
+HCI_ERROR_INPUT is returned if the address one Extent below top is not a Protected LBA of the target Vault, as it was before the command ran.
+
+HCI_ERROR_VAULT is returned if the target Vault, as it was before the command ran, is not in the VAULT_NEW state.
+
+HCI_ERROR_BLT is returned, with the BLT walk level, if base is not aligned to the size of the address range that one BLT entry describes at the level reached by the BLT walk from base.
+
+HCI_ERROR_BLT is returned, with the BLT walk level, if the BLT entry reached by the BLT walk from base is not in the UNASSIGNED state.
+
+HCI_ERROR_INPUT is returned if top is not aligned to the size of a Extent.
+
+HCI_ERROR_BLT is returned, with the BLT walk level, if base is equal to the top of the LBA range the command can process from base in the BLT reached by the walk. In that case, no BLT entries can be processed.
+
+                B4.3.41.2.1   Failure condition ordering
+
+The KEEPER checks failure conditions in the following order:
+
+- The checks that vd is a Extent that can be enrolled and that the Extent at vd is in the VD state come before the check that the Vault is in the VAULT_NEW state.
+- The checks that vd is a Extent that can be enrolled and that the Extent at vd is in the VD state come before the checks that base is aligned to the BLT walk level and that the BLT entry is in the UNASSIGNED state.
+- The checks that vd is a Extent that can be enrolled and that the Extent at vd is in the VD state come before the check that the command can process at least one BLT entry.
+- The check that top is aligned to the size of a Extent comes before the check that the command can process at least one BLT entry.
+
+                B4.3.41.3 Success conditions
+
+On success, every BLT entry in the BLT reached by the walk, at the walk level, in the LBA range from base up to the top of the processed range has LBAMODE RAM.
+
+On success, the IFP of the target Vault is extended as described in B4.3.41.4. The extension covers the LBA range from base up to the top of the processed range, at the BLT walk level, and starts from the state of the Vault before the command ran.
+
+On success, out_top is the top of the LBA range that the command processed.
+
+               B4.3.41.4 HCI_BLT_INIT_LBAMODE extension of IFP
+
+On successful execution of HCI_BLT_INIT_LBAMODE, the new IFP value of the target Vault is calculated by the KEEPER as follows:
+
+                 1. Allocate an Keepermeasurementdescriptorlbamode data structure.
+                 2. For each BLT entry in the range [base, top) described by the HCI_BLT_INIT_LBAMODE input values:
+                 a. Populate the measurement descriptor:
+                  • Set the desc_type field to the descriptor type.
+                  • Set the len field to the descriptor length.
+                  • Set the base field to the LBA of the BLT entry.
+      • Set the top field to the LBA of the BLT entry plus the size of the region it describes, or to the top input value, whichever is smaller. Here:
+        – the LBA of the BLT entry is the start of its region
+        – the size is the size in bytes of the LBA region that the BLT entry describes
+        – the top input value is the top argument given to the command
+   b. Use the VHA of the target Vault to hash the measurement descriptor. Set the IFP of the target Vault to this hash. If the VHA output is smaller than the IFP, fill the upper bytes with zeros.
+               B4.3.41.5 Footprint
+    ID                          Value
+    blte                        Bltat(walk.blt_addr)
+    ifp                         vault.measurements[[0]]

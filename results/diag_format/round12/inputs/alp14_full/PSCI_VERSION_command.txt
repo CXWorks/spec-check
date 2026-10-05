@@ -1,0 +1,14 @@
+B6.3.8 PSCI_VERSION command
+
+B6.3.8.1 Intended use
+PSCI_VERSION is used to find out which version of the PSCI interface is implemented.
+
+B6.3.8.2 Parameters
+• fid, passed in X0 (bits 63:0): the function identifier. Its value is 0xC4000000.
+
+B6.3.8.3 Return values
+• result, returned in X0 (bits 63:0): the version of the PSCI interface.
+
+B6.3.8.4 Implementation responsibilities
+PSCI_VERSION has no failure conditions. The command always succeeds and returns the version of the PSCI interface that is implemented.
+PSCI_VERSION does not modify any state.

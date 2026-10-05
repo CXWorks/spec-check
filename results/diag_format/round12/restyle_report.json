@@ -1,0 +1,75 @@
+{
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "commands": 49,
+ "kept": [
+  "PSCI_CPU_OFF",
+  "PSCI_VERSION",
+  "RMI_DATA_CREATE",
+  "RMI_DATA_CREATE_UNKNOWN",
+  "RMI_DATA_DESTROY",
+  "RMI_GRANULE_DELEGATE",
+  "RMI_MEC_SET_SHARED",
+  "RMI_PDEV_IDE_RESET",
+  "RMI_PDEV_SET_PUBKEY",
+  "RMI_PDEV_STOP",
+  "RMI_PSMMU_MSI_CONFIG",
+  "RMI_REALM_CREATE",
+  "RMI_REALM_DESTROY",
+  "RMI_REC_DESTROY",
+  "RMI_REC_ENTER",
+  "RMI_RTT_AUX_MAP_PROTECTED",
+  "RMI_RTT_AUX_MAP_UNPROTECTED",
+  "RMI_RTT_AUX_UNMAP_UNPROTECTED",
+  "RMI_RTT_CREATE",
+  "RMI_RTT_DESTROY",
+  "RMI_RTT_FOLD",
+  "RMI_RTT_INIT_RIPAS",
+  "RMI_RTT_MAP_UNPROTECTED",
+  "RMI_RTT_READ_ENTRY",
+  "RMI_RTT_SET_RIPAS",
+  "RMI_RTT_SET_S2AP",
+  "RMI_VDEV_AUX_COUNT",
+  "RMI_VDEV_DESTROY",
+  "RMI_VDEV_GET_INTERFACE_REPORT",
+  "RMI_VDEV_GET_STATE",
+  "RMI_VDEV_LOCK",
+  "RMI_VDEV_P2P_BIND",
+  "RMI_VDEV_START",
+  "RMI_VDEV_UNLOCK",
+  "RMI_VDEV_VALIDATE_MAPPING",
+  "RMI_VERSION",
+  "RMI_VSMMU_CREATE",
+  "RMI_VSMMU_MAP",
+  "RSI_ATTESTATION_TOKEN_CONTINUE",
+  "RSI_ATTESTATION_TOKEN_INIT",
+  "RSI_IPA_STATE_GET",
+  "RSI_MEASUREMENT_READ",
+  "RSI_MEM_SET_PERM_INDEX",
+  "RSI_REALM_CONFIG",
+  "RSI_VDEV_GET_INFO",
+  "RSI_VDEV_VALIDATE_MAPPING",
+  "RSI_VERSION",
+  "RSI_VSMMU_ACTIVATE",
+  "RSI_VSMMU_GET_INFO"
+ ],
+ "retried_after_parser_fix": {
+  "commands": [
+   "RMI_PDEV_SET_PUBKEY",
+   "RMI_RTT_MAP_UNPROTECTED",
+   "RMI_VDEV_P2P_BIND"
+  ],
+  "first_pass_rejections": {
+   "RMI_PDEV_SET_PUBKEY/layout": [
+    "expression identifiers lost: ['pre']"
+   ],
+   "RMI_RTT_MAP_UNPROTECTED/layout": [
+    "expression identifiers lost: ['pre']"
+   ],
+   "RMI_VDEV_P2P_BIND/layout": [
+    "expression identifiers lost: ['d', 'nfo', 'pdev_1_gran_sta', 'pdev_2_gran_sta', 'pre', 'te']"
+   ]
+  },
+  "retry_rejections": {}
+ }
+}

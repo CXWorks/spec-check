@@ -1,0 +1,51 @@
+B4.3.56 RMI_VDEV_LOCK
+
+B4.3.56.1  Intended use
+RMI_VDEV_LOCK is intended for locking a VDEV. The Host calls RMI_VDEV_LOCK, providing the address of the RD of a Realm and the address of a VDEV that belongs to that Realm. If the call succeeds, the VDEV has a pending lock operation and is waiting for device communication to complete.
+
+B4.3.56.2  Parameters
+The caller passes the following input values:
+•  fid, passed in X0, is the function identifier. Its value is 0xC40001D2.
+•  rd, passed in X1, is the physical address of the RD of the Realm.
+•  vdev_ptr, passed in X2, is the physical address of the VDEV.
+
+In this command, "the Realm" means the Realm described by rd, and "the VDEV" means the VDEV at vdev_ptr.
+
+B4.3.56.3  Return values
+RMI_VDEV_LOCK returns the following output value:
+•  result, returned in X0, is the return status of the command.
+
+B4.3.56.4  Caller responsibilities
+Before an RMI_VDEV_LOCK call the following must be observed:
+•  The implementation must support the DA feature.
+•  rd must be aligned to the size of a Granule, must be a delegable physical address, and the Granule at rd must be in the RD state.
+•  vdev_ptr must be aligned to the size of a Granule, must be a delegable physical address, and the Granule at vdev_ptr must be in the VDEV state.
+•  The VDEV must belong to the Realm described by rd.
+•  The VDEV's vdev_state must be VDEV_UNLOCKED, and its comm_state must be DEV_COMM_IDLE.
+
+RMI_VDEV_LOCK can return the following errors:
+•  RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the DA feature.
+•  RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+•  RMI_ERROR_INPUT is returned if vdev_ptr is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if vdev_ptr is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the Granule at vdev_ptr is not in the VDEV state.
+•  RMI_ERROR_INPUT is returned if the VDEV does not belong to the Realm described by rd.
+•  RMI_ERROR_DEVICE is returned if the VDEV's vdev_state is not VDEV_UNLOCKED.
+•  RMI_ERROR_DEVICE is returned if the VDEV's comm_state is not DEV_COMM_IDLE.
+
+B4.3.56.5  Implementation responsibilities: ordering of error checks
+The implementation must observe the following ordering between error checks:
+•  The check that the VDEV belongs to the Realm described by rd is made only after these checks: rd is a delegable physical address, the Granule at rd is in the RD state, vdev_ptr is a delegable physical address, and the Granule at vdev_ptr is in the VDEV state.
+•  The check that the implementation supports the DA feature is made before these checks: rd is a delegable physical address, the Granule at rd is in the RD state, vdev_ptr is aligned to the size of a Granule, vdev_ptr is a delegable physical address, the Granule at vdev_ptr is in the VDEV state, and the VDEV belongs to the Realm described by rd.
+•  The check that the Granule at vdev_ptr is in the VDEV state is made before the checks on the VDEV's vdev_state and comm_state.
+
+B4.3.56.6  Implementation responsibilities: state changes
+On success, the implementation must:
+•  Set the VDEV's pending operation to VDEV_OP_LOCK.
+•  Set the VDEV's comm_state to DEV_COMM_PENDING.
+
+RMI_VDEV_LOCK may modify only the following state:
+•  The VDEV's pending operation.
+•  The VDEV's comm_state.

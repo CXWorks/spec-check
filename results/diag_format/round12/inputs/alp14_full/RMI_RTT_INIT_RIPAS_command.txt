@@ -1,0 +1,63 @@
+B4.3.41 RMI_RTT_INIT_RIPAS
+
+B4.3.41.1 Intended use
+RMI_RTT_INIT_RIPAS sets the RIPAS of a target IPA range to RAM. The target Realm must be in the REALM_NEW state.
+
+The function identifier is 0xC4000168.
+
+The RMM performs an RTT walk from base in the primary RTT tree, towards the page level. The walk ends at an RTT entry and level. Starting from that entry, the RMM finds the run of RTT entries in the UNASSIGNED state at the walk level. This run ends at the first entry that is not UNASSIGNED, at the end of the RTT, or at top, whichever comes first. The top IPA of this run is the top of the range the command processes. The command does not go past this point in one call.
+
+B4.3.41.2 Parameters
+- fid, passed in X0, is the function identifier, 0xC4000168.
+- rd, passed in X1, is the physical address of the RD for the target Realm.
+- base, passed in X2, is the base of the target IPA region.
+- top, passed in X3, is the top of the target IPA region.
+
+B4.3.41.3 Return values
+- result, returned in X0, is the command return status.
+- out_top, returned in X1, is the top IPA of the range whose RIPAS was modified.
+
+out_top is valid only when result is RMI_SUCCESS. When out_top is valid, it is aligned to the size of the address range described by the RTT entry at the level where the RTT walk terminated.
+
+B4.3.41.4 Caller responsibilities
+RMI_RTT_INIT_RIPAS can return the following errors:
+- RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+- RMI_ERROR_INPUT is returned if rd is not the address of a Granule that can be delegated.
+- RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+- RMI_ERROR_INPUT is returned if top is less than or equal to base.
+- RMI_ERROR_INPUT is returned if the address one Granule below top is not a Protected IPA of the target Realm, as the Realm was before the command ran.
+- RMI_ERROR_REALM is returned if the target Realm, as it was before the command ran, is not in the REALM_NEW state.
+- RMI_ERROR_RTT is returned, with the RTT walk level, if base is not aligned to the size of the address range that one RTT entry describes at the level reached by the RTT walk from base.
+- RMI_ERROR_RTT is returned, with the RTT walk level, if the RTT entry reached by the RTT walk from base is not in the UNASSIGNED state.
+- RMI_ERROR_INPUT is returned if top is not aligned to the size of a Granule.
+- RMI_ERROR_RTT is returned, with the RTT walk level, if base is equal to the top of the IPA range that the command can process from base in the RTT reached by the walk. In that case, no RTT entries can be processed.
+
+The RMM checks these errors in the following order:
+- It checks that rd is a Granule that can be delegated and that the Granule at rd is in the RD state before it checks that the Realm is in the REALM_NEW state.
+- It checks that rd is a Granule that can be delegated and that the Granule at rd is in the RD state before it checks that base is aligned to the RTT walk level and that the RTT entry is in the UNASSIGNED state.
+- It checks that rd is a Granule that can be delegated and that the Granule at rd is in the RD state before it checks that the command can process at least one RTT entry.
+- It checks that top is aligned to the size of a Granule before it checks that the command can process at least one RTT entry.
+
+B4.3.41.5 Implementation responsibilities
+When RMI_RTT_INIT_RIPAS succeeds:
+- Every RTT entry at the walk level, in the RTT reached by the walk, has RIPAS RAM. This covers the IPA range from base up to the top of the processed range.
+- The RIM of the target Realm is extended as described in section B4.3.41.6. The extension covers the IPA range from base up to the top of the processed range, at the RTT walk level. It starts from the state of the Realm before the command ran.
+- out_top is the top of the IPA range that the command processed.
+
+The command can modify only the following state:
+- the RTT entries in the RTT reached by the RTT walk
+- the RIM of the target Realm, which is the first entry of the Realm's measurements
+
+B4.3.41.6 RMI_RTT_INIT_RIPAS extension of RIM
+When RMI_RTT_INIT_RIPAS succeeds, the RMM calculates the new RIM value of the target Realm as follows:
+1. It allocates a RIPAS measurement descriptor data structure.
+2. For each RTT entry in the range [base, top) described by the RMI_RTT_INIT_RIPAS input values:
+   a. It fills in the measurement descriptor:
+      - It sets the desc_type field to the descriptor type.
+      - It sets the len field to the descriptor length.
+      - It sets the base field to the IPA of the RTT entry.
+      - It sets the top field to the smaller of two values: the IPA of the RTT entry plus the size of the region it describes, or the top input value. Here:
+        – the IPA of the RTT entry is the start of its region
+        – the size is the size in bytes of the IPA region that the RTT entry describes
+        – the top input value is the top argument given to the command
+   b. It hashes the measurement descriptor using the RHA of the target Realm and sets the RIM of the target Realm to this hash. If the RHA output is smaller than the RIM, it fills the upper bytes with zeros.

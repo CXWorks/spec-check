@@ -1,0 +1,45 @@
+B4.3.35 RMI_RTT_AUX_MAP_UNPROTECTED
+
+B4.3.35.1 Intended use
+RMI_RTT_AUX_MAP_UNPROTECTED copies a valid descriptor or a table descriptor at an Unprotected IPA from the starting level of the primary RTT to an auxiliary RTT.
+
+The Host calls this command with the address of the RD of the target Realm, an IPA in that Realm, and an RTT tree index that selects the auxiliary RTT tree. The command walks the primary RTT tree of the Realm for the IPA, starting at the Realm's starting RTT level. It also walks the auxiliary RTT tree selected by the index, starting at the same level. It then copies the primary RTT entry into the auxiliary RTT entry.
+
+B4.3.35.2 Parameters
+The command takes the following input values:
+• fid, passed in X0 (bits 63:0), is the function identifier. Its value is 0xC4000181.
+• rd, passed in X1 (bits 63:0), is the physical address of the RD for the target Realm.
+• ipa, passed in X2 (bits 63:0), is the IPA in the target Realm.
+• index, passed in X3 (bits 63:0), is the RTT tree index. It selects the auxiliary RTT tree.
+
+B4.3.35.3 Return values
+The command returns the following output value:
+• result, returned in X0 (bits 63:0), is the command return status.
+
+RMI_RTT_AUX_MAP_UNPROTECTED can return the following errors:
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that one RTT entry maps at the starting RTT level of the Realm.
+• RMI_ERROR_INPUT is returned if ipa is outside the Realm's IPA space, that is, if ipa is greater than or equal to 2 to the power of the Realm's IPA width.
+• RMI_ERROR_INPUT is returned if ipa is a Protected address in the Realm.
+• RMI_ERROR_INPUT is returned if any of the following is true:
+  – the Realm does not use a separate RTT tree for each Plane, that is, its per-Plane RTT tree setting is FEATURE_FALSE.
+  – index identifies the primary RTT tree, RMM_RTT_TREE_PRIMARY.
+  – index is greater than the number of auxiliary Planes in the Realm.
+• RMI_ERROR_RTT is returned if the RTT entry for ipa in the primary RTT tree is in the UNASSIGNED_NS state. In this case, the returned value also includes the RTT level at which the walk of the primary RTT tree ended.
+
+The implementation checks these error conditions in the following order:
+• The check that rd is a physical address that can be delegated is made before the check on the state of the primary RTT entry.
+• The check that the Granule at rd is in the RD state is made before the check on the state of the primary RTT entry.
+• The check that ipa is inside the Realm's IPA space and is not a Protected address is made before the check on the state of the primary RTT entry.
+• The check on index is made before the check on the state of the primary RTT entry.
+
+B4.3.35.4 Implementation responsibilities
+When the command succeeds, the implementation must make sure of the following:
+• The state of the RTT entry for ipa in the auxiliary RTT tree selected by index matches the state of the RTT entry for ipa in the primary RTT tree.
+• The memory attributes of the auxiliary RTT entry match the memory attributes of the primary RTT entry, compared as Unprotected entries.
+• The stage 2 access permissions of the auxiliary RTT entry match the stage 2 access permissions of the primary RTT entry, compared using the Realm's stage 2 access permission encoding.
+• The output address in the auxiliary RTT entry matches the output address in the primary RTT entry.
+
+The command can modify only one item of state. This item is the RTT entry for ipa in the auxiliary RTT selected by index. The implementation finds this entry by walking the auxiliary RTT tree from the Realm's starting RTT level. The entry is in the RTT at which that walk ends, at the position for ipa at the level where the walk ends.

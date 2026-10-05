@@ -1,0 +1,30 @@
+5.7 AFFINITY_INFO command
+               Returns the state of an affinity instance.
+               5.7.1 Interface
+               5.7.1.1   Input values
+        Name                     Register     Bits        Type        Description
+        lowest_affinity_level                                         Lowest affinity level of the affinity instance to query
+        target_affinity                                               Affinity instance to query
+               5.7.1.2   Output values
+        Name                     Register     Bits        Type        Description
+        result                                                        State of the affinity instance (ON, OFF, ON_PENDING), or an error code
+               5.7.2 Failure conditions
+  ID                          Condition
+  aff_present                 pre: !IsAffinityInstancePresent(lowest_affinity_level, target_affinity)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  aff_level                   pre: PsciVersion() >= 1.0 && lowest_affinity_level > 0 && !SupportsAffinityLevelAboveZero()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  aff_disabled                pre: IsAffinityInstanceDisabled(lowest_affinity_level, target_affinity)
+                              post: ResultEqual(result, DISABLED)
+               5.7.2.1   Failure condition ordering
+  [aff_present] < [aff_disabled]
+               5.7.3 Success conditions
+  ID                          Condition
+  aff_on                      pre: Exists core in AffinityInstance(lowest_affinity_level, target_affinity) such that (CoreEnabledByCpuOn(core) || IsColdBootPrimaryCore(core)) && !CoreCalledCpuOff(core)
+                              post: ResultEqual(result, ON)
+  aff_off                     pre: For all cores in AffinityInstance(lowest_affinity_level, target_affinity), CoreCalledCpuOff(core) && CpuOffProcessed(core)
+                              post: ResultEqual(result, OFF)
+  aff_on_pending              pre: Exists core in AffinityInstance(lowest_affinity_level, target_affinity) such that CoreState(core) == ON_PENDING, and all other cores in the instance are OFF
+                              post: ResultEqual(result, ON_PENDING)
+               5.7.4 Footprint
+               The section does not describe any state that the AFFINITY_INFO command modifies.

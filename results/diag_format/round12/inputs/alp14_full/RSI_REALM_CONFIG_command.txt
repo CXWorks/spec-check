@@ -1,0 +1,32 @@
+B5.3.15 RSI_REALM_CONFIG
+
+B5.3.15.1 Intended use
+RSI_REALM_CONFIG reads the configuration of the current Realm. The Realm calls RSI_REALM_CONFIG with the IPA of a Granule, and the configuration data for the current Realm is written to that Granule.
+
+B5.3.15.2 Parameters
+The caller passes the following input values:
+• fid, passed in X0, is the function identifier. Its value is 0xC4000196.
+• addr, passed in X1, is the IPA of the Granule to which the configuration data will be written.
+
+B5.3.15.3 Return values
+RSI_REALM_CONFIG returns the following output value:
+• result, returned in X0, is the command return status.
+
+B5.3.15.4 Caller responsibilities
+The command operates on the current Realm and on the Realm configuration at addr. To check the RIPAS of the page at addr, the implementation walks the primary RTT tree of the current Realm to page level at addr.
+
+RSI_REALM_CONFIG can return the following errors:
+• RSI_ERROR_INPUT is returned if addr is not aligned to the size of a Granule.
+• RSI_ERROR_INPUT is returned if addr is not a Protected IPA of the Realm.
+• RSI_ERROR_INPUT is returned if the RIPAS of the page at addr is EMPTY.
+
+These failure conditions are not checked in any defined order.
+
+B5.3.15.5 Implementation responsibilities
+On success, the implementation writes the Realm configuration to addr, as follows:
+• The ipa_width field equals the IPA width of the Realm.
+• The hash_algo field matches the hash algorithm of the Realm.
+• The num_aux_planes field equals the number of auxiliary Planes of the Realm.
+• The ats_plane field equals the ATS Plane setting of the Realm.
+
+RSI_REALM_CONFIG does not change any state that is listed as modifiable by the command.

@@ -1,0 +1,75 @@
+B4.3.42 HCI_BLT_MAP_UNPROTECTED command
+                Creates a mapping from an Unprotected LBA to a Non-secure DPA in a primary BLT.
+                B4.3.42.1 Interface
+                B4.3.42.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   R0          63:0        UInt64                                FID, value 0xC400015F
+        vd                    R1          63:0        Address                               DPA of the VD for the target Vault
+        lba                   R2          63:0        Address                               LBA at which the memory will be
+                                                                                            mapped in the target Vault
+        level                 R3          63:0        Int64                                 BLT level
+        desc                  R4          63:0        Bits64         T                      BLTE descriptor
+                The layout and encoding of fields in the desc input value match “Attribute fields in stage 2 Xmsa8-64 Block
+                and Page descriptors” in Acme Architecture Reference Manual for A-Profile architecture [3].
+                B4.3.42.1.2   Context
+                The HCI_BLT_MAP_UNPROTECTED command operates on the following context.
+        Name                  Type                       Value                                      Before    Description
+        vault                 Keepervault                   Vaultat(vd)                                false     Vault
+        walk                  Keeperbltwalkresult           Bltwalk(                                   false     BLT walk result
+                                                             vault, lba, level,
+                                                             KEEPER_BLT_TREE_PRIMARY)
+        entry_idx             UInt64                     Bltentryindex(                             false     BLTE index
+                                                             lba, walk.level)
+        blte                  Keeperbltentry                Bltdescriptordecode(                       false     BLT entry
+                                                             desc,
+                                                             vault.blt_xap_encoding
+                                                         )
+                B4.3.42.1.3   Output values
+         Name                   Register     Bits           Type                                          Description
+         result                 R0           63:0           Hcicommandreturncode                          Command return status
+               B4.3.42.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if desc is not a valid BLT entry descriptor for an Unprotected LBA.
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is less than 1.
+
+HCI_ERROR_INPUT is returned if the output address in desc (the addr field) is not aligned to the size of the address range that an BLT entry at level maps.
+
+HCI_ERROR_INPUT is returned if the Vault does not support BIGADDR (feat_bigaddr is FEATURE_FALSE) and the output address in desc is 2^48 or greater.
+
+HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that an BLT entry at level maps.
+
+HCI_ERROR_INPUT is returned if lba is 2 to the power of the Vault's LBA width or greater, or if lba is a Protected LBA of the Vault.
+
+HCI_ERROR_INPUT is returned if the Vault uses the XAP_INDIRECT stage 2 access permission encoding and the indirect base index in desc is not XAP_NO_ACCESS, XAP_RO, XAP_WO or XAP_RW.
+
+HCI_ERROR_BLT is returned if the BLT walk to lba ends at a level lower than level. The level at which the walk ended is also returned.
+
+HCI_ERROR_BLT is returned if the BLT entry that the walk to lba reaches is not in the UNASSIGNED_PUB state. The level at which the walk ended is also returned.
+
+               B4.3.42.2.1      Failure condition ordering
+
+The checks that vd is a enrollable physical address and that the Extent at vd is in the VD state are both made before the BLT walk check and the BLT entry state check.
+
+The checks on level, on the bounds of lba, and on the indirect base index in desc are all made before the BLT walk check and the BLT entry state check.
+
+               B4.3.42.3 Success conditions
+
+The BLT entry that the walk to lba reaches is in the ASSIGNED_PUB state.
+
+The Unprotected attributes of that BLT entry are equal to the Unprotected attributes in desc.
+
+If the Vault uses the XAP_DIRECT stage 2 access permission encoding, the read and write permissions of the BLT entry are equal to the read and write permissions in desc.
+
+If the Vault uses the XAP_INDIRECT stage 2 access permission encoding, the indirect base index of the BLT entry is equal to the indirect base index in desc, and the overlay index of the BLT entry is 15.
+
+The output address of the BLT entry is equal to the output address in desc.
+               B4.3.42.4 Footprint
+    ID                        Value
+    blte                      Bltentryat(Bltat(walk.blt_addr), entry_idx)

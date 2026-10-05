@@ -1,0 +1,136 @@
+B4.3.25 HCI_VAULT_CREATE command
+              Creates a Vault.
+              B4.3.25.1 Interface
+              B4.3.25.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 R0          63:0        UInt64                                FID, value 0xC4000158
+        vd                  R1          63:0        Address                               DPA of the VD
+        params_ptr          R2          63:0        Address                               DPA of Vault parameters
+              B4.3.25.1.2   Context
+              The HCI_VAULT_CREATE command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        params              Hcivaultparams             Hcivaultparamsat(                          false    Vault parameters
+                                                           params_ptr)
+        vault               Keepervault                   Vaultat(vd)                                false    Vault
+        zone_members_pre UInt64                         Zonemembers(params.zoneid)                   true     Number of Vaults
+                                                                                                           which are members of
+                                                                                                           the Vault’s ZONE
+        zone_state_pre       Keeperzonestate                Zonestate(params.zoneid)                     true     ZONEID state
+              B4.3.25.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              R0          63:0        Hcicommandreturncode                  Command return status
+              B4.3.25.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if params_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if the Extent at params_ptr cannot be accessed in the Non-secure physical address space.
+
+HCI_ERROR_INPUT is returned if the Hcivaultparams data structure at params_ptr is not valid.
+
+HCI_ERROR_INPUT is returned if the implementation does not support the Vault parameters that the Host provided.
+
+HCI_ERROR_INPUT is returned if vd lies inside the address range that starts at params.blt_base. This range is (params.blt_num_start minus one) Extents long.
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a physical address in enrollable DRAM.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the ENROLLED state.
+
+HCI_ERROR_INPUT is returned if params.blt_base is not aligned to params.blt_num_start Extents.
+
+HCI_ERROR_INPUT is returned if params.xsz, params.blt_level_start and params.blt_num_start do not form a valid BLT configuration when taken together.
+
+HCI_ERROR_INPUT is returned if any of the params.blt_num_start Extents starting at params.blt_base is not in the ENROLLED state.
+
+HCI_ERROR_INPUT is returned if params.tenantid or params.aux_tenantid is not a valid TENANTID, or if either of them is already in use.
+
+HCI_ERROR_INPUT is returned if params.zoneid is greater than the largest ZONEID that the implementation supports.
+
+HCI_ERROR_INPUT is returned if the ZONE state of params.zoneid is ZONE_STATE_PRIVATE_ASSIGNED.
+
+                B4.3.25.2.1   Failure condition ordering
+
+                The HCI_VAULT_CREATE command does not have any failure condition orderings.
+
+                B4.3.25.3 Success conditions
+
+The state of the Extent at vd is VD.
+
+The state of the Vault is VAULT_NEW.
+
+The WORKER index of the Vault is zero.
+
+The BLT base addresses of the Vault are params.blt_base and params.aux_blt_base.
+
+The vault.blt_num_start Extents that start at the Vault's primary BLT base address are in the BLT state.
+
+In those starting-level Blts, every entry that describes a Protected LBA is in the UNASSIGNED state.
+
+In those starting-level Blts, every entry that describes an Unprotected LBA is in the UNASSIGNED_PUB state.
+
+In those starting-level Blts, the LBAMODE of every entry that describes a Protected LBA is EMPTY.
+
+The Vault's BIGADDR feature setting matches params.flags0.bigaddr.
+
+The LBA width of the Vault is params.xsz.
+
+The hash algorithm of the Vault matches params.hash_algo.
+
+The IFP of the Vault (measurement 0) is the initial IFP value. This value is calculated from the Vault's hash algorithm and the Vault parameters, as described in B4.3.25.4.
+
+The four REMs of the Vault (measurements 1, 2, 3 and 4) are all zero, each KEEPER_VAULT_MEASUREMENT_WIDTH wide.
+
+The starting BLT level of the Vault is params.blt_level_start.
+
+The number of starting-level Blts of the Vault is params.blt_num_start.
+
+The Tenantids of the Vault are params.tenantid and params.aux_tenantid.
+
+The PTV of the Vault is params.ptv.
+
+The Vault's DX feature setting matches params.flags0.dx.
+
+The Vault's XLC feature setting matches params.flags1.xlc.
+
+The XLC Tier of the Vault is params.xlc_tier.
+
+The Vault's BLT-tree-per-Tier setting matches params.flags1.blt_tree_per_tier.
+
+The number of auxiliary Tiers of the Vault is params.num_aux_tiers.
+
+The Vault's BLT XAP encoding setting matches params.flags1.blt_xap_encoding.
+
+The Vault's LFU policy matches params.flags0.lfu_policy.
+
+The ZONEID of the Vault is params.zoneid.
+
+The ZONE policy of the Vault is the ZONE policy that belongs to the Vault's ZONEID.
+
+If params.zoneid was in the ZONE_STATE_PRIVATE_UNASSIGNED state before the command ran, it is now in the ZONE_STATE_PRIVATE_ASSIGNED state.
+
+If params.zoneid was in the ZONE_STATE_SHARED state before the command ran, its member count is now one greater than it was before the command.
+
+The number of Workers in the Vault is zero.
+
+The number of Volumes in the Vault is zero.
+
+The number of Vxlators in the Vault is zero.
+
+                B4.3.25.4 HCI_VAULT_CREATE initialization of IFP
+
+On successful execution of HCI_VAULT_CREATE, the initial IFP value of the target Vault is calculated by the KEEPER as follows:
+                  1. Allocate a zero-filled Hcivaultparams data structure to hold the measured Vault parameters.
+  2. Copy the following attributes from the Host-provided Hcivaultparams data structure into the measured Vault parameters data structure:
+                   • flags0
+                   • xsz
+                   • lanevec_lanew
+                   • num_haltpoints
+                   • num_watchmarks
+                   • perfunit_num_ctrs
+                   • hash_algo
+  3. Using the VHA of the target Vault, compute the hash of the measured Vault parameters data structure. Set the IFP of the target Vault to this value, zero filling upper bytes if the VHA output is smaller than the size of the IFP.
+                B4.3.25.5 Footprint
+    ID                            Value
+    vd_state                      Extentat(vd).state
+    blt_state                     Bltsextentstate( vault.blt_base[[0]], vault.blt_num_start)

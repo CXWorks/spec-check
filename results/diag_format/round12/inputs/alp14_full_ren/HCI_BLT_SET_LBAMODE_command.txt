@@ -1,0 +1,80 @@
+B4.3.44 HCI_BLT_SET_LBAMODE
+
+B4.3.44.1 Intended use
+
+HCI_BLT_SET_LBAMODE completes a request made by the Vault to change the LBAMODE of a target LBA range. The Host calls it with the VD of the target Vault, the target WORKER and the target LBA range. The WORKER records the pending LBAMODE change: its start address (the lbamode_addr field of the WORKER), its top address (the lbamode_top field of the WORKER), the requested LBAMODE value (the lbamode_value field of the WORKER) and the lbamode_destroyed field of the WORKER.
+
+The command performs an BLT walk at base. The walk runs in the primary BLT tree of the target Vault and targets the page level. In this section:
+
+- The BLT reached by the walk is the BLT at which the walk terminated.
+- The level reached by the walk is the level at which the walk terminated.
+- The LBAMODE at base before the command is the LBAMODE of the BLT entry at which the walk terminated, as it was before the command executed.
+- The walk top is the top LBA of the entries that have associated LBAMODE values. These entries are counted from the entry at which the BLT walk terminated, over the range from base to top, in the BLT reached by the walk as it was before the command executed. The count depends on whether both of the following are true:
+  - The LBAMODE value requested by the WORKER is RAM.
+  - The lbamode_destroyed field of the WORKER is not CHANGE_DESTROYED.
+
+  The walk top is also called the top of the address range covered by the BLT reached by the walk before the command.
+
+B4.3.44.2 Parameters
+
+The function ID and input values are passed in these registers:
+
+- fid is passed in R0. It is the function ID, value 0xC4000169.
+- vd is passed in R1. It is the physical address of the VD for the target Vault.
+- worker_ptr is passed in R2. It is the physical address of the target WORKER.
+- base is passed in R3. It is the base of the target LBA region.
+- top is passed in R4. It is the top of the target LBA region.
+
+B4.3.44.3 Return values
+
+The output values are returned in these registers:
+
+- result is returned in R0. It is the command return status.
+- out_top is returned in R1. It is the top LBA of the range whose LBAMODE was modified. out_top is valid only when result is HCI_SUCCESS.
+
+HCI_BLT_SET_LBAMODE can return the following errors:
+
+- HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+- HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+- HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+- HCI_ERROR_INPUT is returned if worker_ptr is not aligned to the size of a Extent.
+- HCI_ERROR_INPUT is returned if worker_ptr is not a enrollable physical address.
+- HCI_ERROR_INPUT is returned if the Extent at worker_ptr is not in the WORKER state.
+- HCI_ERROR_WORKER is returned if the WORKER is in the WORKER_RUNNING state.
+- HCI_ERROR_WORKER is returned if the WORKER is not owned by the Vault described by vd.
+- HCI_ERROR_INPUT is returned if top is less than or equal to base, compared as unsigned integers.
+- HCI_ERROR_INPUT is returned if base does not equal the WORKER's pending LBAMODE change start address (the lbamode_addr field of the WORKER).
+- HCI_ERROR_INPUT is returned if top is greater than the WORKER's pending LBAMODE change top address (the lbamode_top field of the WORKER), compared as unsigned integers.
+- HCI_ERROR_BLT is returned, with the level reached by the BLT walk, if both of the following are true:
+  - base is not aligned to the size of the address range that an BLT entry at that level describes.
+  - The LBAMODE at base before the command does not equal the LBAMODE value requested by the WORKER (the lbamode_value field of the WORKER).
+- HCI_ERROR_INPUT is returned if top is not aligned to the size of a Extent.
+- HCI_ERROR_BLT is returned, with the level reached by the BLT walk, if both of the following are true:
+  - base equals the top of the address range covered by the BLT reached by the walk before the command, compared as unsigned integers.
+  - The LBAMODE at base before the command does not equal the LBAMODE value requested by the WORKER.
+- HCI_ERROR_BLT is returned, with the level reached by the BLT walk, if any part of the address range from base to top is live in an auxiliary BLT of the Vault, as the Vault was before the command.
+
+The implementation must make the error checks in this order:
+
+- It must check that vd is a enrollable physical address, and that the Extent at vd is in the VD state, before both of these checks:
+  - The check that base is aligned to the BLT entry size at the walk level.
+  - The check that base is not already at the top of the BLT reached by the walk.
+- It must check that worker_ptr is a enrollable physical address, and that the Extent at worker_ptr is in the WORKER state, before checking that the WORKER is not in the WORKER_RUNNING state and that the WORKER is owned by the Vault described by vd.
+- It must check that base equals the WORKER's pending LBAMODE change start address before checking that base is aligned to the BLT entry size at the walk level.
+- It must check that top is aligned to the size of a Extent before checking that base is not already at the top of the BLT reached by the walk.
+
+B4.3.44.4 Implementation responsibilities
+
+When HCI_BLT_SET_LBAMODE succeeds, the implementation must do all of the following:
+
+- Set the LBAMODE of every BLT entry that meets all of these conditions to the LBAMODE value requested by the WORKER (the lbamode_value field of the WORKER):
+  - The entry is in the BLT reached by the walk.
+  - The entry is at the level reached by the walk.
+  - The entry covers the address range from base up to the top of the range covered by that BLT before the command.
+- Set the WORKER's pending LBAMODE change start address (the lbamode_addr field of the WORKER) to the lower of top and the top of the address range covered by the BLT reached by the walk before the command.
+- Set out_top to the lower of top and the top of the address range covered by the BLT reached by the walk before the command.
+
+The command may modify only these items:
+
+- The BLT entries of the BLT reached by the walk.
+- The lbamode_addr field of the WORKER.

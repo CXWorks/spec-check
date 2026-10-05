@@ -1,0 +1,26 @@
+5.11 SYSTEM_OFF2 command
+               Requests entry into hibernate (suspend to disk), as described by the S4 state in the ACPI specification. The system powers off from the caller's point of view, and the following start is a cold boot.
+               5.11.1 Interface
+               5.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                SYSTEM_OFF2 function ID
+               5.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        PsciReturnCode                        Command return status
+               5.11.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !IsFunctionImplemented(SYSTEM_OFF2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  inv_params                  pre: !AreInputParametersValid()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               5.11.2.1   Failure condition ordering
+               The SYSTEM_OFF2 command does not have any failure condition orderings.
+               5.11.3 Success conditions
+  ID                          Condition
+  sys_off                     post: SystemIsPoweredOffFromCallerView()
+  cold_boot                   post: NextStartIsColdBoot()
+  hw_config                   post: SavedToNonVolatileStorage(BaseHardwareConfiguration)
+               5.11.4 Footprint
+    ID                        Value
+    sys_off                   SystemPowerState
+    hw_config                 NonVolatileStorage.BaseHardwareConfiguration

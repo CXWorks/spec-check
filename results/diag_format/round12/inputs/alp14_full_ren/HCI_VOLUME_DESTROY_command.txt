@@ -1,0 +1,68 @@
+B4.3.52 HCI_VOLUME_DESTROY
+
+B4.3.52.1 Intended use
+HCI_VOLUME_DESTROY destroys a VOLUME. The Host calls it with the physical addresses of three Extents: the Vault Descriptor (VD) of the Vault that owns the VOLUME, the DRIVE that the VOLUME is associated with, and the VOLUME.
+
+When the command succeeds, the KEEPER returns the VOLUME Extent and all of the VOLUME's auxiliary Extents to the ENROLLED state. It also frees the identifiers that the VOLUME held so that they can be used again, and it lowers the VOLUME counts of both the Vault and the DRIVE.
+
+B4.3.52.2 Parameters
+The function ID and input values are passed in the following registers:
+• fid, passed in R0: the function ID of HCI_VOLUME_DESTROY, which is 0xC4000188.
+• vd, passed in R1: the physical address of the VD of the Vault that owns the VOLUME.
+• drive_ptr, passed in R2: the physical address of the DRIVE that the VOLUME is associated with.
+• volume_ptr, passed in R3: the physical address of the VOLUME to be destroyed.
+
+All of these values use the full 64 bits of their register.
+
+The command works on the Vault identified by vd, the VOLUME at volume_ptr and the DRIVE at drive_ptr. It reads the Vault, the VOLUME and the DRIVE as they are before the command runs. Afterwards, the updated Vault and DRIVE reflect the results of the command.
+
+B4.3.52.3 Return values
+The command returns the following output value:
+• result, returned in R0: the command return status, using all 64 bits of the register.
+
+B4.3.52.4 Caller responsibilities
+Before calling HCI_VOLUME_DESTROY, the caller must make sure of the following:
+• The implementation supports the Device Assignment feature.
+• vd, drive_ptr and volume_ptr are all aligned to the size of a Extent, and each is a enrollable physical address.
+• The Extent at vd is in the VD state, the Extent at drive_ptr is in the DRIVE state, and the Extent at volume_ptr is in the VOLUME state.
+• The VOLUME is owned by the Vault identified by vd, and it is associated with the DRIVE at drive_ptr.
+• The VOLUME state is VOLUME_NEW, VOLUME_UNLOCKED or VOLUME_ERROR.
+• The VOLUME has no mappings left, so its num_map field is zero.
+
+HCI_VOLUME_DESTROY can return the following errors:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+• HCI_ERROR_INPUT is returned if volume_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if volume_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at volume_ptr is not in the VOLUME state.
+• HCI_ERROR_DEVICE is returned if the VOLUME is not owned by the Vault identified by vd.
+• HCI_ERROR_DEVICE is returned if the VOLUME is not associated with the DRIVE at drive_ptr.
+• HCI_ERROR_DEVICE is returned if the VOLUME state is not VOLUME_NEW, VOLUME_UNLOCKED or VOLUME_ERROR.
+• HCI_ERROR_DEVICE is returned if the VOLUME still has one or more mappings, so its num_map field is not zero.
+
+B4.3.52.5 Implementation responsibilities: order of checks
+The implementation must order its checks as follows:
+• The check for support of the Device Assignment feature, which can return HCI_ERROR_NOT_SUPPORTED, comes before the alignment, enrollability and Extent state checks on vd, drive_ptr and volume_ptr.
+• The Extent state checks on vd, drive_ptr and volume_ptr come before the checks on the VOLUME itself. The Extent state checks confirm that the Extents are in the VD, DRIVE and VOLUME states. The checks on the VOLUME confirm that it is owned by the Vault, that it is associated with the DRIVE, that it is in an allowed state, and that it has no mappings.
+
+B4.3.52.6 Implementation responsibilities: effects on success
+If the command succeeds, the implementation must make sure of the following:
+• The Extent at volume_ptr is in the ENROLLED state.
+• Every auxiliary Extent of the VOLUME is in the ENROLLED state. The VOLUME's num_aux field gives the number of these Extents.
+• The VOLUME's identifier (volume_id) is free within the Vault, so it can be used again.
+• The VOLUME's LUN identifier (lun_id) is free within the PCIe segment of the DRIVE, so it can be used again.
+• The Vault's count of Volumes is one less than it was before the command.
+• The DRIVE's count of Volumes is one less than it was before the command.
+• If the VOLUME was associated with a virtual XLATOR, the VOLUME's virtual stream ID (vlid) is free within that virtual XLATOR, so it can be used again. This is the virtual XLATOR at the address held in the VOLUME's vxlator_addr field.
+
+B4.3.52.7 State that may be modified
+HCI_VOLUME_DESTROY can modify only the following state:
+• The state of the Extent at volume_ptr.
+• The states of the VOLUME's auxiliary Extents. These are the auxiliary Extents recorded in the VOLUME before the command, and their number is the VOLUME's num_aux value from before the command.
+• The Vault's count of Volumes (num_volumes).
+• The DRIVE's count of Volumes (num_volumes).

@@ -1,0 +1,89 @@
+B4.3.63 RMI_VDEV_VALIDATE_MAPPING
+
+B4.3.63.1 Intended use
+RMI_VDEV_VALIDATE_MAPPING completes a request that a Realm made to validate mappings to device memory from a target IPA range.
+
+The Host calls RMI_VDEV_VALIDATE_MAPPING and identifies the following:
+• the target Realm
+• the REC that made the request
+• the PDEV, and the VDEV associated with it
+• the base and top of the target IPA region
+
+The command walks the Realm's primary RTT tree from base, towards the page level. The RTT walk is the walk of the Realm's RTTs from base. The walked range starts at base and ends at the top of the address range described by the RTT that the RTT walk reaches. It covers the entries that have associated RIPAS values, starting from the entry at which the RTT walk terminated. The walked range is determined from the state before the command runs.
+
+Note: This command has an open issue. It is not yet decided how to combine these two operations:
+• modification of a range of RTT entries in a single command
+• checking of output address and HIPAS values against the device memory physical address recorded in the REC
+
+B4.3.63.2 Parameters
+The caller passes these input values:
+• fid, passed in X0. This is the function identifier, value 0xC4000163.
+• rd, passed in X1. This is the physical address of the RD for the target Realm.
+• rec_ptr, passed in X2. This is the physical address of the target REC.
+• pdev_ptr, passed in X3. This is the physical address of the PDEV.
+• vdev_ptr, passed in X4. This is the physical address of the VDEV.
+• base, passed in X5. This is the base of the target IPA region.
+• top, passed in X6. This is the top of the target IPA region.
+
+B4.3.63.3 Return values
+The command returns these output values:
+• result, returned in X0. This is the command return status.
+• out_top, returned in X1. This is the top IPA of the range whose RIPAS was modified. out_top is valid only when result is RMI_SUCCESS.
+
+B4.3.63.4 Caller responsibilities
+RMI_VDEV_VALIDATE_MAPPING can return the following errors:
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if rec_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rec_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rec_ptr is not in the REC state.
+• RMI_ERROR_REC is returned if the REC is in the REC_RUNNING state.
+• RMI_ERROR_REC is returned if the REC is not owned by the Realm described by rd.
+• RMI_ERROR_INPUT is returned if pdev_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if pdev_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at pdev_ptr is not in the PDEV state.
+• RMI_ERROR_INPUT is returned if vdev_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if vdev_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at vdev_ptr is not in the VDEV state.
+• RMI_ERROR_DEVICE is returned if the VDEV is not associated with the PDEV at pdev_ptr.
+• RMI_ERROR_INPUT is returned if top is less than or equal to base.
+• RMI_ERROR_INPUT is returned if base is not equal to the device memory address recorded in the REC (dev_mem_addr).
+• RMI_ERROR_INPUT is returned if top is greater than the device memory top address recorded in the REC (dev_mem_top).
+• RMI_ERROR_RTT is returned if base is not aligned to the size of the address range that one RTT entry describes at the level reached by the RTT walk.
+• RMI_ERROR_INPUT is returned if top is not aligned to the size of a Granule.
+• RMI_ERROR_RTT is returned if base is equal to the top of the walked range. In this case the command cannot make progress.
+• RMI_ERROR_RTT is returned if the device memory flags in the REC mark the memory as DEV_MEM_NON_COHERENT, and not every RTT entry in the walked range has the memory attribute MEMATTR_NON_CACHEABLE.
+• RMI_ERROR_RTT is returned if the device memory flags in the REC mark the memory as DEV_MEM_NON_COHERENT, and not every RTT entry in the walked range maps non-coherent device memory.
+• RMI_ERROR_RTT is returned if the device memory flags in the REC mark the memory as DEV_MEM_COHERENT, and not every RTT entry in the walked range has the memory attribute MEMATTR_PASSTHROUGH.
+• RMI_ERROR_RTT is returned if the device memory flags in the REC mark the memory as DEV_MEM_COHERENT, and not every RTT entry in the walked range maps coherent device memory.
+• RMI_ERROR_RTT is returned if the output addresses of the RTT entries in the walked range are not contiguous, starting from the device memory physical address recorded in the REC (dev_mem_pa). This uses the value of dev_mem_pa from before the command runs.
+• RMI_ERROR_RTT is returned if any address in the range from base to top is live in an auxiliary RTT of the Realm. This is evaluated before the command runs.
+
+When RMI_ERROR_RTT is returned, the level reached by the RTT walk is also returned.
+
+B4.3.63.5 Implementation responsibilities: error ordering
+The implementation must make some checks before others:
+• It must check that rd is a delegable physical address and that the Granule at rd is in the RD state before it checks that base is aligned to the RTT walk level.
+• It must check that rd is a delegable physical address and that the Granule at rd is in the RD state before it checks that base is not equal to the top of the walked range.
+• It must check that rec_ptr is a delegable physical address and that the Granule at rec_ptr is in the REC state before it checks that the REC is not in the REC_RUNNING state and that the REC is owned by the Realm described by rd.
+• It must make these checks before it checks that the VDEV is associated with the PDEV at pdev_ptr:
+  – pdev_ptr is a delegable physical address
+  – the Granule at pdev_ptr is in the PDEV state
+  – vdev_ptr is a delegable physical address
+  – the Granule at vdev_ptr is in the VDEV state
+• It must check that base is equal to the device memory address recorded in the REC before it checks that base is aligned to the RTT walk level.
+• It must check that top is aligned to the size of a Granule before it checks that base is not equal to the top of the walked range.
+
+B4.3.63.6 Implementation responsibilities: successful completion
+If the command succeeds, result is RMI_SUCCESS and the following are true:
+• The RIPAS of every RTT entry in the walked range is DEV.
+• The device memory address recorded in the REC (dev_mem_addr) is the lower of top and the top of the walked range.
+• The device memory physical address recorded in the REC (dev_mem_pa) is its value before the command plus the size of the range from base to the top of the walked range.
+• out_top is the lower of top and the top of the walked range.
+
+B4.3.63.7 State that the command may modify
+RMI_VDEV_VALIDATE_MAPPING may modify only:
+• the RTT at which the RTT walk terminated
+• the device memory address recorded in the REC (dev_mem_addr)
+• the device memory physical address recorded in the REC (dev_mem_pa)

@@ -1,0 +1,27 @@
+5.19 NODE_HW_STATE command
+               Returns the power state of a node, as seen by the power controller or power controlling logic. Unlike AFFINITY_INFO, which returns the implementation's view of state, this command returns the physical view of power state. The returned value is a snapshot of the node's state at one point in time and might be stale by the time it is interpreted.
+               Introduced in PSCI 1.0. This command is optional. It must only be implemented if the supporting power control logic allows detection of the power state of nodes in the system.
+               5.19.1 Interface
+               5.19.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        target_cpu          -            -           MPIDR-derived                         Derived from the MPIDR. Same format as the target_cpu parameter of CPU_ON
+        power_level         -            -           IMPLEMENTATION DEFINED                Power domain level for the node. 0 is always reserved to represent a core, or a HW thread in an SMT system. Values must be described alongside the power domain topology in firmware tables such as FDT or ACPI (see section 6.7)
+               5.19.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              -            -           Return code                           HW_ON(0), HW_OFF(1) or HW_STANDBY(2) on success; otherwise NOT_SUPPORTED or INVALID_PARAMETERS
+               5.19.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !NodeHwStateImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  invalid_node                pre: !IsValidNode(target_cpu, power_level)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               5.19.2.1   Failure condition ordering
+               The NODE_HW_STATE command does not have any failure condition orderings.
+               5.19.3 Success conditions
+  ID                          Condition
+  hw_on                       post: (PowerControlView(target_cpu, power_level) == RUN) ==> ResultEqual(result, HW_ON)
+  hw_off                      post: (PowerControlView(target_cpu, power_level) == POWERDOWN) ==> ResultEqual(result, HW_OFF)
+  hw_standby                  post: (PowerControlView(target_cpu, power_level) == STANDBY_OR_RETENTION) ==> ResultEqual(result, HW_STANDBY)
+               The RUN, POWERDOWN and STANDBY_OR_RETENTION states follow the semantics described in Section 4.1. The returned value must reflect the view of the power controlling logic.
+               5.19.4 Footprint
+               The NODE_HW_STATE command does not have a footprint.

@@ -1,0 +1,41 @@
+B4.3.64 HCI_VERSION
+
+B4.3.64.1 Intended use
+HCI_VERSION allows the Host and the KEEPER to determine whether there exists a mutually acceptable revision of the KEEPER via which the two components can communicate.
+
+When the Host calls HCI_VERSION, it provides a requested HCI version. The KEEPER returns a status code and two interface revisions which it supports: a lower revision and a higher revision.
+• The higher revision is the highest interface revision which is supported by the KEEPER.
+• The lower revision is less than or equal to the higher revision.
+
+The status code and the lower revision indicate which of the following is true, in order of precedence:
+a) The KEEPER supports an interface revision which is compatible with the requested revision. In this case:
+   • The status code is HCI_SUCCESS.
+   • The lower revision is equal to the requested revision.
+b) The KEEPER does not support an interface revision which is compatible with the requested revision. The KEEPER supports an interface revision which is incompatible with and less than the requested revision. In this case:
+   • The status code is HCI_ERROR_INPUT.
+   • The lower revision is the highest interface revision which is both less than the requested revision and supported by the KEEPER.
+c) The KEEPER does not support an interface revision which is compatible with the requested revision. The KEEPER supports an interface revision which is incompatible with and greater than the requested revision. In this case:
+   • The status code is HCI_ERROR_INPUT.
+   • The lower revision is equal to the higher revision.
+
+B4.3.64.2 Parameters
+The caller passes the following input values:
+• fid, passed in R0 (bits 63:0), is the function identifier. Its value is 0xC4000150.
+• req, passed in R1 (bits 63:0), is the requested interface revision.
+
+B4.3.64.3 Return values
+The KEEPER returns the following output values:
+• result, returned in R0 (bits 63:0), is the command return status.
+• lower, returned in R1 (bits 63:0), is the lower supported interface revision.
+• higher, returned in R2 (bits 63:0), is the higher supported interface revision.
+
+HCI_VERSION can return the following errors:
+• HCI_ERROR_INPUT is returned if the KEEPER does not support the requested version req but supports at least one version lower than req. In this case, lower is the highest version below req that the KEEPER supports, and higher is the highest version that the KEEPER supports.
+• HCI_ERROR_INPUT is returned if the KEEPER does not support the requested version req, does not support any version lower than req, and supports at least one version higher than req. In this case, lower and higher are the same version, which is the highest version that the KEEPER supports.
+
+No ordering is defined between the failure conditions of HCI_VERSION.
+
+On success, lower is equal to the requested version req, and higher is the highest version that the KEEPER supports.
+
+B4.3.64.4 Implementation responsibilities
+HCI_VERSION has no footprint. The implementation must not modify any state as a result of this command.

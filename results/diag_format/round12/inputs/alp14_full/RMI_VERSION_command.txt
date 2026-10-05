@@ -1,0 +1,41 @@
+B4.3.64 RMI_VERSION
+
+B4.3.64.1 Intended use
+RMI_VERSION allows the Host and the RMM to determine whether there exists a mutually acceptable revision of the RMM via which the two components can communicate.
+
+When the Host calls RMI_VERSION, it provides a requested RMI version. The RMM returns a status code and two interface revisions which it supports: a lower revision and a higher revision.
+• The higher revision is the highest interface revision which is supported by the RMM.
+• The lower revision is less than or equal to the higher revision.
+
+The status code and the lower revision indicate which of the following is true, in order of precedence:
+a) The RMM supports an interface revision which is compatible with the requested revision. In this case:
+   • The status code is RMI_SUCCESS.
+   • The lower revision is equal to the requested revision.
+b) The RMM does not support an interface revision which is compatible with the requested revision. The RMM supports an interface revision which is incompatible with and less than the requested revision. In this case:
+   • The status code is RMI_ERROR_INPUT.
+   • The lower revision is the highest interface revision which is both less than the requested revision and supported by the RMM.
+c) The RMM does not support an interface revision which is compatible with the requested revision. The RMM supports an interface revision which is incompatible with and greater than the requested revision. In this case:
+   • The status code is RMI_ERROR_INPUT.
+   • The lower revision is equal to the higher revision.
+
+B4.3.64.2 Parameters
+The caller passes the following input values:
+• fid, passed in X0 (bits 63:0), is the function identifier. Its value is 0xC4000150.
+• req, passed in X1 (bits 63:0), is the requested interface revision.
+
+B4.3.64.3 Return values
+The RMM returns the following output values:
+• result, returned in X0 (bits 63:0), is the command return status.
+• lower, returned in X1 (bits 63:0), is the lower supported interface revision.
+• higher, returned in X2 (bits 63:0), is the higher supported interface revision.
+
+RMI_VERSION can return the following errors:
+• RMI_ERROR_INPUT is returned if the RMM does not support the requested version req but supports at least one version lower than req. In this case, lower is the highest version below req that the RMM supports, and higher is the highest version that the RMM supports.
+• RMI_ERROR_INPUT is returned if the RMM does not support the requested version req, does not support any version lower than req, and supports at least one version higher than req. In this case, lower and higher are the same version, which is the highest version that the RMM supports.
+
+No ordering is defined between the failure conditions of RMI_VERSION.
+
+On success, lower is equal to the requested version req, and higher is the highest version that the RMM supports.
+
+B4.3.64.4 Implementation responsibilities
+RMI_VERSION has no footprint. The implementation must not modify any state as a result of this command.

@@ -1,0 +1,14 @@
+B6.3.8 PWRCTL_VERSION command
+
+B6.3.8.1 Intended use
+PWRCTL_VERSION is used to find out which version of the PWRCTL interface is implemented.
+
+B6.3.8.2 Parameters
+• fid, passed in R0 (bits 63:0): the function identifier. Its value is 0xC4000000.
+
+B6.3.8.3 Return values
+• result, returned in R0 (bits 63:0): the version of the PWRCTL interface.
+
+B6.3.8.4 Implementation responsibilities
+PWRCTL_VERSION has no failure conditions. The command always succeeds and returns the version of the PWRCTL interface that is implemented.
+PWRCTL_VERSION does not modify any state.

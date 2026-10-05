@@ -1,0 +1,90 @@
+B4.3.39 HCI_BLT_DESTROY command
+                Destroys a primary BLT.
+                B4.3.39.1 Interface
+                B4.3.39.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   R0          63:0        UInt64                                FID, value 0xC400015E
+        vd                    R1          63:0        Address                               DPA of the VD for the target Vault
+        lba                   R2          63:0        Address                               Base of the LBA range described by the
+                                                                                            BLT
+        level                 R3          63:0        Int64                                 BLT level
+                B4.3.39.1.2   Context
+                The HCI_BLT_DESTROY command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        vault                 Keepervault                   Vaultat(vd)                                false    Vault
+        walk                  Keeperbltwalkresult           Bltwalk(                                   false    BLT walk result
+                                                             vault, lba,
+                                                             level - 1,
+                                                             KEEPER_BLT_TREE_PRIMARY)
+        entry_idx             UInt64                     Bltentryindex(                             false    BLTE index
+                                                             lba, walk.level)
+        walk_top              Address                    Bltskipnonliveentries(                     false    Top LBA of non-live
+                                                             Bltat(walk.blt_addr),                           BLT entries, from
+                                                             walk.level,                                     entry at which the
+                                                             lba)                                            BLT walk terminated
+                B4.3.39.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                R0          63:0        Hcicommandreturncode                  Command return status
+        blt                   R1          63:0        Address                               DPA of the BLT which was destroyed
+        top                   R2          63:0        Address                               Top LBA of non-live BLT entries, from
+                                                                                            entry at which the BLT walk terminated
+               The blt output value is valid only when the command result is HCI_SUCCESS.
+               The values of the result and top output values for different command outcomes are summarized in the following
+               table.
+       Scenario                             result                                   top           walk.blte.state
+       Target BLT exists and is not live    HCI_SUCCESS                              > lba         Before execution: TABLE
+                                                                                                   After execution: UNASSIGNED
+                                                                                                   and LBAMODE is DESTROYED
+       Missing BLT                          (HCI_ERROR_BLT, < level)                 > lba         UNASSIGNED or
+                                                                                                   UNASSIGNED_PUB
+       Block mapping at lower level         (HCI_ERROR_BLT, < level)                 == lba        ASSIGNED or ASSIGNED_PUB
+       Live BLT at target level             (HCI_ERROR_BLT, level)                   == lba        TABLE
+       BLT walk was not performed,          Another error code                       0             Unknown
+       due to any other command failure
+               B4.3.39.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is the starting level of the Vault's BLT.
+
+HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that an BLT entry maps at the level one less than level.
+
+HCI_ERROR_INPUT is returned if lba is outside the Vault's LBA space. This means lba is greater than or equal to 2 raised to the power of the Vault's LBA width.
+
+HCI_ERROR_BLT is returned if the BLT walk to lba stops at a level lower than one less than level. The error index is the level at which the walk stopped, and the output top is set to walk_top.
+
+HCI_ERROR_BLT is returned if the BLT entry that the walk reaches is not in the TABLE state. The error index is the level at which the walk stopped, and the output top is set to walk_top.
+
+HCI_ERROR_BLT is returned if the BLT that this BLT entry points to is live. The error index is level, and the output top is set to lba.
+
+HCI_ERROR_BLT is returned if lba is referenced by an auxiliary BLT of the Vault. The error index is the level at which the walk stopped.
+
+                    B4.3.39.2.1   Failure condition ordering
+
+The check that vd is a enrollable physical address and the check that the Extent at vd is in the VD state are both made before two other checks. The first is the check that the BLT walk reaches the level one less than level. The second is the check that the BLT entry reached is in the TABLE state.
+
+The check that level is valid and is not the starting level, and the check that lba is within the Vault's LBA space, are also both made before those two BLT walk checks.
+
+The check that the BLT entry reached is in the TABLE state is made before two later checks. One is the check that the BLT it points to is not live. The other is the check that lba is not referenced by an auxiliary BLT.
+
+                    B4.3.39.3 Success conditions
+
+If lba is a Protected address, the BLT entry reached by the walk is in the UNASSIGNED state.
+
+If lba is a Protected address, the LBAMODE of the BLT entry reached by the walk is DESTROYED.
+
+If lba is not a Protected address, the BLT entry reached by the walk is in the UNASSIGNED_PUB state.
+
+The Extent that held the destroyed BLT, which is the one at the address in the BLT entry, is in the ENROLLED state.
+
+The output blt is the address of the destroyed BLT, as held in the BLT entry.
+
+The output top is set to walk_top.
+                    B4.3.39.4 Footprint
+        ID                              Value
+        blt_state                       Extentat(walk.blte.addr).state
+        blte                            Bltentryat(Bltat(walk.blt_addr), entry_idx)

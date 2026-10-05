@@ -1,0 +1,33 @@
+5.16 PSCI_FEATURES command
+               Reports whether a PSCI function is implemented and, if so, its feature flags. Introduced in PSCI 1.0. This function is mandatory.
+               5.16.1 Interface
+               5.16.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID for PSCI_FEATURES
+        psci_func_id        W1           31:0        UInt32                                Function ID of the PSCI function, or of SMCCC_VERSION, being queried
+               5.16.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        Int32                                 NOT_SUPPORTED, or the feature flags of the queried function
+               5.16.2 Failure conditions
+  ID                          Condition
+  func_impl                   pre: !IsImplementedFunction(psci_func_id)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               5.16.2.1   Failure condition ordering
+               The PSCI_FEATURES command does not have any failure condition orderings.
+               5.16.3 Success conditions
+  ID                          Condition
+  flags_positive              post: result[31] == 0
+  cpu_suspend_rsvd            pre: IsCpuSuspendFid(psci_func_id)
+                              post: result[31:2] == 0
+  cpu_suspend_fmt             pre: IsCpuSuspendFid(psci_func_id)
+                              post: result[1] == (UsesExtendedStateIdFormat() ? 1 : 0)
+  cpu_suspend_osi             pre: IsCpuSuspendFid(psci_func_id)
+                              post: result[0] == (SupportsOsInitiatedMode() ? 1 : 0)
+  system_off2_rsvd            pre: IsSystemOff2Fid(psci_func_id)
+                              post: result[30:1] == 0
+  system_off2_hib_off         pre: IsSystemOff2Fid(psci_func_id)
+                              post: result[0] == 1
+  other_func_flags            pre: !IsCpuSuspendFid(psci_func_id) && !IsSystemOff2Fid(psci_func_id)
+                              post: result[31:0] == 0
+               5.16.4 Footprint
+               The PSCI_FEATURES command does not modify any state.

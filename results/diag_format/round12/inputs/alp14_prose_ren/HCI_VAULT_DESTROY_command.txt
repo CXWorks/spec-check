@@ -1,0 +1,53 @@
+B4.3.26 HCI_VAULT_DESTROY command
+               Destroys a Vault.
+               B4.3.26.1 Interface
+               B4.3.26.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  R0          63:0        UInt64                                FID, value 0xC4000159
+        vd                   R1          63:0        Address                               DPA of the VD
+               B4.3.26.1.2   Context
+               The HCI_VAULT_DESTROY command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        vault_pre            Keepervault                   Vaultat(vd)                                true     Vault
+        zone_members_pre UInt64                          Zonemembers(vault_pre.zoneid)                true     Number of Vaults
+                                                                                                            which are members of
+                                                                                                            the Vault’s ZONE
+               B4.3.26.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               R0          63:0        Hcicommandreturncode                  Command return status
+               B4.3.26.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+
+HCI_ERROR_INPUT is returned if the Extent at address vd is not in the VD state.
+
+HCI_ERROR_VAULT is returned if the Vault described by vd is live.
+
+                B4.3.26.2.1   Failure condition ordering
+
+Two checks come before the check that the Vault is live:
+- the check that vd is a physical address that can be enrolled
+- the check that the Extent at address vd is in the VD state
+
+If vd cannot be enrolled, or the Extent at address vd is not in the VD state, the command returns HCI_ERROR_INPUT. It does this even if the Vault is also live.
+
+                B4.3.26.3 Success conditions
+
+The command reads the values below from the Vault as it was before the command ran. On success:
+
+The starting-level Blts of the Vault are in the ENROLLED state. These start at the Vault's first BLT base address, and their number is the Vault's blt_num_start value.
+
+The Extent at address vd is in the ENROLLED state.
+
+The TENANTID that the Vault used is free.
+
+If the Vault's ZONE policy was ZONE_POLICY_PRIVATE, the Vault's ZONEID is in the ZONE_STATE_PRIVATE_UNASSIGNED state.
+
+If the Vault's ZONE policy was ZONE_POLICY_SHARED, the Vault's ZONEID has one fewer member than it had before the command ran.
+                B4.3.26.4 Footprint
+    ID                           Value
+    vd_state                     Extentat(vd).state
+    blt_state                    Bltsextentstate(
+                                     vault_pre.blt_base[[0]], vault_pre.blt_num_start)

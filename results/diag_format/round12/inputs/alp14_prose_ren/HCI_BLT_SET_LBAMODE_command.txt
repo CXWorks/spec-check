@@ -1,0 +1,93 @@
+B4.3.44 HCI_BLT_SET_LBAMODE command
+               Completes a request made by the Vault to change the LBAMODE of a target LBA range.
+               B4.3.44.1 Interface
+               B4.3.44.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  R0          63:0        UInt64                                FID, value 0xC4000169
+        vd                   R1          63:0        Address                               DPA of the VD for the target Vault
+        worker_ptr              R2          63:0        Address                               DPA of the target WORKER
+        base                 R3          63:0        Address                               Base of target LBA region
+        top                  R4          63:0        Address                               Top of target LBA region
+               B4.3.44.1.2   Context
+               The HCI_BLT_SET_LBAMODE command operates on the following context.
+        Name                 Type                       Value                                      Before    Description
+        vault                Keepervault                   Vaultat(vd)                                false     Vault
+        vault_pre            Keepervault                   Vaultat(vd)                                true      Vault
+        worker                  Keeperworker                                                                false     WORKER
+                                                        Workerat(worker_ptr)
+        walk                 Keeperbltwalkresult           Bltwalk(                                   false     BLT walk result
+                                                            vault, base,
+                                                            KEEPER_BLT_PAGE_LEVEL,
+                                                            KEEPER_BLT_TREE_PRIMARY)
+        lbamode_pre            Keeperlbamode                   walk.blte.lbamode                            true      LBAMODE before the
+                                                                                                             command executed
+        walk_top_pre         Address                    Bltskipentrieswithlbamode(                   true      Top LBA of entries
+                                                            Bltat(walk.blt_addr),                            which have associated
+                                                            walk.level,                                      LBAMODE values,
+                                                            base, top,                                       starting from entry at
+                                                            (worker.lbamode_value                                 which the BLT walk
+                                                                == RAM) &&
+                                                                                                             terminated
+                                                            (worker.lbamode_destroyed
+                                                                !=
+                                                                CHANGE_DESTROYED))
+               B4.3.44.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               R0          63:0        Hcicommandreturncode                  Command return status
+        Name                 Register    Bits        Type                                  Description
+        out_top              R1          63:0        Address                               Top LBA of range whose LBAMODE was
+                                                                                           modified
+               The out_top output value is valid only when the command result is HCI_SUCCESS.
+               B4.3.44.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if worker_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if worker_ptr is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at worker_ptr is not in the WORKER state.
+
+HCI_ERROR_WORKER is returned if the WORKER is in the WORKER_RUNNING state.
+
+HCI_ERROR_WORKER is returned if the WORKER is not owned by the Vault described by vd.
+
+HCI_ERROR_INPUT is returned if top is less than or equal to base, compared as unsigned integers.
+
+HCI_ERROR_INPUT is returned if base does not equal the WORKER's pending LBAMODE change start address (the lbamode_addr field of the WORKER).
+
+HCI_ERROR_INPUT is returned if top is greater than the WORKER's pending LBAMODE change top address (the lbamode_top field of the WORKER), compared as unsigned integers.
+
+HCI_ERROR_BLT is returned, with the level reached by the BLT walk, if base is not aligned to the size of the address range that an BLT entry at that level describes, and the LBAMODE at base before the command does not equal the LBAMODE value the WORKER requested (the lbamode_value field of the WORKER).
+
+HCI_ERROR_INPUT is returned if top is not aligned to the size of a Extent.
+
+HCI_ERROR_BLT is returned, with the level reached by the BLT walk, if base equals the top of the address range covered by the BLT reached by the walk before the command, compared as unsigned integers, and the LBAMODE at base before the command does not equal the LBAMODE value the WORKER requested.
+
+HCI_ERROR_BLT is returned, with the level reached by the BLT walk, if any part of the address range from base to top is live in an auxiliary BLT of the Vault, as the Vault was before the command.
+
+               B4.3.44.2.1   Failure condition ordering
+
+The checks that vd is a enrollable physical address and that the Extent at vd is in the VD state are made before both of these checks: the check that base is aligned to the BLT entry size at the walk level, and the check that base is not already at the top of the BLT reached by the walk.
+
+The checks that worker_ptr is a enrollable physical address and that the Extent at worker_ptr is in the WORKER state are made before the checks that the WORKER is not in the WORKER_RUNNING state and that the WORKER is owned by the Vault described by vd.
+
+The check that base equals the WORKER's pending LBAMODE change start address is made before the check that base is aligned to the BLT entry size at the walk level.
+
+The check that top is aligned to the size of a Extent is made before the check that base is not already at the top of the BLT reached by the walk.
+
+               B4.3.44.3 Success conditions
+
+Every BLT entry in the BLT reached by the walk, at the level reached by the walk, that covers the address range from base up to the top of the range covered by that BLT before the command, has its LBAMODE set to the LBAMODE value the WORKER requested (the lbamode_value field of the WORKER).
+
+The WORKER's pending LBAMODE change start address (the lbamode_addr field of the WORKER) is set to the lower of top and the top of the address range covered by the BLT reached by the walk before the command.
+
+out_top is set to the lower of top and the top of the address range covered by the BLT reached by the walk before the command.
+               B4.3.44.4 Footprint
+    ID                             Value
+    blte                           Bltat(walk.blt_addr)
+    lbamode_addr                     worker.lbamode_addr

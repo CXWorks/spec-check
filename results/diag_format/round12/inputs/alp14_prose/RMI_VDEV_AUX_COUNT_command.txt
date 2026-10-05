@@ -1,0 +1,22 @@
+B4.3.48 RMI_VDEV_AUX_COUNT command
+              Get number of auxiliary Granules required for a VDEV.
+              B4.3.48.1 Interface
+              B4.3.48.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 X0          63:0        UInt64                                FID, value 0xC4000160
+        pdev_flags          X1          63:0        Bits64                                PDEV flags
+        vdev_flags          X2          63:0        Bits64                                VDEV flags
+              B4.3.48.1.2   Output values
+        Name                Register    Bits        Type                                  Description
+        result              X0          63:0        RmiCommandReturnCode                  Command return status
+        aux_count           X1          63:0        UInt64                                Number of auxiliary Granules required
+                                                                                          for a VDEV
+              B4.3.48.2 Failure conditions
+
+RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+
+              B4.3.48.3 Success conditions
+
+On success, aux_count is the number of auxiliary Granules that a VDEV needs. This number is derived from the decoded values of pdev_flags and vdev_flags.
+              B4.3.48.4 Footprint
+              The RMI_VDEV_AUX_COUNT command does not have any footprint.

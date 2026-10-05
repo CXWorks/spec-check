@@ -1,0 +1,62 @@
+5.1.2 SDEI_EVENT_REGISTER command
+               Registers a handler to the specified event.
+               5.1.2.1 Interface
+               5.1.2.1.1   Input values
+        Name                    Register     Bits        Type        Description
+        fid                     X0           31:0        UInt32      FID, value 0xC4000021
+        event                   X1           31:0        Int32       Event number
+        entry_point_address     X2           63:0        Address     Entry point address at ELC for the event handler. Absolute address if flags.relative_mode == 0; relative to VBAR for ELC if flags.relative_mode == 1
+        ep_argument             X3           63:0        UInt64      User-defined argument passed unchanged to the entry point routine
+        flags                   X4           63:0        UInt64      Registration flags
+                                             63:2                    Reserved, must be zero
+                                             1                       relative_mode: 0 = entry_point_address is absolute, 1 = entry_point_address is relative to VBAR for ELC (optional feature, discoverable through SDEI_FEATURES)
+                                             0                       routing_mode: 0 = RM_ANY (route to any PE in the system), 1 = RM_PE (route to the PE specified by affinity). Valid only for shared events; ignored for private events
+        affinity                X5           63:0        UInt64      PE affinity for a shared event. Used only when routing_mode == RM_PE; unused for private events and for RM_ANY. With RM_PE, uses MPIDR format:
+                                             63:40                   Must be zero
+                                             39:32                   Aff3: matches Aff3 of target PE MPIDR
+                                             31:24                   Must be zero
+                                             23:16                   Aff2: matches Aff2 of target PE MPIDR
+                                             15:8                    Aff1: matches Aff1 of target PE MPIDR
+                                             7:0                     Aff0: matches Aff0 of target PE MPIDR
+               5.1.2.1.2   Output values
+        Name                    Register     Bits        Type        Description
+        result                  X0           63:0        Int64       Command return status
+               5.1.2.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_invalid               pre: !IsValidEvent(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  entry_invalid               pre: DispatcherCanDetermineInvalidAddress(entry_point_address)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  routing_invalid             pre: IsSharedEvent(event) && !IsValidRoutingMode(flags.routing_mode)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  affinity_invalid            pre: IsSharedEvent(event) && flags.routing_mode == RM_PE
+                                   && !IsValidMpidr(affinity)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  already_registered          pre: IsRegisteredByClient(event)
+                              post: ResultEqual(result, DENIED)
+  unregister_pending          pre: EventHandlerState(event) == HANDLER_UNREGISTER_PENDING
+                              post: ResultEqual(result, DENIED)
+               5.1.2.2.1   Failure condition ordering
+               The SDEI_EVENT_REGISTER command does not have any failure condition orderings.
+               5.1.2.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  ev_registered               post: IsRegisteredByClient(event)
+  ev_entry                    post: EventHandler(event).entry_point_address == entry_point_address
+                                    && EventHandler(event).relative_mode == flags.relative_mode
+  ev_arg                      post: EventHandler(event).ep_argument == ep_argument
+  ev_disabled                 post: !IsEnabled(event)
+  ev_shared_scope             post: IsSharedEvent(event) ==> HandlerRegisteredGloballyForClient(event)
+  ev_private_scope            post: IsPrivateEvent(event) ==> HandlerRegisteredForCallingPe(event)
+  ev_routing                  post: IsSharedEvent(event) ==> RoutingMode(event) == flags.routing_mode
+  ev_affinity                 post: IsSharedEvent(event) && flags.routing_mode == RM_PE
+                                    ==> RoutingAffinity(event) == affinity
+               5.1.2.4 Footprint
+    ID                        Value
+    ev_state                  EventHandlerState(event)
+    ev_entry                  EventHandler(event).entry_point_address, EventHandler(event).relative_mode
+    ev_arg                    EventHandler(event).ep_argument
+    ev_routing                RoutingMode(event)
+    ev_affinity               RoutingAffinity(event)

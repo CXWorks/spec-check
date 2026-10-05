@@ -1,0 +1,41 @@
+B5.3.8 VCI_MEASUREMENT_READ
+
+B5.3.8.1 Intended use
+VCI_MEASUREMENT_READ lets a Vault read one of its own measurements. The Vault calls the command with a measurement index. The KEEPER returns the value of the measurement that the index selects, for the Vault that makes the call.
+
+Index 0 selects the IFP. An index of 1 or greater selects the REM with that number.
+
+B5.3.8.2 Parameters
+The caller passes the following values:
+•  fid is passed in R0. It is the function identifier and has the value 0xC4000192.
+•  index is passed in R1. It is the measurement index and selects which measurement of the current Vault to read.
+
+The command acts on the current Vault, which is the Vault that called it. It also acts on the measurement of that Vault that index selects.
+
+B5.3.8.3 Return values
+The KEEPER returns the following values:
+•  result is returned in R0. It is the command return status.
+•  value_0 is returned in R1. It is doubleword 0 of the Vault measurement that index identifies.
+•  value_1 is returned in R2. It is doubleword 1 of the Vault measurement that index identifies.
+•  value_2 is returned in R3. It is doubleword 2 of the Vault measurement that index identifies.
+•  value_3 is returned in R4. It is doubleword 3 of the Vault measurement that index identifies.
+•  value_4 is returned in R5. It is doubleword 4 of the Vault measurement that index identifies.
+•  value_5 is returned in R6. It is doubleword 5 of the Vault measurement that index identifies.
+•  value_6 is returned in R7. It is doubleword 6 of the Vault measurement that index identifies.
+•  value_7 is returned in R8. It is doubleword 7 of the Vault measurement that index identifies.
+
+If the measurement value is smaller than 512 bits, the KEEPER pads the output values with zeroes.
+
+VCI_MEASUREMENT_READ can return the following error:
+•  VCI_ERROR_INPUT is returned if index is greater than 4.
+
+The command has only one failure condition, so the failure conditions have no ordering.
+
+B5.3.8.4 Implementation responsibilities
+When the command succeeds, the KEEPER must return the measurement as follows:
+•  If the Vault's hash algorithm is SHA-256:
+   –  value_0 to value_3 hold the first, second, third and fourth 64-bit words of the encoded value of the Vault measurement that index selects, in that order.
+   –  value_4 to value_7 are all zero.
+•  If the Vault's hash algorithm is SHA-512, value_0 to value_7 hold the first to eighth 64-bit words of the encoded value of the Vault measurement that index selects, in that order.
+
+VCI_MEASUREMENT_READ does not change any state.

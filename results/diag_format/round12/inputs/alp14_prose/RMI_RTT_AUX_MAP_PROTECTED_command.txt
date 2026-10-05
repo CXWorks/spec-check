@@ -1,0 +1,78 @@
+B4.3.34 RMI_RTT_AUX_MAP_PROTECTED command
+                Creates a mapping from an Protected IPA in an auxiliary RTT.
+                B4.3.34.1 Interface
+                B4.3.34.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000180
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               IPA in the target Realm
+        index                 X3          63:0        UInt64                                RTT tree index
+                B4.3.34.1.2   Context
+                The RMI_RTT_AUX_MAP_PROTECTED command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk_pri              RmmRttWalkResult           RttWalk(                                   false    Primary RTT walk
+                                                             realm, ipa,                                     result
+                                                             RMM_RTT_PAGE_LEVEL,
+                                                             RMM_RTT_TREE_PRIMARY)
+        walk_aux              RmmRttWalkResult           RttWalk(                                   false    Auxiliary RTT walk
+                                                             realm, ipa,                                     result
+                                                             RMM_RTT_PAGE_LEVEL,
+                                                             index)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk_aux.level)
+                B4.3.34.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        state                 X1          7:0         RmiRttEntryState                      State of RTT entry whose contents
+                                                                                            caused command to fail with
+                                                                                            RMI_ERROR_RTT
+        ripas                 X2          7:0         RmiRipas                              RIPAS of RTT entry which caused
+                                                                                            command to fail with
+                                                                                            RMI_ERROR_RTT
+                The following unused bits of RMI_RTT_AUX_MAP_PROTECTED output values MBZ: X1[63:8], X2[63:8].
+              B4.3.34.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if ipa is not a Protected IPA of the Realm.
+
+RMI_ERROR_INPUT is returned if any of the following is true:
+- the Realm does not use a separate RTT tree for each Plane, meaning rtt_tree_per_plane is FEATURE_FALSE
+- index is RMM_RTT_TREE_PRIMARY
+- index is greater than the number of auxiliary Planes of the Realm
+
+RMI_ERROR_RTT is returned if the primary RTT entry at ipa is not in the ASSIGNED, ASSIGNED_DEV or ASSIGNED_VSMMU state. The error carries the level of that primary RTT entry. state is set to the state of the primary RTT entry, and ripas is set to the RIPAS of the primary RTT entry.
+
+RMI_ERROR_RTT is returned if the primary RTT entry at ipa is in the ASSIGNED state and its RIPAS is not RAM. The error carries the level of that primary RTT entry. state is set to the state of the primary RTT entry, and ripas is set to the RIPAS of the primary RTT entry.
+
+RMI_ERROR_RTT is returned if the primary RTT entry at ipa is in the ASSIGNED_DEV state and its RIPAS is not DEV. The error carries the level of that primary RTT entry. state is set to the state of the primary RTT entry, and ripas is set to the RIPAS of the primary RTT entry.
+
+RMI_ERROR_RTT_AUX is returned if the auxiliary RTT entry at ipa, in the RTT tree selected by index, is in the AUX_DESTROYED state. The error carries the level of that auxiliary RTT entry. state is set to the state of the auxiliary RTT entry, and ripas is set to the RIPAS of the primary RTT entry.
+
+RMI_ERROR_RTT_AUX is returned if the walk of the auxiliary RTT at ipa ends at a lower-numbered level than the walk of the primary RTT. In that case the auxiliary entry covers a larger region than the primary entry. The error carries the level of the auxiliary RTT entry. state is set to the state of the auxiliary RTT entry, and ripas is set to the RIPAS of the primary RTT entry.
+
+              B4.3.34.2.1   Failure condition ordering
+
+The checks that rd is a delegable address and that the Granule at rd is in the RD state are made before any of the checks on the primary RTT entry (its state, its RIPAS in the ASSIGNED state and its RIPAS in the ASSIGNED_DEV state) and before the checks on the auxiliary RTT entry (the AUX_DESTROYED state and the walk level).
+
+The checks that ipa is a Protected IPA and that index is valid are also made before all of those primary and auxiliary RTT entry checks.
+
+               B4.3.34.3 Success conditions
+
+On success, the auxiliary RTT entry at ipa is in the ASSIGNED state.
+
+On success, the auxiliary RTT entry at ipa has the same protection attributes as the primary RTT entry.
+
+On success, the auxiliary RTT entry at ipa has the same shareability attribute as the primary RTT entry.
+
+On success, the output address of the auxiliary RTT entry is calculated from the output address of the primary RTT entry. The primary entry may cover a region made up of several auxiliary-level entries. The auxiliary entry's address is the primary entry's address plus this entry's position in that region multiplied by the size of the region mapped by one entry at the auxiliary RTT entry's level.
+               B4.3.34.4 Footprint
+    ID                            Value
+    rtte                          RttEntry(walk_aux.rtt_addr, entry_idx)

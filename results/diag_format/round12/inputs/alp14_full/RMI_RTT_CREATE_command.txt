@@ -1,0 +1,51 @@
+B4.3.38 RMI_RTT_CREATE
+
+B4.3.38.1 Intended use
+RMI_RTT_CREATE creates a primary RTT. The Host calls it with the Realm, a target RTT, a base IPA and an RTT level. On success, the RTT at rtt describes the IPA range that starts at ipa, and the parent RTT entry for that range points to it.
+
+To find the parent RTT entry, the command walks the Realm's primary RTT tree to ipa. The walk targets level - 1. The command operates on the RTT entry at the index for ipa, in the RTT where that walk ended.
+
+B4.3.38.2 Parameters
+The caller passes the following values:
+•  fid, in X0. This is the function identifier and has the value 0xC400015D.
+•  rd, in X1. This is the physical address of the RD for the target Realm.
+•  rtt, in X2. This is the physical address of the target RTT.
+•  ipa, in X3. This is the base of the IPA range that the RTT describes.
+•  level, in X4. This is the RTT level, given as a signed 64-bit value.
+
+B4.3.38.3 Return values
+The command returns the following value:
+•  result, in X0. This is the command return status.
+
+RMI_RTT_CREATE can return the following errors:
+•  RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+•  RMI_ERROR_INPUT is returned if level is not a valid RTT level for the Realm, or if level is the Realm's starting RTT level.
+•  RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that one RTT entry at level - 1 maps.
+•  RMI_ERROR_INPUT is returned if ipa is outside the Realm's IPA space. This is the case when ipa is greater than or equal to 2 to the power of the Realm's IPA width.
+•  RMI_ERROR_INPUT is returned if rtt is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rtt is not a delegable physical address in DRAM.
+•  RMI_ERROR_INPUT is returned if the Granule at rtt is not in the DELEGATED state.
+•  RMI_ERROR_INPUT is returned if the Realm does not support LPA2 and rtt is at or above 2 to the power of 48. The Realm does not support LPA2 when feat_lpa2 is FEATURE_FALSE.
+•  RMI_ERROR_RTT is returned if the RTT walk to ipa ends at a level lower than level - 1. The returned index is the level where the walk ended.
+•  RMI_ERROR_RTT is returned if the RTT entry found by the RTT walk to ipa is already in the TABLE state. The returned index is the level where the walk ended.
+
+Both RMI_ERROR_RTT conditions have lower priority than four of the RMI_ERROR_INPUT conditions. The command checks whether the walk ends below level - 1, and whether the RTT entry is already in the TABLE state, only when none of these four conditions applies:
+•  rd is not a delegable physical address.
+•  The Granule at rd is not in the RD state.
+•  level is not a valid RTT level for the Realm, or level is the starting level.
+•  ipa is outside the Realm's IPA space.
+
+B4.3.38.4 Implementation responsibilities
+When RMI_RTT_CREATE succeeds, the implementation must ensure all of the following:
+•  The Granule at rtt is in the RTT state.
+•  The RTT entry found by the RTT walk to ipa is in the TABLE state.
+•  That RTT entry points to rtt.
+•  If ipa is a Protected IPA of the Realm, every entry in the new RTT at rtt has the RIPAS value that the parent RTT entry had before the command ran.
+•  Every entry in the new RTT at rtt has the state that the parent RTT entry had before the command ran.
+•  If the parent RTT entry was in a state other than UNASSIGNED and UNASSIGNED_NS before the command ran, the entries in the new RTT at rtt map a contiguous output address range at level. That range starts at the address that the parent RTT entry held before the command ran.
+
+The command may modify only the following state:
+•  The state of the Granule at rtt.
+•  The RTT entry at the index for ipa in the RTT where the walk to level - 1 ended.

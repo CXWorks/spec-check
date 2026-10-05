@@ -1,0 +1,29 @@
+B4.3.5 RMI_GRANULE_DELEGATE
+
+B4.3.5.1 Intended use
+RMI_GRANULE_DELEGATE delegates a Granule. The caller passes the physical address of the target Granule, and the RMM moves that Granule from the UNDELEGATED state to the DELEGATED state.
+
+B4.3.5.2 Parameters
+RMI_GRANULE_DELEGATE takes the following input values:
+•  fid, passed in X0 (bits 63:0). This is the function identifier, and its value is 0xC4000151.
+•  addr, passed in X1 (bits 63:0). This is the physical address (PA) of the target Granule.
+
+B4.3.5.3 Return values
+RMI_GRANULE_DELEGATE returns the following output value:
+•  result, returned in X0 (bits 63:0). This is the command return status.
+
+RMI_GRANULE_DELEGATE can return the following errors:
+•  RMI_ERROR_INPUT is returned if addr is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if addr is not a physical address that can be delegated.
+•  RMI_ERROR_INPUT is returned if the Granule at addr is not in the UNDELEGATED state.
+
+RMI_GRANULE_DELEGATE does not define any ordering between these failure conditions.
+
+B4.3.5.4 Implementation responsibilities
+If the command succeeds, the RMM must make sure that:
+•  The Granule at addr is in the DELEGATED state.
+•  The Granule Protection Table entry for the Granule at addr is GPT_REALM.
+
+RMI_GRANULE_DELEGATE can modify only the following state:
+•  The Granule Protection Table entry of the Granule at addr.
+•  The state of the Granule at addr.

@@ -1,0 +1,43 @@
+5.1.14 SDEI_INTERRUPT_BIND command
+               Binds an interrupt to an event.
+               5.1.14.1 Interface
+               5.1.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FID, value 0xC400002D
+        interrupt           W1           31:0        UInt32                                Interrupt number to be promoted as an SDEI event. For a physical SDEI instance this is a Non-secure interrupt. For a virtual SDEI instance this is a virtual interrupt.
+               5.1.14.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 On success: bits [63:32] are zero and bits [31:0] hold the event number. On error: an error code.
+               5.1.14.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  intr_valid                  pre: !IsValidInterrupt(interrupt)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  intr_allowed                pre: !IsInterruptAllowedForBinding(interrupt)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  intr_state                  pre: InterruptState(interrupt) != INACTIVE
+                              post: ResultEqual(result, DENIED)
+  bind_slots                  pre: !IsInterruptBound(interrupt) && !BindSlotAvailable()
+                              post: ResultEqual(result, OUT_OF_RESOURCE)
+               5.1.14.2.1   Failure condition ordering
+               The SDEI_INTERRUPT_BIND command does not have any failure condition orderings.
+               5.1.14.3 Success conditions
+  ID                          Condition
+  result_upper                post: result[63:32] == 0
+  result_event                post: result[31:0] == BoundEventNumber(interrupt)
+  event_bound                 post: IsInterruptBound(interrupt)
+  event_priority              post: EventPriority(result[31:0]) == NORMAL
+  event_private               pre: IsPpi(interrupt)
+                              post: IsPrivateEvent(result[31:0])
+  event_shared                pre: IsSpi(interrupt)
+                              post: IsSharedEvent(result[31:0])
+  event_rebind                pre: IsInterruptBound(interrupt)
+                              post: result[31:0] == PreviousBoundEventNumber(interrupt)
+  event_vendor                post: IsVendorEventNumber(result[31:0])
+  intr_priority               post: IsInterruptPriorityElevated(interrupt)
+               5.1.14.4 Footprint
+    ID                        Value
+    event_bound               InterruptBinding(interrupt)
+    bind_slots                BindSlots
+    intr_priority             InterruptPriority(interrupt)

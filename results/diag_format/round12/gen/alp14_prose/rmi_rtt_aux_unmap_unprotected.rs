@@ -1,0 +1,15 @@
+pub open spec fn rmi_rtt_aux_unmap_unprotected_spec(rd: Address, ipa: Address, index: UInt64, result: Result<(), RmiStatusCode>, top: Address, old_s: S, new_s: S) -> bool {
+  ((rd) % granule_size(old_s) != 0 ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!can_be_delegated(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (GranuleState(old_s, rd) != GRANULE_STATE_RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (!((ipa) % (pow2(RealmAt(old_s, rd).rtt_level_start as nat))) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && ((ipa >= pow2(RealmAt(old_s, rd).ipa_width as nat)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (ProtectedIPA(old_s, rd, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (RealmAt(old_s, rd).rtt_tree_per_plane == FEATURE_FALSE ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (index == RMM_RTT_TREE_PRIMARY ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (index > RealmAt(old_s, rd).num_auxiliary_planes ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (result.is_Ok() ==> RttEntry(new_s, RttAt(new_s, RttWalk(new_s,  RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index)).rtt_addr, RttEntryIndex(new_s, ipa, RttWalk(new_s,  RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index)).level as int) == UNASSIGNED_NS)
+  && (result.is_Ok() ==> top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s,  RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index)).rtt_addr,RttWalk(new_s,  RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index).level,ipa))
+  && (result.is_Err() ==> RttEntry(new_s, RttAt(new_s, RttWalk(new_s,  RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index)).rtt_addr, RttEntryIndex(new_s, ipa, RttWalk(new_s,  RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index)).level as int) == RttEntry(old_s, RttAt(old_s, RttWalk(old_s,  RealmAt(old_s, rd), ipa,RealmAt(old_s, rd).rtt_level_start as int,index)).rtt_addr, RttEntryIndex(old_s, ipa, RttWalk(old_s,  RealmAt(old_s, rd), ipa,RealmAt(old_s, rd).rtt_level_start as int,index)).level as int))
+  && (result.is_Err() ==> top == RttSkipNonLiveEntries(new_s, RttAt(new_s, RttWalk(new_s,  RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index)).rtt_addr,RttWalk(new_s,  RealmAt(new_s, rd), ipa,RealmAt(new_s, rd).rtt_level_start as int,index).level,ipa))
+}

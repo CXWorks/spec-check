@@ -1,0 +1,58 @@
+B4.3.37 RMI_RTT_AUX_UNMAP_UNPROTECTED command
+               Removes a valid or table descriptor at an Unprotected IPA from the starting level of an auxiliary RTT.
+               B4.3.37.1 Interface
+               B4.3.37.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000184
+        rd                   X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                  X2          63:0        Address                               IPA in the target Realm
+        index                X3          63:0        UInt64                                RTT tree index
+               B4.3.37.1.2   Context
+               The RMI_RTT_AUX_UNMAP_UNPROTECTED command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        realm                RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                 RmmRttWalkResult           RttWalk(                                   false    Auxiliary RTT walk
+                                                            realm, ipa,                                     result
+                                                            realm.rtt_level_start,
+                                                            index)
+        entry_idx            UInt64                     RttEntryIndex(                             false    RTTE index
+                                                            ipa, walk.level)
+        walk_top             Address                    RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                                            RttAt(walk.rtt_addr),                           RTT entries, from
+                                                            walk.level,                                     entry at which the
+                                                            ipa)                                            RTT walk terminated
+               B4.3.37.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+        top                  X1          63:0        Address                               Top IPA of non-live RTT entries, from
+                                                                                           starting level RTT
+               B4.3.37.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that one RTT entry maps at the Realm's starting RTT level.
+
+RMI_ERROR_INPUT is returned if either of these is true:
+- ipa is equal to or greater than 2 to the power of the Realm's IPA width.
+- ipa is a Protected IPA of the Realm.
+
+RMI_ERROR_INPUT is returned if any of these is true:
+- The Realm does not use a separate RTT tree for each Plane. Its rtt_tree_per_plane value is FEATURE_FALSE.
+- index is RMM_RTT_TREE_PRIMARY.
+- index is greater than the Realm's number of auxiliary Planes.
+
+               B4.3.37.2.1   Failure condition ordering
+               The RMI_RTT_AUX_UNMAP_UNPROTECTED command does not have any failure condition orderings.
+
+               B4.3.37.3 Success conditions
+
+The RTT entry that the RTT walk reaches is in the UNASSIGNED_NS state.
+
+The output top is equal to walk_top, the top value that the RTT walk produces.
+               B4.3.37.4 Footprint
+    ID                          Value
+    rtte                        RttEntry(walk.rtt_addr, entry_idx)

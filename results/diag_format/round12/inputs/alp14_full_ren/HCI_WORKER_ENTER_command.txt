@@ -1,0 +1,64 @@
+B4.3.30 HCI_WORKER_ENTER
+
+B4.3.30.1 Intended use
+HCI_WORKER_ENTER is intended for entering a WORKER. The Host calls the HCI_WORKER_ENTER function, providing the physical address of the target WORKER and the physical address of a Workerrun object.
+
+The command operates on the following objects:
+• The Workerrun object at run_ptr.
+• The WORKER at worker_ptr.
+• The Vault that owns the WORKER.
+
+The HCI_FEATURES command reports how many Irqhubv3 List Register values the Host can provide in the entry section of the Workerrun object. The same number of values is returned in the exit section of the Workerrun object.
+
+B4.3.30.2 Parameters
+• fid is passed in R0, bits 63:0. It is the function identifier and has the value 0xC400015C.
+• worker_ptr is passed in R1, bits 63:0. It is the physical address of the target WORKER.
+• run_ptr is passed in R2, bits 63:0. It is the physical address of the Workerrun object.
+
+B4.3.30.3 Return values
+• result is returned in R0, bits 63:0. It is the command return status.
+
+B4.3.30.4 Caller responsibilities
+HCI_WORKER_ENTER can return the following errors:
+• HCI_ERROR_INPUT is returned if run_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if the Extent at run_ptr cannot be accessed in the Non-secure DPAS.
+• HCI_ERROR_INPUT is returned if worker_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if worker_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the state of the Extent at worker_ptr is not WORKER.
+• HCI_ERROR_VAULT, with index 0, is returned if the state of the Vault that owns the WORKER is VAULT_NEW.
+• HCI_ERROR_VAULT, with index 1, is returned if the state of the Vault that owns the WORKER is VAULT_SYSTEM_OFF.
+• HCI_ERROR_WORKER is returned if the state of the WORKER is WORKER_RUNNING.
+• HCI_ERROR_WORKER is returned if the WORKER is marked NOT_RUNNABLE.
+• HCI_ERROR_WORKER is returned if both of the following are true:
+  – The Host requests MMIO emulation. This means that the emul_mmio flag in the entry section of the Workerrun object is HCI_EMULATED_MMIO.
+  – The most recent WORKER exit was not caused by an emulatable abort. This means that the emulatable_abort value of the WORKER is not EMULATABLE_ABORT.
+• HCI_ERROR_WORKER is returned if the irqhubv3_hctl and irqhubv3_slotregs values in the entry section of the Workerrun object do not describe a valid Irqhubv3 configuration.
+• HCI_ERROR_WORKER is returned if the WORKER has a pending operation. This means that its pending value is not WORKER_PENDING_NONE.
+
+B4.3.30.5 Implementation responsibilities: ordering of error checks
+The checks fall into two groups. Every check in the first group is made before any check in the second group.
+
+The first group contains these five checks:
+• worker_ptr is aligned to the size of a Extent.
+• worker_ptr is a enrollable physical address.
+• The state of the Extent at worker_ptr is WORKER.
+• The Extent at run_ptr can be accessed in the Non-secure DPAS.
+• run_ptr is aligned to the size of a Extent.
+
+The second group contains these checks:
+• The state of the WORKER is not WORKER_RUNNING.
+• The WORKER is not marked NOT_RUNNABLE.
+• The check on the MMIO emulation request.
+• The state of the Vault is not VAULT_NEW.
+• The state of the Vault is not VAULT_SYSTEM_OFF.
+• The Irqhubv3 configuration is valid.
+• The WORKER has no pending operation.
+
+No order is defined among the checks within either group. As a result, an HCI_ERROR_INPUT failure is reported in preference to an HCI_ERROR_VAULT or HCI_ERROR_WORKER failure.
+
+B4.3.30.6 Implementation responsibilities: effects of a successful call
+When HCI_WORKER_ENTER succeeds:
+• The exit section of the Workerrun object contains information about the Vault exit syndrome.
+• The emulatable_abort value of the WORKER is updated.
+
+The only state that HCI_WORKER_ENTER can modify is the emulatable_abort value of the WORKER.

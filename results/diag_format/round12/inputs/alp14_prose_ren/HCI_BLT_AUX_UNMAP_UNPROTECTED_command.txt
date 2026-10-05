@@ -1,0 +1,58 @@
+B4.3.37 HCI_BLT_AUX_UNMAP_UNPROTECTED command
+               Removes a valid or table descriptor at an Unprotected LBA from the starting level of an auxiliary BLT.
+               B4.3.37.1 Interface
+               B4.3.37.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  R0          63:0        UInt64                                FID, value 0xC4000184
+        vd                   R1          63:0        Address                               DPA of the VD for the target Vault
+        lba                  R2          63:0        Address                               LBA in the target Vault
+        index                R3          63:0        UInt64                                BLT tree index
+               B4.3.37.1.2   Context
+               The HCI_BLT_AUX_UNMAP_UNPROTECTED command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        vault                Keepervault                   Vaultat(vd)                                false    Vault
+        walk                 Keeperbltwalkresult           Bltwalk(                                   false    Auxiliary BLT walk
+                                                            vault, lba,                                     result
+                                                            vault.blt_level_start,
+                                                            index)
+        entry_idx            UInt64                     Bltentryindex(                             false    BLTE index
+                                                            lba, walk.level)
+        walk_top             Address                    Bltskipnonliveentries(                     false    Top LBA of non-live
+                                                            Bltat(walk.blt_addr),                           BLT entries, from
+                                                            walk.level,                                     entry at which the
+                                                            lba)                                            BLT walk terminated
+               B4.3.37.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               R0          63:0        Hcicommandreturncode                  Command return status
+        top                  R1          63:0        Address                               Top LBA of non-live BLT entries, from
+                                                                                           starting level BLT
+               B4.3.37.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that one BLT entry maps at the Vault's starting BLT level.
+
+HCI_ERROR_INPUT is returned if either of these is true:
+- lba is equal to or greater than 2 to the power of the Vault's LBA width.
+- lba is a Protected LBA of the Vault.
+
+HCI_ERROR_INPUT is returned if any of these is true:
+- The Vault does not use a separate BLT tree for each Tier. Its blt_tree_per_tier value is FEATURE_FALSE.
+- index is KEEPER_BLT_TREE_PRIMARY.
+- index is greater than the Vault's number of auxiliary Tiers.
+
+               B4.3.37.2.1   Failure condition ordering
+               The HCI_BLT_AUX_UNMAP_UNPROTECTED command does not have any failure condition orderings.
+
+               B4.3.37.3 Success conditions
+
+The BLT entry that the BLT walk reaches is in the UNASSIGNED_PUB state.
+
+The output top is equal to walk_top, the top value that the BLT walk produces.
+               B4.3.37.4 Footprint
+    ID                          Value
+    blte                        Bltentry(walk.blt_addr, entry_idx)

@@ -1,0 +1,39 @@
+B5.3.20 VCI_VERSION
+
+B5.3.20.1 Intended use
+VCI_VERSION returns the VCI version. When the Vault calls VCI_VERSION, it provides the VCI version that it is requesting.
+
+The output values are a status code and two revisions supported by the KEEPER, a lower revision and a higher revision:
+• The higher revision is the highest interface revision that the KEEPER supports.
+• The lower revision is less than or equal to the higher revision.
+
+The status code and the lower revision tell the caller which one of the following is true. The cases are listed in order of precedence:
+a) The KEEPER supports an interface revision that is compatible with the requested revision.
+   • The status code is VCI_SUCCESS.
+   • The lower revision is equal to the requested revision.
+b) The KEEPER does not support an interface revision that is compatible with the requested revision, but it supports an interface revision that is incompatible with the requested revision and less than it.
+   • The status code is VCI_ERROR_INPUT.
+   • The lower revision is the highest interface revision that the KEEPER supports and that is less than the requested revision.
+c) The KEEPER does not support an interface revision that is compatible with the requested revision, but it supports an interface revision that is incompatible with the requested revision and greater than it.
+   • The status code is VCI_ERROR_INPUT.
+   • The lower revision is equal to the higher revision.
+
+B5.3.20.2 Parameters
+• fid, passed in R0, bits 63:0: the function identifier. Its value is 0xC4000190.
+• req, passed in R1, bits 63:0: the interface revision being requested.
+
+B5.3.20.3 Return values
+• result, returned in R0, bits 63:0: the return status of the command.
+• lower, returned in R1, bits 63:0: the lower supported interface revision.
+• higher, returned in R2, bits 63:0: the higher supported interface revision.
+
+VCI_VERSION can return the following errors:
+• VCI_ERROR_INPUT is returned if the implementation does not support the requested version req but supports a version lower than req. In this case, lower is set to the highest version that the implementation supports below req, and higher is set to the highest version that the implementation supports.
+• VCI_ERROR_INPUT is returned if the implementation does not support the requested version req, does not support any version lower than req, and supports a version higher than req. In this case, lower is set to the same value as higher, and higher is set to the highest version that the implementation supports.
+
+No ordering is defined between the failure conditions of VCI_VERSION.
+
+On success, lower is set to the requested version req, and higher is set to the highest version that the implementation supports.
+
+B5.3.20.4 Implementation responsibilities
+VCI_VERSION does not modify any state.

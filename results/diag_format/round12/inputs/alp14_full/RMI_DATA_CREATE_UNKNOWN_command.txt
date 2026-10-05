@@ -1,0 +1,49 @@
+B4.3.2 RMI_DATA_CREATE_UNKNOWN
+
+B4.3.2.1 Intended use
+RMI_DATA_CREATE_UNKNOWN creates a Data Granule with unknown contents. The Host calls this command with three inputs: a Granule that is in the DELEGATED state, the RD of the target Realm, and the IPA in the target Realm at which the Granule will be mapped.
+
+The command acts on the Realm that the RD at rd describes. It walks the RTTs of that Realm for ipa, to the page level of the primary RTT tree. The RTT entry it uses is the entry for ipa at the level where this walk ends.
+
+B4.3.2.2 Parameters
+The function ID and input values are passed as follows:
+• fid is passed in X0. It is the function ID of RMI_DATA_CREATE_UNKNOWN and has the value 0xC4000154.
+• rd is passed in X1. It is the physical address of the RD for the target Realm.
+• data is passed in X2. It is the physical address of the target Data Granule.
+• ipa is passed in X3. It is the IPA at which the Granule will be mapped in the target Realm.
+
+B4.3.2.3 Return values
+The output value is returned as follows:
+• result is returned in X0. It is the command return status.
+
+RMI_DATA_CREATE_UNKNOWN can return the following errors:
+• RMI_ERROR_INPUT is returned if data is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if data is not a delegable physical address in DRAM.
+• RMI_ERROR_INPUT is returned if the Granule at data is not in the DELEGATED state.
+• RMI_ERROR_INPUT is returned if the Realm does not support LPA2 (its feat_lpa2 attribute is FEATURE_FALSE) and data is equal to or greater than 2^48.
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if ipa is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if ipa is not within the Protected IPA space of the Realm.
+• RMI_ERROR_RTT is returned if the RTT walk for ipa ends at a level above the page level. The error is returned together with the level at which the walk ended.
+• RMI_ERROR_RTT is returned if the RTT entry found by the RTT walk for ipa is not in the UNASSIGNED state. The error is returned together with the level at which the walk ended.
+
+The failure conditions are checked in the following order:
+• Two RMI_ERROR_RTT checks depend on earlier checks. The first is that the RTT walk reaches the page level. The second is that the RTT entry is in the UNASSIGNED state.
+• The check that rd is a delegable physical address is made before both RMI_ERROR_RTT checks.
+• The check that the Granule at rd is in the RD state is made before both RMI_ERROR_RTT checks.
+• The check that ipa is within the Protected IPA space of the Realm is made before both RMI_ERROR_RTT checks.
+
+B4.3.2.4 Implementation responsibilities
+When RMI_DATA_CREATE_UNKNOWN succeeds, the implementation must ensure the following:
+• The Granule at data is in the DATA state.
+• The contents of the target Granule are wiped.
+• The RTT entry found by the RTT walk for ipa is in the ASSIGNED state.
+• The output address of that RTT entry is data.
+• The memory attribute of that RTT entry is MEMATTR_CACHEABLE.
+• The shareability of that RTT entry is SHAREABILITY_INNER.
+
+RMI_DATA_CREATE_UNKNOWN can modify only the following state:
+• The state of the Granule at data.
+• The RTT entry for ipa. This is the entry in the RTT at which the RTT walk for ipa ended.

@@ -1,0 +1,63 @@
+B4.3.41 HCI_BLT_INIT_LBAMODE
+
+B4.3.41.1 Intended use
+HCI_BLT_INIT_LBAMODE sets the LBAMODE of a target LBA range to RAM. The target Vault must be in the VAULT_NEW state.
+
+The function identifier is 0xC4000168.
+
+The KEEPER performs an BLT walk from base in the primary BLT tree, towards the page level. The walk ends at an BLT entry and level. Starting from that entry, the KEEPER finds the run of BLT entries in the UNASSIGNED state at the walk level. This run ends at the first entry that is not UNASSIGNED, at the end of the BLT, or at top, whichever comes first. The top LBA of this run is the top of the range the command processes. The command does not go past this point in one call.
+
+B4.3.41.2 Parameters
+- fid, passed in R0, is the function identifier, 0xC4000168.
+- vd, passed in R1, is the physical address of the VD for the target Vault.
+- base, passed in R2, is the base of the target LBA region.
+- top, passed in R3, is the top of the target LBA region.
+
+B4.3.41.3 Return values
+- result, returned in R0, is the command return status.
+- out_top, returned in R1, is the top LBA of the range whose LBAMODE was modified.
+
+out_top is valid only when result is HCI_SUCCESS. When out_top is valid, it is aligned to the size of the address range described by the BLT entry at the level where the BLT walk terminated.
+
+B4.3.41.4 Caller responsibilities
+HCI_BLT_INIT_LBAMODE can return the following errors:
+- HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+- HCI_ERROR_INPUT is returned if vd is not the address of a Extent that can be enrolled.
+- HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+- HCI_ERROR_INPUT is returned if top is less than or equal to base.
+- HCI_ERROR_INPUT is returned if the address one Extent below top is not a Protected LBA of the target Vault, as the Vault was before the command ran.
+- HCI_ERROR_VAULT is returned if the target Vault, as it was before the command ran, is not in the VAULT_NEW state.
+- HCI_ERROR_BLT is returned, with the BLT walk level, if base is not aligned to the size of the address range that one BLT entry describes at the level reached by the BLT walk from base.
+- HCI_ERROR_BLT is returned, with the BLT walk level, if the BLT entry reached by the BLT walk from base is not in the UNASSIGNED state.
+- HCI_ERROR_INPUT is returned if top is not aligned to the size of a Extent.
+- HCI_ERROR_BLT is returned, with the BLT walk level, if base is equal to the top of the LBA range that the command can process from base in the BLT reached by the walk. In that case, no BLT entries can be processed.
+
+The KEEPER checks these errors in the following order:
+- It checks that vd is a Extent that can be enrolled and that the Extent at vd is in the VD state before it checks that the Vault is in the VAULT_NEW state.
+- It checks that vd is a Extent that can be enrolled and that the Extent at vd is in the VD state before it checks that base is aligned to the BLT walk level and that the BLT entry is in the UNASSIGNED state.
+- It checks that vd is a Extent that can be enrolled and that the Extent at vd is in the VD state before it checks that the command can process at least one BLT entry.
+- It checks that top is aligned to the size of a Extent before it checks that the command can process at least one BLT entry.
+
+B4.3.41.5 Implementation responsibilities
+When HCI_BLT_INIT_LBAMODE succeeds:
+- Every BLT entry at the walk level, in the BLT reached by the walk, has LBAMODE RAM. This covers the LBA range from base up to the top of the processed range.
+- The IFP of the target Vault is extended as described in section B4.3.41.6. The extension covers the LBA range from base up to the top of the processed range, at the BLT walk level. It starts from the state of the Vault before the command ran.
+- out_top is the top of the LBA range that the command processed.
+
+The command can modify only the following state:
+- the BLT entries in the BLT reached by the BLT walk
+- the IFP of the target Vault, which is the first entry of the Vault's measurements
+
+B4.3.41.6 HCI_BLT_INIT_LBAMODE extension of IFP
+When HCI_BLT_INIT_LBAMODE succeeds, the KEEPER calculates the new IFP value of the target Vault as follows:
+1. It allocates a LBAMODE measurement descriptor data structure.
+2. For each BLT entry in the range [base, top) described by the HCI_BLT_INIT_LBAMODE input values:
+   a. It fills in the measurement descriptor:
+      - It sets the desc_type field to the descriptor type.
+      - It sets the len field to the descriptor length.
+      - It sets the base field to the LBA of the BLT entry.
+      - It sets the top field to the smaller of two values: the LBA of the BLT entry plus the size of the region it describes, or the top input value. Here:
+        – the LBA of the BLT entry is the start of its region
+        – the size is the size in bytes of the LBA region that the BLT entry describes
+        – the top input value is the top argument given to the command
+   b. It hashes the measurement descriptor using the VHA of the target Vault and sets the IFP of the target Vault to this hash. If the VHA output is smaller than the IFP, it fills the upper bytes with zeros.

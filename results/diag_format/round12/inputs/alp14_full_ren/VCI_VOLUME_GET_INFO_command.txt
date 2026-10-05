@@ -1,0 +1,54 @@
+B5.3.17 VCI_VOLUME_GET_INFO
+
+B5.3.17.1 Intended use
+VCI_VOLUME_GET_INFO is intended for a Vault to get information about a device that is assigned to it. The Vault calls VCI_VOLUME_GET_INFO with a Vault device identifier and an LBA. The implementation then writes the device configuration information to a device information structure at that address.
+
+The device configuration information includes digests of the device's certification evidence. These digests are calculated using the DRIVE Hash Algorithm.
+
+The command operates on the following:
+• The current Vault, which is the Vault that issued the call.
+• The VOLUME that volume_id identifies within the current Vault.
+• The DRIVE that the VOLUME belongs to.
+• The device information structure at addr.
+• The result of a walk of the current Vault's primary BLT, to page level, for the LBA addr.
+
+B5.3.17.2 Parameters
+The caller passes the following input values:
+• fid, passed in R0, bits 63:0. This is the function identifier. Its value is 0xC400019D.
+• volume_id, passed in R1, bits 63:0. This is the Vault device identifier.
+• addr, passed in R2, bits 63:0. This is the LBA where the device configuration data will be written.
+
+B5.3.17.3 Return values
+The command returns the following output value:
+• result, returned in R0, bits 63:0. This is the command return status.
+
+B5.3.17.4 Caller responsibilities
+The Vault must observe the following before a VCI_VOLUME_GET_INFO call:
+• The Vault must have been created with the device assignment feature enabled.
+• volume_id must identify a VOLUME that is assigned to the Vault.
+• addr must be aligned to 512 bytes.
+• addr must be within the protected LBA space of the Vault.
+• The LBAMODE of the LBA at addr must not be EMPTY.
+
+VCI_VOLUME_GET_INFO can return the following errors:
+• VCI_ERROR_STATE is returned if the Vault was not created with the device assignment feature enabled.
+• VCI_ERROR_INPUT is returned if volume_id does not identify a VOLUME that is assigned to the Vault.
+• VCI_ERROR_INPUT is returned if addr is not aligned to 512 bytes.
+• VCI_ERROR_INPUT is returned if addr is not within the protected LBA space of the Vault.
+• VCI_ERROR_INPUT is returned if the LBAMODE of the LBA at addr is EMPTY.
+
+The check for the device assignment feature comes before three other checks: the volume_id check, the addr alignment check, and the check that addr is within the protected LBA space. So if the feature is not enabled, VCI_ERROR_STATE is returned even if one of those three checks would also fail. No ordering is defined between the EMPTY LBAMODE check at addr and any other failure condition.
+
+B5.3.17.5 Implementation responsibilities
+On success, the implementation must write a device configuration structure to addr that contains the following values:
+• The hash algorithm is the hash algorithm of the DRIVE.
+• The p2p_enabled flag shows whether peer-to-peer communication is enabled for the DRIVE.
+• The p2p_bound flag shows whether the VOLUME is bound to a peer-to-peer peer.
+• The p2p_peer field identifies the peer-to-peer peer of the VOLUME.
+• The lock nonce, measurement nonce and report nonce match the certification information of the VOLUME.
+• The PCA digest is the PCA digest of the DRIVE.
+• The measurement digest is the measurement digest of the VOLUME.
+• The report digest is the report digest of the VOLUME.
+• The state field is the current state of the VOLUME.
+
+VCI_VOLUME_GET_INFO does not modify any KEEPER state.

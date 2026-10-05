@@ -1,0 +1,28 @@
+B4.3.55 HCI_VOLUME_GET_STATE
+
+B4.3.55.1 Intended use
+HCI_VOLUME_GET_STATE gets the state of a VOLUME. The caller passes the physical address of the VOLUME, and the command returns the current state of that VOLUME object.
+
+B4.3.55.2 Parameters
+The caller passes the following input values:
+• fid, passed in R0[63:0], is the function identifier. Its value is 0xC4000189.
+• volume_ptr, passed in R1[63:0], is the physical address (DPA) of the VOLUME. The command operates on the VOLUME at this address.
+
+B4.3.55.3 Return values
+The command returns the following output values:
+• result, returned in R0[63:0], is the command return status.
+• state, returned in R1[7:0], is the state of the VOLUME.
+Bits R1[63:8] are unused and must be zero.
+
+HCI_VOLUME_GET_STATE can return the following errors:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+• HCI_ERROR_INPUT is returned if volume_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if volume_ptr is not a physical address that can be enrolled.
+• HCI_ERROR_INPUT is returned if the Extent at volume_ptr is not in the VOLUME state.
+
+The check for Device Assignment support comes before all other checks. If Device Assignment is not supported, HCI_ERROR_NOT_SUPPORTED is returned even when volume_ptr is also invalid. The three HCI_ERROR_INPUT checks have no defined order among themselves. These checks are the alignment of volume_ptr, whether volume_ptr can be enrolled, and whether the Extent at volume_ptr is in the VOLUME state.
+
+B4.3.55.4 Implementation responsibilities
+On success, the implementation must set the output value state to the current state of the VOLUME object at volume_ptr.
+
+HCI_VOLUME_GET_STATE does not modify any state.

@@ -1,0 +1,68 @@
+B4.3.52 RMI_VDEV_DESTROY
+
+B4.3.52.1 Intended use
+RMI_VDEV_DESTROY destroys a VDEV. The Host calls it with the physical addresses of three Granules: the Realm Descriptor (RD) of the Realm that owns the VDEV, the PDEV that the VDEV is associated with, and the VDEV.
+
+When the command succeeds, the RMM returns the VDEV Granule and all of the VDEV's auxiliary Granules to the DELEGATED state. It also frees the identifiers that the VDEV held so that they can be used again, and it lowers the VDEV counts of both the Realm and the PDEV.
+
+B4.3.52.2 Parameters
+The function ID and input values are passed in the following registers:
+• fid, passed in X0: the function ID of RMI_VDEV_DESTROY, which is 0xC4000188.
+• rd, passed in X1: the physical address of the RD of the Realm that owns the VDEV.
+• pdev_ptr, passed in X2: the physical address of the PDEV that the VDEV is associated with.
+• vdev_ptr, passed in X3: the physical address of the VDEV to be destroyed.
+
+All of these values use the full 64 bits of their register.
+
+The command works on the Realm identified by rd, the VDEV at vdev_ptr and the PDEV at pdev_ptr. It reads the Realm, the VDEV and the PDEV as they are before the command runs. Afterwards, the updated Realm and PDEV reflect the results of the command.
+
+B4.3.52.3 Return values
+The command returns the following output value:
+• result, returned in X0: the command return status, using all 64 bits of the register.
+
+B4.3.52.4 Caller responsibilities
+Before calling RMI_VDEV_DESTROY, the caller must make sure of the following:
+• The implementation supports the Device Assignment feature.
+• rd, pdev_ptr and vdev_ptr are all aligned to the size of a Granule, and each is a delegable physical address.
+• The Granule at rd is in the RD state, the Granule at pdev_ptr is in the PDEV state, and the Granule at vdev_ptr is in the VDEV state.
+• The VDEV is owned by the Realm identified by rd, and it is associated with the PDEV at pdev_ptr.
+• The VDEV state is VDEV_NEW, VDEV_UNLOCKED or VDEV_ERROR.
+• The VDEV has no mappings left, so its num_map field is zero.
+
+RMI_VDEV_DESTROY can return the following errors:
+• RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if pdev_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if pdev_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at pdev_ptr is not in the PDEV state.
+• RMI_ERROR_INPUT is returned if vdev_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if vdev_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at vdev_ptr is not in the VDEV state.
+• RMI_ERROR_DEVICE is returned if the VDEV is not owned by the Realm identified by rd.
+• RMI_ERROR_DEVICE is returned if the VDEV is not associated with the PDEV at pdev_ptr.
+• RMI_ERROR_DEVICE is returned if the VDEV state is not VDEV_NEW, VDEV_UNLOCKED or VDEV_ERROR.
+• RMI_ERROR_DEVICE is returned if the VDEV still has one or more mappings, so its num_map field is not zero.
+
+B4.3.52.5 Implementation responsibilities: order of checks
+The implementation must order its checks as follows:
+• The check for support of the Device Assignment feature, which can return RMI_ERROR_NOT_SUPPORTED, comes before the alignment, delegability and Granule state checks on rd, pdev_ptr and vdev_ptr.
+• The Granule state checks on rd, pdev_ptr and vdev_ptr come before the checks on the VDEV itself. The Granule state checks confirm that the Granules are in the RD, PDEV and VDEV states. The checks on the VDEV confirm that it is owned by the Realm, that it is associated with the PDEV, that it is in an allowed state, and that it has no mappings.
+
+B4.3.52.6 Implementation responsibilities: effects on success
+If the command succeeds, the implementation must make sure of the following:
+• The Granule at vdev_ptr is in the DELEGATED state.
+• Every auxiliary Granule of the VDEV is in the DELEGATED state. The VDEV's num_aux field gives the number of these Granules.
+• The VDEV's identifier (vdev_id) is free within the Realm, so it can be used again.
+• The VDEV's TDI identifier (tdi_id) is free within the PCIe segment of the PDEV, so it can be used again.
+• The Realm's count of VDEVs is one less than it was before the command.
+• The PDEV's count of VDEVs is one less than it was before the command.
+• If the VDEV was associated with a virtual SMMU, the VDEV's virtual stream ID (vsid) is free within that virtual SMMU, so it can be used again. This is the virtual SMMU at the address held in the VDEV's vsmmu_addr field.
+
+B4.3.52.7 State that may be modified
+RMI_VDEV_DESTROY can modify only the following state:
+• The state of the Granule at vdev_ptr.
+• The states of the VDEV's auxiliary Granules. These are the auxiliary Granules recorded in the VDEV before the command, and their number is the VDEV's num_aux value from before the command.
+• The Realm's count of VDEVs (num_vdevs).
+• The PDEV's count of VDEVs (num_vdevs).

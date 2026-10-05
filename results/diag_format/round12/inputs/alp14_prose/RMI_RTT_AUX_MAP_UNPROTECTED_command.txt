@@ -1,0 +1,62 @@
+B4.3.35 RMI_RTT_AUX_MAP_UNPROTECTED command
+              Copies a valid or table descriptor at an Unprotected IPA from the starting level of the primary RTT to an auxiliary
+              RTT.
+              B4.3.35.1 Interface
+              B4.3.35.1.1    Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID, value 0xC4000181
+        rd                  X1           63:0        Address                               PA of the RD for the target Realm
+        ipa                 X2           63:0        Address                               IPA in the target Realm
+        index               X3           63:0        UInt64                                RTT tree index
+              B4.3.35.1.2    Context
+              The RMI_RTT_AUX_MAP_UNPROTECTED command operates on the following context.
+        Name                Type                        Value                                      Before   Description
+        realm               RmmRealm                    RealmAt(rd)                                false    Realm
+        walk_pri            RmmRttWalkResult            RttWalk(                                   false    Primary RTT walk
+                                                            realm, ipa,                                     result
+                                                            realm.rtt_level_start,
+                                                            RMM_RTT_TREE_PRIMARY)
+        walk_aux            RmmRttWalkResult            RttWalk(                                   false    Auxiliary RTT walk
+                                                            realm, ipa,                                     result
+                                                            realm.rtt_level_start,
+                                                            index)
+        entry_idx           UInt64                      RttEntryIndex(                             false    RTTE index
+                                                            ipa, walk_aux.level)
+              B4.3.35.1.3    Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        RmiCommandReturnCode                  Command return status
+              B4.3.35.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that one RTT entry maps at the starting RTT level of the Realm.
+
+RMI_ERROR_INPUT is returned if ipa is outside the Realm's IPA space, that is, ipa is greater than or equal to 2 to the power of the Realm's IPA width. It is also returned if ipa is a Protected address in the Realm.
+
+RMI_ERROR_INPUT is returned if any of these is true:
+- the Realm does not use a separate RTT tree for each Plane (its per-Plane RTT tree setting is FEATURE_FALSE)
+- index identifies the primary RTT tree (RMM_RTT_TREE_PRIMARY)
+- index is greater than the number of auxiliary Planes in the Realm
+
+RMI_ERROR_RTT is returned if the RTT entry for ipa in the primary RTT tree is in the UNASSIGNED_NS state. The returned value also includes the RTT level at which the walk of the primary RTT tree ended.
+
+               B4.3.35.2.1   Failure condition ordering
+
+The check that rd is a physical address that can be delegated is done before the check on the state of the primary RTT entry. The check that the Granule at rd is in the RD state is also done before that check.
+
+The check that ipa is inside the Realm's IPA space and is not a Protected address is done before the check on the state of the primary RTT entry. The check on index is also done before that check.
+
+               B4.3.35.3 Success conditions
+
+The state of the RTT entry for ipa in the auxiliary RTT tree selected by index matches the state of the RTT entry for ipa in the primary RTT tree.
+
+The memory attributes of the auxiliary RTT entry match those of the primary RTT entry, compared as Unprotected entries. The stage 2 access permissions of the two entries also match, compared with the Realm's stage 2 access permission encoding.
+
+The output address in the auxiliary RTT entry matches the output address in the primary RTT entry.
+             B4.3.35.4 Footprint
+    ID                        Value
+    rtte                      RttEntry(walk_aux.rtt_addr, entry_idx)

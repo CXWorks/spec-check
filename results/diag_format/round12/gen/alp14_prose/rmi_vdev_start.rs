@@ -1,0 +1,27 @@
+pub open spec fn rmi_vdev_start_spec(rd: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+  (result.is_Err() && ResultEqual(result, RMI_ERROR_NOT_SUPPORTED) ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_NONE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_NOT_SUPPORTED) ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_INPUT) ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_NONE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_INPUT) ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_INPUT) ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_NONE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_INPUT) ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_INPUT) ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_NONE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_INPUT) ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_INPUT) ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_NONE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_INPUT) ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_DEVICE) ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_NONE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_DEVICE) ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+  && (result.is_Err() && ResultEqual(result, RMI_ERROR_DEVICE) ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_START)
+  && (result.is_Ok() ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_PENDING)
+  && ((!(ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)) &&
+       ResultEqual(result, RMI_SUCCESS))
+    ==> VdevAt(new_s, vdev_ptr).op == VDEV_OP_START)
+  && ((!(ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)) &&
+       ResultEqual(result, RMI_SUCCESS))
+    ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_PENDING)
+  && (result.is_Err()
+    ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+  && (result.is_Err()
+    ==> VdevAt(new_s, vdev_ptr).comm_state == DEV_COMM_IDLE)
+}

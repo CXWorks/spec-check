@@ -1,0 +1,49 @@
+B4.3.19 RMI_PDEV_SET_PUBKEY
+
+B4.3.19.1 Intended use
+RMI_PDEV_SET_PUBKEY is intended for providing the public key associated with a PDEV. The Host calls the RMI_PDEV_SET_PUBKEY function with the physical address of the PDEV and the physical address of a set of key parameters.
+
+B4.3.19.2 Parameters
+RMI_PDEV_SET_PUBKEY takes the following input values:
+•  fid is passed in X0. It is the function identifier, with value 0xC400017B.
+•  pdev_ptr is passed in X1. It is the physical address of the PDEV.
+•  params_ptr is passed in X2. It is the physical address of the key parameters.
+
+The command operates on the PDEV located at pdev_ptr and on the public key parameters located at params_ptr. Neither of these is read before the command is checked for validity.
+
+B4.3.19.3 Return values
+RMI_PDEV_SET_PUBKEY returns the following output value:
+•  result is returned in X0. It is the command return status.
+
+B4.3.19.4 Caller responsibilities
+Before an RMI_PDEV_SET_PUBKEY call, the following must be observed:
+•  pdev_ptr must be aligned to the size of a Granule, must be a delegable physical address, and the Granule at pdev_ptr must be in the PDEV state.
+•  The PDEV must be in the PDEV_NEEDS_KEY state.
+•  params_ptr must be aligned to the size of a Granule, and the Granule at params_ptr must be accessible in the Non-secure physical address space.
+•  The key length given in the parameters at params_ptr must not be greater than 1024, and the metadata length given in those parameters must not be greater than 1024.
+•  The key and the metadata must be valid.
+
+RMI_PDEV_SET_PUBKEY can return the following errors:
+•  RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+•  RMI_ERROR_INPUT is returned if pdev_ptr is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if pdev_ptr is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the Granule at pdev_ptr is not in the PDEV state.
+•  RMI_ERROR_INPUT is returned if params_ptr is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if the Granule at params_ptr cannot be accessed in the Non-secure physical address space.
+•  RMI_ERROR_INPUT is returned if the key length given in the parameters at params_ptr is greater than 1024.
+•  RMI_ERROR_INPUT is returned if the metadata length given in the parameters at params_ptr is greater than 1024.
+•  RMI_ERROR_INPUT is returned if the key is invalid. For example, the key length may be invalid for the specified signature algorithm.
+•  RMI_ERROR_INPUT is returned if the metadata is invalid. For example, the metadata length may be invalid for the specified signature algorithm.
+•  RMI_ERROR_DEVICE is returned if the PDEV is not in the PDEV_NEEDS_KEY state.
+
+B4.3.19.5 Implementation responsibilities: error ordering
+For RMI_PDEV_SET_PUBKEY, the implementation must observe the following ordering between failure conditions:
+•  The check for Device Assignment support is made before these checks: pdev_ptr alignment, whether pdev_ptr is delegable, the state of the Granule at pdev_ptr, params_ptr alignment, whether the Granule at params_ptr can be accessed in the Non-secure physical address space, the key length limit, key validity, the metadata length limit, and metadata validity. So if Device Assignment is not supported, RMI_ERROR_NOT_SUPPORTED is returned and none of these checks is made.
+•  The check that the Granule at pdev_ptr is in the PDEV state is made before the check that the PDEV is in the PDEV_NEEDS_KEY state. So if the Granule is not in the PDEV state, RMI_ERROR_INPUT is returned, not RMI_ERROR_DEVICE.
+
+B4.3.19.6 Implementation responsibilities: state changes
+On a successful RMI_PDEV_SET_PUBKEY call:
+•  The PDEV moves to the PDEV_HAS_KEY state.
+•  The communication state of the PDEV is DEV_COMM_PENDING.
+
+RMI_PDEV_SET_PUBKEY may modify only the state of the PDEV and the communication state of the PDEV.

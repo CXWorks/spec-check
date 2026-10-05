@@ -1,0 +1,137 @@
+B4.3.58 RMI_VDEV_P2P_BIND command
+              Create a P2P binding between two VDEVs.
+              B4.3.58.1 Interface
+              B4.3.58.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 X0          63:0        UInt64                                FID, value 0xC40001D4
+        stream_ptr          X1          63:0        Address                               PA of the P2P_STREAM object
+        rd                  X2          63:0        Address                               PA of the RD
+        rec_ptr             X3          63:0        Address                               PA of the target REC
+        pdev_1_ptr          X4          63:0        Address                               PA of the first PDEV object
+        pdev_2_ptr          X5          63:0        Address                               PA of the second PDEV object
+        vdev_1_ptr          X6          63:0        Address                               PA of the first VDEV object
+        vdev_2_ptr          X7          63:0        Address                               PA of the second VDEV object
+              B4.3.58.1.2   Context
+              The RMI_VDEV_P2P_BIND command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        realm               RmmRealm                   RealmAt(rd)                                false    Realm
+        rec                 RmmRec                     RecAt(rec_ptr)                             false    REC
+        stream              RmmP2PStream               P2PStreamAt(stream_ptr)                    false    P2P stream
+        pdev_1              RmmPdev                    PdevAt(pdev_1_ptr)                         false    First PDEV
+        pdev_2              RmmPdev                    PdevAt(pdev_2_ptr)                         false    Second PDEV
+        vdev_1              RmmVdev                    VdevAt(vdev_1_ptr)                         false    First VDEV
+        vdev_2              RmmVdev                    VdevAt(vdev_2_ptr)                         false    Second VDEV
+              B4.3.58.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              X0          63:0        RmiCommandReturnCode                  Command return status
+              B4.3.58.2 Failure conditions
+
+RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature (feat_da is not FEATURE_TRUE).
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if rec_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rec_ptr is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rec_ptr is not in the REC state.
+
+RMI_ERROR_REC is returned if the REC at rec_ptr is in the REC_RUNNING state.
+
+RMI_ERROR_REC is returned if the REC at rec_ptr is not owned by the Realm described by rd.
+
+RMI_ERROR_INPUT is returned if stream_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if stream_ptr is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at stream_ptr is not in the P2P_STREAM state.
+
+RMI_ERROR_INPUT is returned if pdev_1_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if pdev_1_ptr is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at pdev_1_ptr is not in the PDEV state.
+
+RMI_ERROR_INPUT is returned if the PDEV at pdev_1_ptr does not have a valid P2P stream (its p2p_stream_valid attribute is not RMM_TRUE), or if its P2P stream is not the one at stream_ptr.
+
+RMI_ERROR_INPUT is returned if pdev_2_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if pdev_2_ptr is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at pdev_2_ptr is not in the PDEV state.
+
+RMI_ERROR_INPUT is returned if the PDEV at pdev_2_ptr does not have a valid P2P stream (its p2p_stream_valid attribute is not RMM_TRUE), or if its P2P stream is not the one at stream_ptr.
+
+RMI_ERROR_INPUT is returned if vdev_1_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if vdev_1_ptr is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at vdev_1_ptr is not in the VDEV state.
+
+RMI_ERROR_INPUT is returned if the VDEV at vdev_1_ptr does not belong to the Realm described by rd.
+
+RMI_ERROR_INPUT is returned if the VDEV at vdev_1_ptr is not associated with the PDEV at pdev_1_ptr.
+
+RMI_ERROR_DEVICE is returned if the communication state of the VDEV at vdev_1_ptr is not DEV_COMM_IDLE.
+
+RMI_ERROR_DEVICE is returned if the attestation information of the VDEV at vdev_1_ptr does not match the first VDEV attestation information held by the REC at rec_ptr (vdev_attest_info_1).
+
+RMI_ERROR_DEVICE is returned if the p2p_bound attribute of the VDEV at vdev_1_ptr is not FEATURE_FALSE.
+
+RMI_ERROR_INPUT is returned if vdev_2_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if vdev_2_ptr is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at vdev_2_ptr is not in the VDEV state.
+
+RMI_ERROR_INPUT is returned if the VDEV at vdev_2_ptr does not belong to the Realm described by rd.
+
+RMI_ERROR_INPUT is returned if the VDEV at vdev_2_ptr is not associated with the PDEV at pdev_2_ptr.
+
+RMI_ERROR_DEVICE is returned if the communication state of the VDEV at vdev_2_ptr is not DEV_COMM_IDLE.
+
+RMI_ERROR_DEVICE is returned if the attestation information of the VDEV at vdev_2_ptr does not match the second VDEV attestation information held by the REC at rec_ptr (vdev_attest_info_2).
+
+RMI_ERROR_DEVICE is returned if the p2p_bound attribute of the VDEV at vdev_2_ptr is not FEATURE_FALSE.
+
+             B4.3.58.2.1                                                          Failure condition ordering
+
+The check for Device Assignment support comes before every other failure condition. If the feature is not supported, RMI_ERROR_NOT_SUPPORTED is returned, even if any of the other failure conditions also apply. No ordering is defined among the remaining failure conditions. These cover rd, rec_ptr, stream_ptr, pdev_1_ptr, pdev_2_ptr, vdev_1_ptr and vdev_2_ptr, and they return RMI_ERROR_INPUT, RMI_ERROR_REC or RMI_ERROR_DEVICE.
+
+             B4.3.58.3 Success conditions
+
+The operation of the VDEV at vdev_1_ptr is set to VDEV_OP_P2P_BIND.
+
+The communication state of the VDEV at vdev_1_ptr is set to DEV_COMM_PENDING.
+
+The p2p_bound attribute of the VDEV at vdev_1_ptr is set to FEATURE_TRUE.
+
+The P2P stream of the VDEV at vdev_1_ptr is set to the P2P stream at stream_ptr.
+
+The P2P peer of the VDEV at vdev_1_ptr is set to the VDEV identifier of the VDEV at vdev_2_ptr.
+
+The operation of the VDEV at vdev_2_ptr is set to VDEV_OP_P2P_BIND.
+
+The communication state of the VDEV at vdev_2_ptr is set to DEV_COMM_PENDING.
+
+The p2p_bound attribute of the VDEV at vdev_2_ptr is set to FEATURE_TRUE.
+
+The P2P stream of the VDEV at vdev_2_ptr is set to the P2P stream at stream_ptr.
+
+The P2P peer of the VDEV at vdev_2_ptr is set to the VDEV identifier of the VDEV at vdev_1_ptr.
+              B4.3.58.4 Footprint
+    ID                        Value
+    vdev_1_op                 vdev_1.op
+    vdev_1_comm               vdev_1.comm_state
+    vdev_1_p2p_bound          vdev_1.p2p_bound
+    vdev_1_p2p_stream         vdev_1.p2p_stream
+    vdev_1_p2p_peer           vdev_1.p2p_peer
+    vdev_2_op                 vdev_2.op
+    vdev_2_comm               vdev_2.comm_state
+    vdev_2_p2p_bound          vdev_2.p2p_bound
+    vdev_2_p2p_stream         vdev_2.p2p_stream
+    vdev_2_p2p_peer           vdev_2.p2p_peer

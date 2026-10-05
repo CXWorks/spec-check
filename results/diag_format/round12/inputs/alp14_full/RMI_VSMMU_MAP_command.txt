@@ -1,0 +1,46 @@
+B4.3.67 RMI_VSMMU_MAP
+
+B4.3.67.1 Intended use
+RMI_VSMMU_MAP creates a VSMMU mapping. The Host calls RMI_VSMMU_MAP with the Realm Descriptor (RD) of a Realm, a VSMMU, an IPA and an RTT level. The command maps the VSMMU at that IPA in the primary RTT tree of the Realm.
+
+The command works on the Realm that the RD at rd describes and on the VSMMU at vsmmu_ptr. It walks the primary RTT tree of the Realm to ipa, down to the RTT level given by level. It then uses the RTT entry at the level where the walk ended that corresponds to ipa.
+
+B4.3.67.2 Parameters
+• fid, passed in X0, is the function identifier. Its value is 0xC400016C.
+• rd, passed in X1, is the physical address of the RD.
+• vsmmu_ptr, passed in X2, is the physical address of the VSMMU.
+• ipa, passed in X3, is the IPA at which the mapping is created.
+• level, passed in X4, is the RTT level. It is a signed 64-bit value.
+
+B4.3.67.3 Return values
+• result, returned in X0, is the command return status.
+
+RMI_VSMMU_MAP can return the following errors:
+• RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the DA feature.
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if level is not a valid RTT level for the Realm, or if level is less than 2.
+• RMI_ERROR_INPUT is returned if the Realm is not in the REALM_NEW state.
+• RMI_ERROR_INPUT is returned if vsmmu_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if vsmmu_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at vsmmu_ptr is not in the VSMMU state.
+• RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that one RTT entry maps at the RTT level given by level.
+• RMI_ERROR_INPUT is returned if ipa is below the base address of the VSMMU register region.
+• RMI_ERROR_RTT is returned if the RTT walk to ipa ends at a level lower than level. The level where the walk ended is also returned.
+• RMI_ERROR_RTT is returned if the RTT entry found by the RTT walk is not in the UNASSIGNED state. The level where the walk ended is also returned.
+• RMI_ERROR_RTT is returned if the RIPAS of the RTT entry found by the RTT walk is not EMPTY. The level where the walk ended is also returned.
+• RMI_ERROR_RTT is returned if the last address of the range that one RTT entry maps at the walk level, counting from ipa, is at or above the top address of the VSMMU register region. The level where the walk ended is also returned.
+
+The checks are made in the following order:
+• The checks that rd is a delegable address and that the Granule at rd is in the RD state come before the check of the Realm state.
+• The checks that rd is a delegable address and that the Granule at rd is in the RD state also come before every check on the RTT walk and the RTT entry. These are the checks on the level where the walk ended, the RTT entry state, the RTT entry RIPAS, and the end of the mapped range compared with the VSMMU register region.
+• The check that the Granule at vsmmu_ptr is in the VSMMU state comes before the check that the end of the mapped range is below the top of the VSMMU register region.
+• The check that the implementation supports the DA feature comes before the checks on vsmmu_ptr. These are its Granule alignment, whether it is a delegable address, and whether its Granule is in the VSMMU state.
+
+B4.3.67.4 Implementation responsibilities
+When RMI_VSMMU_MAP succeeds, the implementation must make sure that:
+• The RTT entry found by the RTT walk is in the ASSIGNED_VSMMU state.
+• The address held in that RTT entry is vsmmu_ptr.
+
+The only state that RMI_VSMMU_MAP can modify is the RTT entry found by the RTT walk. This is the entry at index entry_idx in the RTT where the walk ended.

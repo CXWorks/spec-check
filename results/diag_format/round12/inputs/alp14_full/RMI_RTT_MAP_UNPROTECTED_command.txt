@@ -1,0 +1,56 @@
+B4.3.42 RMI_RTT_MAP_UNPROTECTED
+
+B4.3.42.1 Intended use
+RMI_RTT_MAP_UNPROTECTED creates a mapping from an Unprotected IPA to a Non-secure PA in a primary RTT. The Host calls it with the RD of the target Realm, the IPA to be mapped, the RTT level at which to create the mapping, and an RTT entry descriptor. The descriptor gives the output address and the attributes of the mapping.
+
+The command walks the primary RTT tree of the Realm identified by rd, from the root towards ipa, and stops at level. It then updates the RTT entry for ipa in the RTT where the walk ended. The command reads desc using the stage 2 access permission encoding that the Realm uses.
+
+B4.3.42.2 Parameters
+The caller passes the following values:
+•  fid, in X0. This is the function identifier. Its value is 0xC400015F.
+•  rd, in X1. This is the PA of the RD for the target Realm.
+•  ipa, in X2. This is the IPA at which the memory will be mapped in the target Realm.
+•  level, in X3. This is the RTT level of the mapping. It is a signed 64-bit value.
+•  desc, in X4. This is the RTTE descriptor. Its fields use the layout and encoding described in "Attribute fields in stage 2 VMSAv8-64 Block and Page descriptors" in the Arm Architecture Reference Manual for A-Profile architecture [3].
+
+B4.3.42.3 Return values
+The command returns the following value:
+•  result, in X0. This is the command return status.
+
+B4.3.42.4 Caller responsibilities
+Before calling RMI_RTT_MAP_UNPROTECTED, the caller must make sure that:
+•  rd is aligned to the size of a Granule, is a delegable physical address, and refers to a Granule in the RD state.
+•  level is a valid RTT level for the Realm and is 1 or greater.
+•  ipa is aligned to the size of the address range that an RTT entry at level maps.
+•  ipa is less than 2 to the power of the Realm's IPA width, and is not a Protected IPA of the Realm.
+•  desc is a valid RTT entry descriptor for an Unprotected IPA.
+•  The output address in desc (the addr field) is aligned to the size of the address range that an RTT entry at level maps.
+•  If the Realm does not support LPA2 (feat_lpa2 is FEATURE_FALSE), the output address in desc is less than 2^48.
+•  If the Realm uses the S2AP_INDIRECT stage 2 access permission encoding, the indirect base index in desc is S2AP_NO_ACCESS, S2AP_RO, S2AP_WO or S2AP_RW.
+•  The RTT walk to ipa reaches level, and the RTT entry it reaches is in the UNASSIGNED_NS state.
+
+RMI_RTT_MAP_UNPROTECTED can return the following errors:
+•  RMI_ERROR_INPUT is returned if desc is not a valid RTT entry descriptor for an Unprotected IPA.
+•  RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+•  RMI_ERROR_INPUT is returned if level is not a valid RTT level for the Realm, or if level is less than 1.
+•  RMI_ERROR_INPUT is returned if the output address in desc (the addr field) is not aligned to the size of the address range that an RTT entry at level maps.
+•  RMI_ERROR_INPUT is returned if the Realm does not support LPA2 (feat_lpa2 is FEATURE_FALSE) and the output address in desc is 2^48 or greater.
+•  RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that an RTT entry at level maps.
+•  RMI_ERROR_INPUT is returned if ipa is 2 to the power of the Realm's IPA width or greater, or if ipa is a Protected IPA of the Realm.
+•  RMI_ERROR_INPUT is returned if the Realm uses the S2AP_INDIRECT stage 2 access permission encoding and the indirect base index in desc is not S2AP_NO_ACCESS, S2AP_RO, S2AP_WO or S2AP_RW.
+•  RMI_ERROR_RTT is returned if the RTT walk to ipa ends at a level lower than level. The level at which the walk ended is also returned.
+•  RMI_ERROR_RTT is returned if the RTT entry that the walk to ipa reaches is not in the UNASSIGNED_NS state. The level at which the walk ended is also returned.
+
+Some checks are made in a fixed order. The command checks that rd is a delegable physical address before it checks the RTT walk and the state of the RTT entry. It also checks that the Granule at rd is in the RD state before those two RTT checks. The same applies to the checks on level, on the bounds of ipa, and on the indirect base index in desc: all of them are made before the RTT walk check and the RTT entry state check.
+
+B4.3.42.5 Implementation responsibilities
+If the command succeeds, the RTT entry that the walk to ipa reaches meets all of the following conditions:
+•  It is in the ASSIGNED_NS state.
+•  Its Unprotected attributes are equal to the Unprotected attributes in desc.
+•  If the Realm uses the S2AP_DIRECT stage 2 access permission encoding, its read and write permissions are equal to the read and write permissions in desc.
+•  If the Realm uses the S2AP_INDIRECT stage 2 access permission encoding, its indirect base index is equal to the indirect base index in desc, and its overlay index is 15.
+•  Its output address is equal to the output address in desc.
+
+The only state that RMI_RTT_MAP_UNPROTECTED may modify is the RTT entry for ipa. This is the entry in the RTT where the walk to ipa ended.

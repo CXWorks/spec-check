@@ -1,0 +1,43 @@
+B4.3.53 HCI_VOLUME_GET_INTERFACE_REPORT
+
+B4.3.53.1 Intended use
+HCI_VOLUME_GET_INTERFACE_REPORT gets the interface report of a VOLUME. The Host calls it and gives the VD of a Vault and a VOLUME that belongs to that Vault.
+
+B4.3.53.2 Parameters
+The caller passes these input values:
+•  fid, passed in R0. This is the function identifier. Its value is 0xC40001D0.
+•  vd, passed in R1. This is the physical address of the VD of the Vault.
+•  volume_ptr, passed in R2. This is the physical address of the VOLUME.
+
+The command uses the Vault described by vd and the VOLUME at volume_ptr. Neither of these is evaluated before the command runs.
+
+B4.3.53.3 Return values
+The command returns this output value:
+•  result, returned in R0. This is the status that the command returns.
+
+B4.3.53.4 Caller responsibilities
+HCI_VOLUME_GET_INTERFACE_REPORT can return the following errors:
+•  HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+•  HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+•  HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+•  HCI_ERROR_INPUT is returned if volume_ptr is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if volume_ptr is not a physical address that can be enrolled.
+•  HCI_ERROR_INPUT is returned if the Extent at volume_ptr is not in the VOLUME state.
+•  HCI_ERROR_INPUT is returned if the VOLUME at volume_ptr does not belong to the Vault described by vd.
+•  HCI_ERROR_DEVICE is returned if the VOLUME is in neither the VOLUME_LOCKED state nor the VOLUME_STARTED state.
+•  HCI_ERROR_DEVICE is returned if the communication state of the VOLUME is not DEV_COMM_IDLE.
+
+The command makes some checks before others:
+•  The command first checks that vd can be enrolled, that the Extent at vd is in the VD state, that volume_ptr can be enrolled, and that the Extent at volume_ptr is in the VOLUME state. Only after these checks does it check that the VOLUME belongs to the Vault described by vd.
+•  The check that the implementation supports Device Assignment comes before each of these checks: vd can be enrolled, the Extent at vd is in the VD state, volume_ptr is aligned to the size of a Extent, volume_ptr can be enrolled, the Extent at volume_ptr is in the VOLUME state, and the VOLUME belongs to the Vault described by vd.
+•  The check that the Extent at volume_ptr is in the VOLUME state comes before the check of the VOLUME state. It also comes before the check of the VOLUME communication state.
+
+B4.3.53.5 Implementation responsibilities
+If the command succeeds, the implementation must make sure of the following:
+•  The pending operation of the VOLUME is VOLUME_OP_GET_REPORT.
+•  The communication state of the VOLUME is DEV_COMM_PENDING.
+
+The command can modify only this state:
+•  The pending operation of the VOLUME.
+•  The communication state of the VOLUME.

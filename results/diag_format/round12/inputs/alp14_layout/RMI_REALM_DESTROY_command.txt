@@ -1,0 +1,38 @@
+B4.3.26 RMI_REALM_DESTROY command
+               Destroys a Realm.
+               B4.3.26.1 Interface
+               B4.3.26.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000159
+        rd                   X1          63:0        Address                               PA of the RD
+               B4.3.26.1.2   Context
+               The RMI_REALM_DESTROY command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        realm_pre            RmmRealm                   RealmAt(rd)                                true     Realm
+        mec_members_pre UInt64                          MecMembers(realm_pre.mecid)                true     Number of Realms
+                                                                                                            which are members of
+                                                                                                            the Realm’s MEC
+               B4.3.26.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.26.2 Failure conditions
+(rd_align) If !AddrIsGranuleAligned(rd), then ResultEqual(result, RMI_ERROR_INPUT).
+(rd_bound) If !PaIsDelegable(rd), then ResultEqual(result, RMI_ERROR_INPUT).
+(rd_state) If GranuleAt(rd).state != RD, then ResultEqual(result, RMI_ERROR_INPUT).
+(realm_live) If RealmIsLive(rd), then ResultEqual(result, RMI_ERROR_REALM).
+                B4.3.26.2.1   Failure condition ordering
+                [rd_bound, rd_state] < [realm_live]
+                                 rd_align                      rd_state                       rd_bound
+                                                                                            RMI_ERROR_INPUT
+                                                                                             realm_live
+                B4.3.26.3 Success conditions
+(rtt_state) On success, RttsStateEqual(realm_pre.rtt_base[[0]], realm_pre.rtt_num_start, DELEGATED).
+(rd_state) On success, GranuleAt(rd).state == DELEGATED.
+(vmid) On success, VmidsAreFree(realm_pre.vmid).
+(mecid_private) If realm_pre.mec_policy == MEC_POLICY_PRIVATE, then on success MecState(realm_pre.mecid) == MEC_STATE_PRIVATE_UNASSIGNED.
+(mec_members) If realm_pre.mec_policy == MEC_POLICY_SHARED, then on success MecMembers(realm_pre.mecid) == mec_members_pre - 1.
+                B4.3.26.4 Footprint
+    ID                           Value
+    rd_state                     GranuleAt(rd).state
+    rtt_state                    RttsGranuleState(
+                                     realm_pre.rtt_base[[0]], realm_pre.rtt_num_start)

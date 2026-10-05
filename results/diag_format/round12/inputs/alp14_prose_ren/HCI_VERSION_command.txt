@@ -1,0 +1,43 @@
+B4.3.64 HCI_VERSION command
+              Allows the Host and the KEEPER to determine whether there exists a mutually acceptable revision of the KEEPER via
+              which the two components can communicate.
+              On calling this command, the Host provides a requested HCI version.
+              The output values include a status code and two revisions which are supported by the KEEPER: a lower revision and a
+              higher revision.
+                  • The higher revision value is the highest interface revision which is supported by the KEEPER.
+                  • The lower revision is less than or equal to the higher revision.
+              The status code and lower revision output values indicate which of the following is true, in order of precedence:
+                 a) The KEEPER supports an interface revision which is compatible with the requested revision.
+                      • The status code is HCI_SUCCESS.
+                      • The lower revision is equal to the requested revision.
+                 b) The KEEPER does not support an interface revision which is compatible with the requested revision. The KEEPER
+                    supports an interface revision which is incompatible with and less than the requested revision.
+                      • The status code is HCI_ERROR_INPUT.
+                      • The lower revision is the highest interface revision which is both less than the requested revision and
+                        supported by the KEEPER.
+                 c) The KEEPER does not support an interface revision which is compatible with the requested revision. The KEEPER
+                    supports an interface revision which is incompatible with and greater than the requested revision.
+                      • The status code is HCI_ERROR_INPUT.
+                      • The lower revision is equal to the higher revision.
+              B4.3.64.1 Interface
+              B4.3.64.1.1    Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 R0           63:0        UInt64                                FID, value 0xC4000150
+        req                 R1           63:0        Hciinterfaceversion                   Requested interface revision
+              B4.3.64.1.2    Output values
+        Name                Register     Bits        Type                                  Description
+        result              R0           63:0        Hcicommandreturncode                  Command return status
+        lower               R1           63:0        Hciinterfaceversion                   Lower supported interface revision
+        higher              R2           63:0        Hciinterfaceversion                   Higher supported interface revision
+             B4.3.64.2 Failure conditions
+HCI_ERROR_INPUT is returned if the KEEPER does not support the requested version req but supports at least one version lower than req. In this case, lower is the highest version below req that the KEEPER supports, and higher is the highest version that the KEEPER supports.
+
+HCI_ERROR_INPUT is returned if the KEEPER does not support the requested version req, does not support any version lower than req, and supports at least one version higher than req. In this case, lower and higher are the same version, which is the highest version that the KEEPER supports.
+             B4.3.64.2.1   Failure condition ordering
+             The HCI_VERSION command does not have any failure condition orderings.
+             B4.3.64.3 Success conditions
+On success, lower is equal to the requested version req.
+
+On success, higher is the highest version that the KEEPER supports.
+             B4.3.64.4 Footprint
+             The HCI_VERSION command does not have any footprint.

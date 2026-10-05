@@ -1,0 +1,56 @@
+B4.3.34 RMI_RTT_AUX_MAP_PROTECTED
+
+B4.3.34.1 Intended use
+RMI_RTT_AUX_MAP_PROTECTED creates a mapping from a Protected IPA in an auxiliary RTT.
+
+The command acts on the Realm whose RD is at the physical address rd. It uses two RTT walks to the page level at ipa:
+• The primary RTT walk is the walk of the Realm's primary RTT tree, RMM_RTT_TREE_PRIMARY.
+• The auxiliary RTT walk is the walk of the auxiliary RTT tree selected by index.
+
+The auxiliary RTT entry used by the command is the entry at ipa that the auxiliary RTT walk reaches. That entry is found in the RTT where the walk ends, at the RTT entry index for ipa at the level where the walk ends.
+
+B4.3.34.2 Parameters
+The caller passes these input values:
+• fid, in X0[63:0]. This is the function identifier. Its value is 0xC4000180.
+• rd, in X1[63:0]. This is the physical address of the RD for the target Realm.
+• ipa, in X2[63:0]. This is the IPA in the target Realm.
+• index, in X3[63:0]. This is the RTT tree index. It selects the auxiliary RTT tree.
+
+B4.3.34.3 Return values
+The command returns these output values:
+• result, in X0[63:0]. This is the command return status.
+• state, in X1[7:0]. This is the state of the RTT entry whose contents caused the command to fail with RMI_ERROR_RTT. The RMI_ERROR_RTT_AUX conditions below also set state.
+• ripas, in X2[7:0]. This is the RIPAS of the RTT entry that caused the command to fail with RMI_ERROR_RTT. The RMI_ERROR_RTT_AUX conditions below also set ripas.
+
+The unused bits of the output values, X1[63:8] and X2[63:8], must be zero.
+
+The command can return the following errors:
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if ipa is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if ipa is not a Protected IPA of the Realm.
+• RMI_ERROR_INPUT is returned if any of the following is true:
+  – The Realm does not use a separate RTT tree for each Plane. This means rtt_tree_per_plane is FEATURE_FALSE.
+  – index is RMM_RTT_TREE_PRIMARY.
+  – index is greater than the number of auxiliary Planes of the Realm.
+• RMI_ERROR_RTT is returned if the primary RTT entry at ipa is not in the ASSIGNED, ASSIGNED_DEV or ASSIGNED_VSMMU state. The error carries the level of that primary RTT entry. state is set to the state of the primary RTT entry. ripas is set to the RIPAS of the primary RTT entry.
+• RMI_ERROR_RTT is returned if the primary RTT entry at ipa is in the ASSIGNED state and its RIPAS is not RAM. The error carries the level of that primary RTT entry. state is set to the state of the primary RTT entry. ripas is set to the RIPAS of the primary RTT entry.
+• RMI_ERROR_RTT is returned if the primary RTT entry at ipa is in the ASSIGNED_DEV state and its RIPAS is not DEV. The error carries the level of that primary RTT entry. state is set to the state of the primary RTT entry. ripas is set to the RIPAS of the primary RTT entry.
+• RMI_ERROR_RTT_AUX is returned if the auxiliary RTT entry at ipa, in the RTT tree selected by index, is in the AUX_DESTROYED state. The error carries the level of that auxiliary RTT entry. state is set to the state of the auxiliary RTT entry. ripas is set to the RIPAS of the primary RTT entry.
+• RMI_ERROR_RTT_AUX is returned if the auxiliary RTT walk at ipa ends at a lower-numbered level than the primary RTT walk. In that case the auxiliary entry covers a larger region than the primary entry. The error carries the level of the auxiliary RTT entry. state is set to the state of the auxiliary RTT entry. ripas is set to the RIPAS of the primary RTT entry.
+
+The command checks some error conditions before others:
+• It checks that rd is a delegable address and that the Granule at rd is in the RD state before it makes any of these checks:
+  – the checks on the primary RTT entry, which are its state, its RIPAS in the ASSIGNED state and its RIPAS in the ASSIGNED_DEV state
+  – the checks on the auxiliary RTT entry, which are the AUX_DESTROYED state and the walk level
+• It also checks that ipa is a Protected IPA and that index is valid before it makes any of those primary and auxiliary RTT entry checks.
+
+B4.3.34.4 Implementation responsibilities
+When the command succeeds, the implementation must make sure that:
+• The auxiliary RTT entry at ipa is in the ASSIGNED state.
+• The auxiliary RTT entry at ipa has the same protection attributes as the primary RTT entry.
+• The auxiliary RTT entry at ipa has the same shareability attribute as the primary RTT entry.
+• The output address of the auxiliary RTT entry is calculated from the output address of the primary RTT entry. The primary entry may cover a region made up of several auxiliary-level entries. The output address of the auxiliary entry is the address of the primary entry plus an offset. The offset is this entry's position in that region multiplied by the size of the region mapped by one entry at the auxiliary RTT entry's level.
+
+The command can modify only one item of state: the auxiliary RTT entry at ipa. This is the entry at the RTT entry index for ipa, in the RTT where the auxiliary RTT walk ends.

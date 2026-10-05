@@ -1,0 +1,26 @@
+5.3 PSCI_VERSION command
+               Returns the current version of the PSCI interface.
+               5.3.1 Interface
+               5.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt32                                Function ID of PSCI_VERSION (this section gives neither the register nor the value)
+               5.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              —            31          —                                     Zero. The version number is a 31-bit unsigned integer.
+                            —            30:16       UInt15                                Major revision
+                            —            15:0        UInt16                                Minor revision
+               5.3.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !IsFunctionImplemented(PSCI_VERSION)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               5.3.2.1   Failure condition ordering
+               The PSCI_VERSION command does not have any failure condition orderings.
+               5.3.3 Success conditions
+  ID                          Condition
+  ver_major                   post: result[30:16] == ImplementedPsciVersion().major
+  ver_minor                   post: result[15:0] == ImplementedPsciVersion().minor
+  ver_width                   post: result[31] == 0
+  ver_compat                  post: for any revisions A and B where A.major == B.major and B.minor > A.minor,
+                                    every function in revision A works in a compatible way with revision B
+               5.3.4 Footprint
+               The PSCI_VERSION command does not modify any state.

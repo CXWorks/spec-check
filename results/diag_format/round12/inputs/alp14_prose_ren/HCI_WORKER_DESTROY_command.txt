@@ -1,0 +1,44 @@
+B4.3.29 HCI_WORKER_DESTROY command
+              Destroys a WORKER.
+              B4.3.29.1 Interface
+              B4.3.29.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 R0          63:0        UInt64                                FID, value 0xC400015B
+        worker_ptr             R1          63:0        Address                               DPA of the target WORKER
+              B4.3.29.1.2   Context
+              The HCI_WORKER_DESTROY command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        vd_pre              Address                    Workerat(worker_ptr).owner                       true     VD address
+        vault_pre           Keepervault                   Vaultat(vd_pre)                            true     Vault
+        vault               Keepervault                   Vaultat(vd_pre)                            false    Vault
+        worker_pre             Keeperworker                     Workerat(worker_ptr)                             true     WORKER
+        worker                 Keeperworker                     Workerat(worker_ptr)                             false    WORKER
+              B4.3.29.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              R0          63:0        Hcicommandreturncode                  Command return status
+              B4.3.29.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if worker_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if worker_ptr is not a physical address that can be enrolled.
+
+HCI_ERROR_INPUT is returned if the Extent at worker_ptr is not in the WORKER state.
+
+HCI_ERROR_WORKER is returned if the WORKER is in the WORKER_RUNNING state.
+
+                B4.3.29.2.1   Failure condition ordering
+
+The KEEPER checks that worker_ptr can be enrolled, and that the Extent at worker_ptr is in the WORKER state, before it checks whether the WORKER is in the WORKER_RUNNING state. If worker_ptr fails either of the first two checks, HCI_ERROR_INPUT is returned, not HCI_ERROR_WORKER. This ordering does not cover the check that worker_ptr is Extent-aligned.
+
+                B4.3.29.3 Success conditions
+
+The Extent at worker_ptr is in the ENROLLED state.
+
+Each auxiliary Extent of the WORKER is in the ENROLLED state. These are the auxiliary Extents the WORKER had before the command ran. Their number is the WORKER auxiliary Extent count for the owning Vault, as it was before the command ran.
+
+The Vault's WORKER count, num_workers, is one less than it was before the command ran.
+                B4.3.29.4 Footprint
+    ID                           Value
+    worker_state                    Extentat(worker_ptr).state
+    worker_aux_state                Sidestates(worker_pre.aux, Workerauxcount(vd_pre))
+    num_workers                     vault.num_workers

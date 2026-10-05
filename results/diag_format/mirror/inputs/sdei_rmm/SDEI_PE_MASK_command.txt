@@ -1,0 +1,24 @@
+5.1.12 SDEI_PE_MASK command
+               Masks the calling PE so that it does not receive SDEI events.
+               5.1.12.1 Interface
+               5.1.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC400002B
+               5.1.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.12.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !SdeiIsSupported(CallingClient())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               5.1.12.2.1   Failure condition ordering
+               The SDEI_PE_MASK command does not have any failure condition orderings.
+               5.1.12.3 Success conditions
+  ID                          Condition
+  pe_masked                   post: PeIsMasked(CallingClient(), CallingPe(), NORMAL_PRIORITY)
+                                    && PeIsMasked(CallingClient(), CallingPe(), CRITICAL_PRIORITY)
+  result_masked               post: !old(PeIsMasked(CallingClient(), CallingPe())) ==> ResultEqual(result, 1)
+  result_not_masked           post: old(PeIsMasked(CallingClient(), CallingPe())) ==> ResultEqual(result, 0)
+               5.1.12.4 Footprint
+    ID                        Value
+    pe_masked                 PeMaskState(CallingClient(), CallingPe())

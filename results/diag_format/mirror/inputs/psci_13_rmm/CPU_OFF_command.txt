@@ -1,0 +1,33 @@
+5.5 CPU_OFF command
+               Powers down the calling core so that it is dynamically removed from the system. The call is not expected to return. Only a CPU_ON call can bring the core back online.
+               5.5.1 Interface
+               5.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           -           UInt64                                Function ID of CPU_OFF
+               5.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           -           PsciReturnCode                        Command return status. A value is returned only when the call fails.
+               5.5.2 Failure conditions
+  ID                          Condition
+  tos_resident                pre: IsTrustedOsResident(CallingCore())
+                              post: ResultEqual(result, DENIED)
+               5.5.2.1   Failure condition ordering
+               The CPU_OFF command does not have any failure condition orderings.
+               5.5.3 Success conditions
+  ID                          Condition
+  no_return                   post: !ReturnsToCaller()
+  core_power                  post: PowerState(CallingCore()) == POWERED_DOWN
+  core_cache                  post: CachesClean(CallingCore())
+  core_coherency              post: !IsCoherent(CallingCore())
+  node_power                  post: (AllCoresCalledCpuOff(node) || RemainingCoresSuspendedAtOrAbove(node.level))
+                                    ==> PowerState(node) == POWERED_DOWN
+  node_cache                  post: PowerState(node) == POWERED_DOWN ==> CachesClean(node)
+  node_coherency              post: PowerState(node) == POWERED_DOWN ==> !IsCoherent(node)
+               5.5.4 Footprint
+    ID                        Value
+    core_power                PowerState(CallingCore())
+    core_cache                Caches(CallingCore())
+    core_coherency            Coherency(CallingCore())
+    node_power                PowerState(node)
+    node_cache                Caches(node)
+    node_coherency            Coherency(node)

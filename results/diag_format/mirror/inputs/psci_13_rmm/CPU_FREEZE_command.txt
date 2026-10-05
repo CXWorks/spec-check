@@ -1,0 +1,26 @@
+5.17 CPU_FREEZE command
+               Places the calling core in an IMPLEMENTATION DEFINED low-power state that wakeup interrupts do not exit. Interrupts stay pending or active. The core returns to execution only through a call to CPU_ON. This function was introduced in PSCI 1.0 and is optional.
+               5.17.1 Interface
+               5.17.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                Function ID for CPU_FREEZE
+               5.17.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        PsciReturnCode                        Command return status (returned only on failure)
+               5.17.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplemented(CPU_FREEZE)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  denied                      pre: CpuOffWouldBeDenied(CurrentCore())
+                              post: ResultEqual(result, DENIED)
+               5.17.2.1   Failure condition ordering
+               The CPU_FREEZE command does not have any failure condition orderings.
+               5.17.3 Success conditions
+  ID                          Condition
+  no_return                   post: the command does not return to the caller
+  core_state                  post: CoreAt(CurrentCore()).power_state == IMPLEMENTATION_DEFINED_LOW_POWER_STATE
+  wake_ignored                post: !WakeupInterruptsResumeExecution(CurrentCore())
+  irq_pending                 post: InterruptsRemainPendingOrActive(CurrentCore())
+               5.17.4 Footprint
+    ID                        Value
+    core_state                CoreAt(CurrentCore()).power_state

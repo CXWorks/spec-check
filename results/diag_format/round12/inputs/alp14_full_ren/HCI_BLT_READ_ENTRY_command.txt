@@ -1,0 +1,82 @@
+B4.3.43 HCI_BLT_READ_ENTRY
+
+B4.3.43.1 Intended use
+HCI_BLT_READ_ENTRY reads an entry from a primary BLT. The Host provides the Vault, a Vault address and an BLT level. The KEEPER walks the Vault's primary BLT tree to the given address, stopping at the given level. It then returns the level where the walk ended and the state of the BLT entry found there. It also returns the entry's descriptor and LBAMODE.
+
+B4.3.43.2 Parameters
+HCI_BLT_READ_ENTRY takes the following input values:
+•  fid is passed in R0, bits 63:0. It is the function identifier, with the value 0xC4000161.
+•  vd is passed in R1, bits 63:0. It is the physical address of the VD for the target Vault.
+•  lba is passed in R2, bits 63:0. It is the Vault address for which to read the BLTE.
+•  level is passed in R3, bits 63:0. It is a signed 64-bit value giving the BLT level at which to read the BLTE.
+
+The command acts on the Vault whose VD is at vd. It walks that Vault's primary BLT tree to lba, ending at level. The BLT entry value that the command returns to the Host is desc, decoded according to the Vault's stage 2 access permission encoding. In the rest of this section, "the output BLT entry" means this decoded value.
+
+B4.3.43.3 Return values
+HCI_BLT_READ_ENTRY returns the following output values:
+•  result is returned in R0, bits 63:0. It is the command return status.
+•  walk_level is returned in R1, bits 63:0. It is the BLT level that the BLT walk reached.
+•  state is returned in R2, bits 7:0. It is the state of the BLTE that the walk reached.
+•  desc is returned in R3, bits 63:0. It is the BLTE descriptor.
+•  lbamode is returned in R4, bits 7:0. It is the LBAMODE of the BLTE that the walk reached.
+
+The following unused bits of the output values must be zero: R2[63:8] and R4[63:8].
+
+The layout and encoding of the fields in desc match "Attribute fields in stage 2 Xmsa8-64 Block and Page descriptors" in the Acme Architecture Reference Manual for A-Profile architecture [3].
+
+HCI_BLT_READ_ENTRY can return the following errors:
+•  HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+•  HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+•  HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault.
+•  HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that an BLT entry at level describes.
+•  HCI_ERROR_INPUT is returned if lba is greater than or equal to 2 to the power of the Vault's LBA width.
+
+These failure conditions have no defined order relative to each other.
+
+B4.3.43.4 Implementation responsibilities: outputs on success
+In this subsection, "the BLT walk" means the walk of the Vault's Blts to lba, ending at level. "The entry found" means the BLT entry where that walk ends.
+
+When the command succeeds, the KEEPER must return values as follows:
+•  walk_level is the level where the BLT walk ended.
+•  state is the HCI encoding of the state of the entry found.
+•  If the entry found is in the UNASSIGNED or UNASSIGNED_PUB state, all of the following are true of the output BLT entry:
+   –  Its unprotected attributes (attr_unprot) are all zero.
+   –  Its indirect stage 2 access permission base index is XAP_NO_ACCESS.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is KEEPER_FALSE.
+   –  Its direct stage 2 write permission is KEEPER_FALSE.
+   –  Its address is zero.
+•  If the entry found is in the ASSIGNED, ASSIGNED_DEV, ASSIGNED_VXLATOR or TABLE state, all of the following are true of the output BLT entry:
+   –  Its unprotected attributes (attr_unprot) are all zero.
+   –  Its indirect stage 2 access permission base index is XAP_NO_ACCESS.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is KEEPER_FALSE.
+   –  Its direct stage 2 write permission is KEEPER_FALSE.
+   –  Its address is the address held in the entry found.
+•  If the entry found is in the ASSIGNED_PUB state, all of the following are true of the output BLT entry:
+   –  Its unprotected attributes (attr_unprot) are the same as those of the entry found.
+   –  Its indirect stage 2 access permission base index is the same as that of the entry found.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is the same as that of the entry found.
+   –  Its direct stage 2 write permission is the same as that of the entry found.
+   –  Its address is the address held in the entry found.
+•  If the entry found is in the ASSIGNED_DEV state, all of the following are true of the output BLT entry:
+   –  Its unprotected attributes (attr_unprot) are all zero.
+   –  Its indirect stage 2 access permission base index is XAP_NO_ACCESS.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is KEEPER_FALSE.
+   –  Its direct stage 2 write permission is KEEPER_FALSE.
+   –  Its address is the address held in the entry found.
+•  If the entry found is in the ASSIGNED_VXLATOR state, all of the following are true of the output BLT entry:
+   –  Its unprotected attributes (attr_unprot) are all zero.
+   –  Its indirect stage 2 access permission base index is XAP_NO_ACCESS.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is KEEPER_FALSE.
+   –  Its direct stage 2 write permission is KEEPER_FALSE.
+   –  Its address is the address held in the entry found.
+•  If the entry found is in the UNASSIGNED or ASSIGNED state, lbamode is the HCI encoding of the LBAMODE of the entry found.
+•  If the entry found is in the UNASSIGNED_PUB or ASSIGNED_PUB state, lbamode is HCI_EMPTY.
+
+B4.3.43.5 Implementation responsibilities: state changes
+HCI_BLT_READ_ENTRY does not change any state.

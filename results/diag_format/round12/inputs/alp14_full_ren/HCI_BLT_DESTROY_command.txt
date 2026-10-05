@@ -1,0 +1,60 @@
+B4.3.39 HCI_BLT_DESTROY
+
+B4.3.39.1 Intended use
+HCI_BLT_DESTROY destroys a primary BLT.
+
+The caller identifies the target Vault by the physical address of its VD. The caller identifies the BLT to destroy by the LBA that the BLT describes and by the BLT level. The KEEPER walks the Vault's primary BLT to the BLT entry at the level one less than level that maps lba. If that entry points to an BLT that is not live, the KEEPER destroys that BLT and returns its Extent to the ENROLLED state.
+
+B4.3.39.2 Parameters
+• fid is passed in R0. It is the function identifier, and its value is 0xC400015E.
+• vd is passed in R1. It is the physical address of the VD for the target Vault.
+• lba is passed in R2. It is the base of the LBA range that the BLT describes.
+• level is passed in R3. It is the BLT level.
+
+B4.3.39.3 Return values
+• result is returned in R0. It is the command return status.
+• blt is returned in R1. It is the physical address of the BLT that was destroyed. blt is valid only when result is HCI_SUCCESS.
+• top is returned in R2. It is the top LBA of the non-live BLT entries, starting from the entry at which the BLT walk terminated.
+
+The values of result and top, and the state of the BLT entry reached by the walk, depend on the outcome of the command as follows:
+• If the target BLT exists and is not live, result is HCI_SUCCESS and top is greater than lba. The BLT entry is in the TABLE state before execution. After execution it is in the UNASSIGNED state and its LBAMODE is DESTROYED.
+• If the BLT is missing, result is HCI_ERROR_BLT with an error index less than level, and top is greater than lba. The BLT entry is in the UNASSIGNED or UNASSIGNED_PUB state.
+• If there is a block mapping at a lower level, result is HCI_ERROR_BLT with an error index less than level, and top is equal to lba. The BLT entry is in the ASSIGNED or ASSIGNED_PUB state.
+• If there is a live BLT at the target level, result is HCI_ERROR_BLT with error index level, and top is equal to lba. The BLT entry is in the TABLE state.
+• If the BLT walk was not performed because of any other command failure, result is another error code and top is 0. The state of the BLT entry is unknown.
+
+HCI_BLT_DESTROY can return the following errors:
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is the starting level of the Vault's BLT.
+• HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that an BLT entry maps at the level one less than level.
+• HCI_ERROR_INPUT is returned if lba is outside the Vault's LBA space, that is, if lba is greater than or equal to 2 raised to the power of the Vault's LBA width.
+• HCI_ERROR_BLT is returned if the BLT walk to lba stops at a level lower than one less than level. The error index is the level at which the walk stopped. top is set to the top LBA of the non-live BLT entries, starting from the entry at which the BLT walk terminated.
+• HCI_ERROR_BLT is returned if the BLT entry that the walk reaches is not in the TABLE state. The error index is the level at which the walk stopped. top is set to the top LBA of the non-live BLT entries, starting from the entry at which the BLT walk terminated.
+• HCI_ERROR_BLT is returned if the BLT that this BLT entry points to is live. The error index is level, and top is set to lba.
+• HCI_ERROR_BLT is returned if lba is referenced by an auxiliary BLT of the Vault. The error index is the level at which the walk stopped.
+
+B4.3.39.4 Implementation responsibilities: error checking order
+The KEEPER must check that vd is a enrollable physical address, and that the Extent at vd is in the VD state, before it makes the following two checks:
+• that the BLT walk reaches the level one less than level
+• that the BLT entry reached is in the TABLE state
+
+The KEEPER must also check that level is valid and is not the starting level, and that lba is within the Vault's LBA space, before it makes those same two BLT walk checks.
+
+The KEEPER must check that the BLT entry reached is in the TABLE state before it makes the following two checks:
+• that the BLT the entry points to is not live
+• that lba is not referenced by an auxiliary BLT
+
+B4.3.39.5 Implementation responsibilities: successful completion
+When HCI_BLT_DESTROY succeeds:
+• If lba is a Protected address, the BLT entry reached by the walk is in the UNASSIGNED state and its LBAMODE is DESTROYED.
+• If lba is not a Protected address, the BLT entry reached by the walk is in the UNASSIGNED_PUB state.
+• The Extent that held the destroyed BLT, at the address held in the BLT entry, is in the ENROLLED state.
+• blt is the address of the destroyed BLT, as held in the BLT entry.
+• top is set to the top LBA of the non-live BLT entries, starting from the entry at which the BLT walk terminated.
+
+B4.3.39.6 Implementation responsibilities: state modified
+HCI_BLT_DESTROY can modify only the following state:
+• the state of the Extent at the address held in the BLT entry reached by the walk
+• the BLT entry for lba within the BLT at which the walk terminated

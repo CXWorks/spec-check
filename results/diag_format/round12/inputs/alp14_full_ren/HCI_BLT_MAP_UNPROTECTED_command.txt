@@ -1,0 +1,56 @@
+B4.3.42 HCI_BLT_MAP_UNPROTECTED
+
+B4.3.42.1 Intended use
+HCI_BLT_MAP_UNPROTECTED creates a mapping from an Unprotected LBA to a Non-secure DPA in a primary BLT. The Host calls it with the VD of the target Vault, the LBA to be mapped, the BLT level at which to create the mapping, and an BLT entry descriptor. The descriptor gives the output address and the attributes of the mapping.
+
+The command walks the primary BLT tree of the Vault identified by vd, from the root towards lba, and stops at level. It then updates the BLT entry for lba in the BLT where the walk ended. The command reads desc using the stage 2 access permission encoding that the Vault uses.
+
+B4.3.42.2 Parameters
+The caller passes the following values:
+•  fid, in R0. This is the function identifier. Its value is 0xC400015F.
+•  vd, in R1. This is the DPA of the VD for the target Vault.
+•  lba, in R2. This is the LBA at which the memory will be mapped in the target Vault.
+•  level, in R3. This is the BLT level of the mapping. It is a signed 64-bit value.
+•  desc, in R4. This is the BLTE descriptor. Its fields use the layout and encoding described in "Attribute fields in stage 2 Xmsa8-64 Block and Page descriptors" in the Acme Architecture Reference Manual for A-Profile architecture [3].
+
+B4.3.42.3 Return values
+The command returns the following value:
+•  result, in R0. This is the command return status.
+
+B4.3.42.4 Caller responsibilities
+Before calling HCI_BLT_MAP_UNPROTECTED, the caller must make sure that:
+•  vd is aligned to the size of a Extent, is a enrollable physical address, and refers to a Extent in the VD state.
+•  level is a valid BLT level for the Vault and is 1 or greater.
+•  lba is aligned to the size of the address range that an BLT entry at level maps.
+•  lba is less than 2 to the power of the Vault's LBA width, and is not a Protected LBA of the Vault.
+•  desc is a valid BLT entry descriptor for an Unprotected LBA.
+•  The output address in desc (the addr field) is aligned to the size of the address range that an BLT entry at level maps.
+•  If the Vault does not support BIGADDR (feat_bigaddr is FEATURE_FALSE), the output address in desc is less than 2^48.
+•  If the Vault uses the XAP_INDIRECT stage 2 access permission encoding, the indirect base index in desc is XAP_NO_ACCESS, XAP_RO, XAP_WO or XAP_RW.
+•  The BLT walk to lba reaches level, and the BLT entry it reaches is in the UNASSIGNED_PUB state.
+
+HCI_BLT_MAP_UNPROTECTED can return the following errors:
+•  HCI_ERROR_INPUT is returned if desc is not a valid BLT entry descriptor for an Unprotected LBA.
+•  HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+•  HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+•  HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is less than 1.
+•  HCI_ERROR_INPUT is returned if the output address in desc (the addr field) is not aligned to the size of the address range that an BLT entry at level maps.
+•  HCI_ERROR_INPUT is returned if the Vault does not support BIGADDR (feat_bigaddr is FEATURE_FALSE) and the output address in desc is 2^48 or greater.
+•  HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that an BLT entry at level maps.
+•  HCI_ERROR_INPUT is returned if lba is 2 to the power of the Vault's LBA width or greater, or if lba is a Protected LBA of the Vault.
+•  HCI_ERROR_INPUT is returned if the Vault uses the XAP_INDIRECT stage 2 access permission encoding and the indirect base index in desc is not XAP_NO_ACCESS, XAP_RO, XAP_WO or XAP_RW.
+•  HCI_ERROR_BLT is returned if the BLT walk to lba ends at a level lower than level. The level at which the walk ended is also returned.
+•  HCI_ERROR_BLT is returned if the BLT entry that the walk to lba reaches is not in the UNASSIGNED_PUB state. The level at which the walk ended is also returned.
+
+Some checks are made in a fixed order. The command checks that vd is a enrollable physical address before it checks the BLT walk and the state of the BLT entry. It also checks that the Extent at vd is in the VD state before those two BLT checks. The same applies to the checks on level, on the bounds of lba, and on the indirect base index in desc: all of them are made before the BLT walk check and the BLT entry state check.
+
+B4.3.42.5 Implementation responsibilities
+If the command succeeds, the BLT entry that the walk to lba reaches meets all of the following conditions:
+•  It is in the ASSIGNED_PUB state.
+•  Its Unprotected attributes are equal to the Unprotected attributes in desc.
+•  If the Vault uses the XAP_DIRECT stage 2 access permission encoding, its read and write permissions are equal to the read and write permissions in desc.
+•  If the Vault uses the XAP_INDIRECT stage 2 access permission encoding, its indirect base index is equal to the indirect base index in desc, and its overlay index is 15.
+•  Its output address is equal to the output address in desc.
+
+The only state that HCI_BLT_MAP_UNPROTECTED may modify is the BLT entry for lba. This is the entry in the BLT where the walk to lba ended.

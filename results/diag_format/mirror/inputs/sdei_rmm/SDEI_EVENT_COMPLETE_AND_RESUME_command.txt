@@ -1,0 +1,36 @@
+5.1.7 SDEI_EVENT_COMPLETE_AND_RESUME command
+               Completes event handling and resumes execution at the specified address in ELC.
+               5.1.7.1 Interface
+               5.1.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000026
+        resume_addr         X1           63:0        Address                               Address in the client where execution resumes. Must be valid in the client's translation regime at the point when the event occurred
+               5.1.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status. Returned only on error
+               5.1.7.2 Failure conditions
+  ID                          Condition
+  sdei_supported              pre: !IsSdeiSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  resume_addr                 pre: IsIdentifiablyInvalidResumeAddress(resume_addr)
+                                   (for example, !IsAligned(resume_addr, 4))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  handler_running             pre: HandlerRunning(CallingPe()) == FALSE
+                              post: ResultEqual(result, DENIED)
+               5.1.7.2.1   Failure condition ordering
+               The SDEI_EVENT_COMPLETE_AND_RESUME command does not have any failure condition orderings.
+               5.1.7.3 Success conditions
+  ID                          Condition
+  no_return                   post: The call does not return to the caller, so no result is written
+  resume_exec                 post: Execution resumes at resume_addr in ELC
+  resume_ctx                  post: ResumeContextExceptionReturnAddress() == InterruptedPc()
+  handler_running             post: HandlerRunning(CallingPe()) == FALSE
+  private_complete            post: IsPrivateEvent(CurrentEvent())
+                                    ⇒ EventHandlingComplete(CurrentEvent(), CallingPe())
+  shared_complete             post: IsSharedEvent(CurrentEvent())
+                                    ⇒ EventHandlingCompleteGlobally(CurrentEvent())
+               5.1.7.4 Footprint
+    ID                        Value
+    handler_running           HandlerRunning(CallingPe())
+    event_handling            EventHandlingState(CurrentEvent())
+    resume_ctx                ResumeContextExceptionReturnAddress()

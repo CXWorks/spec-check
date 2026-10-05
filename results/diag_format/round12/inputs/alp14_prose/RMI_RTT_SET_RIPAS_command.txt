@@ -1,0 +1,93 @@
+B4.3.44 RMI_RTT_SET_RIPAS command
+               Completes a request made by the Realm to change the RIPAS of a target IPA range.
+               B4.3.44.1 Interface
+               B4.3.44.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000169
+        rd                   X1          63:0        Address                               PA of the RD for the target Realm
+        rec_ptr              X2          63:0        Address                               PA of the target REC
+        base                 X3          63:0        Address                               Base of target IPA region
+        top                  X4          63:0        Address                               Top of target IPA region
+               B4.3.44.1.2   Context
+               The RMI_RTT_SET_RIPAS command operates on the following context.
+        Name                 Type                       Value                                      Before    Description
+        realm                RmmRealm                   RealmAt(rd)                                false     Realm
+        realm_pre            RmmRealm                   RealmAt(rd)                                true      Realm
+        rec                  RmmRec                                                                false     REC
+                                                        RecAt(rec_ptr)
+        walk                 RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                            realm, base,
+                                                            RMM_RTT_PAGE_LEVEL,
+                                                            RMM_RTT_TREE_PRIMARY)
+        ripas_pre            RmmRipas                   walk.rtte.ripas                            true      RIPAS before the
+                                                                                                             command executed
+        walk_top_pre         Address                    RttSkipEntriesWithRipas(                   true      Top IPA of entries
+                                                            RttAt(walk.rtt_addr),                            which have associated
+                                                            walk.level,                                      RIPAS values,
+                                                            base, top,                                       starting from entry at
+                                                            (rec.ripas_value                                 which the RTT walk
+                                                                == RAM) &&
+                                                                                                             terminated
+                                                            (rec.ripas_destroyed
+                                                                !=
+                                                                CHANGE_DESTROYED))
+               B4.3.44.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+        Name                 Register    Bits        Type                                  Description
+        out_top              X1          63:0        Address                               Top IPA of range whose RIPAS was
+                                                                                           modified
+               The out_top output value is valid only when the command result is RMI_SUCCESS.
+               B4.3.44.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if rec_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rec_ptr is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rec_ptr is not in the REC state.
+
+RMI_ERROR_REC is returned if the REC is in the REC_RUNNING state.
+
+RMI_ERROR_REC is returned if the REC is not owned by the Realm described by rd.
+
+RMI_ERROR_INPUT is returned if top is less than or equal to base, compared as unsigned integers.
+
+RMI_ERROR_INPUT is returned if base does not equal the REC's pending RIPAS change start address (the ripas_addr field of the REC).
+
+RMI_ERROR_INPUT is returned if top is greater than the REC's pending RIPAS change top address (the ripas_top field of the REC), compared as unsigned integers.
+
+RMI_ERROR_RTT is returned, with the level reached by the RTT walk, if base is not aligned to the size of the address range that an RTT entry at that level describes, and the RIPAS at base before the command does not equal the RIPAS value the REC requested (the ripas_value field of the REC).
+
+RMI_ERROR_INPUT is returned if top is not aligned to the size of a Granule.
+
+RMI_ERROR_RTT is returned, with the level reached by the RTT walk, if base equals the top of the address range covered by the RTT reached by the walk before the command, compared as unsigned integers, and the RIPAS at base before the command does not equal the RIPAS value the REC requested.
+
+RMI_ERROR_RTT is returned, with the level reached by the RTT walk, if any part of the address range from base to top is live in an auxiliary RTT of the Realm, as the Realm was before the command.
+
+               B4.3.44.2.1   Failure condition ordering
+
+The checks that rd is a delegable physical address and that the Granule at rd is in the RD state are made before both of these checks: the check that base is aligned to the RTT entry size at the walk level, and the check that base is not already at the top of the RTT reached by the walk.
+
+The checks that rec_ptr is a delegable physical address and that the Granule at rec_ptr is in the REC state are made before the checks that the REC is not in the REC_RUNNING state and that the REC is owned by the Realm described by rd.
+
+The check that base equals the REC's pending RIPAS change start address is made before the check that base is aligned to the RTT entry size at the walk level.
+
+The check that top is aligned to the size of a Granule is made before the check that base is not already at the top of the RTT reached by the walk.
+
+               B4.3.44.3 Success conditions
+
+Every RTT entry in the RTT reached by the walk, at the level reached by the walk, that covers the address range from base up to the top of the range covered by that RTT before the command, has its RIPAS set to the RIPAS value the REC requested (the ripas_value field of the REC).
+
+The REC's pending RIPAS change start address (the ripas_addr field of the REC) is set to the lower of top and the top of the address range covered by the RTT reached by the walk before the command.
+
+out_top is set to the lower of top and the top of the address range covered by the RTT reached by the walk before the command.
+               B4.3.44.4 Footprint
+    ID                             Value
+    rtte                           RttAt(walk.rtt_addr)
+    ripas_addr                     rec.ripas_addr

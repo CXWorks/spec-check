@@ -1,0 +1,51 @@
+B4.3.38 HCI_BLT_CREATE
+
+B4.3.38.1 Intended use
+HCI_BLT_CREATE creates a primary BLT. The Host calls it with the Vault, a target BLT, a base LBA and an BLT level. On success, the BLT at blt describes the LBA range that starts at lba, and the parent BLT entry for that range points to it.
+
+To find the parent BLT entry, the command walks the Vault's primary BLT tree to lba. The walk targets level - 1. The command operates on the BLT entry at the index for lba, in the BLT where that walk ended.
+
+B4.3.38.2 Parameters
+The caller passes the following values:
+•  fid, in R0. This is the function identifier and has the value 0xC400015D.
+•  vd, in R1. This is the physical address of the VD for the target Vault.
+•  blt, in R2. This is the physical address of the target BLT.
+•  lba, in R3. This is the base of the LBA range that the BLT describes.
+•  level, in R4. This is the BLT level, given as a signed 64-bit value.
+
+B4.3.38.3 Return values
+The command returns the following value:
+•  result, in R0. This is the command return status.
+
+HCI_BLT_CREATE can return the following errors:
+•  HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+•  HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+•  HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is the Vault's starting BLT level.
+•  HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that one BLT entry at level - 1 maps.
+•  HCI_ERROR_INPUT is returned if lba is outside the Vault's LBA space. This is the case when lba is greater than or equal to 2 to the power of the Vault's LBA width.
+•  HCI_ERROR_INPUT is returned if blt is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if blt is not a enrollable physical address in DRAM.
+•  HCI_ERROR_INPUT is returned if the Extent at blt is not in the ENROLLED state.
+•  HCI_ERROR_INPUT is returned if the Vault does not support BIGADDR and blt is at or above 2 to the power of 48. The Vault does not support BIGADDR when feat_bigaddr is FEATURE_FALSE.
+•  HCI_ERROR_BLT is returned if the BLT walk to lba ends at a level lower than level - 1. The returned index is the level where the walk ended.
+•  HCI_ERROR_BLT is returned if the BLT entry found by the BLT walk to lba is already in the TABLE state. The returned index is the level where the walk ended.
+
+Both HCI_ERROR_BLT conditions have lower priority than four of the HCI_ERROR_INPUT conditions. The command checks whether the walk ends below level - 1, and whether the BLT entry is already in the TABLE state, only when none of these four conditions applies:
+•  vd is not a enrollable physical address.
+•  The Extent at vd is not in the VD state.
+•  level is not a valid BLT level for the Vault, or level is the starting level.
+•  lba is outside the Vault's LBA space.
+
+B4.3.38.4 Implementation responsibilities
+When HCI_BLT_CREATE succeeds, the implementation must ensure all of the following:
+•  The Extent at blt is in the BLT state.
+•  The BLT entry found by the BLT walk to lba is in the TABLE state.
+•  That BLT entry points to blt.
+•  If lba is a Protected LBA of the Vault, every entry in the new BLT at blt has the LBAMODE value that the parent BLT entry had before the command ran.
+•  Every entry in the new BLT at blt has the state that the parent BLT entry had before the command ran.
+•  If the parent BLT entry was in a state other than UNASSIGNED and UNASSIGNED_PUB before the command ran, the entries in the new BLT at blt map a contiguous output address range at level. That range starts at the address that the parent BLT entry held before the command ran.
+
+The command may modify only the following state:
+•  The state of the Extent at blt.
+•  The BLT entry at the index for lba in the BLT where the walk to level - 1 ended.

@@ -1,0 +1,40 @@
+B4.3.23 HCI_PXLATOR_MSI_CONFIG
+
+B4.3.23.1 Intended use
+HCI_PXLATOR_MSI_CONFIG programs the MSI configuration for the Vault side of a physical XLATOR (PXLATOR). The caller identifies the PXLATOR by its physical address. For each of the three PXLATOR interrupts, the caller supplies an MSI address and MSI data value. The three interrupts are the FERROR interrupt, the EVENTQ interrupt and the PGREQQ interrupt.
+
+B4.3.23.2 Parameters
+The caller passes the following values:
+• fid, passed in R0, is the function identifier. Its value is 0xC400016E.
+• pxlator, passed in R1, is the physical address (DPA) of the PXLATOR.
+• ferr_addr, passed in R2, is the MSI address of the FERROR interrupt.
+• ferr_data, passed in R3, is the MSI data of the FERROR interrupt.
+• eventq_addr, passed in R4, is the MSI address of the EVENTQ interrupt.
+• eventq_data, passed in R5, is the MSI data of the EVENTQ interrupt.
+• pgreqq_addr, passed in R6, is the MSI address of the PGREQQ interrupt.
+• pgreqq_data, passed in R7, is the MSI data of the PGREQQ interrupt.
+All input values are 64 bits wide and use bits 63:0 of their registers.
+
+B4.3.23.3 Return values
+HCI_PXLATOR_MSI_CONFIG returns the following value:
+• result, returned in R0 using bits 63:0, is the command return status.
+
+HCI_PXLATOR_MSI_CONFIG can return the following errors:
+• HCI_ERROR_INPUT is returned if pxlator is not the address of a valid PXLATOR.
+• HCI_ERROR_INPUT is returned if the PXLATOR identified by pxlator does not support message signaled interrupts (MSIs).
+• HCI_ERROR_INPUT is returned if ferr_addr is not a valid MSI address.
+• HCI_ERROR_INPUT is returned if eventq_addr is not a valid MSI address.
+• HCI_ERROR_INPUT is returned if pgreqq_addr is not a valid MSI address.
+
+No ordering is defined between these failure conditions.
+
+B4.3.23.4 Implementation responsibilities
+If the command succeeds, the implementation must make the following register writes on the PXLATOR identified by pxlator:
+• Write ferr_addr to XLATOR_R_FERROR_IRQ_CFG0, with the PUB bit set.
+• Write ferr_data to XLATOR_R_FERROR_IRQ_CFG1.
+• Write eventq_addr to XLATOR_R_EVENTQ_IRQ_CFG0, with the PUB bit set.
+• Write eventq_data to XLATOR_R_EVENTQ_IRQ_CFG1.
+• Write pgreqq_addr to XLATOR_R_PGREQQ_IRQ_CFG0, with the PUB bit set.
+• Write pgreqq_data to XLATOR_R_PGREQQ_IRQ_CFG1.
+
+HCI_PXLATOR_MSI_CONFIG does not have any footprint.

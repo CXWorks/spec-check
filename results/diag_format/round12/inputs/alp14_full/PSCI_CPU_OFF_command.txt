@@ -1,0 +1,19 @@
+B6.3.2 PSCI_CPU_OFF
+
+B6.3.2.1 Intended use
+PSCI_CPU_OFF powers down the calling core. When a Realm calls PSCI_CPU_OFF, the call causes a REC exit due to PSCI.
+
+The command operates on the current REC, which is the REC that is running when the call is made.
+
+B6.3.2.2 Parameters
+PSCI_CPU_OFF takes the following input value:
+•  fid, passed in X0, bits 63:0. This is the function identifier and must have the value 0xC4000002.
+
+B6.3.2.3 Return values
+PSCI_CPU_OFF has no output values. After PSCI_CPU_OFF runs, control does not return to the caller.
+
+B6.3.2.4 Implementation responsibilities
+For PSCI_CPU_OFF, the following apply:
+•  The command has no failure conditions. As a result, it returns no error codes and there is no ordering between failure conditions.
+•  The command has no success conditions. After it runs, control does not return to the caller.
+•  The command does not list any state that it can modify.

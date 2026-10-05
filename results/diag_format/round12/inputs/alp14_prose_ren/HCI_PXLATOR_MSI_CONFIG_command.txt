@@ -1,0 +1,33 @@
+B4.3.23 HCI_PXLATOR_MSI_CONFIG command
+               Program the MSI configuration for the Vault side of the physical XLATOR.
+               B4.3.23.1 Interface
+               B4.3.23.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  R0          63:0        UInt64                                FID, value 0xC400016E
+        pxlator                R1          63:0        Address                               DPA of PXLATOR
+        ferr_addr            R2          63:0        Address                               MSI address of the FERROR interrupt
+        ferr_data            R3          63:0        Bits64                                MSI data of the FERROR interrupt
+        eventq_addr          R4          63:0        Address                               MSI address of the EVENTQ interrupt
+        eventq_data          R5          63:0        Bits64                                MSI data of the EVENTQ interrupt
+        pgreqq_addr            R6          63:0        Address                               MSI address of the PGREQQ interrupt
+        pgreqq_data            R7          63:0        Bits64                                MSI data of the PGREQQ interrupt
+               B4.3.23.1.2   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               R0          63:0        Hcicommandreturncode                  Command return status
+               B4.3.23.2 Failure conditions
+HCI_ERROR_INPUT is returned if pxlator is not the address of a valid PXLATOR.
+HCI_ERROR_INPUT is returned if the PXLATOR identified by pxlator does not support message signaled interrupts (MSIs).
+HCI_ERROR_INPUT is returned if ferr_addr is not a valid MSI address.
+HCI_ERROR_INPUT is returned if eventq_addr is not a valid MSI address.
+HCI_ERROR_INPUT is returned if pgreqq_addr is not a valid MSI address.
+               B4.3.23.2.1   Failure condition ordering
+               The HCI_PXLATOR_MSI_CONFIG command does not have any failure condition orderings.
+              B4.3.23.3 Success conditions
+ferr_addr is written to XLATOR_R_FERROR_IRQ_CFG0, with the PUB bit set.
+ferr_data is written to XLATOR_R_FERROR_IRQ_CFG1.
+eventq_addr is written to XLATOR_R_EVENTQ_IRQ_CFG0, with the PUB bit set.
+eventq_data is written to XLATOR_R_EVENTQ_IRQ_CFG1.
+pgreqq_addr is written to XLATOR_R_PGREQQ_IRQ_CFG0, with the PUB bit set.
+pgreqq_data is written to XLATOR_R_PGREQQ_IRQ_CFG1.
+              B4.3.23.4 Footprint
+              The HCI_PXLATOR_MSI_CONFIG command does not have any footprint.

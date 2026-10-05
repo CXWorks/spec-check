@@ -1,0 +1,29 @@
+5.20 SYSTEM_SUSPEND command
+               Requests that the system enter a suspend to RAM state, such as the S2 or S3 states described in the ACPI specification. The calling core resumes execution at entry_point_address on wakeup. The function is optional and was introduced in PSCI 1.0.
+               5.20.1 Interface
+               5.20.1.1   Input values
+        Name                   Register         Bits             Type                     Description
+        fid                    Not specified    Not specified    UInt64                   Function ID for SYSTEM_SUSPEND
+        entry_point_address    Not specified    Not specified    Address                  Address where the calling core resumes execution on wakeup
+        context_id             Not specified    Not specified    Not specified            Context ID that enables resumption on wakeup
+               5.20.1.2   Output values
+        Name                   Register         Bits             Type                     Description
+        result                 Not specified    Not specified    PSCI return code         Command return status
+               5.20.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !SystemSuspendImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  entry_addr                  pre: IsKnownUnavailableToCaller(entry_point_address)
+                              post: ResultEqual(result, INVALID_ADDRESS)
+  cpu_state                   pre: Exists(core : core != CallingCore() && CoreState(core) != OFF)
+                              post: ResultEqual(result, DENIED)
+               5.20.2.1   Failure condition ordering
+               The SYSTEM_SUSPEND command does not have any failure condition orderings.
+               5.20.3 Success conditions
+  ID                          Condition
+  sys_state                   post: SystemPowerState() == DeepestPlatformPowerdownState()
+  resume                      post: OnWakeup(CallingCore() resumes execution at entry_point_address)
+               5.20.4 Footprint
+    ID                        Value
+    sys_state                 SystemPowerState()
+    cpu_state                 CoreState(CallingCore())

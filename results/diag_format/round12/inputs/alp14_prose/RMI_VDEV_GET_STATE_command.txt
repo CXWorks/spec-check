@@ -1,0 +1,35 @@
+B4.3.55 RMI_VDEV_GET_STATE command
+                Get state of a VDEV.
+                B4.3.55.1 Interface
+                B4.3.55.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000189
+        vdev_ptr              X1          63:0        Address                               PA of the VDEV
+                B4.3.55.1.2   Context
+                The RMI_VDEV_GET_STATE command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        vdev                  RmmVdev                    VdevAt(vdev_ptr)                           false    VDEV
+                B4.3.55.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        state                 X1          7:0         RmiVdevState                          VDEV state
+                The following unused bits of RMI_VDEV_GET_STATE output values MBZ: X1[63:8].
+                B4.3.55.2 Failure conditions
+
+RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+
+RMI_ERROR_INPUT is returned if vdev_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if vdev_ptr is not a physical address that can be delegated.
+
+RMI_ERROR_INPUT is returned if the Granule at vdev_ptr is not in the VDEV state.
+
+             B4.3.55.2.1   Failure condition ordering
+
+The check for Device Assignment support comes before all other checks. If Device Assignment is not supported, RMI_ERROR_NOT_SUPPORTED is returned even when vdev_ptr is also invalid. The three RMI_ERROR_INPUT checks have no defined order among themselves: the alignment of vdev_ptr, whether vdev_ptr can be delegated, and whether the Granule at vdev_ptr is in the VDEV state.
+
+             B4.3.55.3 Success conditions
+
+The output argument state equals the current state of the VDEV object at vdev_ptr.
+             B4.3.55.4 Footprint
+             The RMI_VDEV_GET_STATE command does not have any footprint.

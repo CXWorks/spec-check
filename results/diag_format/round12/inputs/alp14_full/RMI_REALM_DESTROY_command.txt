@@ -1,0 +1,37 @@
+B4.3.26 RMI_REALM_DESTROY
+
+B4.3.26.1 Intended use
+RMI_REALM_DESTROY destroys a Realm. The caller supplies the physical address of the Realm Descriptor (RD) of the Realm to be destroyed.
+
+B4.3.26.2 Parameters
+RMI_REALM_DESTROY takes the following input values:
+•  fid, passed in X0. This is the function identifier. Its value is 0xC4000159.
+•  rd, passed in X1. This is the physical address of the RD of the Realm to be destroyed.
+
+The command uses the following information about the Realm, as it was before the command ran:
+•  The Realm that rd describes.
+•  The number of Realms that are members of the Realm's MEC.
+
+B4.3.26.3 Return values
+RMI_REALM_DESTROY returns the following output value:
+•  result, passed in X0. This is the command return status.
+
+RMI_REALM_DESTROY can return the following errors:
+•  RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+•  RMI_ERROR_INPUT is returned if the Granule at address rd is not in the RD state.
+•  RMI_ERROR_REALM is returned if the Realm described by rd is live.
+
+Two checks come before the check that the Realm is live. These are the check that rd is a physical address that can be delegated, and the check that the Granule at address rd is in the RD state. If rd cannot be delegated, or the Granule at address rd is not in the RD state, the command returns RMI_ERROR_INPUT. It does this even if the Realm is also live.
+
+B4.3.26.4 Implementation responsibilities
+The command reads the values below from the Realm as it was before the command ran. On success, the implementation must make sure that:
+•  The starting-level RTTs of the Realm are in the DELEGATED state. These RTTs start at the Realm's first RTT base address, and their number is the Realm's rtt_num_start value.
+•  The Granule at address rd is in the DELEGATED state.
+•  The VMID that the Realm used is free.
+•  If the Realm's MEC policy was MEC_POLICY_PRIVATE, the Realm's MECID is in the MEC_STATE_PRIVATE_UNASSIGNED state.
+•  If the Realm's MEC policy was MEC_POLICY_SHARED, the Realm's MECID has one fewer member than it had before the command ran.
+
+The command may modify the following state:
+•  The state of the Granule at address rd.
+•  The state of the Granules that hold the Realm's starting-level RTTs. These start at the Realm's first RTT base address, and their number is the Realm's rtt_num_start value.

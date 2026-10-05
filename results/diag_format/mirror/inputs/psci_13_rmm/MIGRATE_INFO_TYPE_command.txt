@@ -1,0 +1,63 @@
+5.9.1 MIGRATE_INFO_TYPE command
+               Reports whether the Trusted OS is uniprocessor and can migrate, so the Normal world can tell whether it can use CPU_OFF and MIGRATE. The caller can target any core with this command. The information returned is constant and does not change on later calls.
+               5.9.1.1 Interface
+               5.9.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                Function ID of MIGRATE_INFO_TYPE
+               This command takes no parameters.
+               5.9.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        MigrateInfoType                       0: Uniprocessor (UP), can migrate
+                                                                                           1: Uniprocessor (UP), cannot migrate
+                                                                                           2: Multiprocessor (MP) capable, or no Trusted OS present
+                                                                                           NOT_SUPPORTED: same effect as 2 (see Table 9)
+               5.9.1.2 Failure conditions
+               The MIGRATE_INFO_TYPE command does not have any failure conditions.
+               5.9.1.2.1   Failure condition ordering
+               The MIGRATE_INFO_TYPE command does not have any failure condition orderings.
+               5.9.1.3 Success conditions
+  ID                          Condition
+  up_migrate                  pre: TrustedOsIsUniprocessor() && TrustedOsIsMigrateCapable()
+                              post: ResultEqual(result, 0)
+  up_no_migrate               pre: TrustedOsIsUniprocessor() && !TrustedOsIsMigrateCapable()
+                              post: ResultEqual(result, 1)
+  mp_or_absent                pre: TrustedOsIsMultiprocessorAware() || !TrustedOsIsPresent()
+                              post: ResultEqual(result, 2)
+  constant                    post: result == PreviousMigrateInfoTypeResult()
+  type0_cpu_off               pre: ResultEqual(result, 0)
+                              post: ReturnOf(CPU_OFF, on TrustedOsResidentCpu()) == DENIED
+  type0_migrate               pre: ResultEqual(result, 0) && IsValidMpidr(target_cpu)
+                              post: ReturnOf(MIGRATE(target_cpu), on TrustedOsResidentCpu()) == SUCCESS
+  type1_cpu_off               pre: ResultEqual(result, 1)
+                              post: ReturnOf(CPU_OFF, on TrustedOsResidentCpu()) == DENIED
+  type1_migrate               pre: ResultEqual(result, 1)
+                              post: ReturnOf(MIGRATE(target_cpu)) == DENIED
+  type2_cpu_off               pre: ResultEqual(result, 2) || ResultEqual(result, NOT_SUPPORTED)
+                              post: CPU_OFF on any core does not return (no prior MIGRATE needed)
+  type2_migrate               pre: ResultEqual(result, 2) || ResultEqual(result, NOT_SUPPORTED)
+                              post: ReturnOf(MIGRATE(target_cpu)) == NOT_SUPPORTED, with no other effect
+               5.9.1.4 Footprint
+               The MIGRATE_INFO_TYPE command does not modify any state.
+
+5.9.2 MIGRATE_INFO_UP_CPU command
+               Returns an MPIDR-based value for the core where a uniprocessor Trusted OS currently runs. The caller can target any core with this command. Arm expects a caller to use it once, at initial boot. After that, the caller can track Trusted OS residency from the success or failure of MIGRATE calls. The caller must avoid races between MIGRATE and MIGRATE_INFO_UP_CPU.
+               5.9.2.1 Interface
+               5.9.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                Function ID of MIGRATE_INFO_UP_CPU
+               This command takes no parameters.
+               5.9.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Mpidr                                 Core where the Trusted OS currently runs. Uses the same format as target_cpu in CPU_ON and MIGRATE (see section 5.1.4).
+               5.9.2.2 Failure conditions
+               The MIGRATE_INFO_UP_CPU command does not have any failure conditions.
+               5.9.2.2.1   Failure condition ordering
+               The MIGRATE_INFO_UP_CPU command does not have any failure condition orderings.
+               5.9.2.3 Success conditions
+  ID                          Condition
+  up_resident                 pre: MigrateInfoType() == 0 || MigrateInfoType() == 1
+                              post: result == MpidrOf(TrustedOsResidentCpu())
+  mp_undefined                pre: MigrateInfoType() == 2
+                              post: result is UNDEFINED
+               5.9.2.4 Footprint
+               The MIGRATE_INFO_UP_CPU command does not modify any state.

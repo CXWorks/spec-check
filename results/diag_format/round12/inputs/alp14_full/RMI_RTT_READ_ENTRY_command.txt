@@ -1,0 +1,82 @@
+B4.3.43 RMI_RTT_READ_ENTRY
+
+B4.3.43.1 Intended use
+RMI_RTT_READ_ENTRY reads an entry from a primary RTT. The Host provides the Realm, a Realm address and an RTT level. The RMM walks the Realm's primary RTT tree to the given address, stopping at the given level. It then returns the level where the walk ended and the state of the RTT entry found there. It also returns the entry's descriptor and RIPAS.
+
+B4.3.43.2 Parameters
+RMI_RTT_READ_ENTRY takes the following input values:
+•  fid is passed in X0, bits 63:0. It is the function identifier, with the value 0xC4000161.
+•  rd is passed in X1, bits 63:0. It is the physical address of the RD for the target Realm.
+•  ipa is passed in X2, bits 63:0. It is the Realm address for which to read the RTTE.
+•  level is passed in X3, bits 63:0. It is a signed 64-bit value giving the RTT level at which to read the RTTE.
+
+The command acts on the Realm whose RD is at rd. It walks that Realm's primary RTT tree to ipa, ending at level. The RTT entry value that the command returns to the Host is desc, decoded according to the Realm's stage 2 access permission encoding. In the rest of this section, "the output RTT entry" means this decoded value.
+
+B4.3.43.3 Return values
+RMI_RTT_READ_ENTRY returns the following output values:
+•  result is returned in X0, bits 63:0. It is the command return status.
+•  walk_level is returned in X1, bits 63:0. It is the RTT level that the RTT walk reached.
+•  state is returned in X2, bits 7:0. It is the state of the RTTE that the walk reached.
+•  desc is returned in X3, bits 63:0. It is the RTTE descriptor.
+•  ripas is returned in X4, bits 7:0. It is the RIPAS of the RTTE that the walk reached.
+
+The following unused bits of the output values must be zero: X2[63:8] and X4[63:8].
+
+The layout and encoding of the fields in desc match "Attribute fields in stage 2 VMSAv8-64 Block and Page descriptors" in the Arm Architecture Reference Manual for A-Profile architecture [3].
+
+RMI_RTT_READ_ENTRY can return the following errors:
+•  RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+•  RMI_ERROR_INPUT is returned if level is not a valid RTT level for the Realm.
+•  RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that an RTT entry at level describes.
+•  RMI_ERROR_INPUT is returned if ipa is greater than or equal to 2 to the power of the Realm's IPA width.
+
+These failure conditions have no defined order relative to each other.
+
+B4.3.43.4 Implementation responsibilities: outputs on success
+In this subsection, "the RTT walk" means the walk of the Realm's RTTs to ipa, ending at level. "The entry found" means the RTT entry where that walk ends.
+
+When the command succeeds, the RMM must return values as follows:
+•  walk_level is the level where the RTT walk ended.
+•  state is the RMI encoding of the state of the entry found.
+•  If the entry found is in the UNASSIGNED or UNASSIGNED_NS state, all of the following are true of the output RTT entry:
+   –  Its unprotected attributes (attr_unprot) are all zero.
+   –  Its indirect stage 2 access permission base index is S2AP_NO_ACCESS.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is RMM_FALSE.
+   –  Its direct stage 2 write permission is RMM_FALSE.
+   –  Its address is zero.
+•  If the entry found is in the ASSIGNED, ASSIGNED_DEV, ASSIGNED_VSMMU or TABLE state, all of the following are true of the output RTT entry:
+   –  Its unprotected attributes (attr_unprot) are all zero.
+   –  Its indirect stage 2 access permission base index is S2AP_NO_ACCESS.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is RMM_FALSE.
+   –  Its direct stage 2 write permission is RMM_FALSE.
+   –  Its address is the address held in the entry found.
+•  If the entry found is in the ASSIGNED_NS state, all of the following are true of the output RTT entry:
+   –  Its unprotected attributes (attr_unprot) are the same as those of the entry found.
+   –  Its indirect stage 2 access permission base index is the same as that of the entry found.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is the same as that of the entry found.
+   –  Its direct stage 2 write permission is the same as that of the entry found.
+   –  Its address is the address held in the entry found.
+•  If the entry found is in the ASSIGNED_DEV state, all of the following are true of the output RTT entry:
+   –  Its unprotected attributes (attr_unprot) are all zero.
+   –  Its indirect stage 2 access permission base index is S2AP_NO_ACCESS.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is RMM_FALSE.
+   –  Its direct stage 2 write permission is RMM_FALSE.
+   –  Its address is the address held in the entry found.
+•  If the entry found is in the ASSIGNED_VSMMU state, all of the following are true of the output RTT entry:
+   –  Its unprotected attributes (attr_unprot) are all zero.
+   –  Its indirect stage 2 access permission base index is S2AP_NO_ACCESS.
+   –  Its indirect stage 2 access permission overlay index is 0.
+   –  Its direct stage 2 read permission is RMM_FALSE.
+   –  Its direct stage 2 write permission is RMM_FALSE.
+   –  Its address is the address held in the entry found.
+•  If the entry found is in the UNASSIGNED or ASSIGNED state, ripas is the RMI encoding of the RIPAS of the entry found.
+•  If the entry found is in the UNASSIGNED_NS or ASSIGNED_NS state, ripas is RMI_EMPTY.
+
+B4.3.43.5 Implementation responsibilities: state changes
+RMI_RTT_READ_ENTRY does not change any state.

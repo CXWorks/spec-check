@@ -1,0 +1,35 @@
+B4.3.29 HCI_WORKER_DESTROY
+
+B4.3.29.1 Intended use
+HCI_WORKER_DESTROY destroys a WORKER. The caller provides the physical address of the target WORKER.
+
+The command operates on the following:
+• The target WORKER, which is the WORKER at worker_ptr. The command uses the WORKER both as it was before the command ran and as it is after the command completes.
+• The owning Vault of the target WORKER. Its VD address is the owner recorded in the WORKER before the command ran. The command uses the Vault both as it was before the command ran and as it is after the command completes.
+
+B4.3.29.2 Parameters
+• fid, passed in R0 (bits 63:0): the function identifier, value 0xC400015B.
+• worker_ptr, passed in R1 (bits 63:0): the physical address (DPA) of the target WORKER.
+
+B4.3.29.3 Return values
+• result, returned in R0 (bits 63:0): the command return status.
+
+B4.3.29.4 Caller responsibilities
+HCI_WORKER_DESTROY can return the following errors:
+• HCI_ERROR_INPUT is returned if worker_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if worker_ptr is not a physical address that can be enrolled.
+• HCI_ERROR_INPUT is returned if the Extent at worker_ptr is not in the WORKER state.
+• HCI_ERROR_WORKER is returned if the WORKER is in the WORKER_RUNNING state.
+
+The KEEPER checks that worker_ptr can be enrolled, and that the Extent at worker_ptr is in the WORKER state, before it checks whether the WORKER is in the WORKER_RUNNING state. If worker_ptr fails either of the first two checks, HCI_ERROR_INPUT is returned, not HCI_ERROR_WORKER. This ordering does not cover the check that worker_ptr is Extent-aligned.
+
+B4.3.29.5 Implementation responsibilities
+On success, the following are true after HCI_WORKER_DESTROY completes:
+• The Extent at worker_ptr is in the ENROLLED state.
+• Each auxiliary Extent of the WORKER is in the ENROLLED state. These are the auxiliary Extents the WORKER had before the command ran. Their number is the WORKER auxiliary Extent count for the owning Vault, as it was before the command ran.
+• The Vault's WORKER count, num_workers, is one less than it was before the command ran.
+
+HCI_WORKER_DESTROY may modify only the following state:
+• worker_state: the state of the Extent at worker_ptr.
+• worker_aux_state: the states of the WORKER's auxiliary Extents. These are the auxiliary Extents the WORKER had before the command ran. Their number is the WORKER auxiliary Extent count for the owning Vault before the command ran.
+• num_workers: the Vault's WORKER count.

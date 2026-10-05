@@ -1,0 +1,136 @@
+B4.3.25 RMI_REALM_CREATE command
+              Creates a Realm.
+              B4.3.25.1 Interface
+              B4.3.25.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 X0          63:0        UInt64                                FID, value 0xC4000158
+        rd                  X1          63:0        Address                               PA of the RD
+        params_ptr          X2          63:0        Address                               PA of Realm parameters
+              B4.3.25.1.2   Context
+              The RMI_REALM_CREATE command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        params              RmiRealmParams             RmiRealmParamsAt(                          false    Realm parameters
+                                                           params_ptr)
+        realm               RmmRealm                   RealmAt(rd)                                false    Realm
+        mec_members_pre UInt64                         MecMembers(params.mecid)                   true     Number of Realms
+                                                                                                           which are members of
+                                                                                                           the Realm’s MEC
+        mec_state_pre       RmmMecState                MecState(params.mecid)                     true     MECID state
+              B4.3.25.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              X0          63:0        RmiCommandReturnCode                  Command return status
+              B4.3.25.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if params_ptr is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if the Granule at params_ptr cannot be accessed in the Non-secure physical address space.
+
+RMI_ERROR_INPUT is returned if the RmiRealmParams data structure at params_ptr is not valid.
+
+RMI_ERROR_INPUT is returned if the implementation does not support the Realm parameters that the Host provided.
+
+RMI_ERROR_INPUT is returned if rd lies inside the address range that starts at params.rtt_base. This range is (params.rtt_num_start minus one) Granules long.
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a physical address in delegable DRAM.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the DELEGATED state.
+
+RMI_ERROR_INPUT is returned if params.rtt_base is not aligned to params.rtt_num_start Granules.
+
+RMI_ERROR_INPUT is returned if params.s2sz, params.rtt_level_start and params.rtt_num_start do not form a valid RTT configuration when taken together.
+
+RMI_ERROR_INPUT is returned if any of the params.rtt_num_start Granules starting at params.rtt_base is not in the DELEGATED state.
+
+RMI_ERROR_INPUT is returned if params.vmid or params.aux_vmid is not a valid VMID, or if either of them is already in use.
+
+RMI_ERROR_INPUT is returned if params.mecid is greater than the largest MECID that the implementation supports.
+
+RMI_ERROR_INPUT is returned if the MEC state of params.mecid is MEC_STATE_PRIVATE_ASSIGNED.
+
+                B4.3.25.2.1   Failure condition ordering
+
+                The RMI_REALM_CREATE command does not have any failure condition orderings.
+
+                B4.3.25.3 Success conditions
+
+The state of the Granule at rd is RD.
+
+The state of the Realm is REALM_NEW.
+
+The REC index of the Realm is zero.
+
+The RTT base addresses of the Realm are params.rtt_base and params.aux_rtt_base.
+
+The realm.rtt_num_start Granules that start at the Realm's primary RTT base address are in the RTT state.
+
+In those starting-level RTTs, every entry that describes a Protected IPA is in the UNASSIGNED state.
+
+In those starting-level RTTs, every entry that describes an Unprotected IPA is in the UNASSIGNED_NS state.
+
+In those starting-level RTTs, the RIPAS of every entry that describes a Protected IPA is EMPTY.
+
+The Realm's LPA2 feature setting matches params.flags0.lpa2.
+
+The IPA width of the Realm is params.s2sz.
+
+The hash algorithm of the Realm matches params.hash_algo.
+
+The RIM of the Realm (measurement 0) is the initial RIM value. This value is calculated from the Realm's hash algorithm and the Realm parameters, as described in B4.3.25.4.
+
+The four REMs of the Realm (measurements 1, 2, 3 and 4) are all zero, each RMM_REALM_MEASUREMENT_WIDTH wide.
+
+The starting RTT level of the Realm is params.rtt_level_start.
+
+The number of starting-level RTTs of the Realm is params.rtt_num_start.
+
+The VMIDs of the Realm are params.vmid and params.aux_vmid.
+
+The RPV of the Realm is params.rpv.
+
+The Realm's DA feature setting matches params.flags0.da.
+
+The Realm's ATS feature setting matches params.flags1.ats.
+
+The ATS Plane of the Realm is params.ats_plane.
+
+The Realm's RTT-tree-per-Plane setting matches params.flags1.rtt_tree_per_plane.
+
+The number of auxiliary Planes of the Realm is params.num_aux_planes.
+
+The Realm's RTT S2AP encoding setting matches params.flags1.rtt_s2ap_encoding.
+
+The Realm's LFA policy matches params.flags0.lfa_policy.
+
+The MECID of the Realm is params.mecid.
+
+The MEC policy of the Realm is the MEC policy that belongs to the Realm's MECID.
+
+If params.mecid was in the MEC_STATE_PRIVATE_UNASSIGNED state before the command ran, it is now in the MEC_STATE_PRIVATE_ASSIGNED state.
+
+If params.mecid was in the MEC_STATE_SHARED state before the command ran, its member count is now one greater than it was before the command.
+
+The number of RECs in the Realm is zero.
+
+The number of VDEVs in the Realm is zero.
+
+The number of VSMMUs in the Realm is zero.
+
+                B4.3.25.4 RMI_REALM_CREATE initialization of RIM
+
+On successful execution of RMI_REALM_CREATE, the initial RIM value of the target Realm is calculated by the RMM as follows:
+                  1. Allocate a zero-filled RmiRealmParams data structure to hold the measured Realm parameters.
+  2. Copy the following attributes from the Host-provided RmiRealmParams data structure into the measured Realm parameters data structure:
+                   • flags0
+                   • s2sz
+                   • sve_vl
+                   • num_bps
+                   • num_wps
+                   • pmu_num_ctrs
+                   • hash_algo
+  3. Using the RHA of the target Realm, compute the hash of the measured Realm parameters data structure. Set the RIM of the target Realm to this value, zero filling upper bytes if the RHA output is smaller than the size of the RIM.
+                B4.3.25.5 Footprint
+    ID                            Value
+    rd_state                      GranuleAt(rd).state
+    rtt_state                     RttsGranuleState( realm.rtt_base[[0]], realm.rtt_num_start)

@@ -1,0 +1,43 @@
+B4.3.53 RMI_VDEV_GET_INTERFACE_REPORT
+
+B4.3.53.1 Intended use
+RMI_VDEV_GET_INTERFACE_REPORT gets the interface report of a VDEV. The Host calls it and gives the RD of a Realm and a VDEV that belongs to that Realm.
+
+B4.3.53.2 Parameters
+The caller passes these input values:
+•  fid, passed in X0. This is the function identifier. Its value is 0xC40001D0.
+•  rd, passed in X1. This is the physical address of the RD of the Realm.
+•  vdev_ptr, passed in X2. This is the physical address of the VDEV.
+
+The command uses the Realm described by rd and the VDEV at vdev_ptr. Neither of these is evaluated before the command runs.
+
+B4.3.53.3 Return values
+The command returns this output value:
+•  result, returned in X0. This is the status that the command returns.
+
+B4.3.53.4 Caller responsibilities
+RMI_VDEV_GET_INTERFACE_REPORT can return the following errors:
+•  RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+•  RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+•  RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+•  RMI_ERROR_INPUT is returned if vdev_ptr is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if vdev_ptr is not a physical address that can be delegated.
+•  RMI_ERROR_INPUT is returned if the Granule at vdev_ptr is not in the VDEV state.
+•  RMI_ERROR_INPUT is returned if the VDEV at vdev_ptr does not belong to the Realm described by rd.
+•  RMI_ERROR_DEVICE is returned if the VDEV is in neither the VDEV_LOCKED state nor the VDEV_STARTED state.
+•  RMI_ERROR_DEVICE is returned if the communication state of the VDEV is not DEV_COMM_IDLE.
+
+The command makes some checks before others:
+•  The command first checks that rd can be delegated, that the Granule at rd is in the RD state, that vdev_ptr can be delegated, and that the Granule at vdev_ptr is in the VDEV state. Only after these checks does it check that the VDEV belongs to the Realm described by rd.
+•  The check that the implementation supports Device Assignment comes before each of these checks: rd can be delegated, the Granule at rd is in the RD state, vdev_ptr is aligned to the size of a Granule, vdev_ptr can be delegated, the Granule at vdev_ptr is in the VDEV state, and the VDEV belongs to the Realm described by rd.
+•  The check that the Granule at vdev_ptr is in the VDEV state comes before the check of the VDEV state. It also comes before the check of the VDEV communication state.
+
+B4.3.53.5 Implementation responsibilities
+If the command succeeds, the implementation must make sure of the following:
+•  The pending operation of the VDEV is VDEV_OP_GET_REPORT.
+•  The communication state of the VDEV is DEV_COMM_PENDING.
+
+The command can modify only this state:
+•  The pending operation of the VDEV.
+•  The communication state of the VDEV.

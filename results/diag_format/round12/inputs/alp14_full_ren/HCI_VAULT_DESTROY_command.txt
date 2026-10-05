@@ -1,0 +1,37 @@
+B4.3.26 HCI_VAULT_DESTROY
+
+B4.3.26.1 Intended use
+HCI_VAULT_DESTROY destroys a Vault. The caller supplies the physical address of the Vault Descriptor (VD) of the Vault to be destroyed.
+
+B4.3.26.2 Parameters
+HCI_VAULT_DESTROY takes the following input values:
+•  fid, passed in R0. This is the function identifier. Its value is 0xC4000159.
+•  vd, passed in R1. This is the physical address of the VD of the Vault to be destroyed.
+
+The command uses the following information about the Vault, as it was before the command ran:
+•  The Vault that vd describes.
+•  The number of Vaults that are members of the Vault's ZONE.
+
+B4.3.26.3 Return values
+HCI_VAULT_DESTROY returns the following output value:
+•  result, passed in R0. This is the command return status.
+
+HCI_VAULT_DESTROY can return the following errors:
+•  HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+•  HCI_ERROR_INPUT is returned if the Extent at address vd is not in the VD state.
+•  HCI_ERROR_VAULT is returned if the Vault described by vd is live.
+
+Two checks come before the check that the Vault is live. These are the check that vd is a physical address that can be enrolled, and the check that the Extent at address vd is in the VD state. If vd cannot be enrolled, or the Extent at address vd is not in the VD state, the command returns HCI_ERROR_INPUT. It does this even if the Vault is also live.
+
+B4.3.26.4 Implementation responsibilities
+The command reads the values below from the Vault as it was before the command ran. On success, the implementation must make sure that:
+•  The starting-level Blts of the Vault are in the ENROLLED state. These Blts start at the Vault's first BLT base address, and their number is the Vault's blt_num_start value.
+•  The Extent at address vd is in the ENROLLED state.
+•  The TENANTID that the Vault used is free.
+•  If the Vault's ZONE policy was ZONE_POLICY_PRIVATE, the Vault's ZONEID is in the ZONE_STATE_PRIVATE_UNASSIGNED state.
+•  If the Vault's ZONE policy was ZONE_POLICY_SHARED, the Vault's ZONEID has one fewer member than it had before the command ran.
+
+The command may modify the following state:
+•  The state of the Extent at address vd.
+•  The state of the Extents that hold the Vault's starting-level Blts. These start at the Vault's first BLT base address, and their number is the Vault's blt_num_start value.

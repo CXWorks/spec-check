@@ -1,0 +1,25 @@
+5.1.5 SDEI_EVENT_CONTEXT command
+               Retrieves additional context information within an event handler.
+               5.1.5.1 Interface
+               5.1.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000024
+        param_id            X1           31:0        UInt32                                Parameter identifier. 0-17: register X0-X17 of the client PE at the time of the event. All other values are reserved for future use.
+               5.1.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 On success, the value of the register selected by param_id. On error, the error code.
+               5.1.5.2 Failure conditions
+  ID                          Condition
+  sdei_supported              pre: !IsSdeiSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  param_id_valid              pre: !IsValidContextParamId(param_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  handler_running             pre: !IsHandlerRunningOnPe(CurrentPe())
+                              post: ResultEqual(result, DENIED)
+               5.1.5.2.1   Failure condition ordering
+               The SDEI_EVENT_CONTEXT command does not have any failure condition orderings.
+               5.1.5.3 Success conditions
+  ID                          Condition
+  context_value               post: result == EventContextRegister(CurrentPe(), param_id)
+               5.1.5.4 Footprint
+               The SDEI_EVENT_CONTEXT command does not modify any state.

@@ -1,0 +1,21 @@
+5.12 SYSTEM_RESET command
+               Performs a system cold reset of the calling OS's machine view. To the caller, this behaves the same as a hardware power-cycle sequence.
+               5.12.1 Interface
+               5.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           63:0        UInt64                                FID of SYSTEM_RESET (value not given in this section)
+               5.12.1.2   Output values
+               This section does not specify any output values. Unless the response to the call is virtualized, the system power cycles and the call does not complete back to the caller.
+               5.12.2 Failure conditions
+               This section does not specify any failure conditions for the SYSTEM_RESET command.
+               5.12.2.1   Failure condition ordering
+               The SYSTEM_RESET command does not have any failure condition orderings.
+               5.12.3 Success conditions
+  ID                          Condition
+  cold_reset                  post: SystemColdResetPerformed(MachineViewOf(caller))
+  power_cycle                 post: !IsResponseVirtualized() ==> SystemPowerCycled(MachineViewOf(caller))
+               5.12.3.1   Caller responsibilities
+               If possible, cores should be put in a known state before the call. Cores do not need to coordinate with each other.
+               5.12.4 Footprint
+    ID                        Value
+    machine_view              MachineViewOf(caller)

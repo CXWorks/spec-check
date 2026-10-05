@@ -1,0 +1,45 @@
+B5.3.21 RSI_VSMMU_ACTIVATE
+
+B5.3.21.1 Intended use
+RSI_VSMMU_ACTIVATE is intended for activating a VSMMU. The Realm calls RSI_VSMMU_ACTIVATE with a target IPA region, given by a base address and a top address.
+
+The command uses the following context:
+• The Realm is the current Realm, meaning the Realm that issued the call.
+• The RTT walk is done in the current Realm's primary RTT tree. It starts at base and targets the page level.
+• The VSMMU is the one located at the address recorded in the RTT entry that the RTT walk reaches.
+
+The command returns new_base. This is the base of the part of the IPA region that the command did not modify.
+
+B5.3.21.2 Parameters
+• fid, passed in X0: the function identifier. Its value is 0xC400019B.
+• base, passed in X1: the base of the target IPA region.
+• top, passed in X2: the top of the target IPA region.
+
+B5.3.21.3 Return values
+• result, returned in X0: the command return status.
+• new_base, returned in X1: the base of the IPA region that the command did not modify.
+
+B5.3.21.4 Caller responsibilities
+Before calling RSI_VSMMU_ACTIVATE, the caller must ensure the following:
+• base is aligned to the size of a Granule.
+• top is aligned to the size of a Granule.
+• top is greater than base, compared as unsigned integers.
+• The address range from base up to, but not including, top lies entirely within the Protected IPA space of the Realm.
+• The RTT entry reached by the RTT walk is in the ASSIGNED_VSMMU state.
+
+RSI_VSMMU_ACTIVATE can return the following errors:
+• RSI_ERROR_INPUT is returned if base is not aligned to the size of a Granule.
+• RSI_ERROR_INPUT is returned if top is not aligned to the size of a Granule.
+• RSI_ERROR_INPUT is returned if top is less than or equal to base, compared as unsigned integers.
+• RSI_ERROR_INPUT is returned if the address range from base up to, but not including, top is not entirely within the Protected IPA space of the Realm.
+• RSI_ERROR_INPUT is returned if the RTT entry reached by the RTT walk is not in the ASSIGNED_VSMMU state.
+
+These failure conditions have no defined order relative to each other.
+
+B5.3.21.5 Implementation responsibilities
+When RSI_VSMMU_ACTIVATE succeeds, the implementation must ensure the following:
+• The RIPAS of the address range from base up to, but not including, new_base is DEV.
+• If base equals the base address of the VSMMU register region and new_base does not equal the top address of that region, the VSMMU state is VSMMU_ACTIVATING.
+• If new_base equals the top address of the VSMMU register region, the VSMMU state is VSMMU_ACTIVE.
+
+The original section does not list any state that RSI_VSMMU_ACTIVATE may modify.

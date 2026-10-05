@@ -1,0 +1,54 @@
+B5.3.17 RSI_VDEV_GET_INFO
+
+B5.3.17.1 Intended use
+RSI_VDEV_GET_INFO is intended for a Realm to get information about a device that is assigned to it. The Realm calls RSI_VDEV_GET_INFO with a Realm device identifier and an IPA. The implementation then writes the device configuration information to a device information structure at that address.
+
+The device configuration information includes digests of the device's attestation evidence. These digests are calculated using the PDEV Hash Algorithm.
+
+The command operates on the following:
+• The current Realm, which is the Realm that issued the call.
+• The VDEV that vdev_id identifies within the current Realm.
+• The PDEV that the VDEV belongs to.
+• The device information structure at addr.
+• The result of a walk of the current Realm's primary RTT, to page level, for the IPA addr.
+
+B5.3.17.2 Parameters
+The caller passes the following input values:
+• fid, passed in X0, bits 63:0. This is the function identifier. Its value is 0xC400019D.
+• vdev_id, passed in X1, bits 63:0. This is the Realm device identifier.
+• addr, passed in X2, bits 63:0. This is the IPA where the device configuration data will be written.
+
+B5.3.17.3 Return values
+The command returns the following output value:
+• result, returned in X0, bits 63:0. This is the command return status.
+
+B5.3.17.4 Caller responsibilities
+The Realm must observe the following before a RSI_VDEV_GET_INFO call:
+• The Realm must have been created with the device assignment feature enabled.
+• vdev_id must identify a VDEV that is assigned to the Realm.
+• addr must be aligned to 512 bytes.
+• addr must be within the protected IPA space of the Realm.
+• The RIPAS of the IPA at addr must not be EMPTY.
+
+RSI_VDEV_GET_INFO can return the following errors:
+• RSI_ERROR_STATE is returned if the Realm was not created with the device assignment feature enabled.
+• RSI_ERROR_INPUT is returned if vdev_id does not identify a VDEV that is assigned to the Realm.
+• RSI_ERROR_INPUT is returned if addr is not aligned to 512 bytes.
+• RSI_ERROR_INPUT is returned if addr is not within the protected IPA space of the Realm.
+• RSI_ERROR_INPUT is returned if the RIPAS of the IPA at addr is EMPTY.
+
+The check for the device assignment feature comes before three other checks: the vdev_id check, the addr alignment check, and the check that addr is within the protected IPA space. So if the feature is not enabled, RSI_ERROR_STATE is returned even if one of those three checks would also fail. No ordering is defined between the EMPTY RIPAS check at addr and any other failure condition.
+
+B5.3.17.5 Implementation responsibilities
+On success, the implementation must write a device configuration structure to addr that contains the following values:
+• The hash algorithm is the hash algorithm of the PDEV.
+• The p2p_enabled flag shows whether peer-to-peer communication is enabled for the PDEV.
+• The p2p_bound flag shows whether the VDEV is bound to a peer-to-peer peer.
+• The p2p_peer field identifies the peer-to-peer peer of the VDEV.
+• The lock nonce, measurement nonce and report nonce match the attestation information of the VDEV.
+• The VCA digest is the VCA digest of the PDEV.
+• The measurement digest is the measurement digest of the VDEV.
+• The report digest is the report digest of the VDEV.
+• The state field is the current state of the VDEV.
+
+RSI_VDEV_GET_INFO does not modify any RMM state.

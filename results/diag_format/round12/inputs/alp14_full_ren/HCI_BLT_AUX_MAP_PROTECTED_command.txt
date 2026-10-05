@@ -1,0 +1,56 @@
+B4.3.34 HCI_BLT_AUX_MAP_PROTECTED
+
+B4.3.34.1 Intended use
+HCI_BLT_AUX_MAP_PROTECTED creates a mapping from a Protected LBA in an auxiliary BLT.
+
+The command acts on the Vault whose VD is at the physical address vd. It uses two BLT walks to the page level at lba:
+• The primary BLT walk is the walk of the Vault's primary BLT tree, KEEPER_BLT_TREE_PRIMARY.
+• The auxiliary BLT walk is the walk of the auxiliary BLT tree selected by index.
+
+The auxiliary BLT entry used by the command is the entry at lba that the auxiliary BLT walk reaches. That entry is found in the BLT where the walk ends, at the BLT entry index for lba at the level where the walk ends.
+
+B4.3.34.2 Parameters
+The caller passes these input values:
+• fid, in R0[63:0]. This is the function identifier. Its value is 0xC4000180.
+• vd, in R1[63:0]. This is the physical address of the VD for the target Vault.
+• lba, in R2[63:0]. This is the LBA in the target Vault.
+• index, in R3[63:0]. This is the BLT tree index. It selects the auxiliary BLT tree.
+
+B4.3.34.3 Return values
+The command returns these output values:
+• result, in R0[63:0]. This is the command return status.
+• state, in R1[7:0]. This is the state of the BLT entry whose contents caused the command to fail with HCI_ERROR_BLT. The HCI_ERROR_BLT_AUX conditions below also set state.
+• lbamode, in R2[7:0]. This is the LBAMODE of the BLT entry that caused the command to fail with HCI_ERROR_BLT. The HCI_ERROR_BLT_AUX conditions below also set lbamode.
+
+The unused bits of the output values, R1[63:8] and R2[63:8], must be zero.
+
+The command can return the following errors:
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if lba is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if lba is not a Protected LBA of the Vault.
+• HCI_ERROR_INPUT is returned if any of the following is true:
+  – The Vault does not use a separate BLT tree for each Tier. This means blt_tree_per_tier is FEATURE_FALSE.
+  – index is KEEPER_BLT_TREE_PRIMARY.
+  – index is greater than the number of auxiliary Tiers of the Vault.
+• HCI_ERROR_BLT is returned if the primary BLT entry at lba is not in the ASSIGNED, ASSIGNED_DEV or ASSIGNED_VXLATOR state. The error carries the level of that primary BLT entry. state is set to the state of the primary BLT entry. lbamode is set to the LBAMODE of the primary BLT entry.
+• HCI_ERROR_BLT is returned if the primary BLT entry at lba is in the ASSIGNED state and its LBAMODE is not RAM. The error carries the level of that primary BLT entry. state is set to the state of the primary BLT entry. lbamode is set to the LBAMODE of the primary BLT entry.
+• HCI_ERROR_BLT is returned if the primary BLT entry at lba is in the ASSIGNED_DEV state and its LBAMODE is not DEV. The error carries the level of that primary BLT entry. state is set to the state of the primary BLT entry. lbamode is set to the LBAMODE of the primary BLT entry.
+• HCI_ERROR_BLT_AUX is returned if the auxiliary BLT entry at lba, in the BLT tree selected by index, is in the AUX_DESTROYED state. The error carries the level of that auxiliary BLT entry. state is set to the state of the auxiliary BLT entry. lbamode is set to the LBAMODE of the primary BLT entry.
+• HCI_ERROR_BLT_AUX is returned if the auxiliary BLT walk at lba ends at a lower-numbered level than the primary BLT walk. In that case the auxiliary entry covers a larger region than the primary entry. The error carries the level of the auxiliary BLT entry. state is set to the state of the auxiliary BLT entry. lbamode is set to the LBAMODE of the primary BLT entry.
+
+The command checks some error conditions before others:
+• It checks that vd is a enrollable address and that the Extent at vd is in the VD state before it makes any of these checks:
+  – the checks on the primary BLT entry, which are its state, its LBAMODE in the ASSIGNED state and its LBAMODE in the ASSIGNED_DEV state
+  – the checks on the auxiliary BLT entry, which are the AUX_DESTROYED state and the walk level
+• It also checks that lba is a Protected LBA and that index is valid before it makes any of those primary and auxiliary BLT entry checks.
+
+B4.3.34.4 Implementation responsibilities
+When the command succeeds, the implementation must make sure that:
+• The auxiliary BLT entry at lba is in the ASSIGNED state.
+• The auxiliary BLT entry at lba has the same protection attributes as the primary BLT entry.
+• The auxiliary BLT entry at lba has the same shareability attribute as the primary BLT entry.
+• The output address of the auxiliary BLT entry is calculated from the output address of the primary BLT entry. The primary entry may cover a region made up of several auxiliary-level entries. The output address of the auxiliary entry is the address of the primary entry plus an offset. The offset is this entry's position in that region multiplied by the size of the region mapped by one entry at the auxiliary BLT entry's level.
+
+The command can modify only one item of state: the auxiliary BLT entry at lba. This is the entry at the BLT entry index for lba, in the BLT where the auxiliary BLT walk ends.

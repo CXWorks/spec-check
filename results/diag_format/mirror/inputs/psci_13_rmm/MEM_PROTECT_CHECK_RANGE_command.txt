@@ -1,0 +1,26 @@
+5.15 MEM_PROTECT_CHECK_RANGE command
+               Checks whether a memory address range is protected by MEM_PROTECT.
+               Introduced in PSCI1.1. This function is optional. If it is implemented, MEM_PROTECT must also be implemented.
+               5.15.1 Interface
+               5.15.1.1   Input values
+        Name                Register        Bits            Type                    Description
+        fid                 Not specified   Not specified   Not specified           Function ID of MEM_PROTECT_CHECK_RANGE
+        base                Not specified   Not specified   Address                 Base address of the memory range to check
+        length              Not specified   Not specified   Not specified           Length of the memory range. The range covers addresses base to base+length-1
+               5.15.1.2   Output values
+        Name                Register        Bits            Type                    Description
+        result              Not specified   Not specified   PSCI return code        Command return status: SUCCESS, DENIED or NOT_SUPPORTED
+               5.15.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !IsFunctionImplemented(MEM_PROTECT_CHECK_RANGE)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  range_prot                  pre: !IsRangeProtectedByMemProtect(base, base + length - 1)
+                              post: ResultEqual(result, DENIED)
+               5.15.2.1   Failure condition ordering
+               not_impl takes precedence over range_prot. If the function is not implemented, NOT_SUPPORTED is returned.
+               5.15.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  range_prot                  post: IsRangeProtectedByMemProtect(base, base + length - 1)
+               5.15.4 Footprint
+               The MEM_PROTECT_CHECK_RANGE command does not modify any state. It only checks whether the range is protected.

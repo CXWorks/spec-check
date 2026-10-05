@@ -1,0 +1,58 @@
+B4.3.40 HCI_BLT_FOLD
+
+B4.3.40.1 Intended use
+HCI_BLT_FOLD destroys a homogeneous primary BLT. The Host calls HCI_BLT_FOLD and identifies the target Vault, the base of the LBA range that the BLT describes, and the BLT level. The command folds the BLT into its parent BLT entry. The parent BLT entry then holds the state, and where they apply, the output address, attributes and LBAMODE that all entries of the folded BLT had before the command. The Extent that held the folded BLT is returned to the ENROLLED state.
+
+To locate the BLT, the implementation walks the Vault's primary BLT tree to lba, targeting the level one above level (level minus one). The parent BLT entry is the entry at lba in the BLT that this walk reaches, at the level where the walk stops. The BLT to be folded is the BLT that this parent BLT entry points to.
+
+B4.3.40.2 Parameters
+The caller passes these input values:
+• fid, in R0: the function identifier, value 0xC4000166.
+• vd, in R1: the physical address of the VD for the target Vault.
+• lba, in R2: the base of the LBA range that the BLT describes.
+• level, in R3: the BLT level.
+
+B4.3.40.3 Return values
+The command returns these output values:
+• result, in R0: the command return status.
+• blt, in R1: the physical address of the BLT that was destroyed. blt is valid only when result is HCI_SUCCESS.
+
+B4.3.40.4 Caller responsibilities
+Before an HCI_BLT_FOLD call, the following must be observed:
+• vd must be aligned to the size of a Extent, must be a enrollable physical address, and the Extent at vd must be in the VD state.
+• level must be a valid BLT level for the Vault and must not be the starting level of the Vault's BLT.
+• lba must be aligned to the size of the address range that one BLT entry covers at level minus one.
+• lba must be inside the Vault's LBA space, that is, less than 2 raised to the power of the Vault's LBA width.
+• The BLT walk to lba must reach level minus one, and the BLT entry it reaches must be in the TABLE state.
+• The BLT that this BLT entry points to must be homogeneous.
+• lba must not be referenced by an auxiliary BLT of the Vault.
+
+HCI_BLT_FOLD can return the following errors:
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is the starting level of the Vault's BLT.
+• HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that one BLT entry covers at level minus one.
+• HCI_ERROR_INPUT is returned if lba is outside the Vault's LBA space, that is, if lba is greater than or equal to 2 raised to the power of the Vault's LBA width.
+• HCI_ERROR_BLT is returned if the BLT walk to lba stops before it reaches level minus one. The level at which the walk stopped is also returned.
+• HCI_ERROR_BLT is returned if the BLT entry that the walk reaches is not in the TABLE state. The level at which the walk stopped is also returned.
+• HCI_ERROR_BLT is returned if the BLT that this BLT entry points to is not homogeneous. The value of level is also returned.
+• HCI_ERROR_BLT is returned if lba is referenced by an auxiliary BLT of the Vault. The level at which the walk stopped is also returned.
+
+The implementation checks these error conditions in the following order:
+• The check that vd is a enrollable physical address, and the check that the Extent at vd is in the VD state, are made before these checks: whether the BLT walk reaches level minus one, whether the BLT entry that the walk reaches is in the TABLE state, whether the BLT it points to is homogeneous, and whether lba is referenced by an auxiliary BLT.
+• The check that level is valid and is not the starting level, and the check that lba is within the Vault's LBA space, are made before these checks: whether the BLT walk reaches level minus one, and whether the BLT entry that the walk reaches is in the TABLE state.
+
+B4.3.40.5 Implementation responsibilities
+When none of the error conditions apply, HCI_BLT_FOLD returns HCI_SUCCESS, and the following hold after the command:
+• The state of the parent BLT entry for lba is set to the state that all entries in the folded BLT had before the command.
+• If the folded entries were in a state other than UNASSIGNED or UNASSIGNED_PUB, the output address of the parent BLT entry is set to the output address that the folded BLT entries had before the command.
+• If the folded entries were in the ASSIGNED state, the parent BLT entry gets the memory attributes that the folded entries had, interpreted as for Protected memory (BLT_PROTECTED). It also gets the stage 2 access permissions that the folded entries had, interpreted with the indirect encoding (XAP_INDIRECT).
+• If the folded entries were in the ASSIGNED_PUB state, the parent BLT entry gets the memory attributes that the folded entries had, interpreted as for Unprotected memory (BLT_UNPROTECTED). It also gets the stage 2 access permissions that the folded entries had, interpreted with the Vault's stage 2 access permission encoding.
+• If lba is a Protected LBA, the LBAMODE of the parent BLT entry is set to the LBAMODE that the folded entries had before the command.
+• The Extent that held the folded BLT is in the ENROLLED state.
+• The output value blt is the address of the folded BLT.
+
+HCI_BLT_FOLD can modify only the following state:
+• The state of the Extent that the parent BLT entry points to, that is, the Extent that holds the BLT being folded.
+• The parent BLT entry, that is, the entry at lba in the BLT that the walk reaches.

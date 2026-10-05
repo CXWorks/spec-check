@@ -1,0 +1,35 @@
+5.1.8 SDEI_EVENT_UNREGISTER command
+               Unregisters an event handler.
+               5.1.8.1 Interface
+               5.1.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000027
+        event               X1           31:0        Int32                                 Event number
+               5.1.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.8.2 Failure conditions
+  ID                          Condition
+  sdei_supp                   pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_valid                 pre: !IsValidEventNumber(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  event_reg                   pre: !EventIsRegisteredByClient(event)
+                              post: ResultEqual(result, DENIED)
+  handler_run                 pre: EventHandler(event).handler_running == TRUE
+                                   || EventHandler(event).state == HANDLER_UNREGISTER_PENDING
+                              post: ResultEqual(result, PENDING)
+               5.1.8.2.1   Failure condition ordering
+  [event_valid] < [event_reg]
+  [event_reg] < [handler_run]
+               5.1.8.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  unreg_shared                post: IsSharedEvent(event)
+                                    ==> !EventIsRegisteredByClient(event) on all PEs
+  unreg_private               post: IsPrivateEvent(event)
+                                    ==> !EventIsRegisteredByClient(event) on the calling PE
+  no_delivery                 post: No further events of type event are delivered to the client
+               5.1.8.4 Footprint
+    ID                        Value
+    handler_state             EventHandler(event).state

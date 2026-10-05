@@ -1,0 +1,26 @@
+5.18 CPU_DEFAULT_SUSPEND command
+               Suspends the calling core to an IMPLEMENTATION DEFINED power state. This is equivalent to CPU_SUSPEND with a power_state parameter for a core powerdown state, but the power_state parameter is omitted. This function was introduced in PSCI 1.0 and is optional.
+               5.18.1 Interface
+               5.18.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        entry_point_address -            -           Address                               Physical address, from the caller's point of view, at which the core resumes after a powerdown
+        context_id          -            -           UInt64                                Context identifier. Only the caller gives it meaning. The implementation preserves it and presents it to the core when the core starts at the return Exception level
+               5.18.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              -            -           PsciReturnCode                        Command return status
+               5.18.2 Failure conditions
+  ID                          Condition
+  entry_addr                  pre: IsKnownUnavailableToCaller(entry_point_address)
+                              post: ResultEqual(result, INVALID_ADDRESS)
+               5.18.2.1   Failure condition ordering
+               The CPU_DEFAULT_SUSPEND command does not have any failure condition orderings.
+               5.18.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  return_point                post: ReturnedAtNextInstruction() || ResumedAt(entry_point_address)
+  context                     post: ResumedAt(entry_point_address) ==> ContextIdPresented(context_id)
+  thermal                     post: AllCoresInDefaultSuspend() ==> !ThermallyCritical(platform)
+               5.18.4 Footprint
+    ID                        Value
+    core_pwr                  PowerState(calling_core)
+    topo_pwr                  PowerState(AncestorTopologyNodes(calling_core))

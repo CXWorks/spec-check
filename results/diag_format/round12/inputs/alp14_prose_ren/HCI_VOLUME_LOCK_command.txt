@@ -1,0 +1,55 @@
+B4.3.56 HCI_VOLUME_LOCK command
+               Lock VOLUME.
+               B4.3.56.1 Interface
+               B4.3.56.1.1   Input values
+        Name                 Register    Bits         Type                                 Description
+        fid                  R0          63:0         UInt64                               FID, value 0xC40001D2
+        vd                   R1          63:0         Address                              DPA of the VD
+        volume_ptr             R2          63:0         Address                              DPA of the VOLUME
+               B4.3.56.1.2   Context
+               The HCI_VOLUME_LOCK command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        vault                Keepervault                   Vaultat(vd)                                false    Vault
+        volume                 Keepervolume                    Volumeat(volume_ptr)                           false    VOLUME
+               B4.3.56.1.3   Output values
+        Name                 Register    Bits         Type                                 Description
+        result               R0          63:0         Hcicommandreturncode                 Command return status
+               B4.3.56.2 Failure conditions
+
+HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the DX feature.
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if volume_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if volume_ptr is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at volume_ptr is not in the VOLUME state.
+
+HCI_ERROR_INPUT is returned if the VOLUME does not belong to the Vault described by vd.
+
+HCI_ERROR_DEVICE is returned if the VOLUME's volume_state is not VOLUME_UNLOCKED.
+
+HCI_ERROR_DEVICE is returned if the VOLUME's comm_state is not DEV_COMM_IDLE.
+
+               B4.3.56.2.1     Failure condition ordering
+
+The check that the VOLUME belongs to the Vault described by vd is made only after these checks: vd is a enrollable physical address, the Extent at vd is in the VD state, volume_ptr is a enrollable physical address, and the Extent at volume_ptr is in the VOLUME state.
+
+The check that the implementation supports the DX feature is made before these checks: vd is a enrollable physical address, the Extent at vd is in the VD state, volume_ptr is aligned to the size of a Extent, volume_ptr is a enrollable physical address, the Extent at volume_ptr is in the VOLUME state, and the VOLUME belongs to the Vault described by vd.
+
+The check that the Extent at volume_ptr is in the VOLUME state is made before the checks on the VOLUME's volume_state and comm_state.
+
+               B4.3.56.3 Success conditions
+
+The VOLUME's pending operation is set to VOLUME_OP_LOCK.
+
+The VOLUME's comm_state is set to DEV_COMM_PENDING.
+               B4.3.56.4 Footprint
+    ID                            Value
+    op                            volume.op
+    comm_state                    volume.comm_state

@@ -1,0 +1,100 @@
+B4.3.58 HCI_VOLUME_P2P_BIND
+
+B4.3.58.1 Intended use
+HCI_VOLUME_P2P_BIND creates a P2P binding between two Volumes. The Host calls the command with a P2P_STREAM object, a Vault, a target WORKER belonging to that Vault, two DRIVE objects and two VOLUME objects. The P2P stream of each DRIVE must be the P2P_STREAM object that is passed in.
+
+When the command succeeds, both Volumes are bound to each other through the P2P stream. Each VOLUME records the other as its P2P peer, and the binding operation is left pending on both Volumes.
+
+B4.3.58.2 Parameters
+The caller passes the following input values:
+• fid, passed in R0, bits 63:0. This is the function identifier and has the value 0xC40001D4.
+• stream_ptr, passed in R1, bits 63:0. This is the physical address of the P2P_STREAM object.
+• vd, passed in R2, bits 63:0. This is the physical address of the VD.
+• worker_ptr, passed in R3, bits 63:0. This is the physical address of the target WORKER.
+• drive_1_ptr, passed in R4, bits 63:0. This is the physical address of the first DRIVE object.
+• drive_2_ptr, passed in R5, bits 63:0. This is the physical address of the second DRIVE object.
+• volume_1_ptr, passed in R6, bits 63:0. This is the physical address of the first VOLUME object.
+• volume_2_ptr, passed in R7, bits 63:0. This is the physical address of the second VOLUME object.
+
+The command operates on the Vault described by vd, the WORKER at worker_ptr, the P2P stream at stream_ptr, the first DRIVE at drive_1_ptr, the second DRIVE at drive_2_ptr, the first VOLUME at volume_1_ptr and the second VOLUME at volume_2_ptr.
+
+B4.3.58.3 Return values
+The command returns the following output value:
+• result, returned in R0, bits 63:0. This is the command return status.
+
+HCI_VOLUME_P2P_BIND can return the following errors.
+
+Device Assignment support:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature, that is, if feat_dx is not FEATURE_TRUE.
+
+Vault:
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+WORKER:
+• HCI_ERROR_INPUT is returned if worker_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if worker_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at worker_ptr is not in the WORKER state.
+• HCI_ERROR_WORKER is returned if the WORKER at worker_ptr is in the WORKER_RUNNING state.
+• HCI_ERROR_WORKER is returned if the WORKER at worker_ptr is not owned by the Vault described by vd.
+
+P2P stream:
+• HCI_ERROR_INPUT is returned if stream_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if stream_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at stream_ptr is not in the P2P_STREAM state.
+
+First DRIVE:
+• HCI_ERROR_INPUT is returned if drive_1_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if drive_1_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at drive_1_ptr is not in the DRIVE state.
+• HCI_ERROR_INPUT is returned if the DRIVE at drive_1_ptr does not have a valid P2P stream, that is, if its p2p_stream_valid attribute is not KEEPER_TRUE. It is also returned if the P2P stream of that DRIVE is not the one at stream_ptr.
+
+Second DRIVE:
+• HCI_ERROR_INPUT is returned if drive_2_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if drive_2_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at drive_2_ptr is not in the DRIVE state.
+• HCI_ERROR_INPUT is returned if the DRIVE at drive_2_ptr does not have a valid P2P stream, that is, if its p2p_stream_valid attribute is not KEEPER_TRUE. It is also returned if the P2P stream of that DRIVE is not the one at stream_ptr.
+
+First VOLUME:
+• HCI_ERROR_INPUT is returned if volume_1_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if volume_1_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at volume_1_ptr is not in the VOLUME state.
+• HCI_ERROR_INPUT is returned if the VOLUME at volume_1_ptr does not belong to the Vault described by vd.
+• HCI_ERROR_INPUT is returned if the VOLUME at volume_1_ptr is not associated with the DRIVE at drive_1_ptr.
+• HCI_ERROR_DEVICE is returned if the communication state of the VOLUME at volume_1_ptr is not DEV_COMM_IDLE.
+• HCI_ERROR_DEVICE is returned if the certification information of the VOLUME at volume_1_ptr does not match the first VOLUME certification information held by the WORKER at worker_ptr (volume_certify_info_1).
+• HCI_ERROR_DEVICE is returned if the p2p_bound attribute of the VOLUME at volume_1_ptr is not FEATURE_FALSE.
+
+Second VOLUME:
+• HCI_ERROR_INPUT is returned if volume_2_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if volume_2_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at volume_2_ptr is not in the VOLUME state.
+• HCI_ERROR_INPUT is returned if the VOLUME at volume_2_ptr does not belong to the Vault described by vd.
+• HCI_ERROR_INPUT is returned if the VOLUME at volume_2_ptr is not associated with the DRIVE at drive_2_ptr.
+• HCI_ERROR_DEVICE is returned if the communication state of the VOLUME at volume_2_ptr is not DEV_COMM_IDLE.
+• HCI_ERROR_DEVICE is returned if the certification information of the VOLUME at volume_2_ptr does not match the second VOLUME certification information held by the WORKER at worker_ptr (volume_certify_info_2).
+• HCI_ERROR_DEVICE is returned if the p2p_bound attribute of the VOLUME at volume_2_ptr is not FEATURE_FALSE.
+
+The check for Device Assignment support comes before every other failure condition. If the feature is not supported, HCI_ERROR_NOT_SUPPORTED is returned, even if any of the other failure conditions also apply. No ordering is defined among the remaining failure conditions. These cover vd, worker_ptr, stream_ptr, drive_1_ptr, drive_2_ptr, volume_1_ptr and volume_2_ptr, and they return HCI_ERROR_INPUT, HCI_ERROR_WORKER or HCI_ERROR_DEVICE.
+
+B4.3.58.4 Implementation responsibilities
+If none of the failure conditions apply, the command succeeds and the implementation must update both Volumes.
+
+For the VOLUME at volume_1_ptr, the implementation must:
+• Set its operation to VOLUME_OP_P2P_BIND.
+• Set its communication state to DEV_COMM_PENDING.
+• Set its p2p_bound attribute to FEATURE_TRUE.
+• Set its P2P stream to the P2P stream at stream_ptr.
+• Set its P2P peer to the VOLUME identifier of the VOLUME at volume_2_ptr.
+
+For the VOLUME at volume_2_ptr, the implementation must:
+• Set its operation to VOLUME_OP_P2P_BIND.
+• Set its communication state to DEV_COMM_PENDING.
+• Set its p2p_bound attribute to FEATURE_TRUE.
+• Set its P2P stream to the P2P stream at stream_ptr.
+• Set its P2P peer to the VOLUME identifier of the VOLUME at volume_1_ptr.
+
+HCI_VOLUME_P2P_BIND can modify only the following state:
+• The operation, communication state, p2p_bound attribute, P2P stream and P2P peer of the VOLUME at volume_1_ptr.
+• The operation, communication state, p2p_bound attribute, P2P stream and P2P peer of the VOLUME at volume_2_ptr.

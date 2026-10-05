@@ -1,0 +1,90 @@
+B4.3.39 RMI_RTT_DESTROY command
+                Destroys a primary RTT.
+                B4.3.39.1 Interface
+                B4.3.39.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400015E
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               Base of the IPA range described by the
+                                                                                            RTT
+        level                 X3          63:0        Int64                                 RTT level
+                B4.3.39.1.2   Context
+                The RMI_RTT_DESTROY command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                                             realm, ipa,
+                                                             level - 1,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+        walk_top              Address                    RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                                             RttAt(walk.rtt_addr),                           RTT entries, from
+                                                             walk.level,                                     entry at which the
+                                                             ipa)                                            RTT walk terminated
+                B4.3.39.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        rtt                   X1          63:0        Address                               PA of the RTT which was destroyed
+        top                   X2          63:0        Address                               Top IPA of non-live RTT entries, from
+                                                                                            entry at which the RTT walk terminated
+               The rtt output value is valid only when the command result is RMI_SUCCESS.
+               The values of the result and top output values for different command outcomes are summarized in the following
+               table.
+       Scenario                             result                                   top           walk.rtte.state
+       Target RTT exists and is not live    RMI_SUCCESS                              > ipa         Before execution: TABLE
+                                                                                                   After execution: UNASSIGNED
+                                                                                                   and RIPAS is DESTROYED
+       Missing RTT                          (RMI_ERROR_RTT, < level)                 > ipa         UNASSIGNED or
+                                                                                                   UNASSIGNED_NS
+       Block mapping at lower level         (RMI_ERROR_RTT, < level)                 == ipa        ASSIGNED or ASSIGNED_NS
+       Live RTT at target level             (RMI_ERROR_RTT, level)                   == ipa        TABLE
+       RTT walk was not performed,          Another error code                       0             Unknown
+       due to any other command failure
+               B4.3.39.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if level is not a valid RTT level for the Realm, or if level is the starting level of the Realm's RTT.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that an RTT entry maps at the level one less than level.
+
+RMI_ERROR_INPUT is returned if ipa is outside the Realm's IPA space. This means ipa is greater than or equal to 2 raised to the power of the Realm's IPA width.
+
+RMI_ERROR_RTT is returned if the RTT walk to ipa stops at a level lower than one less than level. The error index is the level at which the walk stopped, and the output top is set to walk_top.
+
+RMI_ERROR_RTT is returned if the RTT entry that the walk reaches is not in the TABLE state. The error index is the level at which the walk stopped, and the output top is set to walk_top.
+
+RMI_ERROR_RTT is returned if the RTT that this RTT entry points to is live. The error index is level, and the output top is set to ipa.
+
+RMI_ERROR_RTT is returned if ipa is referenced by an auxiliary RTT of the Realm. The error index is the level at which the walk stopped.
+
+                    B4.3.39.2.1   Failure condition ordering
+
+The check that rd is a delegable physical address and the check that the Granule at rd is in the RD state are both made before two other checks. The first is the check that the RTT walk reaches the level one less than level. The second is the check that the RTT entry reached is in the TABLE state.
+
+The check that level is valid and is not the starting level, and the check that ipa is within the Realm's IPA space, are also both made before those two RTT walk checks.
+
+The check that the RTT entry reached is in the TABLE state is made before two later checks. One is the check that the RTT it points to is not live. The other is the check that ipa is not referenced by an auxiliary RTT.
+
+                    B4.3.39.3 Success conditions
+
+If ipa is a Protected address, the RTT entry reached by the walk is in the UNASSIGNED state.
+
+If ipa is a Protected address, the RIPAS of the RTT entry reached by the walk is DESTROYED.
+
+If ipa is not a Protected address, the RTT entry reached by the walk is in the UNASSIGNED_NS state.
+
+The Granule that held the destroyed RTT, which is the one at the address in the RTT entry, is in the DELEGATED state.
+
+The output rtt is the address of the destroyed RTT, as held in the RTT entry.
+
+The output top is set to walk_top.
+                    B4.3.39.4 Footprint
+        ID                              Value
+        rtt_state                       GranuleAt(walk.rtte.addr).state
+        rtte                            RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

@@ -1,0 +1,55 @@
+B4.3.65 RMI_VSMMU_CREATE
+
+B4.3.65.1 Intended use
+RMI_VSMMU_CREATE creates a VSMMU. The Host calls it with the address of a Realm Descriptor (RD), the address of a Granule that will hold the VSMMU, and the address of a VSMMU parameters structure. If the command succeeds, the new VSMMU belongs to the Realm described by rd and is initialized from the VSMMU parameters.
+
+B4.3.65.2 Parameters
+The command takes these input values:
+• fid, passed in X0, bits 63:0. This is the function identifier, value 0xC400016A.
+• rd, passed in X1, bits 63:0. This is the physical address of the RD.
+• vsmmu_ptr, passed in X2, bits 63:0. This is the physical address of the VSMMU.
+• params_ptr, passed in X3, bits 63:0. This is the physical address of the VSMMU parameters.
+
+The command operates on:
+• the Realm described by rd, both before and after the command executes
+• the VSMMU at vsmmu_ptr, after the command executes
+• the VSMMU parameters at params_ptr, after the command executes
+
+B4.3.65.3 Return values
+The command returns this output value:
+• result, returned in X0, bits 63:0. This is the command return status.
+
+RMI_VSMMU_CREATE can return the following errors:
+• RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the device assignment feature (feat_da).
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if the state of the Realm described by rd is not REALM_NEW.
+• RMI_ERROR_INPUT is returned if vsmmu_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if vsmmu_ptr is not a DRAM physical address that can be delegated.
+• RMI_ERROR_INPUT is returned if the Granule at vsmmu_ptr is not in the DELEGATED state.
+• RMI_ERROR_INPUT is returned if params_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if the Granule at params_ptr cannot be accessed from the Non-secure physical address space.
+• RMI_ERROR_INPUT is returned if the VSMMU parameters at params_ptr are not valid.
+• RMI_ERROR_INPUT is returned if the reg_base value or the reg_top value in the VSMMU parameters is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if the reg_base value or the reg_top value in the VSMMU parameters is not a Protected address in the Realm.
+• RMI_ERROR_INPUT is returned if reg_top is not greater than reg_base.
+
+Ordering between these failure conditions:
+• The check that rd can be delegated and the check that the Granule at rd is in the RD state are both made before the check of the Realm's state.
+• The check that the implementation supports the device assignment feature is made before all the other checks listed above except the check of the Realm's state. This covers the alignment, delegability and state checks on rd, the alignment, delegability and state checks on vsmmu_ptr, the alignment, access and validity checks on params_ptr, and the alignment and bounds checks on reg_base and reg_top.
+
+B4.3.65.4 Implementation responsibilities
+If the command succeeds:
+• The Granule at vsmmu_ptr is in the VSMMU state.
+• The VSMMU is in the VSMMU_INACTIVE state.
+• The VSMMU belongs to the Realm described by rd.
+• The VSMMU's reg_base value equals the reg_base value in the VSMMU parameters.
+• The VSMMU's reg_top value equals the reg_top value in the VSMMU parameters.
+• The VSMMU's aidr value equals the aidr value in the VSMMU parameters.
+• Each of the VSMMU's idr values 0 to 6 equals the matching idr value in the VSMMU parameters.
+• The Realm's count of VSMMUs (num_vsmmus) is one more than it was before the command.
+
+The command may modify only:
+• the state of the Granule at vsmmu_ptr
+• the Realm's count of VSMMUs, num_vsmmus

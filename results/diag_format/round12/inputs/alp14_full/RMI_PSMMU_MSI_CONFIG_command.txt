@@ -1,0 +1,40 @@
+B4.3.23 RMI_PSMMU_MSI_CONFIG
+
+B4.3.23.1 Intended use
+RMI_PSMMU_MSI_CONFIG programs the MSI configuration for the Realm side of a physical SMMU (PSMMU). The caller identifies the PSMMU by its physical address. For each of the three PSMMU interrupts, the caller supplies an MSI address and MSI data value. The three interrupts are the GERROR interrupt, the EVENTQ interrupt and the PRIQ interrupt.
+
+B4.3.23.2 Parameters
+The caller passes the following values:
+• fid, passed in X0, is the function identifier. Its value is 0xC400016E.
+• psmmu, passed in X1, is the physical address (PA) of the PSMMU.
+• gerr_addr, passed in X2, is the MSI address of the GERROR interrupt.
+• gerr_data, passed in X3, is the MSI data of the GERROR interrupt.
+• eventq_addr, passed in X4, is the MSI address of the EVENTQ interrupt.
+• eventq_data, passed in X5, is the MSI data of the EVENTQ interrupt.
+• priq_addr, passed in X6, is the MSI address of the PRIQ interrupt.
+• priq_data, passed in X7, is the MSI data of the PRIQ interrupt.
+All input values are 64 bits wide and use bits 63:0 of their registers.
+
+B4.3.23.3 Return values
+RMI_PSMMU_MSI_CONFIG returns the following value:
+• result, returned in X0 using bits 63:0, is the command return status.
+
+RMI_PSMMU_MSI_CONFIG can return the following errors:
+• RMI_ERROR_INPUT is returned if psmmu is not the address of a valid PSMMU.
+• RMI_ERROR_INPUT is returned if the PSMMU identified by psmmu does not support message signaled interrupts (MSIs).
+• RMI_ERROR_INPUT is returned if gerr_addr is not a valid MSI address.
+• RMI_ERROR_INPUT is returned if eventq_addr is not a valid MSI address.
+• RMI_ERROR_INPUT is returned if priq_addr is not a valid MSI address.
+
+No ordering is defined between these failure conditions.
+
+B4.3.23.4 Implementation responsibilities
+If the command succeeds, the implementation must make the following register writes on the PSMMU identified by psmmu:
+• Write gerr_addr to SMMU_R_GERROR_IRQ_CFG0, with the NS bit set.
+• Write gerr_data to SMMU_R_GERROR_IRQ_CFG1.
+• Write eventq_addr to SMMU_R_EVENTQ_IRQ_CFG0, with the NS bit set.
+• Write eventq_data to SMMU_R_EVENTQ_IRQ_CFG1.
+• Write priq_addr to SMMU_R_PRIQ_IRQ_CFG0, with the NS bit set.
+• Write priq_data to SMMU_R_PRIQ_IRQ_CFG1.
+
+RMI_PSMMU_MSI_CONFIG does not have any footprint.

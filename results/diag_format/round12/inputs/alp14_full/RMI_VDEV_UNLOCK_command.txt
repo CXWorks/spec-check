@@ -1,0 +1,43 @@
+B4.3.61 RMI_VDEV_UNLOCK
+
+B4.3.61.1 Intended use
+RMI_VDEV_UNLOCK unlocks a VDEV.
+
+B4.3.61.2 Parameters
+The caller passes these input values:
+• fid, passed in X0, is the function identifier. Its value is 0xC400018A.
+• rd, passed in X1, is the physical address of the RD.
+• vdev_ptr, passed in X2, is the physical address of the VDEV.
+
+The command uses two items of context: the Realm described by rd, and the VDEV at vdev_ptr.
+
+B4.3.61.3 Return values
+The command returns this output value:
+• result, returned in X0, is the command return status.
+
+RMI_VDEV_UNLOCK can return these errors:
+• RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not the address of a delegable Granule.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if vdev_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if vdev_ptr is not the address of a delegable Granule.
+• RMI_ERROR_INPUT is returned if the Granule at vdev_ptr is not in the VDEV state.
+• RMI_ERROR_INPUT is returned if the VDEV at vdev_ptr does not belong to the Realm described by rd.
+• RMI_ERROR_DEVICE is returned if the VDEV is not in the VDEV_LOCKED, VDEV_STARTED or VDEV_ERROR state.
+• RMI_ERROR_DEVICE is returned if the communication state of the VDEV is not DEV_COMM_IDLE.
+• RMI_ERROR_DEVICE is returned if the VDEV still has one or more mappings, which means its mapping count is not zero.
+
+B4.3.61.4 Implementation responsibilities: error checking order
+For RMI_VDEV_UNLOCK, the implementation must check for errors in this order:
+• It checks that the Device Assignment feature is supported before it makes any of these checks: rd is a delegable address, the Granule at rd is in the RD state, vdev_ptr is aligned to the size of a Granule, vdev_ptr is a delegable address, the Granule at vdev_ptr is in the VDEV state, and the VDEV belongs to the Realm described by rd.
+• It checks that the Granule at vdev_ptr belongs to the Realm described by rd only after all of these checks: rd is a delegable address, the Granule at rd is in the RD state, vdev_ptr is a delegable address, and the Granule at vdev_ptr is in the VDEV state.
+• It checks that the Granule at vdev_ptr is in the VDEV state before it checks the VDEV state, the communication state of the VDEV, and the VDEV mapping count.
+
+B4.3.61.5 Implementation responsibilities: effect of a successful call
+When RMI_VDEV_UNLOCK succeeds, the implementation must make sure that:
+• DMA for the VDEV is disabled, so its DMA state is VDEV_DMA_DISABLED.
+• The pending operation of the VDEV is VDEV_OP_UNLOCK.
+• The communication state of the VDEV is DEV_COMM_PENDING.
+
+RMI_VDEV_UNLOCK can modify only two items of state: the pending operation of the VDEV and the communication state of the VDEV.

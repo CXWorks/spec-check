@@ -1,0 +1,57 @@
+{
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "rejected": {
+  "psci_13/MIGRATE_INFO_UP_CPU/rmm": [
+   "return codes lost: ['DENIED', 'SUCCESS']"
+  ],
+  "psci_13/SYSTEM_OFF/rmm": [
+   "return codes lost: ['DENIED']"
+  ]
+ },
+ "kept": {
+  "psci_13": [
+   "AFFINITY_INFO",
+   "CPU_DEFAULT_SUSPEND",
+   "CPU_FREEZE",
+   "CPU_OFF",
+   "CPU_ON",
+   "CPU_SUSPEND",
+   "MEM_PROTECT",
+   "MEM_PROTECT_CHECK_RANGE",
+   "MIGRATE",
+   "MIGRATE_INFO_TYPE",
+   "NODE_HW_STATE",
+   "PSCI_FEATURES",
+   "PSCI_SET_SUSPEND_MODE",
+   "PSCI_STAT_COUNT",
+   "PSCI_STAT_RESIDENCY",
+   "PSCI_VERSION",
+   "SYSTEM_OFF2",
+   "SYSTEM_RESET",
+   "SYSTEM_RESET2",
+   "SYSTEM_SUSPEND"
+  ],
+  "sdei": [
+   "SDEI_EVENT_COMPLETE",
+   "SDEI_EVENT_COMPLETE_AND_RESUME",
+   "SDEI_EVENT_CONTEXT",
+   "SDEI_EVENT_DISABLE",
+   "SDEI_EVENT_ENABLE",
+   "SDEI_EVENT_GET_INFO",
+   "SDEI_EVENT_REGISTER",
+   "SDEI_EVENT_ROUTING_SET",
+   "SDEI_EVENT_SIGNAL",
+   "SDEI_EVENT_STATUS",
+   "SDEI_EVENT_UNREGISTER",
+   "SDEI_FEATURES",
+   "SDEI_INTERRUPT_BIND",
+   "SDEI_INTERRUPT_RELEASE",
+   "SDEI_PE_MASK",
+   "SDEI_PE_UNMASK",
+   "SDEI_PRIVATE_RESET",
+   "SDEI_SHARED_RESET",
+   "SDEI_VERSION"
+  ]
+ }
+}

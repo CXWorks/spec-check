@@ -1,0 +1,53 @@
+B4.3.26 RMI_REALM_DESTROY command
+               Destroys a Realm.
+               B4.3.26.1 Interface
+               B4.3.26.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000159
+        rd                   X1          63:0        Address                               PA of the RD
+               B4.3.26.1.2   Context
+               The RMI_REALM_DESTROY command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        realm_pre            RmmRealm                   RealmAt(rd)                                true     Realm
+        mec_members_pre UInt64                          MecMembers(realm_pre.mecid)                true     Number of Realms
+                                                                                                            which are members of
+                                                                                                            the Realm’s MEC
+               B4.3.26.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.26.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+
+RMI_ERROR_INPUT is returned if the Granule at address rd is not in the RD state.
+
+RMI_ERROR_REALM is returned if the Realm described by rd is live.
+
+                B4.3.26.2.1   Failure condition ordering
+
+Two checks come before the check that the Realm is live:
+- the check that rd is a physical address that can be delegated
+- the check that the Granule at address rd is in the RD state
+
+If rd cannot be delegated, or the Granule at address rd is not in the RD state, the command returns RMI_ERROR_INPUT. It does this even if the Realm is also live.
+
+                B4.3.26.3 Success conditions
+
+The command reads the values below from the Realm as it was before the command ran. On success:
+
+The starting-level RTTs of the Realm are in the DELEGATED state. These start at the Realm's first RTT base address, and their number is the Realm's rtt_num_start value.
+
+The Granule at address rd is in the DELEGATED state.
+
+The VMID that the Realm used is free.
+
+If the Realm's MEC policy was MEC_POLICY_PRIVATE, the Realm's MECID is in the MEC_STATE_PRIVATE_UNASSIGNED state.
+
+If the Realm's MEC policy was MEC_POLICY_SHARED, the Realm's MECID has one fewer member than it had before the command ran.
+                B4.3.26.4 Footprint
+    ID                           Value
+    rd_state                     GranuleAt(rd).state
+    rtt_state                    RttsGranuleState(
+                                     realm_pre.rtt_base[[0]], realm_pre.rtt_num_start)

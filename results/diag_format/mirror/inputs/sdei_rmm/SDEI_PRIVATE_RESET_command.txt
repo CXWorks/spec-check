@@ -1,0 +1,32 @@
+5.1.18 SDEI_PRIVATE_RESET command
+               Resets private SDEI data of the calling PE.
+               5.1.18.1 Interface
+               5.1.18.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                Function ID, value 0xC4000031
+               5.1.18.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.18.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  handler_running             pre: AnyEventHandlerRunning(CallingPe())
+                              post: ResultEqual(result, DENIED)
+               5.1.18.2.1   Failure condition ordering
+               The SDEI_PRIVATE_RESET command does not have any failure condition orderings.
+               5.1.18.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  priv_unreg                  post: forall ev in PrivateEvents(CallingPe()):
+                                        !EventIsRunning(ev) ==> EventState(ev) == UNREGISTERED
+  priv_pending                post: forall ev in PrivateEvents(CallingPe()):
+                                        EventIsRunning(ev) ==> EventState(ev) == HANDLER_UNREGISTER_PENDING
+  aux_info                    post: forall ev in PrivateEvents(CallingPe()):
+                                        EventAuxInfoIsCleared(ev) || EventAuxInfoIsWarmBootState(ev)
+  shared_unchanged            post: forall ev in SharedEvents():
+                                        EventState(ev) == pre(EventState(ev))
+               5.1.18.4 Footprint
+    ID                        Value
+    priv_state                EventState(ev) for each ev in PrivateEvents(CallingPe())
+    aux_info                  EventAuxInfo(ev) for each ev in PrivateEvents(CallingPe())

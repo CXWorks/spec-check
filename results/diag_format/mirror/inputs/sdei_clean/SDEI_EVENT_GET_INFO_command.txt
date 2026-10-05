@@ -1,0 +1,32 @@
+5.1.10 SDEI_EVENT_GET_INFO
+
+| | | |
+|---|---|---|
+| Description | | Retrieves the information of an event. |
+| Parameters | uint32 Function ID | 0xC400_0029 |
+| | int32 event | Event number |
+| | uint32 info | Information requested, refer to Parameter and Return values below |
+| Return | int64 result | The return value on success depends on the information requested, refer to Parameter and Return values below.<br>On error the following error codes can be returned. Specific error codes that can be returned depending on info value are listed in Parameter and Return values below. |
+
+| | | |
+|---|---|---|
+| int64 | NOT_SUPPORTED | SDEI is not supported. |
+| | INVALID_PARAMETERS | Invalid event number or invalid info value |
+| | DENIED | see Parameter and Return values below. |
+
+5.1.10.1 Usage
+
+This call is used to retrieve the information of an SDEI event. The call is permitted in all states, however some return values depends on the event handler state, see Parameter and Return values below. For event handler states, see Event handler states and properties on page 46.
+
+5.1.10.2 Parameter and Return values
+
+The different values possible for info parameter and the associated return values are as follows:
+
+| Info value | Condition | Success return value | Additional error return |
+|---|---|---|---|
+| 0: EV_TYPE | | 0: Private event.<br>1: Shared event. | |
+| 1: EV_SIGNALED | | 0: Event can be software signaled.<br>1: Event cannot be software signaled. | |
+| 2:EV_PRIORITY | | 0: Normal priority event.<br>1: Critical priority event. | |
+| 3: EV_ROUTING_MODE | Valid only for shared events and when event handler is in handler-registered state. | 0: RM_ANY (Route to any PE in the system)<br>1: RM_PE (Route to the PE specified by affinity) | INVALID_PARAMETERS if event is not shared.<br>DENIED if event is not registered. |
+| 4: EV_ROUTING_AFF | Valid only for shared events and RM_PE routing_mode and when event handler is in handler-registered state. | Affinity value. The format of this field depends on the selected routing mode. Currently the format is defined only when the selected routing mode is RM_PE. With RM_PE, this field follows the MPIDR format as described in SDEI_EVENT_REGISTER on page 22 | INVALID_PARAMETERS if event is not shared or routing mode does not have an associated affinity.<br>DENIED if event is not registered. |
+| Other values of info are reserved for future use | | | |

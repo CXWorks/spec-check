@@ -1,0 +1,63 @@
+5.4 CPU_SUSPEND command
+               Moves a topology node into a low-power state. The function is called from a specific core in that topology node. The caller intends to use the core again in the future but has no current work for it. An OSPM calls CPU_SUSPEND as part of idle management. A core can call CPU_SUSPEND only for itself. It cannot request suspension of another core.
+               5.4.1 Interface
+               5.4.1.1   Input values
+        Name                    Register     Bits        Type                                  Description
+        fid                     —            —           UInt32                                FID for CPU_SUSPEND
+        power_state             —            31:0        PowerState                            Requested power state. The encoding is in Original format or Extended StateID format (see 5.4.1.3)
+        entry_point_address     —            —           Address                               Address where execution resumes at wakeup from a powerdown state. This is a PA, or an IPA for a guest OS in a virtualized platform, from the caller's point of view
+        context_id              —            —           UInt64                                Value that only the caller uses. The implementation preserves it and passes it to the core on wakeup from a powerdown state
+               5.4.1.2   Output values
+        Name                    Register     Bits        Type                                  Description
+        result                  R0 / W0      31:0        PsciReturnCode                        Command return status
+               5.4.1.3   power_state fields
+        Format                  Bits         Field                Description
+        Original                31:26        Reserved             Must be zero
+        Original                25:24        PowerLevel           Power level to power down. The numbering is IMPLEMENTATION DEFINED. Lower numbers are closer to the core
+        Original                23:17        Reserved             Must be zero
+        Original                16           StateType            0 = standby or retention, 1 = powerdown
+        Original                15:0         StateID              Platform-specific state ID (IMPLEMENTATION DEFINED)
+        Extended StateID        31:30        Reserved             Must be zero
+        Extended StateID        30           StateType            0 = standby or retention, 1 = powerdown
+        Extended StateID        29:28        Reserved             Must be zero
+        Extended StateID        27:0         StateID              Platform-specific state ID (IMPLEMENTATION DEFINED)
+               An implementation uses either the Original format or the Extended StateID format. It does not mix them. Bit[1] of the flags returned by PSCI_FEATURES for CPU_SUSPEND shows which format is in use: 0 for Original, 1 for Extended StateID.
+               5.4.2 Failure conditions
+  ID                          Condition
+  pstate_invalid              pre: !IsValidPowerState(power_state)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  osi_child_incompat          pre: IsOsInitiatedMode()
+                                   && RequestsHigherThanCoreLevel(power_state)
+                                   && AnyChildInIncompatibleLowPowerState(power_state)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  osi_running_incompat        pre: IsOsInitiatedMode()
+                                   && RequestsHigherThanCoreLevel(power_state)
+                                   && AllIncompatibleCoresRunning(power_state)
+                              post: ResultEqual(result, DENIED)
+  entry_addr                  pre: IsKnownUnavailableAddress(entry_point_address)
+                              post: ResultEqual(result, INVALID_ADDRESS)
+               Note: Versions of PSCI before 1.0 return INVALID_PARAMETERS where INVALID_ADDRESS applies.
+               5.4.2.1   Failure condition ordering
+               The CPU_SUSPEND command does not have any failure condition orderings.
+               5.4.3 Success conditions
+  ID                          Condition
+  standby_result              post: StateType(power_state) == 0
+                                    ==> ResultEqual(result, SUCCESS)
+  standby_state               post: StateType(power_state) == 0
+                                    ==> CoreStateUnchangedExceptTimersAndCpuInterface()
+  downgrade_result            post: PowerdownDowngradedToStandby(power_state)
+                                    ==> ResultEqual(result, SUCCESS)
+  early_return                post: PowerdownReturnedEarlyOnWakeupEvent(power_state)
+                                    ==> ResultEqual(result, SUCCESS)
+                                        || ResumedAt(entry_point_address)
+  pdown_resume                post: StateType(power_state) == 1 && !ReturnedToCaller()
+                                    ==> ResumedAt(entry_point_address)
+                                        && ContextIdRegister() == context_id
+  pdown_cache                 post: StateType(power_state) == 1
+                                    ==> CachesCleanedForPoweredDownNodes()
+               5.4.4 Footprint
+    ID                        Value
+    node_power_state          PowerState(TopologyNodesOf(CurrentCore()))
+    saved_entry_point         SavedEntryPoint(CurrentCore())
+    saved_context_id          SavedContextId(CurrentCore())
+    caches                    CachesOf(PoweredDownNodes(power_state))

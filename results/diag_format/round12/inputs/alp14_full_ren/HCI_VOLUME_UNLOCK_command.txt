@@ -1,0 +1,43 @@
+B4.3.61 HCI_VOLUME_UNLOCK
+
+B4.3.61.1 Intended use
+HCI_VOLUME_UNLOCK unlocks a VOLUME.
+
+B4.3.61.2 Parameters
+The caller passes these input values:
+• fid, passed in R0, is the function identifier. Its value is 0xC400018A.
+• vd, passed in R1, is the physical address of the VD.
+• volume_ptr, passed in R2, is the physical address of the VOLUME.
+
+The command uses two items of context: the Vault described by vd, and the VOLUME at volume_ptr.
+
+B4.3.61.3 Return values
+The command returns this output value:
+• result, returned in R0, is the command return status.
+
+HCI_VOLUME_UNLOCK can return these errors:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not the address of a enrollable Extent.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if volume_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if volume_ptr is not the address of a enrollable Extent.
+• HCI_ERROR_INPUT is returned if the Extent at volume_ptr is not in the VOLUME state.
+• HCI_ERROR_INPUT is returned if the VOLUME at volume_ptr does not belong to the Vault described by vd.
+• HCI_ERROR_DEVICE is returned if the VOLUME is not in the VOLUME_LOCKED, VOLUME_STARTED or VOLUME_ERROR state.
+• HCI_ERROR_DEVICE is returned if the communication state of the VOLUME is not DEV_COMM_IDLE.
+• HCI_ERROR_DEVICE is returned if the VOLUME still has one or more mappings, which means its mapping count is not zero.
+
+B4.3.61.4 Implementation responsibilities: error checking order
+For HCI_VOLUME_UNLOCK, the implementation must check for errors in this order:
+• It checks that the Device Assignment feature is supported before it makes any of these checks: vd is a enrollable address, the Extent at vd is in the VD state, volume_ptr is aligned to the size of a Extent, volume_ptr is a enrollable address, the Extent at volume_ptr is in the VOLUME state, and the VOLUME belongs to the Vault described by vd.
+• It checks that the Extent at volume_ptr belongs to the Vault described by vd only after all of these checks: vd is a enrollable address, the Extent at vd is in the VD state, volume_ptr is a enrollable address, and the Extent at volume_ptr is in the VOLUME state.
+• It checks that the Extent at volume_ptr is in the VOLUME state before it checks the VOLUME state, the communication state of the VOLUME, and the VOLUME mapping count.
+
+B4.3.61.5 Implementation responsibilities: effect of a successful call
+When HCI_VOLUME_UNLOCK succeeds, the implementation must make sure that:
+• DMA for the VOLUME is disabled, so its DMA state is VOLUME_DMA_DISABLED.
+• The pending operation of the VOLUME is VOLUME_OP_UNLOCK.
+• The communication state of the VOLUME is DEV_COMM_PENDING.
+
+HCI_VOLUME_UNLOCK can modify only two items of state: the pending operation of the VOLUME and the communication state of the VOLUME.

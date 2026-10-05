@@ -1,0 +1,56 @@
+B4.3.45 RMI_RTT_SET_S2AP
+
+B4.3.45.1 Intended use
+RMI_RTT_SET_S2AP completes a request made by the Realm to change the S2AP of a target IPA range.
+
+The command operates on the Realm described by rd and on the REC at rec_ptr. It also uses the result of a walk of the RTTs of that Realm over the range from base to top, to RTT level RMM_RTT_PAGE_LEVEL. This walk returns any RTT entry that is not aligned to page level. In this section, that entry is called the unaligned RTT entry.
+
+B4.3.45.2 Parameters
+The caller passes the following input values:
+•  fid is passed in X0. It is the function identifier and has the value 0xC400018B.
+•  rd is passed in X1. It is the physical address of the RD for the target Realm.
+•  rec_ptr is passed in X2. It is the physical address of the target REC.
+•  base is passed in X3. It is the base of the target IPA region.
+•  top is passed in X4. It is the top of the target IPA region.
+
+B4.3.45.3 Return values
+The implementation returns the following output values:
+•  result is returned in X0. It is the command return status.
+•  out_top is returned in X1. It is the top IPA of the range whose S2AP was modified.
+•  rtt_tree is returned in X2. It is the index of the RTT tree in which the base alignment check failed.
+
+If result is RMI_ERROR_RTT or RMI_ERROR_RTT_AUX, then:
+•  out_top is the IPA of the RTTE at which the base alignment check failed.
+•  rtt_tree is the index of the RTT in which the base alignment check failed.
+
+B4.3.45.4 Caller responsibilities
+RMI_RTT_SET_S2AP can return the following errors:
+•  RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the state of the Granule at rd is not RD.
+•  RMI_ERROR_INPUT is returned if rec_ptr is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rec_ptr is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the state of the Granule at rec_ptr is not REC.
+•  RMI_ERROR_REC is returned if the state of the REC is REC_RUNNING.
+•  RMI_ERROR_REC is returned if the REC is not owned by the Realm described by rd.
+•  RMI_ERROR_INPUT is returned if top, read as an unsigned value, is less than or equal to base.
+•  RMI_ERROR_INPUT is returned if base is not the same as the REC's s2ap_addr value.
+•  RMI_ERROR_INPUT is returned if top, read as an unsigned value, is greater than the REC's s2ap_top value.
+•  RMI_ERROR_INPUT is returned if top is not aligned to the size of a Granule.
+•  RMI_ERROR_RTT is returned, together with the RTT level of the entry, if all of the following are true for the unaligned RTT entry:
+   –  The unaligned RTT entry is valid (RMM_TRUE).
+   –  The range from base to top is not within the address range of that entry. This address range runs from the entry's address aligned down to the entry's RTT level, to the entry's address aligned up to that level.
+   –  The entry is in the primary RTT tree (RMM_RTT_TREE_PRIMARY).
+   –  The entry's stage 2 access permission overlay index is not the same as the REC's s2ap_overlay_index.
+•  RMI_ERROR_RTT_AUX is returned, together with the RTT level of the entry, if all of the following are true for the unaligned RTT entry:
+   –  The unaligned RTT entry is valid (RMM_TRUE).
+   –  The range from base to top is not within the address range of that entry. This address range runs from the entry's address aligned down to the entry's RTT level, to the entry's address aligned up to that level.
+   –  The entry is not in the primary RTT tree (RMM_RTT_TREE_PRIMARY), which means that it is in an auxiliary RTT tree.
+   –  The entry's stage 2 access permission overlay index is not the same as the REC's s2ap_overlay_index.
+
+RMI_RTT_SET_S2AP has no defined ordering between these failure conditions.
+
+B4.3.45.5 Implementation responsibilities
+If the command succeeds, the implementation sets the REC's s2ap_addr to the value of out_top.
+
+The only state that RMI_RTT_SET_S2AP can modify is the s2ap_addr value of the REC at rec_ptr.

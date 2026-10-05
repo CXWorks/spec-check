@@ -1,0 +1,42 @@
+B5.3.20 VCI_VERSION command
+               Returns VCI version.
+               On calling this command, the Vault provides a requested VCI version.
+               The output values include a status code and two revisions which are supported by the KEEPER: a lower revision and a
+               higher revision.
+                   • The higher revision value is the highest interface revision which is supported by the KEEPER.
+                   • The lower revision is less than or equal to the higher revision.
+               The status code and lower revision output values indicate which of the following is true, in order of precedence:
+                  a) The KEEPER supports an interface revision which is compatible with the requested revision.
+                       • The status code is VCI_SUCCESS.
+                       • The lower revision is equal to the requested revision.
+                  b) The KEEPER does not support an interface revision which is compatible with the requested revision. The KEEPER
+                     supports an interface revision which is incompatible with and less than the requested revision.
+                       • The status code is VCI_ERROR_INPUT.
+                       • The lower revision is the highest interface revision which is both less than the requested revision and
+                         supported by the KEEPER.
+                  c) The KEEPER does not support an interface revision which is compatible with the requested revision. The KEEPER
+                     supports an interface revision which is incompatible with and greater than the requested revision.
+                       • The status code is VCI_ERROR_INPUT.
+                       • The lower revision is equal to the higher revision.
+               B5.3.20.1 Interface
+               B5.3.20.1.1    Input values
+         Name                Register     Bits        Type                                  Description
+         fid                 R0           63:0        UInt64                                FID, value 0xC4000190
+         req                 R1           63:0        Vciinterfaceversion                   Requested interface revision
+               B5.3.20.1.2    Output values
+         Name                Register     Bits        Type                                  Description
+         result              R0           63:0        Vcicommandreturncode                  Command return status
+         lower               R1           63:0        Vciinterfaceversion                   Lower supported interface revision
+         higher              R2           63:0        Vciinterfaceversion                   Higher supported interface revision
+               B5.3.20.2 Failure conditions
+VCI_ERROR_INPUT is returned if the implementation does not support the requested version req but does support a version lower than req. In this case, lower is set to the highest version the implementation supports that is lower than req, and higher is set to the highest version the implementation supports.
+
+VCI_ERROR_INPUT is returned if the implementation does not support the requested version req, does not support any version lower than req, and does support a version higher than req. In this case, lower is set to the same value as higher, and higher is set to the highest version the implementation supports.
+             B5.3.20.2.1    Failure condition ordering
+             The VCI_VERSION command does not have any failure condition orderings.
+             B5.3.20.3 Success conditions
+On success, lower is set to the requested version req.
+
+On success, higher is set to the highest version the implementation supports.
+             B5.3.20.4 Footprint
+             The VCI_VERSION command does not have any footprint.

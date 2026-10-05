@@ -1,0 +1,23 @@
+B4.3.5 HCI_EXTENT_ENROLL command
+               Enrolls a Extent.
+               B4.3.5.1 Interface
+               B4.3.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 R0           63:0        UInt64                                FID, value 0xC4000151
+        addr                R1           63:0        Address                               DPA of the target Extent
+               B4.3.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              R0           63:0        Hcicommandreturncode                  Command return status
+               B4.3.5.2 Failure conditions
+HCI_ERROR_INPUT is returned if addr is not aligned to the size of a Extent.
+HCI_ERROR_INPUT is returned if addr is not a physical address that can be enrolled.
+HCI_ERROR_INPUT is returned if the Extent at addr is not in the UNENROLLED state.
+               B4.3.5.2.1   Failure condition ordering
+               The HCI_EXTENT_ENROLL command does not have any failure condition orderings.
+               B4.3.5.3 Success conditions
+On success, the Extent at addr is in the ENROLLED state.
+On success, the Extent Protection Table entry for the Extent at addr is GUARDMAP_VAULT.
+               B4.3.5.4 Footprint
+    ID                        Value
+    extsz_guardmap                  Extentat(addr).guardmap
+    extsz_state                Extentat(addr).state

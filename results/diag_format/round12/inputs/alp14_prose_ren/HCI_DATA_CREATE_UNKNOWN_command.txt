@@ -1,0 +1,70 @@
+B4.3.2 HCI_DATA_CREATE_UNKNOWN command
+               Creates a Data Extent with unknown contents.
+               B4.3.2.1 Interface
+               B4.3.2.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  R0          63:0        UInt64                                FID, value 0xC4000154
+        vd                   R1          63:0        Address                               DPA of the VD for the target Vault
+        data                 R2          63:0        Address                               DPA of the target Data
+        lba                  R3          63:0        Address                               LBA at which the Extent will be
+                                                                                           mapped in the target Vault
+               B4.3.2.1.2   Context
+               The HCI_DATA_CREATE_UNKNOWN command operates on the following context.
+        Name                 Type                       Value                                      Before    Description
+        vault                Keepervault                   Vaultat(vd)                                false     Vault
+        walk                 Keeperbltwalkresult           Bltwalk(                                   false     BLT walk result
+                                                            vault, lba,
+                                                            KEEPER_BLT_PAGE_LEVEL,
+                                                            KEEPER_BLT_TREE_PRIMARY)
+        entry_idx            UInt64                     Bltentryindex(                             false     BLTE index
+                                                            lba, walk.level)
+               B4.3.2.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               R0          63:0        Hcicommandreturncode                  Command return status
+               B4.3.2.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if data is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if data is not a enrollable physical address in DRAM.
+
+HCI_ERROR_INPUT is returned if the Extent at data is not in the ENROLLED state.
+
+HCI_ERROR_INPUT is returned if the Vault does not support BIGADDR (its feat_bigaddr attribute is FEATURE_FALSE) and data is equal to or greater than 2^48.
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if lba is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if lba is not within the Protected LBA space of the Vault.
+
+HCI_ERROR_BLT is returned if the BLT walk for lba ends at a level above the page level. The level at which the walk ended is returned with the error.
+
+HCI_ERROR_BLT is returned if the BLT entry found by the BLT walk for lba is not in the UNASSIGNED state. The level at which the walk ended is returned with the error.
+
+               B4.3.2.2.1        Failure condition ordering
+
+The checks that vd is a enrollable physical address and that the Extent at vd is in the VD state come before both HCI_ERROR_BLT checks. These HCI_ERROR_BLT checks are the BLT walk reaching the page level and the BLT entry being in the UNASSIGNED state.
+
+The check that lba is within the Protected LBA space of the Vault comes before both HCI_ERROR_BLT checks. These HCI_ERROR_BLT checks are the BLT walk reaching the page level and the BLT entry being in the UNASSIGNED state.
+
+               B4.3.2.3 Success conditions
+
+The Extent at data is in the DATA state.
+
+The contents of the target Extent are wiped.
+
+The BLT entry found by the BLT walk for lba is in the ASSIGNED state.
+
+The output address of the BLT entry found by the BLT walk for lba is data.
+
+The memory attribute of the BLT entry found by the BLT walk for lba is MEMATTR_CACHEABLE.
+
+The shareability of the BLT entry found by the BLT walk for lba is SHAREABILITY_INNER.
+             B4.3.2.4 Footprint
+    ID                        Value
+    data_state                Extentat(data).state
+    blte                      Bltentryat(Bltat(walk.blt_addr), entry_idx)

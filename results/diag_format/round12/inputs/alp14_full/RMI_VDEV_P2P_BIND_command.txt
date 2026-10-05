@@ -1,0 +1,100 @@
+B4.3.58 RMI_VDEV_P2P_BIND
+
+B4.3.58.1 Intended use
+RMI_VDEV_P2P_BIND creates a P2P binding between two VDEVs. The Host calls the command with a P2P_STREAM object, a Realm, a target REC belonging to that Realm, two PDEV objects and two VDEV objects. The P2P stream of each PDEV must be the P2P_STREAM object that is passed in.
+
+When the command succeeds, both VDEVs are bound to each other through the P2P stream. Each VDEV records the other as its P2P peer, and the binding operation is left pending on both VDEVs.
+
+B4.3.58.2 Parameters
+The caller passes the following input values:
+• fid, passed in X0, bits 63:0. This is the function identifier and has the value 0xC40001D4.
+• stream_ptr, passed in X1, bits 63:0. This is the physical address of the P2P_STREAM object.
+• rd, passed in X2, bits 63:0. This is the physical address of the RD.
+• rec_ptr, passed in X3, bits 63:0. This is the physical address of the target REC.
+• pdev_1_ptr, passed in X4, bits 63:0. This is the physical address of the first PDEV object.
+• pdev_2_ptr, passed in X5, bits 63:0. This is the physical address of the second PDEV object.
+• vdev_1_ptr, passed in X6, bits 63:0. This is the physical address of the first VDEV object.
+• vdev_2_ptr, passed in X7, bits 63:0. This is the physical address of the second VDEV object.
+
+The command operates on the Realm described by rd, the REC at rec_ptr, the P2P stream at stream_ptr, the first PDEV at pdev_1_ptr, the second PDEV at pdev_2_ptr, the first VDEV at vdev_1_ptr and the second VDEV at vdev_2_ptr.
+
+B4.3.58.3 Return values
+The command returns the following output value:
+• result, returned in X0, bits 63:0. This is the command return status.
+
+RMI_VDEV_P2P_BIND can return the following errors.
+
+Device Assignment support:
+• RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature, that is, if feat_da is not FEATURE_TRUE.
+
+Realm:
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+REC:
+• RMI_ERROR_INPUT is returned if rec_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rec_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rec_ptr is not in the REC state.
+• RMI_ERROR_REC is returned if the REC at rec_ptr is in the REC_RUNNING state.
+• RMI_ERROR_REC is returned if the REC at rec_ptr is not owned by the Realm described by rd.
+
+P2P stream:
+• RMI_ERROR_INPUT is returned if stream_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if stream_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at stream_ptr is not in the P2P_STREAM state.
+
+First PDEV:
+• RMI_ERROR_INPUT is returned if pdev_1_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if pdev_1_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at pdev_1_ptr is not in the PDEV state.
+• RMI_ERROR_INPUT is returned if the PDEV at pdev_1_ptr does not have a valid P2P stream, that is, if its p2p_stream_valid attribute is not RMM_TRUE. It is also returned if the P2P stream of that PDEV is not the one at stream_ptr.
+
+Second PDEV:
+• RMI_ERROR_INPUT is returned if pdev_2_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if pdev_2_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at pdev_2_ptr is not in the PDEV state.
+• RMI_ERROR_INPUT is returned if the PDEV at pdev_2_ptr does not have a valid P2P stream, that is, if its p2p_stream_valid attribute is not RMM_TRUE. It is also returned if the P2P stream of that PDEV is not the one at stream_ptr.
+
+First VDEV:
+• RMI_ERROR_INPUT is returned if vdev_1_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if vdev_1_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at vdev_1_ptr is not in the VDEV state.
+• RMI_ERROR_INPUT is returned if the VDEV at vdev_1_ptr does not belong to the Realm described by rd.
+• RMI_ERROR_INPUT is returned if the VDEV at vdev_1_ptr is not associated with the PDEV at pdev_1_ptr.
+• RMI_ERROR_DEVICE is returned if the communication state of the VDEV at vdev_1_ptr is not DEV_COMM_IDLE.
+• RMI_ERROR_DEVICE is returned if the attestation information of the VDEV at vdev_1_ptr does not match the first VDEV attestation information held by the REC at rec_ptr (vdev_attest_info_1).
+• RMI_ERROR_DEVICE is returned if the p2p_bound attribute of the VDEV at vdev_1_ptr is not FEATURE_FALSE.
+
+Second VDEV:
+• RMI_ERROR_INPUT is returned if vdev_2_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if vdev_2_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at vdev_2_ptr is not in the VDEV state.
+• RMI_ERROR_INPUT is returned if the VDEV at vdev_2_ptr does not belong to the Realm described by rd.
+• RMI_ERROR_INPUT is returned if the VDEV at vdev_2_ptr is not associated with the PDEV at pdev_2_ptr.
+• RMI_ERROR_DEVICE is returned if the communication state of the VDEV at vdev_2_ptr is not DEV_COMM_IDLE.
+• RMI_ERROR_DEVICE is returned if the attestation information of the VDEV at vdev_2_ptr does not match the second VDEV attestation information held by the REC at rec_ptr (vdev_attest_info_2).
+• RMI_ERROR_DEVICE is returned if the p2p_bound attribute of the VDEV at vdev_2_ptr is not FEATURE_FALSE.
+
+The check for Device Assignment support comes before every other failure condition. If the feature is not supported, RMI_ERROR_NOT_SUPPORTED is returned, even if any of the other failure conditions also apply. No ordering is defined among the remaining failure conditions. These cover rd, rec_ptr, stream_ptr, pdev_1_ptr, pdev_2_ptr, vdev_1_ptr and vdev_2_ptr, and they return RMI_ERROR_INPUT, RMI_ERROR_REC or RMI_ERROR_DEVICE.
+
+B4.3.58.4 Implementation responsibilities
+If none of the failure conditions apply, the command succeeds and the implementation must update both VDEVs.
+
+For the VDEV at vdev_1_ptr, the implementation must:
+• Set its operation to VDEV_OP_P2P_BIND.
+• Set its communication state to DEV_COMM_PENDING.
+• Set its p2p_bound attribute to FEATURE_TRUE.
+• Set its P2P stream to the P2P stream at stream_ptr.
+• Set its P2P peer to the VDEV identifier of the VDEV at vdev_2_ptr.
+
+For the VDEV at vdev_2_ptr, the implementation must:
+• Set its operation to VDEV_OP_P2P_BIND.
+• Set its communication state to DEV_COMM_PENDING.
+• Set its p2p_bound attribute to FEATURE_TRUE.
+• Set its P2P stream to the P2P stream at stream_ptr.
+• Set its P2P peer to the VDEV identifier of the VDEV at vdev_1_ptr.
+
+RMI_VDEV_P2P_BIND can modify only the following state:
+• The operation, communication state, p2p_bound attribute, P2P stream and P2P peer of the VDEV at vdev_1_ptr.
+• The operation, communication state, p2p_bound attribute, P2P stream and P2P peer of the VDEV at vdev_2_ptr.

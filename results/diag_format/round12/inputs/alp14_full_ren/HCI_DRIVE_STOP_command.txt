@@ -1,0 +1,38 @@
+B4.3.20 HCI_DRIVE_STOP
+
+B4.3.20.1 Intended use
+HCI_DRIVE_STOP is intended to stop a DRIVE. The Host calls the HCI_DRIVE_STOP function and passes the physical address of the DRIVE.
+
+When the command succeeds, the DRIVE is placed in the DRIVE_STOPPING state and its communication state, given by its comm_state field, is set to DEV_COMM_PENDING.
+
+B4.3.20.2 Parameters
+HCI_DRIVE_STOP takes the following input values:
+•  fid, passed in R0, is the function identifier. Its value is 0xC400017C.
+•  drive_ptr, passed in R1, is the physical address of the DRIVE.
+
+B4.3.20.3 Return values
+HCI_DRIVE_STOP returns the following output value:
+•  result, returned in R0, is the command return status.
+
+HCI_DRIVE_STOP can return the following errors:
+•  HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+•  HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+•  HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+•  HCI_ERROR_DEVICE is returned if the DRIVE is in the DRIVE_COMMUNICATING, DRIVE_STOPPING or DRIVE_STOPPED state.
+•  HCI_ERROR_DEVICE is returned if the DRIVE still has one or more Volumes associated with it, which means its num_volumes count is not zero.
+
+The implementation checks whether it supports the Device Assignment feature before it makes any of the three checks on drive_ptr. Those three checks are that drive_ptr is aligned to the size of a Extent, that drive_ptr is a enrollable physical address, and that the Extent at drive_ptr is in the DRIVE state.
+
+The implementation checks that the Extent at drive_ptr is in the DRIVE state before it makes either of the two checks on the DRIVE. Those two checks are the check on the state of the DRIVE and the check that no Volumes are associated with it.
+
+No other ordering is defined between these conditions.
+
+B4.3.20.4 Implementation responsibilities
+If HCI_DRIVE_STOP succeeds, the implementation must ensure that:
+•  The DRIVE is in the DRIVE_STOPPING state.
+•  The communication state of the DRIVE, given by its comm_state field, is DEV_COMM_PENDING.
+
+HCI_DRIVE_STOP can modify only the following state:
+•  The state of the DRIVE.
+•  The comm_state field of the DRIVE.

@@ -1,0 +1,19 @@
+B6.3.2 PWRCTL_CPU_OFF
+
+B6.3.2.1 Intended use
+PWRCTL_CPU_OFF powers down the calling core. When a Vault calls PWRCTL_CPU_OFF, the call causes a WORKER exit due to PWRCTL.
+
+The command operates on the current WORKER, which is the WORKER that is running when the call is made.
+
+B6.3.2.2 Parameters
+PWRCTL_CPU_OFF takes the following input value:
+•  fid, passed in R0, bits 63:0. This is the function identifier and must have the value 0xC4000002.
+
+B6.3.2.3 Return values
+PWRCTL_CPU_OFF has no output values. After PWRCTL_CPU_OFF runs, control does not return to the caller.
+
+B6.3.2.4 Implementation responsibilities
+For PWRCTL_CPU_OFF, the following apply:
+•  The command has no failure conditions. As a result, it returns no error codes and there is no ordering between failure conditions.
+•  The command has no success conditions. After it runs, control does not return to the caller.
+•  The command does not list any state that it can modify.

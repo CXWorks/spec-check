@@ -1,0 +1,55 @@
+B4.3.65 HCI_VXLATOR_CREATE
+
+B4.3.65.1 Intended use
+HCI_VXLATOR_CREATE creates a VXLATOR. The Host calls it with the address of a Vault Descriptor (VD), the address of a Extent that will hold the VXLATOR, and the address of a VXLATOR parameters structure. If the command succeeds, the new VXLATOR belongs to the Vault described by vd and is initialized from the VXLATOR parameters.
+
+B4.3.65.2 Parameters
+The command takes these input values:
+• fid, passed in R0, bits 63:0. This is the function identifier, value 0xC400016A.
+• vd, passed in R1, bits 63:0. This is the physical address of the VD.
+• vxlator_ptr, passed in R2, bits 63:0. This is the physical address of the VXLATOR.
+• params_ptr, passed in R3, bits 63:0. This is the physical address of the VXLATOR parameters.
+
+The command operates on:
+• the Vault described by vd, both before and after the command executes
+• the VXLATOR at vxlator_ptr, after the command executes
+• the VXLATOR parameters at params_ptr, after the command executes
+
+B4.3.65.3 Return values
+The command returns this output value:
+• result, returned in R0, bits 63:0. This is the command return status.
+
+HCI_VXLATOR_CREATE can return the following errors:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the device assignment feature (feat_dx).
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if the state of the Vault described by vd is not VAULT_NEW.
+• HCI_ERROR_INPUT is returned if vxlator_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vxlator_ptr is not a DRAM physical address that can be enrolled.
+• HCI_ERROR_INPUT is returned if the Extent at vxlator_ptr is not in the ENROLLED state.
+• HCI_ERROR_INPUT is returned if params_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if the Extent at params_ptr cannot be accessed from the Non-secure physical address space.
+• HCI_ERROR_INPUT is returned if the VXLATOR parameters at params_ptr are not valid.
+• HCI_ERROR_INPUT is returned if the reg_base value or the reg_top value in the VXLATOR parameters is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if the reg_base value or the reg_top value in the VXLATOR parameters is not a Protected address in the Vault.
+• HCI_ERROR_INPUT is returned if reg_top is not greater than reg_base.
+
+Ordering between these failure conditions:
+• The check that vd can be enrolled and the check that the Extent at vd is in the VD state are both made before the check of the Vault's state.
+• The check that the implementation supports the device assignment feature is made before all the other checks listed above except the check of the Vault's state. This covers the alignment, enrollability and state checks on vd, the alignment, enrollability and state checks on vxlator_ptr, the alignment, access and validity checks on params_ptr, and the alignment and bounds checks on reg_base and reg_top.
+
+B4.3.65.4 Implementation responsibilities
+If the command succeeds:
+• The Extent at vxlator_ptr is in the VXLATOR state.
+• The VXLATOR is in the VXLATOR_INACTIVE state.
+• The VXLATOR belongs to the Vault described by vd.
+• The VXLATOR's reg_base value equals the reg_base value in the VXLATOR parameters.
+• The VXLATOR's reg_top value equals the reg_top value in the VXLATOR parameters.
+• The VXLATOR's vidr value equals the vidr value in the VXLATOR parameters.
+• Each of the VXLATOR's idr values 0 to 6 equals the matching idr value in the VXLATOR parameters.
+• The Vault's count of Vxlators (num_vxlators) is one more than it was before the command.
+
+The command may modify only:
+• the state of the Extent at vxlator_ptr
+• the Vault's count of Vxlators, num_vxlators

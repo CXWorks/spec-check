@@ -1,0 +1,35 @@
+B5.3.2 RSI_ATTESTATION_TOKEN_INIT
+
+B5.3.2.1 Intended use
+RSI_ATTESTATION_TOKEN_INIT starts the process of retrieving an attestation token. When a Realm needs an attestation token, it calls this command and provides a challenge value.
+
+The command acts on the Realm that makes the call and on the REC that makes the call.
+
+B5.3.2.2 Parameters
+RSI_ATTESTATION_TOKEN_INIT takes the following input values:
+• fid is passed in X0. It is the function identifier, and its value is 0xC4000194.
+• challenge_0 is passed in X1. It is doubleword 0 of the challenge value.
+• challenge_1 is passed in X2. It is doubleword 1 of the challenge value.
+• challenge_2 is passed in X3. It is doubleword 2 of the challenge value.
+• challenge_3 is passed in X4. It is doubleword 3 of the challenge value.
+• challenge_4 is passed in X5. It is doubleword 4 of the challenge value.
+• challenge_5 is passed in X6. It is doubleword 5 of the challenge value.
+• challenge_6 is passed in X7. It is doubleword 6 of the challenge value.
+• challenge_7 is passed in X8. It is doubleword 7 of the challenge value.
+
+B5.3.2.3 Return values
+RSI_ATTESTATION_TOKEN_INIT returns the following output values:
+• result is returned in X0. It is the command return status.
+• size is returned in X1. It is an upper bound, in bytes, on the size of the attestation token.
+
+RSI_ATTESTATION_TOKEN_INIT has no failure conditions. Because there are no failure conditions, there is no ordering between them.
+
+B5.3.2.4 Implementation responsibilities
+After a successful call to RSI_ATTESTATION_TOKEN_INIT, the implementation must make sure that:
+• The attestation state of the REC is ATTEST_IN_PROGRESS.
+• The attestation challenge of the REC is challenge_0, challenge_1, challenge_2, challenge_3, challenge_4, challenge_5, challenge_6 and challenge_7 joined together in that order, starting with challenge_0.
+• size is the maximum size of the attestation token for the Realm.
+
+RSI_ATTESTATION_TOKEN_INIT can change only these items of state:
+• The attestation state of the REC.
+• The attestation challenge of the REC.

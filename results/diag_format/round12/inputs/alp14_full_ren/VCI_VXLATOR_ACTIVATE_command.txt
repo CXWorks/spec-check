@@ -1,0 +1,45 @@
+B5.3.21 VCI_VXLATOR_ACTIVATE
+
+B5.3.21.1 Intended use
+VCI_VXLATOR_ACTIVATE is intended for activating a VXLATOR. The Vault calls VCI_VXLATOR_ACTIVATE with a target LBA region, given by a base address and a top address.
+
+The command uses the following context:
+• The Vault is the current Vault, meaning the Vault that issued the call.
+• The BLT walk is done in the current Vault's primary BLT tree. It starts at base and targets the page level.
+• The VXLATOR is the one located at the address recorded in the BLT entry that the BLT walk reaches.
+
+The command returns new_base. This is the base of the part of the LBA region that the command did not modify.
+
+B5.3.21.2 Parameters
+• fid, passed in R0: the function identifier. Its value is 0xC400019B.
+• base, passed in R1: the base of the target LBA region.
+• top, passed in R2: the top of the target LBA region.
+
+B5.3.21.3 Return values
+• result, returned in R0: the command return status.
+• new_base, returned in R1: the base of the LBA region that the command did not modify.
+
+B5.3.21.4 Caller responsibilities
+Before calling VCI_VXLATOR_ACTIVATE, the caller must ensure the following:
+• base is aligned to the size of a Extent.
+• top is aligned to the size of a Extent.
+• top is greater than base, compared as unsigned integers.
+• The address range from base up to, but not including, top lies entirely within the Protected LBA space of the Vault.
+• The BLT entry reached by the BLT walk is in the ASSIGNED_VXLATOR state.
+
+VCI_VXLATOR_ACTIVATE can return the following errors:
+• VCI_ERROR_INPUT is returned if base is not aligned to the size of a Extent.
+• VCI_ERROR_INPUT is returned if top is not aligned to the size of a Extent.
+• VCI_ERROR_INPUT is returned if top is less than or equal to base, compared as unsigned integers.
+• VCI_ERROR_INPUT is returned if the address range from base up to, but not including, top is not entirely within the Protected LBA space of the Vault.
+• VCI_ERROR_INPUT is returned if the BLT entry reached by the BLT walk is not in the ASSIGNED_VXLATOR state.
+
+These failure conditions have no defined order relative to each other.
+
+B5.3.21.5 Implementation responsibilities
+When VCI_VXLATOR_ACTIVATE succeeds, the implementation must ensure the following:
+• The LBAMODE of the address range from base up to, but not including, new_base is DEV.
+• If base equals the base address of the VXLATOR register region and new_base does not equal the top address of that region, the VXLATOR state is VXLATOR_ACTIVATING.
+• If new_base equals the top address of the VXLATOR register region, the VXLATOR state is VXLATOR_ACTIVE.
+
+The original section does not list any state that VCI_VXLATOR_ACTIVATE may modify.

@@ -1,0 +1,46 @@
+5.1.10 SDEI_EVENT_GET_INFO command
+               Retrieves the information of an event.
+               This command is permitted in all event handler states. Some return values depend on the event handler state.
+               5.1.10.1 Interface
+               5.1.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000029
+        event               X1           31:0        Int32                                 Event number
+        info                X2           31:0        UInt32                                Information requested: 0 = EV_TYPE, 1 = EV_SIGNALED, 2 = EV_PRIORITY, 3 = EV_ROUTING_MODE, 4 = EV_ROUTING_AFF. Other values are reserved for future use.
+               5.1.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 On success, the requested information. On error, an error code.
+               5.1.10.2 Failure conditions
+  ID                          Condition
+  sdei_supp                   pre: !SdeiIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_valid                 pre: !IsValidEventNumber(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  info_valid                  pre: !IsValidInfo(info)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  rmode_shared                pre: info == EV_ROUTING_MODE && !IsSharedEvent(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  rmode_reg                   pre: info == EV_ROUTING_MODE && !IsEventRegistered(event)
+                              post: ResultEqual(result, DENIED)
+  raff_shared                 pre: info == EV_ROUTING_AFF && !IsSharedEvent(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  raff_mode                   pre: info == EV_ROUTING_AFF && !RoutingModeHasAffinity(EventRoutingMode(event))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  raff_reg                    pre: info == EV_ROUTING_AFF && !IsEventRegistered(event)
+                              post: ResultEqual(result, DENIED)
+               5.1.10.2.1   Failure condition ordering
+               The SDEI_EVENT_GET_INFO command does not have any failure condition orderings.
+               5.1.10.3 Success conditions
+  ID                          Condition
+  ev_type                     post: info == EV_TYPE ==> result == (IsSharedEvent(event) ? 1 : 0)
+                                    (0: Private event, 1: Shared event)
+  ev_signaled                 post: info == EV_SIGNALED ==> result == (CanBeSoftwareSignaled(event) ? 0 : 1)
+                                    (0: Event can be software signaled, 1: Event cannot be software signaled)
+  ev_priority                 post: info == EV_PRIORITY ==> result == (IsCriticalPriority(event) ? 1 : 0)
+                                    (0: Normal priority event, 1: Critical priority event)
+  ev_rmode                    post: info == EV_ROUTING_MODE ==> result == EventRoutingMode(event)
+                                    (0: RM_ANY, route to any PE in the system; 1: RM_PE, route to the PE specified by affinity)
+  ev_raff                     post: info == EV_ROUTING_AFF ==> result == EventRoutingAffinity(event)
+                                    (with RM_PE, the value follows the MPIDR format described in SDEI_EVENT_REGISTER)
+               5.1.10.4 Footprint
+               The SDEI_EVENT_GET_INFO command only retrieves event information. The section does not name any state that it modifies.

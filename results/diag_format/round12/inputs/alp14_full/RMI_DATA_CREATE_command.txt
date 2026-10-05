@@ -1,0 +1,71 @@
+B4.3.1 RMI_DATA_CREATE
+
+B4.3.1.1 Intended use
+RMI_DATA_CREATE creates a Data Granule. The caller provides a Non-secure Granule, and the command copies that Granule's contents into the new Data Granule.
+
+The caller identifies the target Realm by its RD and gives the physical address of the target Data Granule. It also gives the IPA at which the Granule will be mapped in the target Realm, the physical address of the source Granule, and a set of flags. The command maps the new Data Granule at the given IPA in the target Realm and extends the RIM of the target Realm, as described in section B4.3.1.5.
+
+B4.3.1.2 Parameters
+RMI_DATA_CREATE takes the following input values:
+•  fid is passed in X0, bits 63:0. It is the function identifier, and its value is 0xC4000153.
+•  rd is passed in X1, bits 63:0. It is the physical address of the RD for the target Realm.
+•  data is passed in X2, bits 63:0. It is the physical address of the target Data Granule.
+•  ipa is passed in X3, bits 63:0. It is the IPA at which the Granule will be mapped in the target Realm.
+•  src is passed in X4, bits 63:0. It is the physical address of the source Granule.
+•  flags is passed in X5, bits 63:0. It holds the flags for the command.
+
+The command looks up ipa by walking the primary RTT tree of the target Realm, down to the page level, RMM_RTT_PAGE_LEVEL. The RTT entry for ipa is the entry found by this walk, at the index that corresponds to ipa at the level the walk reached.
+
+B4.3.1.3 Return values
+RMI_DATA_CREATE returns the following output value:
+•  result is passed in X0, bits 63:0. It is the command return status.
+
+RMI_DATA_CREATE can return the following errors:
+•  RMI_ERROR_INPUT is returned if src is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if the Granule at src cannot be accessed from the Non-secure physical address space.
+•  RMI_ERROR_INPUT is returned if data is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if data is not the physical address of DRAM that can be delegated.
+•  RMI_ERROR_INPUT is returned if the Granule at data is not in the DELEGATED state.
+•  RMI_ERROR_INPUT is returned if data is 2^48 or greater and the target Realm does not support LPA2. In this case, the feat_lpa2 attribute of the target Realm is FEATURE_FALSE.
+•  RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+•  RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+•  RMI_ERROR_INPUT is returned if ipa is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if ipa is not in the protected IPA space of the target Realm before the command runs.
+•  RMI_ERROR_REALM is returned if the target Realm is not in the REALM_NEW state before the command runs.
+•  RMI_ERROR_RTT is returned if the RTT walk for ipa stops before it reaches the page level, RMM_RTT_PAGE_LEVEL. The command also returns the RTT level that the walk reached.
+•  RMI_ERROR_RTT is returned if the RTT entry that the walk found for ipa is not in the UNASSIGNED state. The command also returns the RTT level that the walk reached.
+
+The RMM checks for these errors in the following order:
+•  The RMM checks that rd can be delegated and that the Granule at rd is in the RD state. It does this before it checks whether the target Realm is in the REALM_NEW state.
+•  The RMM checks that rd can be delegated and that the Granule at rd is in the RD state. It does this before it checks the RTT walk level and the state of the RTT entry for ipa.
+•  The RMM checks that ipa is in the protected IPA space of the target Realm. It does this before it checks the RTT walk level and the state of the RTT entry for ipa.
+
+If the command succeeds, all of the following are true:
+•  The Granule at data is in the DATA state.
+•  The contents of the source Granule at src have been copied into the target Granule at data.
+•  The RTT entry for ipa is in the ASSIGNED state.
+•  The RIPAS of the RTT entry for ipa is RAM.
+•  The output address of the RTT entry for ipa is data.
+•  The memory attribute of the RTT entry for ipa is MEMATTR_CACHEABLE.
+•  The shareability of the RTT entry for ipa is SHAREABILITY_INNER.
+•  The RIM of the target Realm has been updated. The first measurement of the Realm is now the value calculated from four inputs: the state of the Realm before the command, ipa, data and flags. Section B4.3.1.5 describes this calculation.
+
+B4.3.1.4 Implementation responsibilities: modified state
+RMI_DATA_CREATE can modify only the following state:
+•  The state of the Granule at data.
+•  The RIM of the target Realm, which is the first measurement of the Realm.
+•  The RTT entry for ipa. This is the entry in the RTT that the walk for ipa reached, at the index that corresponds to ipa at the level of the walk.
+
+B4.3.1.5 Implementation responsibilities: extension of RIM
+When RMI_DATA_CREATE succeeds, the RMM must calculate the new RIM value of the target Realm as follows:
+1. If the measure field of flags is RMI_MEASURE_CONTENT, compute the hash of the contents of the DATA Granule, using the RHA of the target Realm.
+2. Allocate a measurement descriptor data structure for the DATA Granule.
+3. Fill in the measurement descriptor:
+   •  Set the desc_type field to the descriptor type.
+   •  Set the len field to the descriptor length.
+   •  Set the rim field to the current RIM value of the target Realm.
+   •  Set the ipa field to the IPA at which the DATA Granule is mapped in the target Realm.
+   •  Set the flags field to the flags provided by the Host.
+   •  If the measure field of flags is RMI_MEASURE_CONTENT, set the content field to the hash of the contents of the DATA Granule. Otherwise, set the content field to zero.
+4. Compute the hash of the measurement descriptor using the RHA of the target Realm, and set the RIM of the target Realm to this value. If the RHA output is smaller than the RIM, fill the upper bytes with zeros.

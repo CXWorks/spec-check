@@ -1,0 +1,43 @@
+B4.3.16 HCI_DRIVE_LINKCRYPT_RESET command
+               Reset non-coherent LINKCRYPT connection between the Root Port and the endpoint device.
+               B4.3.16.1 Interface
+               B4.3.16.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  R0          63:0        UInt64                                FID, value 0xC4000179
+        drive_ptr             R1          63:0        Address                               DPA of the DRIVE
+               B4.3.16.1.2   Context
+               The HCI_DRIVE_LINKCRYPT_RESET command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        drive                 Keeperdrive                    Driveat(drive_ptr)
+               B4.3.16.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               R0          63:0        Hcicommandreturncode                  Command return status
+               B4.3.16.2 Failure conditions
+
+HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support Device Assignment.
+
+HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+
+HCI_ERROR_DEVICE is returned if the DRIVE is not connected using non-coherent LINKCRYPT (its ncoh_linkcrypt attribute is not LINKCRYPT_TRUE).
+
+HCI_ERROR_DEVICE is returned if the DRIVE is not in the DRIVE_READY state.
+
+               B4.3.16.2.1   Failure condition ordering
+
+The check that Device Assignment is supported comes before the three HCI_ERROR_INPUT checks on drive_ptr: extent alignment, enrollable address, and the Extent being in the DRIVE state. Those three checks have no required order among themselves.
+
+The check that the Extent at drive_ptr is in the DRIVE state comes before both HCI_ERROR_DEVICE checks: the DRIVE being connected using non-coherent LINKCRYPT, and the DRIVE being in the DRIVE_READY state. Those two checks have no required order between them.
+
+               B4.3.16.3 Success conditions
+
+On success, the DRIVE state is DRIVE_LINKCRYPT_RESETTING.
+
+On success, the DRIVE communication state is DEV_COMM_PENDING.
+               B4.3.16.4 Footprint
+    ID                          Value
+    state                       drive.state
+    comm_state                  drive.comm_state

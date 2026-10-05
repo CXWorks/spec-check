@@ -1,0 +1,31 @@
+5.1.9 SDEI_EVENT_STATUS command
+               Retrieves the status of an event.
+               5.1.9.1 Interface
+               5.1.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC4000028
+        event               X1           31:0        Int32                                 Event number
+               5.1.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 On success, the event status:
+                                                                                           Bits[63:3]: must be zero
+                                                                                           Bit[2]: running bit (0: handler not running, 1: handler running)
+                                                                                           Bit[1]: enable bit (0: handler disabled, 1: handler enabled)
+                                                                                           Bit[0]: register bit (0: handler unregistered, 1: handler registered)
+                                                                                           On error, an error code
+               5.1.9.2 Failure conditions
+  ID                          Condition
+  sdei_support                pre: !IsSdeiSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_valid                 pre: !IsValidEventNumber(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               5.1.9.2.1   Failure condition ordering
+               The SDEI_EVENT_STATUS command does not have any failure condition orderings.
+               5.1.9.3 Success conditions
+  ID                          Condition
+  status_rsvd                 post: result[63:3] == 0
+  status_running              post: result[2] == (EventHandlerIsRunning(event) ? 1 : 0)
+  status_enabled              post: result[1] == (EventHandlerIsEnabled(event) ? 1 : 0)
+  status_registered           post: result[0] == (EventHandlerIsRegistered(event) ? 1 : 0)
+               5.1.9.4 Footprint
+               The SDEI_EVENT_STATUS command does not modify any state.

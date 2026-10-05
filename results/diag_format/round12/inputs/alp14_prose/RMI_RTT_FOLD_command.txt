@@ -1,0 +1,74 @@
+B4.3.40 RMI_RTT_FOLD command
+                Destroys a homogeneous primary RTT.
+                B4.3.40.1 Interface
+                B4.3.40.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000166
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               Base of the IPA range described by the
+                                                                                            RTT
+        level                 X3          63:0        Int64                                 RTT level
+                B4.3.40.1.2   Context
+                The RMI_RTT_FOLD command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                                             realm, ipa,
+                                                             level - 1,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+        fold_pre              RmmRttEntry                RttFold(                                   true     Result of folding RTT
+                                                             RttAt(walk.rtte.addr))
+                B4.3.40.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        rtt                   X1          63:0        Address                               PA of the RTT which was destroyed
+                The rtt output value is valid only when the command result is RMI_SUCCESS.
+                B4.3.40.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if level is not a valid RTT level for the Realm, or if level is the starting level of the Realm's RTT.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that one RTT entry covers at the level one above level (level minus one).
+
+RMI_ERROR_INPUT is returned if ipa is outside the Realm's IPA space, that is, if ipa is greater than or equal to 2 raised to the power of the Realm's IPA width.
+
+RMI_ERROR_RTT is returned if the RTT walk to ipa stops before it reaches level minus one. The level at which the walk stopped is also returned.
+
+RMI_ERROR_RTT is returned if the RTT entry that the walk reaches is not in the TABLE state. The level at which the walk stopped is also returned.
+
+RMI_ERROR_RTT is returned if the RTT that this RTT entry points to is not homogeneous. The value of level is also returned.
+
+RMI_ERROR_RTT is returned if ipa is referenced by an auxiliary RTT of the Realm. The level at which the walk stopped is also returned.
+
+               B4.3.40.2.1   Failure condition ordering
+
+The check that rd is a delegable physical address, and the check that the Granule at rd is in the RD state, are made before these checks: whether the RTT walk reaches level minus one, whether the RTT entry that the walk reaches is in the TABLE state, whether the child RTT is homogeneous, and whether ipa is referenced by an auxiliary RTT.
+
+The check that level is valid and is not the starting level, and the check that ipa is within the Realm's IPA space, are made before these checks: whether the RTT walk reaches level minus one, and whether the RTT entry that the walk reaches is in the TABLE state.
+
+               B4.3.40.3 Success conditions
+
+The state of the parent RTT entry for ipa is set to the state that all entries in the folded RTT had before the command.
+
+If the folded entries were in a state other than UNASSIGNED or UNASSIGNED_NS, the output address of the parent RTT entry is set to the output address that the folded RTT entries had before the command.
+
+If the folded entries were in the ASSIGNED state, the parent RTT entry gets the memory attributes the folded entries had, interpreted as for Protected memory (RTT_PROTECTED). It also gets the stage 2 access permissions the folded entries had, interpreted with the indirect encoding (S2AP_INDIRECT).
+
+If the folded entries were in the ASSIGNED_NS state, the parent RTT entry gets the memory attributes the folded entries had, interpreted as for Unprotected memory (RTT_UNPROTECTED). It also gets the stage 2 access permissions the folded entries had, interpreted with the Realm's stage 2 access permission encoding.
+
+If ipa is a Protected IPA, the RIPAS of the parent RTT entry is set to the RIPAS that the folded entries had before the command.
+
+The Granule that held the folded RTT is in the DELEGATED state.
+
+The output value rtt is the address of the folded RTT.
+                    B4.3.40.4 Footprint
+        ID                       Value
+        rtt_state                GranuleAt(walk.rtte.addr).state
+        rtte                     RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

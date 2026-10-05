@@ -1,0 +1,35 @@
+5.22 PSCI_STAT_RESIDENCY/COUNT command
+               Returns usage statistics for a local low-power state of a node in the processor power topology. PSCI_STAT_COUNT returns how many times the state has been used. PSCI_STAT_RESIDENCY returns the time spent in the state, in microseconds. Introduced in PSCI 1.0. The two functions are optional, but if statistics are supported, both must be implemented.
+               5.22.1 Interface
+               5.22.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt32                                Function ID of PSCI_STAT_COUNT or PSCI_STAT_RESIDENCY (SMC32 or SMC64 version)
+        target_cpu          —            —           Mpidr                                 Target node. Uses the same format as the target_cpu parameter of CPU_ON (section 5.1.4)
+        power_state         —            —           PowerState                            Identifies a specific local state. Generally takes the same form as the power_state parameter of CPU_SUSPEND (section 5.4.2). Its encoding may differ from the CPU_SUSPEND encoding, in which case firmware tables describe the statistics value separately
+               5.22.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              —            32 (SMC32) / 64 (SMC64)   UInt                     PSCI_STAT_COUNT: number of times the state has been used. PSCI_STAT_RESIDENCY: time spent in the state, in microseconds. The value wraps when it overflows the available resolution
+               5.22.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !StatFunctionsImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  node_present                pre: !IsPresentNode(target_cpu)
+                              post: ResultEqual(result, 0)
+  state_support               pre: !NodeSupportsState(StatNode(target_cpu, power_state), StatLocalState(power_state))
+                              post: ResultEqual(result, 0)
+               Note: These functions do not support error codes, because the result uses its full resolution for the count or residency value. For an invalid combination of node and power_state, the result is zero. If the functions are not implemented, the result is NOT_SUPPORTED, but the caller cannot rely on this value. The caller must use PSCI_FEATURES (section 5.1.15) to find out whether the functions are present.
+               5.22.2.1   Failure condition ordering
+               The section does not specify an ordering for the PSCI_STAT_RESIDENCY/COUNT failure conditions.
+               5.22.3 Success conditions
+  ID                          Condition
+  stat_node                   post: StatNode(target_cpu, power_state) == NodeAt(target_cpu, HighestPowerLevel(power_state))
+  osi_last_man                post: IsOsInitiatedMode() ==> StatLocalState(power_state) ignores LastManLevelField(power_state)
+  count_value                 post: IsStatCount(fid) ==> ResultEqual(result, StateUseCount(StatNode(target_cpu, power_state), StatLocalState(power_state)) mod 2^ResultBits(fid))
+  residency_value             post: IsStatResidency(fid) ==> ResultEqual(result, StateResidencyUs(StatNode(target_cpu, power_state), StatLocalState(power_state)) mod 2^ResultBits(fid))
+               Note: There is no separate success return code. On success, the result is the statistic value. The statistics:
+               - track only local low-power states, not run states. They are counted however the state was entered, including through CPU_OFF, CPU_FREEZE or SYSTEM_SUSPEND.
+               - are set to zero at cold boot, and SYSTEM_RESET and SYSTEM_SHUTDOWN have the same effect.
+               It is IMPLEMENTATION DEFINED whether the count is updated on entry to a state or on exit from it. It is also IMPLEMENTATION DEFINED whether the residency of a node that is currently in the state includes the time since it last entered that state.
+               5.22.4 Footprint
+    ID                        Value
+    —                         None. These functions only read the statistics and do not change any state.

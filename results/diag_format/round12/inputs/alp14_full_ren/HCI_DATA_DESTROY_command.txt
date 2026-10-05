@@ -1,0 +1,54 @@
+B4.3.3 HCI_DATA_DESTROY
+
+B4.3.3.1 Intended use
+HCI_DATA_DESTROY destroys a Data Extent. The Host calls it to remove the Data Extent that is mapped at a given LBA in the protected LBA space of a Vault. The Vault is identified by its Vault Descriptor (VD).
+
+To find the target, the command walks the primary BLT tree of the Vault for the given LBA, down to the page level (KEEPER_BLT_PAGE_LEVEL). In this section:
+• The walk top address is the top LBA of the non-live BLT entries, counted from the entry at which the BLT walk terminated.
+• The BLT entry is the entry at which the BLT walk terminated. Its index is calculated from lba and the level at which the walk stopped.
+
+B4.3.3.2 Parameters
+The caller passes the following input values:
+• fid, passed in R0, is the function identifier. Its value is 0xC4000155.
+• vd, passed in R1, is the physical address of the VD that owns the target Data Extent.
+• lba, passed in R2, is the LBA at which the Extent is mapped in the target Vault.
+
+B4.3.3.3 Return values
+The command returns the following output values:
+• result, returned in R0, is the command return status.
+• data, returned in R1, is the physical address of the destroyed Data Extent. data is valid only when result is HCI_SUCCESS.
+• top, returned in R2, is the top LBA of the non-live BLT entries, counted from the entry at which the BLT walk terminated.
+
+The values of result and top, and the state of the BLT entry, depend on the outcome of the command:
+• If lba is mapped as a page and its LBAMODE is RAM, result is HCI_SUCCESS and top is greater than lba. Before the command, the BLT entry is ASSIGNED with LBAMODE RAM. After the command, it is UNASSIGNED with LBAMODE DESTROYED.
+• If lba is mapped as a page and its LBAMODE is not RAM, result is HCI_SUCCESS and top is greater than lba. Before the command, the BLT entry is ASSIGNED with LBAMODE other than RAM. After the command, it is UNASSIGNED and its LBAMODE is unchanged.
+• If lba is not mapped, result is HCI_ERROR_BLT with an error index less than or equal to 3, and top is greater than lba. The BLT entry is UNASSIGNED.
+• If lba is mapped as a block, result is HCI_ERROR_BLT with an error index equal to the level, where 0 < level < 3. top is equal to lba. The BLT entry is ASSIGNED.
+• If the BLT walk was not performed because of any other command failure, result is another error code and top is 0. The state of the BLT entry is unknown.
+
+B4.3.3.4 Caller responsibilities
+HCI_DATA_DESTROY can return the following errors:
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if lba is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if lba is not in the protected LBA space of the Vault.
+• HCI_ERROR_BLT is returned if the BLT walk stops at a level above the page level (KEEPER_BLT_PAGE_LEVEL). The error index is the level at which the walk stopped, and top is set to the walk top address.
+• HCI_ERROR_BLT is returned if the BLT entry at the end of the BLT walk is not in the ASSIGNED state. The error index is the level at which the walk stopped, and top is set to the walk top address.
+• HCI_ERROR_BLT_AUX is returned, with an error index of 0, if lba is live in an auxiliary BLT of the Vault.
+
+The checks are made in the following order:
+• The check that vd is a enrollable physical address and the check that the Extent at vd is in the VD state both come before these three checks: whether the BLT walk reaches the page level, whether the BLT entry is in the ASSIGNED state, and whether lba is live in an auxiliary BLT.
+• The check that lba is in the protected LBA space of the Vault also comes before those same three checks.
+
+B4.3.3.5 Implementation responsibilities
+When HCI_DATA_DESTROY succeeds, the implementation must make sure that:
+• The Extent at the address held in the BLT entry is in the ENROLLED state.
+• The BLT entry is in the UNASSIGNED state.
+• If the LBAMODE of the BLT entry was RAM before the command, it is DESTROYED after the command.
+• The output data is the address that was held in the BLT entry.
+• The output top is set to the walk top address.
+
+The command can modify only the following state:
+• The state of the Extent at the address held in the BLT entry at which the BLT walk terminated.
+• The BLT entry at which the BLT walk terminated, at the calculated entry index in the BLT where the walk stopped.

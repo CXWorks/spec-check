@@ -1,0 +1,45 @@
+B5.3.5 VCI_LBA_STATE_GET
+
+B5.3.5.1 Intended use
+VCI_LBA_STATE_GET is intended for a Vault to get the LBAMODE of a target LBA range. The Vault calls the VCI_LBA_STATE_GET function with the base and the end of the target LBA region. The command operates on the current Vault, which is the Vault that issues the call.
+
+The implementation returns a LBAMODE value and the top of the LBA region that has the reported LBAMODE value.
+
+Note: The LBAMODE of a Protected LBA can change to DESTROYED at any time, without the Vault taking any action.
+
+B5.3.5.2 Parameters
+The caller passes the following input values:
+• fid is passed in R0. It is the function identifier, with value 0xC4000198.
+• base is passed in R1. It is the base of the target LBA region.
+• top is passed in R2. It is the end of the target LBA region.
+
+B5.3.5.3 Return values
+The implementation returns the following output values:
+• result is returned in R0. It is the command return status.
+• out_top is returned in R1. It is the top of the LBA region that has the reported LBAMODE value.
+• lbamode is returned in bits [7:0] of R2. It is the LBAMODE value.
+
+Bits [63:8] of R2 are unused and must be zero.
+
+B5.3.5.4 Caller responsibilities
+Before an VCI_LBA_STATE_GET call, the caller must make sure that:
+• base is aligned to the size of a Extent.
+• top is aligned to the size of a Extent.
+• top is greater than base, when both are read as unsigned integers.
+• The whole address range from base to top is inside the protected address range of the Vault.
+
+VCI_LBA_STATE_GET can return the following errors:
+• VCI_ERROR_INPUT is returned if base is not aligned to the size of a Extent.
+• VCI_ERROR_INPUT is returned if top is not aligned to the size of a Extent.
+• VCI_ERROR_INPUT is returned if top is less than or equal to base, when both are read as unsigned integers.
+• VCI_ERROR_INPUT is returned if any part of the address range from base to top is outside the protected address range of the Vault.
+
+No ordering is defined between these failure conditions.
+
+B5.3.5.5 Implementation responsibilities
+If result is VCI_SUCCESS, all of the following are true:
+• out_top is greater than base.
+• out_top is less than or equal to top.
+• Every address from base up to, but not including, out_top has the LBAMODE value returned in lbamode.
+
+VCI_LBA_STATE_GET does not modify any state.

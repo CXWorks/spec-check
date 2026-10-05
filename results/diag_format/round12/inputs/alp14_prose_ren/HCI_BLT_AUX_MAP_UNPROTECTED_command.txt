@@ -1,0 +1,62 @@
+B4.3.35 HCI_BLT_AUX_MAP_UNPROTECTED command
+              Copies a valid or table descriptor at an Unprotected LBA from the starting level of the primary BLT to an auxiliary
+              BLT.
+              B4.3.35.1 Interface
+              B4.3.35.1.1    Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 R0           63:0        UInt64                                FID, value 0xC4000181
+        vd                  R1           63:0        Address                               DPA of the VD for the target Vault
+        lba                 R2           63:0        Address                               LBA in the target Vault
+        index               R3           63:0        UInt64                                BLT tree index
+              B4.3.35.1.2    Context
+              The HCI_BLT_AUX_MAP_UNPROTECTED command operates on the following context.
+        Name                Type                        Value                                      Before   Description
+        vault               Keepervault                    Vaultat(vd)                                false    Vault
+        walk_pgreq            Keeperbltwalkresult            Bltwalk(                                   false    Primary BLT walk
+                                                            vault, lba,                                     result
+                                                            vault.blt_level_start,
+                                                            KEEPER_BLT_TREE_PRIMARY)
+        walk_aux            Keeperbltwalkresult            Bltwalk(                                   false    Auxiliary BLT walk
+                                                            vault, lba,                                     result
+                                                            vault.blt_level_start,
+                                                            index)
+        entry_idx           UInt64                      Bltentryindex(                             false    BLTE index
+                                                            lba, walk_aux.level)
+              B4.3.35.1.3    Output values
+        Name                Register     Bits        Type                                  Description
+        result              R0           63:0        Hcicommandreturncode                  Command return status
+              B4.3.35.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that one BLT entry maps at the starting BLT level of the Vault.
+
+HCI_ERROR_INPUT is returned if lba is outside the Vault's LBA space, that is, lba is greater than or equal to 2 to the power of the Vault's LBA width. It is also returned if lba is a Protected address in the Vault.
+
+HCI_ERROR_INPUT is returned if any of these is true:
+- the Vault does not use a separate BLT tree for each Tier (its per-Tier BLT tree setting is FEATURE_FALSE)
+- index identifies the primary BLT tree (KEEPER_BLT_TREE_PRIMARY)
+- index is greater than the number of auxiliary Tiers in the Vault
+
+HCI_ERROR_BLT is returned if the BLT entry for lba in the primary BLT tree is in the UNASSIGNED_PUB state. The returned value also includes the BLT level at which the walk of the primary BLT tree ended.
+
+               B4.3.35.2.1   Failure condition ordering
+
+The check that vd is a physical address that can be enrolled is done before the check on the state of the primary BLT entry. The check that the Extent at vd is in the VD state is also done before that check.
+
+The check that lba is inside the Vault's LBA space and is not a Protected address is done before the check on the state of the primary BLT entry. The check on index is also done before that check.
+
+               B4.3.35.3 Success conditions
+
+The state of the BLT entry for lba in the auxiliary BLT tree selected by index matches the state of the BLT entry for lba in the primary BLT tree.
+
+The memory attributes of the auxiliary BLT entry match those of the primary BLT entry, compared as Unprotected entries. The stage 2 access permissions of the two entries also match, compared with the Vault's stage 2 access permission encoding.
+
+The output address in the auxiliary BLT entry matches the output address in the primary BLT entry.
+             B4.3.35.4 Footprint
+    ID                        Value
+    blte                      Bltentry(walk_aux.blt_addr, entry_idx)

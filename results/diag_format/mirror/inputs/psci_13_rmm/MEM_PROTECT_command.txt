@@ -1,0 +1,23 @@
+5.14 MEM_PROTECT command
+               Enables or disables memory protection against cold reboot attacks. Returns the previous memory protection state.
+               5.14.1 Interface
+               5.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 -            -           UInt                                  FID of MEM_PROTECT
+        enable              -            -           UInt                                  Non-zero: enable memory protection. 0: disable memory protection
+               5.14.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              -            -           Int                                   Previous memory protection state (0: disabled, 1: enabled), or NOT_SUPPORTED
+               5.14.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !IsMemProtectImplemented()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               5.14.2.1   Failure condition ordering
+               The MEM_PROTECT command does not have any failure condition orderings.
+               5.14.3 Success conditions
+  ID                          Condition
+  prev_state                  post: ResultEqual(result, Old(MemProtectEnabled()) ? 1 : 0)
+  prot_enable                 post: (enable != 0) == MemProtectEnabled()
+               5.14.4 Footprint
+    ID                        Value
+    prot_enable               MemProtectEnabled()

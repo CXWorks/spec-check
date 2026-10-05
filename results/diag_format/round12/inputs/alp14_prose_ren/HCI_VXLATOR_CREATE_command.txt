@@ -1,0 +1,75 @@
+B4.3.65 HCI_VXLATOR_CREATE command
+              Create a VXLATOR.
+              B4.3.65.1 Interface
+              B4.3.65.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 R0          63:0        UInt64                                FID, value 0xC400016A
+        vd                  R1          63:0        Address                               DPA of the VD
+        vxlator_ptr           R2          63:0        Address                               DPA of the VXLATOR
+        params_ptr          R3          63:0        Address                               DPA of VXLATOR parameters
+              B4.3.65.1.2   Context
+              The HCI_VXLATOR_CREATE command operates on the following context.
+        Name                Type                       Value                                      Before   Description
+        vault_pre           Keepervault                   Vaultat(vd)                                true     Vault
+        vault               Keepervault                   Vaultat(vd)                                false    Vault
+        vxlator               Keepervxlator                   Vxlatorat(vxlator_ptr)                         false    VXLATOR
+        params              Hcivxlatorparams             Hcivxlatorparamsat(                          false    VXLATOR parameters
+                                                           params_ptr)
+              B4.3.65.1.3   Output values
+        Name                Register    Bits        Type                                  Description
+        result              R0          63:0        Hcicommandreturncode                  Command return status
+              B4.3.65.2 Failure conditions
+
+HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the device assignment feature (feat_dx).
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if the state of the Vault described by vd is not VAULT_NEW.
+
+HCI_ERROR_INPUT is returned if vxlator_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vxlator_ptr is not a DRAM physical address that can be enrolled.
+
+HCI_ERROR_INPUT is returned if the Extent at vxlator_ptr is not in the ENROLLED state.
+
+HCI_ERROR_INPUT is returned if params_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if the Extent at params_ptr cannot be accessed from the Non-secure physical address space.
+
+HCI_ERROR_INPUT is returned if the VXLATOR parameters at params_ptr are not valid.
+
+HCI_ERROR_INPUT is returned if the reg_base or the reg_top value in the VXLATOR parameters is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if the reg_base or the reg_top value in the VXLATOR parameters is not a Protected address in the Vault, or if reg_top is not greater than reg_base.
+
+                B4.3.65.2.1           Failure condition ordering
+
+The checks that vd can be enrolled and that the Extent at vd is in the VD state are made before the check of the Vault's state.
+
+The check that the implementation supports the device assignment feature is made before every other check listed here except the Vault state check: the alignment, enrollability and state checks on vd, the alignment, enrollability and state checks on vxlator_ptr, the alignment, access and validity checks on params_ptr, and the alignment and bounds checks on reg_base and reg_top.
+
+                B4.3.65.3 Success conditions
+
+The Extent at vxlator_ptr is in the VXLATOR state.
+
+The VXLATOR is in the VXLATOR_INACTIVE state.
+
+The VXLATOR belongs to the Vault described by vd.
+
+The reg_base value of the VXLATOR equals the reg_base value in the VXLATOR parameters.
+
+The reg_top value of the VXLATOR equals the reg_top value in the VXLATOR parameters.
+
+The vidr value of the VXLATOR equals the vidr value in the VXLATOR parameters.
+
+Each of the idr values 0 to 6 of the VXLATOR equals the matching idr value in the VXLATOR parameters.
+
+The Vault's count of Vxlators (num_vxlators) is one more than it was before the command.
+             B4.3.65.4 Footprint
+    ID                        Value
+    state                     Extentat(vxlator_ptr).state
+    num_vxlators                vault.num_vxlators

@@ -1,0 +1,31 @@
+B4.3.16 HCI_DRIVE_LINKCRYPT_RESET
+
+B4.3.16.1 Intended use
+HCI_DRIVE_LINKCRYPT_RESET resets the non-coherent LINKCRYPT connection between the Root Port and the endpoint device. The Host calls HCI_DRIVE_LINKCRYPT_RESET and passes the physical address of the DRIVE whose LINKCRYPT connection is to be reset.
+
+B4.3.16.2 Parameters
+• fid is passed in R0 and has the value 0xC4000179. It identifies the HCI_DRIVE_LINKCRYPT_RESET function.
+• drive_ptr is passed in R1. It is the physical address of the DRIVE, and the DRIVE is the object stored in the Extent at drive_ptr.
+
+B4.3.16.3 Return values
+• result is returned in R0. It is the command return status.
+
+B4.3.16.4 Caller responsibilities
+HCI_DRIVE_LINKCRYPT_RESET can return the following errors:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support Device Assignment.
+• HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+• HCI_ERROR_DEVICE is returned if the DRIVE is not connected using non-coherent LINKCRYPT, that is, if its ncoh_linkcrypt attribute is not LINKCRYPT_TRUE.
+• HCI_ERROR_DEVICE is returned if the DRIVE is not in the DRIVE_READY state.
+
+The implementation checks these conditions in the following order:
+• The check that Device Assignment is supported comes before the three HCI_ERROR_INPUT checks on drive_ptr. These three checks are that drive_ptr is aligned to a Extent, that drive_ptr is a enrollable address, and that the Extent at drive_ptr is in the DRIVE state. The three checks can be done in any order.
+• The check that the Extent at drive_ptr is in the DRIVE state comes before both HCI_ERROR_DEVICE checks. These two checks are that the DRIVE is connected using non-coherent LINKCRYPT and that the DRIVE is in the DRIVE_READY state. The two checks can be done in either order.
+
+B4.3.16.5 Implementation responsibilities
+When HCI_DRIVE_LINKCRYPT_RESET succeeds, the implementation must make sure that:
+• The DRIVE state is DRIVE_LINKCRYPT_RESETTING.
+• The DRIVE communication state is DEV_COMM_PENDING.
+
+HCI_DRIVE_LINKCRYPT_RESET can modify only two items: the state of the DRIVE and the communication state of the DRIVE.

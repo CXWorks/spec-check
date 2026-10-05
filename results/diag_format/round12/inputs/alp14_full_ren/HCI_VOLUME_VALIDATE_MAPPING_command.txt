@@ -1,0 +1,89 @@
+B4.3.63 HCI_VOLUME_VALIDATE_MAPPING
+
+B4.3.63.1 Intended use
+HCI_VOLUME_VALIDATE_MAPPING completes a request that a Vault made to validate mappings to device memory from a target LBA range.
+
+The Host calls HCI_VOLUME_VALIDATE_MAPPING and identifies the following:
+• the target Vault
+• the WORKER that made the request
+• the DRIVE, and the VOLUME associated with it
+• the base and top of the target LBA region
+
+The command walks the Vault's primary BLT tree from base, towards the page level. The BLT walk is the walk of the Vault's Blts from base. The walked range starts at base and ends at the top of the address range described by the BLT that the BLT walk reaches. It covers the entries that have associated LBAMODE values, starting from the entry at which the BLT walk terminated. The walked range is determined from the state before the command runs.
+
+Note: This command has an open issue. It is not yet decided how to combine these two operations:
+• modification of a range of BLT entries in a single command
+• checking of output address and HOSTMODE values against the device memory physical address recorded in the WORKER
+
+B4.3.63.2 Parameters
+The caller passes these input values:
+• fid, passed in R0. This is the function identifier, value 0xC4000163.
+• vd, passed in R1. This is the physical address of the VD for the target Vault.
+• worker_ptr, passed in R2. This is the physical address of the target WORKER.
+• drive_ptr, passed in R3. This is the physical address of the DRIVE.
+• volume_ptr, passed in R4. This is the physical address of the VOLUME.
+• base, passed in R5. This is the base of the target LBA region.
+• top, passed in R6. This is the top of the target LBA region.
+
+B4.3.63.3 Return values
+The command returns these output values:
+• result, returned in R0. This is the command return status.
+• out_top, returned in R1. This is the top LBA of the range whose LBAMODE was modified. out_top is valid only when result is HCI_SUCCESS.
+
+B4.3.63.4 Caller responsibilities
+HCI_VOLUME_VALIDATE_MAPPING can return the following errors:
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if worker_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if worker_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at worker_ptr is not in the WORKER state.
+• HCI_ERROR_WORKER is returned if the WORKER is in the WORKER_RUNNING state.
+• HCI_ERROR_WORKER is returned if the WORKER is not owned by the Vault described by vd.
+• HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+• HCI_ERROR_INPUT is returned if volume_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if volume_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at volume_ptr is not in the VOLUME state.
+• HCI_ERROR_DEVICE is returned if the VOLUME is not associated with the DRIVE at drive_ptr.
+• HCI_ERROR_INPUT is returned if top is less than or equal to base.
+• HCI_ERROR_INPUT is returned if base is not equal to the device memory address recorded in the WORKER (dev_mem_addr).
+• HCI_ERROR_INPUT is returned if top is greater than the device memory top address recorded in the WORKER (dev_mem_top).
+• HCI_ERROR_BLT is returned if base is not aligned to the size of the address range that one BLT entry describes at the level reached by the BLT walk.
+• HCI_ERROR_INPUT is returned if top is not aligned to the size of a Extent.
+• HCI_ERROR_BLT is returned if base is equal to the top of the walked range. In this case the command cannot make progress.
+• HCI_ERROR_BLT is returned if the device memory flags in the WORKER mark the memory as DEV_MEM_NON_COHERENT, and not every BLT entry in the walked range has the memory attribute MEMATTR_NON_CACHEABLE.
+• HCI_ERROR_BLT is returned if the device memory flags in the WORKER mark the memory as DEV_MEM_NON_COHERENT, and not every BLT entry in the walked range maps non-coherent device memory.
+• HCI_ERROR_BLT is returned if the device memory flags in the WORKER mark the memory as DEV_MEM_COHERENT, and not every BLT entry in the walked range has the memory attribute MEMATTR_PASSTHROUGH.
+• HCI_ERROR_BLT is returned if the device memory flags in the WORKER mark the memory as DEV_MEM_COHERENT, and not every BLT entry in the walked range maps coherent device memory.
+• HCI_ERROR_BLT is returned if the output addresses of the BLT entries in the walked range are not contiguous, starting from the device memory physical address recorded in the WORKER (dev_mem_dpa). This uses the value of dev_mem_dpa from before the command runs.
+• HCI_ERROR_BLT is returned if any address in the range from base to top is live in an auxiliary BLT of the Vault. This is evaluated before the command runs.
+
+When HCI_ERROR_BLT is returned, the level reached by the BLT walk is also returned.
+
+B4.3.63.5 Implementation responsibilities: error ordering
+The implementation must make some checks before others:
+• It must check that vd is a enrollable physical address and that the Extent at vd is in the VD state before it checks that base is aligned to the BLT walk level.
+• It must check that vd is a enrollable physical address and that the Extent at vd is in the VD state before it checks that base is not equal to the top of the walked range.
+• It must check that worker_ptr is a enrollable physical address and that the Extent at worker_ptr is in the WORKER state before it checks that the WORKER is not in the WORKER_RUNNING state and that the WORKER is owned by the Vault described by vd.
+• It must make these checks before it checks that the VOLUME is associated with the DRIVE at drive_ptr:
+  – drive_ptr is a enrollable physical address
+  – the Extent at drive_ptr is in the DRIVE state
+  – volume_ptr is a enrollable physical address
+  – the Extent at volume_ptr is in the VOLUME state
+• It must check that base is equal to the device memory address recorded in the WORKER before it checks that base is aligned to the BLT walk level.
+• It must check that top is aligned to the size of a Extent before it checks that base is not equal to the top of the walked range.
+
+B4.3.63.6 Implementation responsibilities: successful completion
+If the command succeeds, result is HCI_SUCCESS and the following are true:
+• The LBAMODE of every BLT entry in the walked range is DEV.
+• The device memory address recorded in the WORKER (dev_mem_addr) is the lower of top and the top of the walked range.
+• The device memory physical address recorded in the WORKER (dev_mem_dpa) is its value before the command plus the size of the range from base to the top of the walked range.
+• out_top is the lower of top and the top of the walked range.
+
+B4.3.63.7 State that the command may modify
+HCI_VOLUME_VALIDATE_MAPPING may modify only:
+• the BLT at which the BLT walk terminated
+• the device memory address recorded in the WORKER (dev_mem_addr)
+• the device memory physical address recorded in the WORKER (dev_mem_dpa)

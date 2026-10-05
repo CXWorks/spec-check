@@ -1,0 +1,71 @@
+B4.3.1 HCI_DATA_CREATE
+
+B4.3.1.1 Intended use
+HCI_DATA_CREATE creates a Data Extent. The caller provides a Non-secure Extent, and the command copies that Extent's contents into the new Data Extent.
+
+The caller identifies the target Vault by its VD and gives the physical address of the target Data Extent. It also gives the LBA at which the Extent will be mapped in the target Vault, the physical address of the source Extent, and a set of flags. The command maps the new Data Extent at the given LBA in the target Vault and extends the IFP of the target Vault, as described in section B4.3.1.5.
+
+B4.3.1.2 Parameters
+HCI_DATA_CREATE takes the following input values:
+•  fid is passed in R0, bits 63:0. It is the function identifier, and its value is 0xC4000153.
+•  vd is passed in R1, bits 63:0. It is the physical address of the VD for the target Vault.
+•  data is passed in R2, bits 63:0. It is the physical address of the target Data Extent.
+•  lba is passed in R3, bits 63:0. It is the LBA at which the Extent will be mapped in the target Vault.
+•  src is passed in R4, bits 63:0. It is the physical address of the source Extent.
+•  flags is passed in R5, bits 63:0. It holds the flags for the command.
+
+The command looks up lba by walking the primary BLT tree of the target Vault, down to the page level, KEEPER_BLT_PAGE_LEVEL. The BLT entry for lba is the entry found by this walk, at the index that corresponds to lba at the level the walk reached.
+
+B4.3.1.3 Return values
+HCI_DATA_CREATE returns the following output value:
+•  result is passed in R0, bits 63:0. It is the command return status.
+
+HCI_DATA_CREATE can return the following errors:
+•  HCI_ERROR_INPUT is returned if src is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if the Extent at src cannot be accessed from the Non-secure physical address space.
+•  HCI_ERROR_INPUT is returned if data is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if data is not the physical address of DRAM that can be enrolled.
+•  HCI_ERROR_INPUT is returned if the Extent at data is not in the ENROLLED state.
+•  HCI_ERROR_INPUT is returned if data is 2^48 or greater and the target Vault does not support BIGADDR. In this case, the feat_bigaddr attribute of the target Vault is FEATURE_FALSE.
+•  HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+•  HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+•  HCI_ERROR_INPUT is returned if lba is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if lba is not in the protected LBA space of the target Vault before the command runs.
+•  HCI_ERROR_VAULT is returned if the target Vault is not in the VAULT_NEW state before the command runs.
+•  HCI_ERROR_BLT is returned if the BLT walk for lba stops before it reaches the page level, KEEPER_BLT_PAGE_LEVEL. The command also returns the BLT level that the walk reached.
+•  HCI_ERROR_BLT is returned if the BLT entry that the walk found for lba is not in the UNASSIGNED state. The command also returns the BLT level that the walk reached.
+
+The KEEPER checks for these errors in the following order:
+•  The KEEPER checks that vd can be enrolled and that the Extent at vd is in the VD state. It does this before it checks whether the target Vault is in the VAULT_NEW state.
+•  The KEEPER checks that vd can be enrolled and that the Extent at vd is in the VD state. It does this before it checks the BLT walk level and the state of the BLT entry for lba.
+•  The KEEPER checks that lba is in the protected LBA space of the target Vault. It does this before it checks the BLT walk level and the state of the BLT entry for lba.
+
+If the command succeeds, all of the following are true:
+•  The Extent at data is in the DATA state.
+•  The contents of the source Extent at src have been copied into the target Extent at data.
+•  The BLT entry for lba is in the ASSIGNED state.
+•  The LBAMODE of the BLT entry for lba is RAM.
+•  The output address of the BLT entry for lba is data.
+•  The memory attribute of the BLT entry for lba is MEMATTR_CACHEABLE.
+•  The shareability of the BLT entry for lba is SHAREABILITY_INNER.
+•  The IFP of the target Vault has been updated. The first measurement of the Vault is now the value calculated from four inputs: the state of the Vault before the command, lba, data and flags. Section B4.3.1.5 describes this calculation.
+
+B4.3.1.4 Implementation responsibilities: modified state
+HCI_DATA_CREATE can modify only the following state:
+•  The state of the Extent at data.
+•  The IFP of the target Vault, which is the first measurement of the Vault.
+•  The BLT entry for lba. This is the entry in the BLT that the walk for lba reached, at the index that corresponds to lba at the level of the walk.
+
+B4.3.1.5 Implementation responsibilities: extension of IFP
+When HCI_DATA_CREATE succeeds, the KEEPER must calculate the new IFP value of the target Vault as follows:
+1. If the measure field of flags is HCI_MEASURE_CONTENT, compute the hash of the contents of the DATA Extent, using the VHA of the target Vault.
+2. Allocate a measurement descriptor data structure for the DATA Extent.
+3. Fill in the measurement descriptor:
+   •  Set the desc_type field to the descriptor type.
+   •  Set the len field to the descriptor length.
+   •  Set the ifp field to the current IFP value of the target Vault.
+   •  Set the lba field to the LBA at which the DATA Extent is mapped in the target Vault.
+   •  Set the flags field to the flags provided by the Host.
+   •  If the measure field of flags is HCI_MEASURE_CONTENT, set the content field to the hash of the contents of the DATA Extent. Otherwise, set the content field to zero.
+4. Compute the hash of the measurement descriptor using the VHA of the target Vault, and set the IFP of the target Vault to this value. If the VHA output is smaller than the IFP, fill the upper bytes with zeros.

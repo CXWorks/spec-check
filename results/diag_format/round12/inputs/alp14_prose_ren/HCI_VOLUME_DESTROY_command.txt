@@ -1,0 +1,78 @@
+B4.3.52 HCI_VOLUME_DESTROY command
+               Destroy a VOLUME.
+               B4.3.52.1 Interface
+               B4.3.52.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  R0          63:0        UInt64                                FID, value 0xC4000188
+        vd                   R1          63:0        Address                               DPA of the VD
+        drive_ptr             R2          63:0        Address                               DPA of the DRIVE
+        volume_ptr             R3          63:0        Address                               DPA of the VOLUME
+               B4.3.52.1.2   Context
+               The HCI_VOLUME_DESTROY command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        vault_pre            Keepervault                   Vaultat(vd)                                true     Vault
+        vault                Keepervault                   Vaultat(vd)                                false    Vault
+        volume_pre             Keepervolume                    Volumeat(volume_ptr)                           true     VOLUME
+        drive_pre             Keeperdrive                                                               true     DRIVE
+                                                        Driveat(drive_ptr)
+        drive                 Keeperdrive                    Driveat(drive_ptr)                           false    DRIVE
+               B4.3.52.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               R0          63:0        Hcicommandreturncode                  Command return status
+               B4.3.52.2 Failure conditions
+
+HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+
+HCI_ERROR_INPUT is returned if volume_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if volume_ptr is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at volume_ptr is not in the VOLUME state.
+
+HCI_ERROR_DEVICE is returned if the VOLUME is not owned by the Vault identified by vd.
+
+HCI_ERROR_DEVICE is returned if the VOLUME is not associated with the DRIVE at drive_ptr.
+
+HCI_ERROR_DEVICE is returned if the VOLUME state is not VOLUME_NEW, VOLUME_UNLOCKED or VOLUME_ERROR.
+
+HCI_ERROR_DEVICE is returned if the VOLUME still has one or more mappings, so its num_map field is not zero.
+
+               B4.3.52.2.1       Failure condition ordering
+
+The check for support of the Device Assignment feature, which can return HCI_ERROR_NOT_SUPPORTED, is made before all of the following checks: the alignment, enrollability and Extent state checks on vd, drive_ptr and volume_ptr.
+
+The Extent state checks on vd, drive_ptr and volume_ptr (that the Extents are in the VD, DRIVE and VOLUME states) are made before all of the following checks: that the VOLUME is owned by the Vault, that the VOLUME is associated with the DRIVE, that the VOLUME is in an allowed state, and that the VOLUME has no mappings.
+
+               B4.3.52.3 Success conditions
+
+On success, the Extent at volume_ptr is in the ENROLLED state.
+
+On success, every auxiliary Extent of the VOLUME is in the ENROLLED state. The number of these Extents is given by the VOLUME's num_aux field.
+
+On success, the VOLUME's identifier (volume_id) is free within the Vault, so it can be used again.
+
+On success, the VOLUME's LUN identifier (lun_id) is free within the PCIe segment of the DRIVE, so it can be used again.
+
+On success, the Vault's count of Volumes is one less than it was before the command.
+
+On success, the DRIVE's count of Volumes is one less than it was before the command.
+
+On success, if the VOLUME was associated with a virtual XLATOR, the VOLUME's virtual stream ID (vlid) is free within that virtual XLATOR, so it can be used again. The virtual XLATOR is the one at the address held in the VOLUME's vxlator_addr field.
+                B4.3.52.4 Footprint
+    ID                        Value
+    state                     Extentat(volume_ptr).state
+    aux_state                 Sidestates(volume_pre.aux, volume_pre.num_aux)
+    vault_num_volumes           vault.num_volumes
+    drive_num_volumes            drive.num_volumes

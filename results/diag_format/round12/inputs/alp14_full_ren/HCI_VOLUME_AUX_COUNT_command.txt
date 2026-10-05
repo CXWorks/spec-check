@@ -1,0 +1,25 @@
+B4.3.48 HCI_VOLUME_AUX_COUNT
+
+B4.3.48.1 Intended use
+HCI_VOLUME_AUX_COUNT gets the number of auxiliary Extents that a VOLUME requires.
+
+B4.3.48.2 Parameters
+The caller passes the following input values:
+• fid, passed in R0, is the function identifier. Its value is 0xC4000160.
+• drive_flags, passed in R1 as a 64-bit field, holds the DRIVE flags.
+• volume_flags, passed in R2 as a 64-bit field, holds the VOLUME flags.
+
+B4.3.48.3 Return values
+The command returns the following output values:
+• result, returned in R0, is the command return status.
+• aux_count, returned in R1, is the number of auxiliary Extents that a VOLUME requires.
+
+HCI_VOLUME_AUX_COUNT can return the following error:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+
+The command checks only this one failure condition, so no ordering between failure conditions applies.
+
+If the command succeeds, aux_count is the number of auxiliary Extents that a VOLUME needs. The implementation derives this number from the decoded values of drive_flags and volume_flags.
+
+B4.3.48.4 Implementation responsibilities
+HCI_VOLUME_AUX_COUNT does not modify any state.

@@ -1,0 +1,56 @@
+B4.3.19 HCI_DRIVE_SET_PUBKEY command
+               Provide public key associated with a DRIVE.
+               B4.3.19.1 Interface
+               B4.3.19.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  R0          63:0        UInt64                                FID, value 0xC400017B
+        drive_ptr             R1          63:0        Address                               DPA of the DRIVE
+        params_ptr           R2          63:0        Address                               DPA of the key parameters
+               B4.3.19.1.2   Context
+               The HCI_DRIVE_SET_PUBKEY command operates on the following context.
+        Name                 Type                       Value                                      Before   Description
+        drive                 Keeperdrive                    Driveat(drive_ptr)                           false    DRIVE
+        params               Hcipublickeyparams         Hcipublickeyparamsat(                      false    Public key parameters
+                                                            params_ptr)
+               B4.3.19.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               R0          63:0        Hcicommandreturncode                  Command return status
+               B4.3.19.2 Failure conditions
+
+HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+
+HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+
+HCI_ERROR_INPUT is returned if params_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if the Extent at params_ptr cannot be accessed in the Non-secure physical address space.
+
+HCI_ERROR_INPUT is returned if the key length given in the parameters at params_ptr is greater than 1024.
+
+HCI_ERROR_INPUT is returned if the metadata length given in the parameters at params_ptr is greater than 1024.
+
+HCI_ERROR_INPUT is returned if the key is invalid. For example, the key length may be invalid for the specified signature algorithm.
+
+HCI_ERROR_INPUT is returned if the metadata is invalid. For example, the metadata length may be invalid for the specified signature algorithm.
+
+HCI_ERROR_DEVICE is returned if the DRIVE is not in the DRIVE_NEEDS_KEY state.
+
+                B4.3.19.2.1              Failure condition ordering
+
+The check for Device Assignment support is made before these checks: drive_ptr alignment, whether drive_ptr is enrollable, the state of the Extent at drive_ptr, params_ptr alignment, whether the Extent at params_ptr can be accessed in the Non-secure physical address space, the key length limit, key validity, the metadata length limit, and metadata validity. So if Device Assignment is not supported, HCI_ERROR_NOT_SUPPORTED is returned and none of these checks is made.
+
+The check that the Extent at drive_ptr is in the DRIVE state is made before the check that the DRIVE is in the DRIVE_NEEDS_KEY state. So if the Extent is not in the DRIVE state, HCI_ERROR_INPUT is returned, not HCI_ERROR_DEVICE.
+
+                B4.3.19.3 Success conditions
+
+On success, the DRIVE moves to the DRIVE_HAS_KEY state.
+
+On success, the communication state of the DRIVE is DEV_COMM_PENDING.
+                B4.3.19.4 Footprint
+    ID                                      Value
+    state                                   drive.state
+    comm_state                              drive.comm_state

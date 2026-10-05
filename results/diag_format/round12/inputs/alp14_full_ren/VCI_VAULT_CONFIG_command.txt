@@ -1,0 +1,32 @@
+B5.3.15 VCI_VAULT_CONFIG
+
+B5.3.15.1 Intended use
+VCI_VAULT_CONFIG reads the configuration of the current Vault. The Vault calls VCI_VAULT_CONFIG with the LBA of a Extent, and the configuration data for the current Vault is written to that Extent.
+
+B5.3.15.2 Parameters
+The caller passes the following input values:
+• fid, passed in R0, is the function identifier. Its value is 0xC4000196.
+• addr, passed in R1, is the LBA of the Extent to which the configuration data will be written.
+
+B5.3.15.3 Return values
+VCI_VAULT_CONFIG returns the following output value:
+• result, returned in R0, is the command return status.
+
+B5.3.15.4 Caller responsibilities
+The command operates on the current Vault and on the Vault configuration at addr. To check the LBAMODE of the page at addr, the implementation walks the primary BLT tree of the current Vault to page level at addr.
+
+VCI_VAULT_CONFIG can return the following errors:
+• VCI_ERROR_INPUT is returned if addr is not aligned to the size of a Extent.
+• VCI_ERROR_INPUT is returned if addr is not a Protected LBA of the Vault.
+• VCI_ERROR_INPUT is returned if the LBAMODE of the page at addr is EMPTY.
+
+These failure conditions are not checked in any defined order.
+
+B5.3.15.5 Implementation responsibilities
+On success, the implementation writes the Vault configuration to addr, as follows:
+• The lba_width field equals the LBA width of the Vault.
+• The hash_algo field matches the hash algorithm of the Vault.
+• The num_aux_tiers field equals the number of auxiliary Tiers of the Vault.
+• The xlc_tier field equals the XLC Tier setting of the Vault.
+
+VCI_VAULT_CONFIG does not change any state that is listed as modifiable by the command.

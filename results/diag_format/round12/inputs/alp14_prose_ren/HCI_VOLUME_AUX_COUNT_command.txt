@@ -1,0 +1,22 @@
+B4.3.48 HCI_VOLUME_AUX_COUNT command
+              Get number of auxiliary Extents required for a VOLUME.
+              B4.3.48.1 Interface
+              B4.3.48.1.1   Input values
+        Name                Register    Bits        Type                                  Description
+        fid                 R0          63:0        UInt64                                FID, value 0xC4000160
+        drive_flags          R1          63:0        Bits64                                DRIVE flags
+        volume_flags          R2          63:0        Bits64                                VOLUME flags
+              B4.3.48.1.2   Output values
+        Name                Register    Bits        Type                                  Description
+        result              R0          63:0        Hcicommandreturncode                  Command return status
+        aux_count           R1          63:0        UInt64                                Number of auxiliary Extents required
+                                                                                          for a VOLUME
+              B4.3.48.2 Failure conditions
+
+HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+
+              B4.3.48.3 Success conditions
+
+On success, aux_count is the number of auxiliary Extents that a VOLUME needs. This number is derived from the decoded values of drive_flags and volume_flags.
+              B4.3.48.4 Footprint
+              The HCI_VOLUME_AUX_COUNT command does not have any footprint.

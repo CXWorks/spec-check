@@ -1,0 +1,15 @@
+pub open spec fn hci_data_destroy_spec(vd: PhysicalAddress, lba: UInt64, result: Result<(), HciStatusCode>, data: PhysicalAddress, top: UInt64, old_s: S, new_s: S) -> bool {
+  (result == HCI_ERROR_INPUT(vd) || result == HCI_ERROR_INPUT(lba) || result == HCI_ERROR_INPUT(0) || result == HCI_ERROR_BLT(0) || result == HCI_ERROR_BLT_AUX(0) ==> top == 0)
+  && (result == HCI_SUCCESS ==> top > lba)
+  && ((!(vd is_enrollable_physical_address(old_s)) && (ExtentAt(old_s, vd).vd_state != VD_STATE_ENROLLED)) ==> result == HCI_ERROR_INPUT(0))
+  && (result == HCI_SUCCESS && ExtentAt(old_s, data).extent_state == EXTENT_STATE_ENROLLED ==> ExtentAt(new_s, data).extent_state == EXTENT_STATE_ENROLLED)
+  && (result == HCI_SUCCESS && BLTEntryAt(new_s, data).blt_state == BLT_STATE_UNASSIGNED ==> BLTEntryAt(new_s, data).blt_state == BLT_STATE_UNASSIGNED)
+  && (result == HCI_SUCCESS && BLTEntryAt(old_s, data).lbamode == LBAMODE_RAM ==> BLTEntryAt(new_s, data).lbamode == LBAMODE_DESTROYED)
+  && (result == HCI_SUCCESS && BLTEntryAt(old_s, data).lbamode != LBAMODE_RAM ==> BLTEntryAt(new_s, data).lbamode == BLTEntryAt(old_s, data).lbamode)
+  && (result == HCI_ERROR_BLT(0) ==> BLTEntryAt(new_s, data).blt_state == BLT_STATE_UNASSIGNED)
+  && (result == HCI_ERROR_BLT(0) ==> BLTEntryAt(new_s, data).lbamode == BLTEntryAt(old_s, data).lbamode)
+  && ((!(vd is_enrollable_physical_address(old_s)) && (ExtentAt(old_s, vd).vd_state != VD_STATE_ENROLLED)) ==> result == HCI_ERROR_INPUT(0))
+  && (result != HCI_SUCCESS && result != HCI_ERROR_BLT(0) && result != HCI_ERROR_BLT_AUX(0) ==> BLTEntryAt(new_s, data).blt_state == BLTEntryAt(old_s, data).blt_state)
+  && (result != HCI_SUCCESS && result != HCI_ERROR_BLT(0) && result != HCI_ERROR_BLT_AUX(0) ==> BLTEntryAt(new_s, data).lbamode == BLTEntryAt(old_s, data).lbamode)
+  && (result == HCI_SUCCESS && (BLTEntryAt(old_s, data).lbamode == LBAMODE_RAM || BLTEntryAt(old_s, data).lbamode != LBAMODE_RAM) ==> BLTEntryAt(new_s, data).blt_state == BLT_STATE_UNASSIGNED)
+}

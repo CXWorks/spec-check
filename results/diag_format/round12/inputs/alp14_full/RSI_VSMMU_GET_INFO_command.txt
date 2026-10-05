@@ -1,0 +1,29 @@
+B5.3.22 RSI_VSMMU_GET_INFO
+
+B5.3.22.1 Intended use
+RSI_VSMMU_GET_INFO gets information about a VSMMU. A Realm calls RSI_VSMMU_GET_INFO with the base IPA of a VSMMU, and the command returns the top IPA of that VSMMU.
+
+The command operates on the current Realm, which is the Realm that makes the call. The RTT entry the command checks is the entry found by walking the current Realm's primary RTT tree to addr, at page level.
+
+B5.3.22.2 Parameters
+The input values are:
+• fid, passed in X0. This is the function identifier for RSI_VSMMU_GET_INFO. Its value is 0xC400019A.
+• addr, passed in X1. This is the base IPA of the VSMMU.
+
+B5.3.22.3 Return values
+The output values are:
+• result, returned in X0. This is the command return status.
+• top, returned in X1. This is the top IPA of the VSMMU.
+
+RSI_VSMMU_GET_INFO can return the following errors:
+• RSI_ERROR_INPUT is returned if addr is not aligned to the size of a Granule.
+• RSI_ERROR_INPUT is returned if addr is not a Protected IPA of the Realm.
+• RSI_ERROR_INPUT is returned if the RTT entry found by walking the Realm's RTT to addr is not in the ASSIGNED_VSMMU state.
+• RSI_ERROR_INPUT is returned if addr is not the register base address of the VSMMU that the RTT entry found by walking the Realm's RTT to addr refers to.
+
+There is no required order between these failure conditions.
+
+If the command succeeds, top is the register top address of the VSMMU that the RTT entry found by walking the Realm's RTT to addr refers to.
+
+B5.3.22.4 Implementation responsibilities
+RSI_VSMMU_GET_INFO has no footprint. The command does not modify any state.

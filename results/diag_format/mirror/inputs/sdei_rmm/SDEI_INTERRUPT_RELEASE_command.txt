@@ -1,0 +1,40 @@
+5.1.15 SDEI_INTERRUPT_RELEASE command
+               Releases the interrupt from its event binding.
+               5.1.15.1 Interface
+               5.1.15.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 X0           31:0        UInt32                                FID, value 0xC400002E
+        event               X1           31:0        Int32                                 Event number returned from an earlier call to SDEI_INTERRUPT_BIND
+               5.1.15.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               5.1.15.2 Failure conditions
+  ID                          Condition
+  sdei_supp                   pre: !IsSdeiSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  event_valid                 pre: !IsValidEvent(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  event_bound                 pre: !IsEventBound(event)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  private_state               pre: IsPrivateEvent(event) &&
+                                   !(forall pe in RegisteredPes(event) :
+                                     HandlerState(event, pe) == HANDLER_UNREGISTERED)
+                              post: ResultEqual(result, DENIED)
+  shared_state                pre: IsSharedEvent(event) &&
+                                   HandlerState(event) != HANDLER_UNREGISTERED
+                              post: ResultEqual(result, DENIED)
+               5.1.15.2.1   Failure condition ordering
+               The SDEI_INTERRUPT_RELEASE command does not have any failure condition orderings.
+               5.1.15.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  event_removed               post: !IsValidEvent(event)
+  bind_slot                   post: BindSlotOf(event) is returned to the pool of bind slots
+  intr_config                 post: InterruptConfig(BoundInterrupt(event)) == PreBindInterruptConfig(BoundInterrupt(event))
+  intr_disabled               post: !IsInterruptEnabled(BoundInterrupt(event))
+               5.1.15.4 Footprint
+    ID                        Value
+    event_removed             EventBinding(event)
+    bind_slot                 BindSlotPool
+    intr_config               InterruptConfig(BoundInterrupt(event))
+    intr_disabled             InterruptEnable(BoundInterrupt(event))

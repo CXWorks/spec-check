@@ -1,0 +1,83 @@
+B4.3.38 HCI_BLT_CREATE command
+                Creates a primary BLT.
+                B4.3.38.1 Interface
+                B4.3.38.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   R0          63:0        UInt64                                FID, value 0xC400015D
+        vd                    R1          63:0        Address                               DPA of the VD for the target Vault
+        blt                   R2          63:0        Address                               DPA of the target BLT
+        lba                   R3          63:0        Address                               Base of the LBA range described by the
+                                                                                            BLT
+        level                 R4          63:0        Int64                                 BLT level
+                B4.3.38.1.2   Context
+                The HCI_BLT_CREATE command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        vault                 Keepervault                   Vaultat(vd)                                false    Vault
+        walk                  Keeperbltwalkresult           Bltwalk(                                   false    BLT walk result
+                                                             vault, lba,
+                                                             level - 1,
+                                                             KEEPER_BLT_TREE_PRIMARY)
+        entry_idx             UInt64                     Bltentryindex(                             false    BLTE index
+                                                             lba, walk.level)
+        walk_pre              Keeperbltwalkresult           Bltwalk(                                   true     BLT walk result
+                                                             vault, lba,                                     before command
+                                                             level - 1,                                      execution
+                                                             KEEPER_BLT_TREE_PRIMARY)
+        blte_pre              Keeperbltentry                walk_pre.blte                              true     BLTE before
+                                                                                                             command execution
+                B4.3.38.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                R0          63:0        Hcicommandreturncode                  Command return status
+               B4.3.38.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is the Vault's starting BLT level.
+
+HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that one BLT entry at level - 1 maps.
+
+HCI_ERROR_INPUT is returned if lba is outside the Vault's LBA space. This is the case when lba is greater than or equal to 2 to the power of the Vault's LBA width.
+
+HCI_ERROR_INPUT is returned if blt is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if blt is not a enrollable physical address in DRAM.
+
+HCI_ERROR_INPUT is returned if the Extent at blt is not in the ENROLLED state.
+
+HCI_ERROR_INPUT is returned if the Vault does not support BIGADDR (feat_bigaddr is FEATURE_FALSE) and blt is at or above 2 to the power of 48.
+
+HCI_ERROR_BLT is returned if the BLT walk to lba ends at a level lower than level - 1. The returned index is the level where the walk ended.
+
+HCI_ERROR_BLT is returned if the BLT entry found by the BLT walk to lba is already in the TABLE state. The returned index is the level where the walk ended.
+
+               B4.3.38.2.1       Failure condition ordering
+
+The HCI_ERROR_BLT conditions are lower priority than the following HCI_ERROR_INPUT conditions:
+- vd is not a enrollable physical address.
+- The Extent at vd is not in the VD state.
+- level is not a valid BLT level for the Vault, or is the starting level.
+- lba is outside the Vault's LBA space.
+
+The HCI_ERROR_BLT conditions are that the walk ends below level - 1, or that the BLT entry is already in the TABLE state. They are checked only when none of the four conditions above applies.
+
+               B4.3.38.3 Success conditions
+
+The Extent at blt is in the BLT state.
+
+The BLT entry found by the BLT walk to lba is in the TABLE state.
+
+That BLT entry points to blt.
+
+If lba is a Protected LBA of the Vault, every entry in the new BLT at blt has the LBAMODE value that the parent BLT entry had before the command ran.
+
+Every entry in the new BLT at blt has the state that the parent BLT entry had before the command ran.
+
+The parent BLT entry may have been in a state other than UNASSIGNED and UNASSIGNED_PUB before the command ran. In that case, the entries in the new BLT at blt map a contiguous output address range at level. The range starts at the address that the parent BLT entry held before the command ran.
+                 B4.3.38.4 Footprint
+    ID                        Value
+    blt_state                 Extentat(blt).state
+    blte                      Bltentryat(Bltat(walk.blt_addr), entry_idx)

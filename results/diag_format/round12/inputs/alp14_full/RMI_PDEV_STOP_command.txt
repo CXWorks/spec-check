@@ -1,0 +1,38 @@
+B4.3.20 RMI_PDEV_STOP
+
+B4.3.20.1 Intended use
+RMI_PDEV_STOP is intended to stop a PDEV. The Host calls the RMI_PDEV_STOP function and passes the physical address of the PDEV.
+
+When the command succeeds, the PDEV is placed in the PDEV_STOPPING state and its communication state, given by its comm_state field, is set to DEV_COMM_PENDING.
+
+B4.3.20.2 Parameters
+RMI_PDEV_STOP takes the following input values:
+•  fid, passed in X0, is the function identifier. Its value is 0xC400017C.
+•  pdev_ptr, passed in X1, is the physical address of the PDEV.
+
+B4.3.20.3 Return values
+RMI_PDEV_STOP returns the following output value:
+•  result, returned in X0, is the command return status.
+
+RMI_PDEV_STOP can return the following errors:
+•  RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+•  RMI_ERROR_INPUT is returned if pdev_ptr is not aligned to the size of a Granule.
+•  RMI_ERROR_INPUT is returned if pdev_ptr is not a delegable physical address.
+•  RMI_ERROR_INPUT is returned if the Granule at pdev_ptr is not in the PDEV state.
+•  RMI_ERROR_DEVICE is returned if the PDEV is in the PDEV_COMMUNICATING, PDEV_STOPPING or PDEV_STOPPED state.
+•  RMI_ERROR_DEVICE is returned if the PDEV still has one or more VDEVs associated with it, which means its num_vdevs count is not zero.
+
+The implementation checks whether it supports the Device Assignment feature before it makes any of the three checks on pdev_ptr. Those three checks are that pdev_ptr is aligned to the size of a Granule, that pdev_ptr is a delegable physical address, and that the Granule at pdev_ptr is in the PDEV state.
+
+The implementation checks that the Granule at pdev_ptr is in the PDEV state before it makes either of the two checks on the PDEV. Those two checks are the check on the state of the PDEV and the check that no VDEVs are associated with it.
+
+No other ordering is defined between these conditions.
+
+B4.3.20.4 Implementation responsibilities
+If RMI_PDEV_STOP succeeds, the implementation must ensure that:
+•  The PDEV is in the PDEV_STOPPING state.
+•  The communication state of the PDEV, given by its comm_state field, is DEV_COMM_PENDING.
+
+RMI_PDEV_STOP can modify only the following state:
+•  The state of the PDEV.
+•  The comm_state field of the PDEV.

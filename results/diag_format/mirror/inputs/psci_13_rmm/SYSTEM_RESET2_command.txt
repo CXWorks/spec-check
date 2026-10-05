@@ -1,0 +1,43 @@
+5.13 SYSTEM_RESET2 command
+               Resets the system using an architectural reset or a vendor-specific reset. Introduced in PSCI 1.1. This function is optional.
+               5.13.1 Interface
+               5.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 -            -           UInt32                                Function ID of SYSTEM_RESET2
+        reset_type          -            31:0        UInt32                                Bit[31]: 0 = architectural reset, 1 = vendor-specific reset.
+                                                                                           Bits[30:0], when bit[31] == 0: 0x0 = SYSTEM_WARM_RESET; 0x1-0x7FFFFFFF are reserved for future use.
+                                                                                           Values 0x80000000-0xFFFFFFFF request vendor-specific resets or shutdowns.
+        cookie              -            -           -                                     Extra data passed to the implementation for vendor-specific resets. Ignored for SYSTEM_WARM_RESET.
+               5.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              -            -           PsciReturnCode                        Command return status
+               5.13.2 Failure conditions
+  ID                          Condition
+  not_impl                    pre: !IsImplemented(SYSTEM_RESET2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  arch_type                   pre: reset_type[31] == 0 && reset_type[30:0] != SYSTEM_WARM_RESET
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               Vendor-specific resets (reset_type[31] == 1) can return other error codes. These can be any PSCI error code defined in section 5.2.2 except NOT_SUPPORTED. If those codes are not enough, they can be signed integers with a value less than -256.
+               5.13.2.1   Failure condition ordering
+  [not_impl] < [arch_type]
+               5.13.3 Success conditions
+  ID                          Condition
+  warm_mem                    pre: reset_type == SYSTEM_WARM_RESET
+                              post: MainMemoryPreserved() || FellBackToColdReset()
+  warm_requesters             pre: reset_type == SYSTEM_WARM_RESET
+                              post: AllMemoryRequestersReset()
+  warm_cpus                   pre: reset_type == SYSTEM_WARM_RESET
+                              post: AllCpusAndMmusReset()
+  warm_irq                    pre: reset_type == SYSTEM_WARM_RESET
+                              post: AllInterruptsDisabled()
+  warm_smmu                   pre: reset_type == SYSTEM_WARM_RESET
+                              post: SmmuStateEqualsColdResetState()
+  warm_cookie                 pre: reset_type == SYSTEM_WARM_RESET
+                              post: CookieIgnored(cookie)
+               5.13.4 Footprint
+    ID                        Value
+    cpus                      State of all CPUs and their MMUs
+    requesters                State of memory requesters that can affect main memory contents
+    irq                       Interrupt enable state at the sources or the interrupt controller
+    smmu                      State of SMMUs and IOMMUs
+    main_mem                  System main memory, if the reset falls back to a cold reset

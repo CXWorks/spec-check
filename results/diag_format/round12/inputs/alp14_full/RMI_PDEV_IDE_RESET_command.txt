@@ -1,0 +1,31 @@
+B4.3.16 RMI_PDEV_IDE_RESET
+
+B4.3.16.1 Intended use
+RMI_PDEV_IDE_RESET resets the non-coherent IDE connection between the Root Port and the endpoint device. The Host calls RMI_PDEV_IDE_RESET and passes the physical address of the PDEV whose IDE connection is to be reset.
+
+B4.3.16.2 Parameters
+• fid is passed in X0 and has the value 0xC4000179. It identifies the RMI_PDEV_IDE_RESET function.
+• pdev_ptr is passed in X1. It is the physical address of the PDEV, and the PDEV is the object stored in the Granule at pdev_ptr.
+
+B4.3.16.3 Return values
+• result is returned in X0. It is the command return status.
+
+B4.3.16.4 Caller responsibilities
+RMI_PDEV_IDE_RESET can return the following errors:
+• RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support Device Assignment.
+• RMI_ERROR_INPUT is returned if pdev_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if pdev_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at pdev_ptr is not in the PDEV state.
+• RMI_ERROR_DEVICE is returned if the PDEV is not connected using non-coherent IDE, that is, if its ncoh_ide attribute is not IDE_TRUE.
+• RMI_ERROR_DEVICE is returned if the PDEV is not in the PDEV_READY state.
+
+The implementation checks these conditions in the following order:
+• The check that Device Assignment is supported comes before the three RMI_ERROR_INPUT checks on pdev_ptr. These three checks are that pdev_ptr is aligned to a Granule, that pdev_ptr is a delegable address, and that the Granule at pdev_ptr is in the PDEV state. The three checks can be done in any order.
+• The check that the Granule at pdev_ptr is in the PDEV state comes before both RMI_ERROR_DEVICE checks. These two checks are that the PDEV is connected using non-coherent IDE and that the PDEV is in the PDEV_READY state. The two checks can be done in either order.
+
+B4.3.16.5 Implementation responsibilities
+When RMI_PDEV_IDE_RESET succeeds, the implementation must make sure that:
+• The PDEV state is PDEV_IDE_RESETTING.
+• The PDEV communication state is DEV_COMM_PENDING.
+
+RMI_PDEV_IDE_RESET can modify only two items: the state of the PDEV and the communication state of the PDEV.

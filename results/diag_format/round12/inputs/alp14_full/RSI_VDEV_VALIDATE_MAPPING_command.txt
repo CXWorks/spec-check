@@ -1,0 +1,54 @@
+B5.3.19 RSI_VDEV_VALIDATE_MAPPING
+
+B5.3.19.1 Intended use
+RSI_VDEV_VALIDATE_MAPPING is intended for validating Realm device memory mappings. The Realm calls the RSI_VDEV_VALIDATE_MAPPING function and provides:
+•  a Realm device identifier
+•  a target IPA region
+•  the base of a target PA region
+•  flags
+•  the attestation nonces for the device
+
+The command operates on the following context:
+•  The current Realm.
+•  The current REC.
+•  The Realm device that vdev_id identifies within the current Realm.
+
+B5.3.19.2 Parameters
+RSI_VDEV_VALIDATE_MAPPING takes the following input values:
+•  fid, passed in X0, bits [63:0]. This is the function identifier, and its value is 0xC400019F.
+•  vdev_id, passed in X1, bits [63:0]. This is the Realm device identifier.
+•  ipa_base, passed in X2, bits [63:0]. This is the base of the target IPA region.
+•  ipa_top, passed in X3, bits [63:0]. This is the top of the target IPA region.
+•  pa_base, passed in X4, bits [63:0]. This is the base of the target PA region.
+•  flags, passed in X5, bits [63:0]. These are the device memory flags.
+•  lock_nonce, passed in X6, bits [63:0]. This is the nonce that was generated on the most recent transition to the LOCKED state.
+•  meas_nonce, passed in X7, bits [63:0]. This is the sequence number of the GET_MEASUREMENT request.
+•  report_nonce, passed in X8, bits [63:0]. This is the sequence number of the GET_INTERFACE_REPORT request.
+
+B5.3.19.3 Return values
+RSI_VDEV_VALIDATE_MAPPING returns the following output values:
+•  result, returned in X0, bits [63:0]. This is the command return status.
+•  new_ipa_base, returned in X1, bits [63:0]. This is the base of the IPA region that the command did not modify.
+•  response, returned in X2, bit [0]. This shows whether the Host accepted or rejected the request.
+
+Bits [63:1] of X2 are unused and must be zero.
+
+RSI_VDEV_VALIDATE_MAPPING can return the following errors:
+•  RSI_ERROR_STATE is returned if the Device Assignment feature is not enabled for the Realm.
+•  RSI_ERROR_INPUT is returned if vdev_id does not identify a VDEV that is in use by the Realm.
+•  RSI_ERROR_INPUT is returned if the state of the VDEV is neither VDEV_LOCKED nor VDEV_STARTED.
+•  RSI_ERROR_INPUT is returned if ipa_base is not aligned to the size of a Granule.
+•  RSI_ERROR_INPUT is returned if ipa_top is not aligned to the size of a Granule.
+•  RSI_ERROR_INPUT is returned if pa_base is not aligned to the size of a Granule.
+•  RSI_ERROR_INPUT is returned if ipa_top is less than or equal to ipa_base.
+•  RSI_ERROR_INPUT is returned if the IPA range from ipa_base to ipa_top is not entirely within the protected IPA space of the Realm.
+•  RSI_ERROR_DEVICE is returned if lock_nonce, meas_nonce and report_nonce do not match the attestation information that is recorded for the VDEV.
+
+The check that the Device Assignment feature is enabled for the Realm is made before the check that vdev_id identifies a VDEV in use by the Realm.
+
+B5.3.19.4 Implementation responsibilities
+If the command succeeds, the implementation must make sure that:
+•  new_ipa_base is equal to the device memory address recorded in the REC.
+•  response is the device memory response recorded in the REC, converted to its RSI encoding.
+
+RSI_VDEV_VALIDATE_MAPPING does not modify any state.

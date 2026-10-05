@@ -1,0 +1,46 @@
+B4.3.67 HCI_VXLATOR_MAP
+
+B4.3.67.1 Intended use
+HCI_VXLATOR_MAP creates a VXLATOR mapping. The Host calls HCI_VXLATOR_MAP with the Vault Descriptor (VD) of a Vault, a VXLATOR, an LBA and an BLT level. The command maps the VXLATOR at that LBA in the primary BLT tree of the Vault.
+
+The command works on the Vault that the VD at vd describes and on the VXLATOR at vxlator_ptr. It walks the primary BLT tree of the Vault to lba, down to the BLT level given by level. It then uses the BLT entry at the level where the walk ended that corresponds to lba.
+
+B4.3.67.2 Parameters
+• fid, passed in R0, is the function identifier. Its value is 0xC400016C.
+• vd, passed in R1, is the physical address of the VD.
+• vxlator_ptr, passed in R2, is the physical address of the VXLATOR.
+• lba, passed in R3, is the LBA at which the mapping is created.
+• level, passed in R4, is the BLT level. It is a signed 64-bit value.
+
+B4.3.67.3 Return values
+• result, returned in R0, is the command return status.
+
+HCI_VXLATOR_MAP can return the following errors:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the DX feature.
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is less than 2.
+• HCI_ERROR_INPUT is returned if the Vault is not in the VAULT_NEW state.
+• HCI_ERROR_INPUT is returned if vxlator_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vxlator_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vxlator_ptr is not in the VXLATOR state.
+• HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that one BLT entry maps at the BLT level given by level.
+• HCI_ERROR_INPUT is returned if lba is below the base address of the VXLATOR register region.
+• HCI_ERROR_BLT is returned if the BLT walk to lba ends at a level lower than level. The level where the walk ended is also returned.
+• HCI_ERROR_BLT is returned if the BLT entry found by the BLT walk is not in the UNASSIGNED state. The level where the walk ended is also returned.
+• HCI_ERROR_BLT is returned if the LBAMODE of the BLT entry found by the BLT walk is not EMPTY. The level where the walk ended is also returned.
+• HCI_ERROR_BLT is returned if the last address of the range that one BLT entry maps at the walk level, counting from lba, is at or above the top address of the VXLATOR register region. The level where the walk ended is also returned.
+
+The checks are made in the following order:
+• The checks that vd is a enrollable address and that the Extent at vd is in the VD state come before the check of the Vault state.
+• The checks that vd is a enrollable address and that the Extent at vd is in the VD state also come before every check on the BLT walk and the BLT entry. These are the checks on the level where the walk ended, the BLT entry state, the BLT entry LBAMODE, and the end of the mapped range compared with the VXLATOR register region.
+• The check that the Extent at vxlator_ptr is in the VXLATOR state comes before the check that the end of the mapped range is below the top of the VXLATOR register region.
+• The check that the implementation supports the DX feature comes before the checks on vxlator_ptr. These are its Extent alignment, whether it is a enrollable address, and whether its Extent is in the VXLATOR state.
+
+B4.3.67.4 Implementation responsibilities
+When HCI_VXLATOR_MAP succeeds, the implementation must make sure that:
+• The BLT entry found by the BLT walk is in the ASSIGNED_VXLATOR state.
+• The address held in that BLT entry is vxlator_ptr.
+
+The only state that HCI_VXLATOR_MAP can modify is the BLT entry found by the BLT walk. This is the entry at index entry_idx in the BLT where the walk ended.

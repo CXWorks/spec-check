@@ -1,0 +1,25 @@
+B4.3.8 HCI_ZONE_SET_SHARED
+
+B4.3.8.1 Intended use
+HCI_ZONE_SET_SHARED is used to change the state of a ZONE to Shared.
+
+B4.3.8.2 Parameters
+HCI_ZONE_SET_SHARED takes the following input values:
+•  fid, passed in R0. This is the function identifier, and its value is 0xC400018C.
+•  zoneid, passed in R1. This is the ZONEID of the ZONE whose state is to be changed. It is a 64-bit value.
+
+B4.3.8.3 Return values
+HCI_ZONE_SET_SHARED returns the following output value:
+•  result, returned in R0. This is the command return status.
+
+B4.3.8.4 Caller responsibilities
+HCI_ZONE_SET_SHARED can return the following errors:
+•  HCI_ERROR_INPUT is returned if zoneid is greater than the maximum ZONEID that the implementation supports.
+•  HCI_ERROR_INPUT is returned if the ZONE state of zoneid is not ZONE_STATE_PRIVATE_UNASSIGNED.
+
+There is no required ordering between these failure conditions.
+
+B4.3.8.5 Implementation responsibilities
+On success, the ZONE state of zoneid is ZONE_STATE_SHARED.
+
+The only state that HCI_ZONE_SET_SHARED may modify is the ZONE state of zoneid.

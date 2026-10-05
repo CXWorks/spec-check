@@ -1,0 +1,28 @@
+B4.3.55 RMI_VDEV_GET_STATE
+
+B4.3.55.1 Intended use
+RMI_VDEV_GET_STATE gets the state of a VDEV. The caller passes the physical address of the VDEV, and the command returns the current state of that VDEV object.
+
+B4.3.55.2 Parameters
+The caller passes the following input values:
+• fid, passed in X0[63:0], is the function identifier. Its value is 0xC4000189.
+• vdev_ptr, passed in X1[63:0], is the physical address (PA) of the VDEV. The command operates on the VDEV at this address.
+
+B4.3.55.3 Return values
+The command returns the following output values:
+• result, returned in X0[63:0], is the command return status.
+• state, returned in X1[7:0], is the state of the VDEV.
+Bits X1[63:8] are unused and must be zero.
+
+RMI_VDEV_GET_STATE can return the following errors:
+• RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+• RMI_ERROR_INPUT is returned if vdev_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if vdev_ptr is not a physical address that can be delegated.
+• RMI_ERROR_INPUT is returned if the Granule at vdev_ptr is not in the VDEV state.
+
+The check for Device Assignment support comes before all other checks. If Device Assignment is not supported, RMI_ERROR_NOT_SUPPORTED is returned even when vdev_ptr is also invalid. The three RMI_ERROR_INPUT checks have no defined order among themselves. These checks are the alignment of vdev_ptr, whether vdev_ptr can be delegated, and whether the Granule at vdev_ptr is in the VDEV state.
+
+B4.3.55.4 Implementation responsibilities
+On success, the implementation must set the output value state to the current state of the VDEV object at vdev_ptr.
+
+RMI_VDEV_GET_STATE does not modify any state.

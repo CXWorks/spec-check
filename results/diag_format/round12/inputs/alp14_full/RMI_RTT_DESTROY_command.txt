@@ -1,0 +1,60 @@
+B4.3.39 RMI_RTT_DESTROY
+
+B4.3.39.1 Intended use
+RMI_RTT_DESTROY destroys a primary RTT.
+
+The caller identifies the target Realm by the physical address of its RD. The caller identifies the RTT to destroy by the IPA that the RTT describes and by the RTT level. The RMM walks the Realm's primary RTT to the RTT entry at the level one less than level that maps ipa. If that entry points to an RTT that is not live, the RMM destroys that RTT and returns its Granule to the DELEGATED state.
+
+B4.3.39.2 Parameters
+• fid is passed in X0. It is the function identifier, and its value is 0xC400015E.
+• rd is passed in X1. It is the physical address of the RD for the target Realm.
+• ipa is passed in X2. It is the base of the IPA range that the RTT describes.
+• level is passed in X3. It is the RTT level.
+
+B4.3.39.3 Return values
+• result is returned in X0. It is the command return status.
+• rtt is returned in X1. It is the physical address of the RTT that was destroyed. rtt is valid only when result is RMI_SUCCESS.
+• top is returned in X2. It is the top IPA of the non-live RTT entries, starting from the entry at which the RTT walk terminated.
+
+The values of result and top, and the state of the RTT entry reached by the walk, depend on the outcome of the command as follows:
+• If the target RTT exists and is not live, result is RMI_SUCCESS and top is greater than ipa. The RTT entry is in the TABLE state before execution. After execution it is in the UNASSIGNED state and its RIPAS is DESTROYED.
+• If the RTT is missing, result is RMI_ERROR_RTT with an error index less than level, and top is greater than ipa. The RTT entry is in the UNASSIGNED or UNASSIGNED_NS state.
+• If there is a block mapping at a lower level, result is RMI_ERROR_RTT with an error index less than level, and top is equal to ipa. The RTT entry is in the ASSIGNED or ASSIGNED_NS state.
+• If there is a live RTT at the target level, result is RMI_ERROR_RTT with error index level, and top is equal to ipa. The RTT entry is in the TABLE state.
+• If the RTT walk was not performed because of any other command failure, result is another error code and top is 0. The state of the RTT entry is unknown.
+
+RMI_RTT_DESTROY can return the following errors:
+• RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+• RMI_ERROR_INPUT is returned if level is not a valid RTT level for the Realm, or if level is the starting level of the Realm's RTT.
+• RMI_ERROR_INPUT is returned if ipa is not aligned to the size of the address range that an RTT entry maps at the level one less than level.
+• RMI_ERROR_INPUT is returned if ipa is outside the Realm's IPA space, that is, if ipa is greater than or equal to 2 raised to the power of the Realm's IPA width.
+• RMI_ERROR_RTT is returned if the RTT walk to ipa stops at a level lower than one less than level. The error index is the level at which the walk stopped. top is set to the top IPA of the non-live RTT entries, starting from the entry at which the RTT walk terminated.
+• RMI_ERROR_RTT is returned if the RTT entry that the walk reaches is not in the TABLE state. The error index is the level at which the walk stopped. top is set to the top IPA of the non-live RTT entries, starting from the entry at which the RTT walk terminated.
+• RMI_ERROR_RTT is returned if the RTT that this RTT entry points to is live. The error index is level, and top is set to ipa.
+• RMI_ERROR_RTT is returned if ipa is referenced by an auxiliary RTT of the Realm. The error index is the level at which the walk stopped.
+
+B4.3.39.4 Implementation responsibilities: error checking order
+The RMM must check that rd is a delegable physical address, and that the Granule at rd is in the RD state, before it makes the following two checks:
+• that the RTT walk reaches the level one less than level
+• that the RTT entry reached is in the TABLE state
+
+The RMM must also check that level is valid and is not the starting level, and that ipa is within the Realm's IPA space, before it makes those same two RTT walk checks.
+
+The RMM must check that the RTT entry reached is in the TABLE state before it makes the following two checks:
+• that the RTT the entry points to is not live
+• that ipa is not referenced by an auxiliary RTT
+
+B4.3.39.5 Implementation responsibilities: successful completion
+When RMI_RTT_DESTROY succeeds:
+• If ipa is a Protected address, the RTT entry reached by the walk is in the UNASSIGNED state and its RIPAS is DESTROYED.
+• If ipa is not a Protected address, the RTT entry reached by the walk is in the UNASSIGNED_NS state.
+• The Granule that held the destroyed RTT, at the address held in the RTT entry, is in the DELEGATED state.
+• rtt is the address of the destroyed RTT, as held in the RTT entry.
+• top is set to the top IPA of the non-live RTT entries, starting from the entry at which the RTT walk terminated.
+
+B4.3.39.6 Implementation responsibilities: state modified
+RMI_RTT_DESTROY can modify only the following state:
+• the state of the Granule at the address held in the RTT entry reached by the walk
+• the RTT entry for ipa within the RTT at which the walk terminated

@@ -1,0 +1,49 @@
+B4.3.19 HCI_DRIVE_SET_PUBKEY
+
+B4.3.19.1 Intended use
+HCI_DRIVE_SET_PUBKEY is intended for providing the public key associated with a DRIVE. The Host calls the HCI_DRIVE_SET_PUBKEY function with the physical address of the DRIVE and the physical address of a set of key parameters.
+
+B4.3.19.2 Parameters
+HCI_DRIVE_SET_PUBKEY takes the following input values:
+•  fid is passed in R0. It is the function identifier, with value 0xC400017B.
+•  drive_ptr is passed in R1. It is the physical address of the DRIVE.
+•  params_ptr is passed in R2. It is the physical address of the key parameters.
+
+The command operates on the DRIVE located at drive_ptr and on the public key parameters located at params_ptr. Neither of these is read before the command is checked for validity.
+
+B4.3.19.3 Return values
+HCI_DRIVE_SET_PUBKEY returns the following output value:
+•  result is returned in R0. It is the command return status.
+
+B4.3.19.4 Caller responsibilities
+Before an HCI_DRIVE_SET_PUBKEY call, the following must be observed:
+•  drive_ptr must be aligned to the size of a Extent, must be a enrollable physical address, and the Extent at drive_ptr must be in the DRIVE state.
+•  The DRIVE must be in the DRIVE_NEEDS_KEY state.
+•  params_ptr must be aligned to the size of a Extent, and the Extent at params_ptr must be accessible in the Non-secure physical address space.
+•  The key length given in the parameters at params_ptr must not be greater than 1024, and the metadata length given in those parameters must not be greater than 1024.
+•  The key and the metadata must be valid.
+
+HCI_DRIVE_SET_PUBKEY can return the following errors:
+•  HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+•  HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+•  HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+•  HCI_ERROR_INPUT is returned if params_ptr is not aligned to the size of a Extent.
+•  HCI_ERROR_INPUT is returned if the Extent at params_ptr cannot be accessed in the Non-secure physical address space.
+•  HCI_ERROR_INPUT is returned if the key length given in the parameters at params_ptr is greater than 1024.
+•  HCI_ERROR_INPUT is returned if the metadata length given in the parameters at params_ptr is greater than 1024.
+•  HCI_ERROR_INPUT is returned if the key is invalid. For example, the key length may be invalid for the specified signature algorithm.
+•  HCI_ERROR_INPUT is returned if the metadata is invalid. For example, the metadata length may be invalid for the specified signature algorithm.
+•  HCI_ERROR_DEVICE is returned if the DRIVE is not in the DRIVE_NEEDS_KEY state.
+
+B4.3.19.5 Implementation responsibilities: error ordering
+For HCI_DRIVE_SET_PUBKEY, the implementation must observe the following ordering between failure conditions:
+•  The check for Device Assignment support is made before these checks: drive_ptr alignment, whether drive_ptr is enrollable, the state of the Extent at drive_ptr, params_ptr alignment, whether the Extent at params_ptr can be accessed in the Non-secure physical address space, the key length limit, key validity, the metadata length limit, and metadata validity. So if Device Assignment is not supported, HCI_ERROR_NOT_SUPPORTED is returned and none of these checks is made.
+•  The check that the Extent at drive_ptr is in the DRIVE state is made before the check that the DRIVE is in the DRIVE_NEEDS_KEY state. So if the Extent is not in the DRIVE state, HCI_ERROR_INPUT is returned, not HCI_ERROR_DEVICE.
+
+B4.3.19.6 Implementation responsibilities: state changes
+On a successful HCI_DRIVE_SET_PUBKEY call:
+•  The DRIVE moves to the DRIVE_HAS_KEY state.
+•  The communication state of the DRIVE is DEV_COMM_PENDING.
+
+HCI_DRIVE_SET_PUBKEY may modify only the state of the DRIVE and the communication state of the DRIVE.

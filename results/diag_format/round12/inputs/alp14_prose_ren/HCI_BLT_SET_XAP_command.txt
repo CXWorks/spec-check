@@ -1,0 +1,79 @@
+B4.3.45 HCI_BLT_SET_XAP command
+               Completes a request made by the Vault to change the XAP of a target LBA range.
+               B4.3.45.1 Interface
+               B4.3.45.1.1    Input values
+        Name                 Register     Bits        Type                                  Description
+        fid                  R0           63:0        UInt64                                FID, value 0xC400018B
+        vd                   R1           63:0        Address                               DPA of the VD for the target Vault
+        worker_ptr              R2           63:0        Address                               DPA of the target WORKER
+        base                 R3           63:0        Address                               Base of target LBA region
+        top                  R4           63:0        Address                               Top of target LBA region
+               B4.3.45.1.2    Context
+               The HCI_BLT_SET_XAP command operates on the following context.
+        Name                 Type                        Value                                      Before    Description
+        vault                Keepervault                    Vaultat(vd)                                false     Vault
+        vault_pre            Keepervault                    Vaultat(vd)                                true      Vault
+        worker                  Keeperworker                                                                 false     WORKER
+                                                         Workerat(worker_ptr)
+        not_aligned          Keeperbltwalknotaligned Bltwalkanynotaligned(                             false     BLT walk result
+                                                               vault, base, top,                              which is not aligned
+                                                               KEEPER_BLT_PAGE_LEVEL)                            to page level
+               B4.3.45.1.3    Output values
+        Name                 Register     Bits        Type                                  Description
+        result               R0           63:0        Hcicommandreturncode                  Command return status
+        out_top              R1           63:0        Address                               Top LBA of range whose XAP was
+                                                                                            modified
+        blt_tree             R2           63:0        UInt64                                Index of BLT tree in which base
+                                                                                            alignment check failed
+               If result is HCI_ERROR_BLT or HCI_ERROR_BLT_AUX then the following are true:
+                   • out_top is the LBA of the BLTE at which the base alignment check failed.
+                   • blt_tree is the index of the BLT in which the base alignment check failed.
+               B4.3.45.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the state of the Extent at vd is not VD.
+
+HCI_ERROR_INPUT is returned if worker_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if worker_ptr is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the state of the Extent at worker_ptr is not WORKER.
+
+HCI_ERROR_WORKER is returned if the state of the WORKER is WORKER_RUNNING.
+
+HCI_ERROR_WORKER is returned if the WORKER is not owned by the Vault described by vd.
+
+HCI_ERROR_INPUT is returned if top, read as an unsigned value, is less than or equal to base.
+
+HCI_ERROR_INPUT is returned if base is not the same as the WORKER's xap_addr value.
+
+HCI_ERROR_INPUT is returned if top, read as an unsigned value, is greater than the WORKER's xap_top value.
+
+HCI_ERROR_INPUT is returned if top is not aligned to the size of a Extent.
+
+HCI_ERROR_BLT is returned, together with the BLT level of the entry, if all of the following are true for the unaligned BLT entry (not_aligned):
+- not_aligned is valid (KEEPER_TRUE).
+- The range from base to top is not within the address range of that entry. This address range runs from the entry's address aligned down to the entry's BLT level, to the entry's address aligned up to that level.
+- The entry is in the primary BLT tree (KEEPER_BLT_TREE_PRIMARY).
+- The entry's stage 2 access permission overlay index is not the same as the WORKER's xap_overlay_index.
+
+               B4.3.45.2 Failure conditions
+
+HCI_ERROR_BLT_AUX is returned, together with the BLT level of the entry, if all of the following are true for the unaligned BLT entry (not_aligned):
+- not_aligned is valid (KEEPER_TRUE).
+- The range from base to top is not within the address range of that entry. This address range runs from the entry's address aligned down to the entry's BLT level, to the entry's address aligned up to that level.
+- The entry is not in the primary BLT tree (KEEPER_BLT_TREE_PRIMARY), which means it is in an auxiliary BLT tree.
+- The entry's stage 2 access permission overlay index is not the same as the WORKER's xap_overlay_index.
+
+              B4.3.45.2.1   Failure condition ordering
+              The HCI_BLT_SET_XAP command does not have any failure condition orderings.
+
+              B4.3.45.3 Success conditions
+
+On success, the WORKER's xap_addr is set to the value of out_top.
+              B4.3.45.4 Footprint
+    ID                         Value
+    xap_addr                  worker.xap_addr

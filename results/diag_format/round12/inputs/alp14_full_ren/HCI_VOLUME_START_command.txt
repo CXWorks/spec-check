@@ -1,0 +1,41 @@
+B4.3.60 HCI_VOLUME_START
+
+B4.3.60.1 Intended use
+HCI_VOLUME_START starts a VOLUME. The caller provides the physical address of the VD, which identifies a Vault, and the physical address of the VOLUME, which must belong to that Vault. If the command succeeds, the operation VOLUME_OP_START is recorded in the VOLUME and the communication state of the VOLUME becomes DEV_COMM_PENDING.
+
+B4.3.60.2 Parameters
+• fid is passed in R0 and is the function identifier. Its value is 0xC40001D3.
+• vd is passed in R1 and is the physical address of the VD. The VD identifies the Vault that the command operates on.
+• volume_ptr is passed in R2 and is the physical address of the VOLUME. This is the VOLUME that the command operates on.
+
+B4.3.60.3 Return values
+• result is returned in R0 and gives the return status of the command.
+
+B4.3.60.4 Caller responsibilities
+HCI_VOLUME_START can return the following errors:
+• HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if volume_ptr is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if volume_ptr is not a enrollable physical address.
+• HCI_ERROR_INPUT is returned if the Extent at volume_ptr is not in the VOLUME state.
+• HCI_ERROR_INPUT is returned if the VOLUME at volume_ptr does not belong to the Vault described by vd.
+• HCI_ERROR_DEVICE is returned if the state of the VOLUME is not VOLUME_LOCKED.
+• HCI_ERROR_DEVICE is returned if the communication state of the VOLUME is not DEV_COMM_IDLE.
+
+B4.3.60.5 Implementation responsibilities: order of error checks
+The implementation must make the error checks in the following order:
+• The check that the VOLUME belongs to the Vault described by vd is made after each of these checks: vd is a enrollable physical address, the Extent at vd is in the VD state, volume_ptr is a enrollable physical address, and the Extent at volume_ptr is in the VOLUME state.
+• The check that the implementation supports the Device Assignment feature is made before each of these checks: vd is a enrollable physical address, the Extent at vd is in the VD state, volume_ptr is aligned to the size of a Extent, volume_ptr is a enrollable physical address, the Extent at volume_ptr is in the VOLUME state, and the VOLUME belongs to the Vault described by vd.
+• The check that the Extent at volume_ptr is in the VOLUME state is made before the check that the state of the VOLUME is VOLUME_LOCKED. It is also made before the check that the communication state of the VOLUME is DEV_COMM_IDLE.
+
+B4.3.60.6 Implementation responsibilities: successful completion
+When HCI_VOLUME_START succeeds:
+• The operation recorded in the VOLUME is VOLUME_OP_START.
+• The communication state of the VOLUME is DEV_COMM_PENDING.
+
+B4.3.60.7 Implementation responsibilities: state that may be modified
+HCI_VOLUME_START may modify only the following state:
+• The operation recorded in the VOLUME.
+• The communication state of the VOLUME.

@@ -1,0 +1,74 @@
+B4.3.40 HCI_BLT_FOLD command
+                Destroys a homogeneous primary BLT.
+                B4.3.40.1 Interface
+                B4.3.40.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   R0          63:0        UInt64                                FID, value 0xC4000166
+        vd                    R1          63:0        Address                               DPA of the VD for the target Vault
+        lba                   R2          63:0        Address                               Base of the LBA range described by the
+                                                                                            BLT
+        level                 R3          63:0        Int64                                 BLT level
+                B4.3.40.1.2   Context
+                The HCI_BLT_FOLD command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        vault                 Keepervault                   Vaultat(vd)                                false    Vault
+        walk                  Keeperbltwalkresult           Bltwalk(                                   false    BLT walk result
+                                                             vault, lba,
+                                                             level - 1,
+                                                             KEEPER_BLT_TREE_PRIMARY)
+        entry_idx             UInt64                     Bltentryindex(                             false    BLTE index
+                                                             lba, walk.level)
+        fold_pre              Keeperbltentry                Bltfold(                                   true     Result of folding BLT
+                                                             Bltat(walk.blte.addr))
+                B4.3.40.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                R0          63:0        Hcicommandreturncode                  Command return status
+        blt                   R1          63:0        Address                               DPA of the BLT which was destroyed
+                The blt output value is valid only when the command result is HCI_SUCCESS.
+                B4.3.40.2 Failure conditions
+
+HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if vd is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+
+HCI_ERROR_INPUT is returned if level is not a valid BLT level for the Vault, or if level is the starting level of the Vault's BLT.
+
+HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that one BLT entry covers at the level one above level (level minus one).
+
+HCI_ERROR_INPUT is returned if lba is outside the Vault's LBA space, that is, if lba is greater than or equal to 2 raised to the power of the Vault's LBA width.
+
+HCI_ERROR_BLT is returned if the BLT walk to lba stops before it reaches level minus one. The level at which the walk stopped is also returned.
+
+HCI_ERROR_BLT is returned if the BLT entry that the walk reaches is not in the TABLE state. The level at which the walk stopped is also returned.
+
+HCI_ERROR_BLT is returned if the BLT that this BLT entry points to is not homogeneous. The value of level is also returned.
+
+HCI_ERROR_BLT is returned if lba is referenced by an auxiliary BLT of the Vault. The level at which the walk stopped is also returned.
+
+               B4.3.40.2.1   Failure condition ordering
+
+The check that vd is a enrollable physical address, and the check that the Extent at vd is in the VD state, are made before these checks: whether the BLT walk reaches level minus one, whether the BLT entry that the walk reaches is in the TABLE state, whether the child BLT is homogeneous, and whether lba is referenced by an auxiliary BLT.
+
+The check that level is valid and is not the starting level, and the check that lba is within the Vault's LBA space, are made before these checks: whether the BLT walk reaches level minus one, and whether the BLT entry that the walk reaches is in the TABLE state.
+
+               B4.3.40.3 Success conditions
+
+The state of the parent BLT entry for lba is set to the state that all entries in the folded BLT had before the command.
+
+If the folded entries were in a state other than UNASSIGNED or UNASSIGNED_PUB, the output address of the parent BLT entry is set to the output address that the folded BLT entries had before the command.
+
+If the folded entries were in the ASSIGNED state, the parent BLT entry gets the memory attributes the folded entries had, interpreted as for Protected memory (BLT_PROTECTED). It also gets the stage 2 access permissions the folded entries had, interpreted with the indirect encoding (XAP_INDIRECT).
+
+If the folded entries were in the ASSIGNED_PUB state, the parent BLT entry gets the memory attributes the folded entries had, interpreted as for Unprotected memory (BLT_UNPROTECTED). It also gets the stage 2 access permissions the folded entries had, interpreted with the Vault's stage 2 access permission encoding.
+
+If lba is a Protected LBA, the LBAMODE of the parent BLT entry is set to the LBAMODE that the folded entries had before the command.
+
+The Extent that held the folded BLT is in the ENROLLED state.
+
+The output value blt is the address of the folded BLT.
+                    B4.3.40.4 Footprint
+        ID                       Value
+        blt_state                Extentat(walk.blte.addr).state
+        blte                     Bltentryat(Bltat(walk.blt_addr), entry_idx)

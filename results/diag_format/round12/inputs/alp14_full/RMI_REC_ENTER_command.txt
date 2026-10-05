@@ -1,0 +1,64 @@
+B4.3.30 RMI_REC_ENTER
+
+B4.3.30.1 Intended use
+RMI_REC_ENTER is intended for entering a REC. The Host calls the RMI_REC_ENTER function, providing the physical address of the target REC and the physical address of a RecRun object.
+
+The command operates on the following objects:
+• The RecRun object at run_ptr.
+• The REC at rec_ptr.
+• The Realm that owns the REC.
+
+The RMI_FEATURES command reports how many GICv3 List Register values the Host can provide in the entry section of the RecRun object. The same number of values is returned in the exit section of the RecRun object.
+
+B4.3.30.2 Parameters
+• fid is passed in X0, bits 63:0. It is the function identifier and has the value 0xC400015C.
+• rec_ptr is passed in X1, bits 63:0. It is the physical address of the target REC.
+• run_ptr is passed in X2, bits 63:0. It is the physical address of the RecRun object.
+
+B4.3.30.3 Return values
+• result is returned in X0, bits 63:0. It is the command return status.
+
+B4.3.30.4 Caller responsibilities
+RMI_REC_ENTER can return the following errors:
+• RMI_ERROR_INPUT is returned if run_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if the Granule at run_ptr cannot be accessed in the Non-secure PAS.
+• RMI_ERROR_INPUT is returned if rec_ptr is not aligned to the size of a Granule.
+• RMI_ERROR_INPUT is returned if rec_ptr is not a delegable physical address.
+• RMI_ERROR_INPUT is returned if the state of the Granule at rec_ptr is not REC.
+• RMI_ERROR_REALM, with index 0, is returned if the state of the Realm that owns the REC is REALM_NEW.
+• RMI_ERROR_REALM, with index 1, is returned if the state of the Realm that owns the REC is REALM_SYSTEM_OFF.
+• RMI_ERROR_REC is returned if the state of the REC is REC_RUNNING.
+• RMI_ERROR_REC is returned if the REC is marked NOT_RUNNABLE.
+• RMI_ERROR_REC is returned if both of the following are true:
+  – The Host requests MMIO emulation. This means that the emul_mmio flag in the entry section of the RecRun object is RMI_EMULATED_MMIO.
+  – The most recent REC exit was not caused by an emulatable abort. This means that the emulatable_abort value of the REC is not EMULATABLE_ABORT.
+• RMI_ERROR_REC is returned if the gicv3_hcr and gicv3_lrs values in the entry section of the RecRun object do not describe a valid GICv3 configuration.
+• RMI_ERROR_REC is returned if the REC has a pending operation. This means that its pending value is not REC_PENDING_NONE.
+
+B4.3.30.5 Implementation responsibilities: ordering of error checks
+The checks fall into two groups. Every check in the first group is made before any check in the second group.
+
+The first group contains these five checks:
+• rec_ptr is aligned to the size of a Granule.
+• rec_ptr is a delegable physical address.
+• The state of the Granule at rec_ptr is REC.
+• The Granule at run_ptr can be accessed in the Non-secure PAS.
+• run_ptr is aligned to the size of a Granule.
+
+The second group contains these checks:
+• The state of the REC is not REC_RUNNING.
+• The REC is not marked NOT_RUNNABLE.
+• The check on the MMIO emulation request.
+• The state of the Realm is not REALM_NEW.
+• The state of the Realm is not REALM_SYSTEM_OFF.
+• The GICv3 configuration is valid.
+• The REC has no pending operation.
+
+No order is defined among the checks within either group. As a result, an RMI_ERROR_INPUT failure is reported in preference to an RMI_ERROR_REALM or RMI_ERROR_REC failure.
+
+B4.3.30.6 Implementation responsibilities: effects of a successful call
+When RMI_REC_ENTER succeeds:
+• The exit section of the RecRun object contains information about the Realm exit syndrome.
+• The emulatable_abort value of the REC is updated.
+
+The only state that RMI_REC_ENTER can modify is the emulatable_abort value of the REC.

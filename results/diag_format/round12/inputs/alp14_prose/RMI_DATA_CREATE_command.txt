@@ -1,0 +1,99 @@
+B4.3.1 RMI_DATA_CREATE command
+                Creates a Data Granule, copying contents from a Non-secure Granule provided by the caller.
+                B4.3.1.1 Interface
+                B4.3.1.1.1   Input values
+        Name                 Register     Bits        Type                                  Description
+        fid                  X0           63:0        UInt64                                FID, value 0xC4000153
+        rd                   X1           63:0        Address                               PA of the RD for the target Realm
+        data                 X2           63:0        Address                               PA of the target Data
+        ipa                  X3           63:0        Address                               IPA at which the Granule will be
+                                                                                            mapped in the target Realm
+        src                  X4           63:0        Address                               PA of the source Granule
+        flags                X5           63:0        RmiDataFlags                          Flags
+                B4.3.1.1.2   Context
+                The RMI_DATA_CREATE command operates on the following context.
+        Name                 Type                        Value                                      Before    Description
+        realm_pre            RmmRealm                    RealmAt(rd)                                true      Realm
+        realm                RmmRealm                    RealmAt(rd)                                false     Realm
+        walk                 RmmRttWalkResult            RttWalk(                                   false     RTT walk result
+                                                             realm, ipa,
+                                                             RMM_RTT_PAGE_LEVEL,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx            UInt64                      RttEntryIndex(                             false     RTTE index
+                                                             ipa, walk.level)
+                B4.3.1.1.3   Output values
+        Name                 Register     Bits        Type                                  Description
+        result               X0           63:0        RmiCommandReturnCode                  Command return status
+                B4.3.1.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if src is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if the Granule at src cannot be accessed from the Non-secure physical address space.
+
+RMI_ERROR_INPUT is returned if data is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if data is not the physical address of DRAM that can be delegated.
+
+RMI_ERROR_INPUT is returned if the Granule at data is not in the DELEGATED state.
+
+RMI_ERROR_INPUT is returned if data is 2^48 or greater and the target Realm does not support LPA2, which means its feat_lpa2 attribute is FEATURE_FALSE.
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a physical address that can be delegated.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if, before the command runs, ipa is not in the protected IPA space of the target Realm.
+
+RMI_ERROR_REALM is returned if, before the command runs, the target Realm is not in the REALM_NEW state.
+
+RMI_ERROR_RTT is returned, together with the RTT level that the walk reached, if the RTT walk for ipa stops before it reaches the page level, RMM_RTT_PAGE_LEVEL.
+
+RMI_ERROR_RTT is returned, together with the RTT level that the walk reached, if the RTT entry found by the walk for ipa is not in the UNASSIGNED state.
+
+                B4.3.1.2.1       Failure condition ordering
+
+The RMM checks that rd can be delegated and that the Granule at rd is in the RD state before it checks whether the target Realm is in the REALM_NEW state.
+
+The RMM checks that rd can be delegated and that the Granule at rd is in the RD state before it checks the RTT walk level and the state of the RTT entry for ipa.
+
+The RMM checks that ipa is in the protected IPA space of the target Realm before it checks the RTT walk level and the state of the RTT entry for ipa.
+
+                B4.3.1.3 Success conditions
+
+The Granule at data is in the DATA state.
+
+The contents of the source Granule at src are copied into the target Granule at data.
+
+The RTT entry for ipa is in the ASSIGNED state.
+
+The RIPAS of the RTT entry for ipa is RAM.
+
+The output address of the RTT entry for ipa is data.
+
+The memory attribute of the RTT entry for ipa is MEMATTR_CACHEABLE.
+
+The shareability of the RTT entry for ipa is SHAREABILITY_INNER.
+
+The RIM of the target Realm is updated: the first measurement of the Realm becomes the value calculated from the Realm's state before the command, ipa, data and flags, as described in B4.3.1.4.
+
+               B4.3.1.4 RMI_DATA_CREATE extension of RIM
+               On successful execution of RMI_DATA_CREATE, the RMM calculates the new RIM value of the target Realm as follows:
+                 1. If the measure field of flags is RMI_MEASURE_CONTENT, compute the hash of the contents of the DATA Granule using the RHA of the target Realm.
+                 2. Allocate an RmmMeasurementDescriptorData data structure.
+                 3. Populate the measurement descriptor:
+                  • Set the desc_type field to the descriptor type.
+                  • Set the len field to the descriptor length.
+                  • Set the rim field to the current RIM value of the target Realm.
+                  • Set the ipa field to the IPA at which the DATA Granule is mapped in the target Realm.
+                  • Set the flags field to the flags provided by the Host.
+                  • If the measure field of flags is RMI_MEASURE_CONTENT, set the content field to the hash of the contents of the DATA Granule. If it is not, set the content field to zero.
+                 4. Compute the hash of the measurement descriptor using the RHA of the target Realm, and set the RIM of the target Realm to this value. If the RHA output is smaller than the RIM, fill the upper bytes with zeros.
+               B4.3.1.5 Footprint
+    ID                           Value
+    data_state                   GranuleAt(data).state
+    rim                          realm.measurements[[0]]
+    rtte                         RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

@@ -1,0 +1,45 @@
+B4.3.35 HCI_BLT_AUX_MAP_UNPROTECTED
+
+B4.3.35.1 Intended use
+HCI_BLT_AUX_MAP_UNPROTECTED copies a valid descriptor or a table descriptor at an Unprotected LBA from the starting level of the primary BLT to an auxiliary BLT.
+
+The Host calls this command with the address of the VD of the target Vault, an LBA in that Vault, and an BLT tree index that selects the auxiliary BLT tree. The command walks the primary BLT tree of the Vault for the LBA, starting at the Vault's starting BLT level. It also walks the auxiliary BLT tree selected by the index, starting at the same level. It then copies the primary BLT entry into the auxiliary BLT entry.
+
+B4.3.35.2 Parameters
+The command takes the following input values:
+• fid, passed in R0 (bits 63:0), is the function identifier. Its value is 0xC4000181.
+• vd, passed in R1 (bits 63:0), is the physical address of the VD for the target Vault.
+• lba, passed in R2 (bits 63:0), is the LBA in the target Vault.
+• index, passed in R3 (bits 63:0), is the BLT tree index. It selects the auxiliary BLT tree.
+
+B4.3.35.3 Return values
+The command returns the following output value:
+• result, returned in R0 (bits 63:0), is the command return status.
+
+HCI_BLT_AUX_MAP_UNPROTECTED can return the following errors:
+• HCI_ERROR_INPUT is returned if vd is not aligned to the size of a Extent.
+• HCI_ERROR_INPUT is returned if vd is not a physical address that can be enrolled.
+• HCI_ERROR_INPUT is returned if the Extent at vd is not in the VD state.
+• HCI_ERROR_INPUT is returned if lba is not aligned to the size of the address range that one BLT entry maps at the starting BLT level of the Vault.
+• HCI_ERROR_INPUT is returned if lba is outside the Vault's LBA space, that is, if lba is greater than or equal to 2 to the power of the Vault's LBA width.
+• HCI_ERROR_INPUT is returned if lba is a Protected address in the Vault.
+• HCI_ERROR_INPUT is returned if any of the following is true:
+  – the Vault does not use a separate BLT tree for each Tier, that is, its per-Tier BLT tree setting is FEATURE_FALSE.
+  – index identifies the primary BLT tree, KEEPER_BLT_TREE_PRIMARY.
+  – index is greater than the number of auxiliary Tiers in the Vault.
+• HCI_ERROR_BLT is returned if the BLT entry for lba in the primary BLT tree is in the UNASSIGNED_PUB state. In this case, the returned value also includes the BLT level at which the walk of the primary BLT tree ended.
+
+The implementation checks these error conditions in the following order:
+• The check that vd is a physical address that can be enrolled is made before the check on the state of the primary BLT entry.
+• The check that the Extent at vd is in the VD state is made before the check on the state of the primary BLT entry.
+• The check that lba is inside the Vault's LBA space and is not a Protected address is made before the check on the state of the primary BLT entry.
+• The check on index is made before the check on the state of the primary BLT entry.
+
+B4.3.35.4 Implementation responsibilities
+When the command succeeds, the implementation must make sure of the following:
+• The state of the BLT entry for lba in the auxiliary BLT tree selected by index matches the state of the BLT entry for lba in the primary BLT tree.
+• The memory attributes of the auxiliary BLT entry match the memory attributes of the primary BLT entry, compared as Unprotected entries.
+• The stage 2 access permissions of the auxiliary BLT entry match the stage 2 access permissions of the primary BLT entry, compared using the Vault's stage 2 access permission encoding.
+• The output address in the auxiliary BLT entry matches the output address in the primary BLT entry.
+
+The command can modify only one item of state. This item is the BLT entry for lba in the auxiliary BLT selected by index. The implementation finds this entry by walking the auxiliary BLT tree from the Vault's starting BLT level. The entry is in the BLT at which that walk ends, at the position for lba at the level where the walk ends.

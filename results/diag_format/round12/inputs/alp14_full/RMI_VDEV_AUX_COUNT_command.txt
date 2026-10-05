@@ -1,0 +1,25 @@
+B4.3.48 RMI_VDEV_AUX_COUNT
+
+B4.3.48.1 Intended use
+RMI_VDEV_AUX_COUNT gets the number of auxiliary Granules that a VDEV requires.
+
+B4.3.48.2 Parameters
+The caller passes the following input values:
+• fid, passed in X0, is the function identifier. Its value is 0xC4000160.
+• pdev_flags, passed in X1 as a 64-bit field, holds the PDEV flags.
+• vdev_flags, passed in X2 as a 64-bit field, holds the VDEV flags.
+
+B4.3.48.3 Return values
+The command returns the following output values:
+• result, returned in X0, is the command return status.
+• aux_count, returned in X1, is the number of auxiliary Granules that a VDEV requires.
+
+RMI_VDEV_AUX_COUNT can return the following error:
+• RMI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+
+The command checks only this one failure condition, so no ordering between failure conditions applies.
+
+If the command succeeds, aux_count is the number of auxiliary Granules that a VDEV needs. The implementation derives this number from the decoded values of pdev_flags and vdev_flags.
+
+B4.3.48.4 Implementation responsibilities
+RMI_VDEV_AUX_COUNT does not modify any state.

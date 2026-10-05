@@ -1,0 +1,89 @@
+B4.3.3 RMI_DATA_DESTROY command
+               Destroys a Data Granule.
+               B4.3.3.1 Interface
+               B4.3.3.1.1   Input values
+        Name                Register      Bits       Type                                  Description
+        fid                 X0            63:0       UInt64                                FID, value 0xC4000155
+        rd                  X1            63:0       Address                               PA of the RD which owns the target Data
+        ipa                 X2            63:0       Address                               IPA at which the Granule is mapped in
+                                                                                           the target Realm
+               B4.3.3.1.2   Context
+               The RMI_DATA_DESTROY command operates on the following context.
+        Name                Type                        Value                                      Before   Description
+        realm               RmmRealm                    RealmAt(rd)                                false    Realm
+        walk                RmmRttWalkResult            RttWalk(                                   false    RTT walk result
+                                                            realm, ipa,
+                                                            RMM_RTT_PAGE_LEVEL,
+                                                            RMM_RTT_TREE_PRIMARY)
+        entry_idx           UInt64                      RttEntryIndex(                             false    RTTE index
+                                                            ipa, walk.level)
+        walk_top            Address                     RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                                            RttAt(walk.rtt_addr),                           RTT entries, from
+                                                            walk.level,                                     entry at which the
+                                                            ipa)                                            RTT walk terminated
+               B4.3.3.1.3   Output values
+        Name                Register      Bits       Type                                  Description
+        result              X0            63:0       RmiCommandReturnCode                  Command return status
+        data                X1            63:0       Address                               PA of the Data Granule which was
+                                                                                           destroyed
+        top                 X2            63:0       Address                               Top IPA of non-live RTT entries, from
+                                                                                           entry at which the RTT walk terminated
+               The data output value is valid only when the command result is RMI_SUCCESS.
+                The values of the result and top output values for different command outcomes are summarized in the following
+                table.
+            Scenario                            result                                 top           walk.rtte.state
+            ipa is mapped as a page and         RMI_SUCCESS                            > ipa         Before execution: ASSIGNED
+            RIPAS is RAM                                                                             and RIPAS is RAM
+                                                                                                     After execution: UNASSIGNED
+                                                                                                     and RIPAS is DESTROYED
+            ipa is mapped as a page and         RMI_SUCCESS                            > ipa         Before execution: ASSIGNED
+            RIPAS is not RAM                                                                         and RIPAS is not RAM
+                                                                                                     After execution: UNASSIGNED
+                                                                                                     and RIPAS is unchanged
+            ipa is not mapped                   (RMI_ERROR_RTT, <= 3)                  > ipa         UNASSIGNED
+            ipa is mapped as a block            (RMI_ERROR_RTT, 0                      == ipa        ASSIGNED
+                                                0 < level < 3)
+            RTT walk was not performed,         Another error code                     0             Unknown
+            due to any other command failure
+                B4.3.3.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if ipa is not in the protected IPA space of the Realm.
+
+RMI_ERROR_RTT is returned if the RTT walk stops at a level above the page level (RMM_RTT_PAGE_LEVEL). The error index is the level where the walk stopped. The output top is set to the walk top address.
+
+RMI_ERROR_RTT is returned if the RTT entry at the end of the RTT walk is not in the ASSIGNED state. The error index is the level where the walk stopped. The output top is set to the walk top address.
+
+RMI_ERROR_RTT_AUX is returned with an error index of 0 if ipa is live in an auxiliary RTT of the Realm.
+
+                B4.3.3.2.1   Failure condition ordering
+
+The checks that rd is a delegable address and that the Granule at rd is in the RD state come before the following three checks:
+- whether the RTT walk reaches the page level
+- whether the RTT entry is in the ASSIGNED state
+- whether ipa is live in an auxiliary RTT
+
+The check that ipa is in the protected IPA space of the Realm also comes before those same three checks.
+
+               B4.3.3.3 Success conditions
+
+The Granule at the address held in the RTT entry is in the DELEGATED state.
+
+The RTT entry is in the UNASSIGNED state.
+
+If the RIPAS of the RTT entry was RAM before the command, it is DESTROYED after the command.
+
+The output data is the address that was held in the RTT entry.
+
+The output top is set to the walk top address.
+               B4.3.3.4 Footprint
+    ID                        Value
+    data_state                GranuleAt(walk.rtte.addr).state
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

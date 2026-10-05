@@ -1,0 +1,70 @@
+B4.3.2 RMI_DATA_CREATE_UNKNOWN command
+               Creates a Data Granule with unknown contents.
+               B4.3.2.1 Interface
+               B4.3.2.1.1   Input values
+        Name                 Register    Bits        Type                                  Description
+        fid                  X0          63:0        UInt64                                FID, value 0xC4000154
+        rd                   X1          63:0        Address                               PA of the RD for the target Realm
+        data                 X2          63:0        Address                               PA of the target Data
+        ipa                  X3          63:0        Address                               IPA at which the Granule will be
+                                                                                           mapped in the target Realm
+               B4.3.2.1.2   Context
+               The RMI_DATA_CREATE_UNKNOWN command operates on the following context.
+        Name                 Type                       Value                                      Before    Description
+        realm                RmmRealm                   RealmAt(rd)                                false     Realm
+        walk                 RmmRttWalkResult           RttWalk(                                   false     RTT walk result
+                                                            realm, ipa,
+                                                            RMM_RTT_PAGE_LEVEL,
+                                                            RMM_RTT_TREE_PRIMARY)
+        entry_idx            UInt64                     RttEntryIndex(                             false     RTTE index
+                                                            ipa, walk.level)
+               B4.3.2.1.3   Output values
+        Name                 Register    Bits        Type                                  Description
+        result               X0          63:0        RmiCommandReturnCode                  Command return status
+               B4.3.2.2 Failure conditions
+
+RMI_ERROR_INPUT is returned if data is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if data is not a delegable physical address in DRAM.
+
+RMI_ERROR_INPUT is returned if the Granule at data is not in the DELEGATED state.
+
+RMI_ERROR_INPUT is returned if the Realm does not support LPA2 (its feat_lpa2 attribute is FEATURE_FALSE) and data is equal to or greater than 2^48.
+
+RMI_ERROR_INPUT is returned if rd is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if rd is not a delegable physical address.
+
+RMI_ERROR_INPUT is returned if the Granule at rd is not in the RD state.
+
+RMI_ERROR_INPUT is returned if ipa is not aligned to the size of a Granule.
+
+RMI_ERROR_INPUT is returned if ipa is not within the Protected IPA space of the Realm.
+
+RMI_ERROR_RTT is returned if the RTT walk for ipa ends at a level above the page level. The level at which the walk ended is returned with the error.
+
+RMI_ERROR_RTT is returned if the RTT entry found by the RTT walk for ipa is not in the UNASSIGNED state. The level at which the walk ended is returned with the error.
+
+               B4.3.2.2.1        Failure condition ordering
+
+The checks that rd is a delegable physical address and that the Granule at rd is in the RD state come before both RMI_ERROR_RTT checks. These RMI_ERROR_RTT checks are the RTT walk reaching the page level and the RTT entry being in the UNASSIGNED state.
+
+The check that ipa is within the Protected IPA space of the Realm comes before both RMI_ERROR_RTT checks. These RMI_ERROR_RTT checks are the RTT walk reaching the page level and the RTT entry being in the UNASSIGNED state.
+
+               B4.3.2.3 Success conditions
+
+The Granule at data is in the DATA state.
+
+The contents of the target Granule are wiped.
+
+The RTT entry found by the RTT walk for ipa is in the ASSIGNED state.
+
+The output address of the RTT entry found by the RTT walk for ipa is data.
+
+The memory attribute of the RTT entry found by the RTT walk for ipa is MEMATTR_CACHEABLE.
+
+The shareability of the RTT entry found by the RTT walk for ipa is SHAREABILITY_INNER.
+             B4.3.2.4 Footprint
+    ID                        Value
+    data_state                GranuleAt(data).state
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

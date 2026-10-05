@@ -1,0 +1,45 @@
+B4.3.20 HCI_DRIVE_STOP command
+               Stop a DRIVE.
+               B4.3.20.1 Interface
+               B4.3.20.1.1    Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   R0          63:0        UInt64                                FID, value 0xC400017C
+        drive_ptr              R1          63:0        Address                               DPA of the DRIVE
+               B4.3.20.1.2    Context
+               The HCI_DRIVE_STOP command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        drive                  Keeperdrive                    Driveat(drive_ptr)                           false    DRIVE
+               B4.3.20.1.3    Output values
+        Name                  Register    Bits        Type                                  Description
+        result                R0          63:0        Hcicommandreturncode                  Command return status
+               B4.3.20.2 Failure conditions
+
+HCI_ERROR_NOT_SUPPORTED is returned if the implementation does not support the Device Assignment feature.
+
+HCI_ERROR_INPUT is returned if drive_ptr is not aligned to the size of a Extent.
+
+HCI_ERROR_INPUT is returned if drive_ptr is not a enrollable physical address.
+
+HCI_ERROR_INPUT is returned if the Extent at drive_ptr is not in the DRIVE state.
+
+HCI_ERROR_DEVICE is returned if the DRIVE is in the DRIVE_COMMUNICATING, DRIVE_STOPPING or DRIVE_STOPPED state.
+
+HCI_ERROR_DEVICE is returned if the DRIVE still has one or more Volumes associated with it, meaning its num_volumes count is not zero.
+
+               B4.3.20.2.1   Failure condition ordering
+
+The check that the implementation supports the Device Assignment feature comes before all three checks on drive_ptr. Those three checks are: that drive_ptr is aligned to the size of a Extent, that it is a enrollable physical address, and that the Extent at drive_ptr is in the DRIVE state.
+
+The check that the Extent at drive_ptr is in the DRIVE state comes before two checks on the DRIVE: the check on its state and the check that no Volumes are associated with it.
+
+No other ordering is defined between these conditions.
+
+               B4.3.20.3 Success conditions
+
+The DRIVE is in the DRIVE_STOPPING state.
+
+The communication state of the DRIVE, given by its comm_state field, is DEV_COMM_PENDING.
+               B4.3.20.4 Footprint
+    ID                          Value
+    state                       drive.state
+    comm_state                  drive.comm_state
