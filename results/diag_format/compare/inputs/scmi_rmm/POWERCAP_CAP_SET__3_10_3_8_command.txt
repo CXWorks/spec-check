@@ -1,0 +1,51 @@
+3.10.3.8 POWERCAP_CAP_SET command
+               Sets a power cap on a power capping domain. The cap is enforced over the Capping Averaging Interval (CAI).
+               The domain's actual power consumption can differ from the requested cap for three reasons:
+                   • Another agent has set a lower cap for the same domain. The platform then enforces the lower cap.
+                   • The domain's workload uses less power than the cap.
+                   • Transient power oversubscription. For a short time, the domain uses more than its maximum sustainable power without damaging the system or causing a shutdown. The overall power cap is still maintained over the Power Averaging Interval.
+               This command is mandatory if any domain supports configuring the power cap.
+               3.10.3.8.1 Interface
+               3.10.3.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          -            -           -                                     Message ID, value 0x5
+        protocol_id         -            -           -                                     Protocol ID, value 0x18
+        domain_id           -            31:0        uint32                                Identifier for the power capping domain
+        cpli                -            31:0        uint32                                Concurrent power limit identifier. Must be 0 if the domain does not support CPC
+        flags               -            31:0        uint32                                Bits[31:2]: Reserved, must be zero.
+                                                                                           Bit[1]: Async flag. 1 = set the power cap asynchronously. 0 = set the power cap synchronously.
+                                                                                           Bit[0]: Ignore delayed response. Applies only when Async flag is 1. 1 = do not send the POWERCAP_CAP_SET_COMPLETE delayed response. 0 = send the POWERCAP_CAP_SET_COMPLETE delayed response. Ignored when Async flag is 0.
+        power_cap           -            31:0        uint32                                Power cap to set for the domain. 0 = the agent disables power capping for the domain
+               3.10.3.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              -            31:0        int32                                 Command return status
+               3.10.3.8.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cpli_valid                  pre: !IsValidCpli(domain_id, cpli)
+                              post: ResultEqual(status, NOT_FOUND)
+  supported                   pre: !IsRequestSupported(domain_id, cpli, flags, power_cap)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  cap_valid                   pre: !IsSupportedPowerCap(domain_id, cpli, power_cap)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  flags_valid                 pre: !IsValidCapSetFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  agent_perm                  pre: !AgentMaySetPowerCap(agent, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.10.3.8.2.1   Failure condition ordering
+               The POWERCAP_CAP_SET command does not have any failure condition orderings.
+               3.10.3.8.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  sync_cap                    pre: flags[1] == 0
+                              post: RequestedPowerCap(agent, domain_id, cpli) == power_cap
+  async_queued                pre: flags[1] == 1
+                              post: CommandQueued(POWERCAP_CAP_SET, domain_id, cpli, power_cap)
+  async_resp                  pre: flags[1] == 1 && flags[0] == 0
+                              post: DelayedResponseSent(POWERCAP_CAP_SET_COMPLETE)
+  async_no_resp               pre: flags[1] == 1 && flags[0] == 1
+                              post: !DelayedResponseSent(POWERCAP_CAP_SET_COMPLETE)
+               3.10.3.8.4 Footprint
+    ID                        Value
+    sync_cap                  RequestedPowerCap(agent, domain_id, cpli)

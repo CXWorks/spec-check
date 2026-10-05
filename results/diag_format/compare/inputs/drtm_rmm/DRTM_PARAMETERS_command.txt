@@ -1,0 +1,66 @@
+3.13 DRTM_PARAMETERS command
+               Passes the DRTM_PARAMETERS input structure to the DRTM dynamic launch. The DCE preamble creates the structure. It describes the dynamic launch features, the DLME region (see section 3.15) and any Normal world DCE image. Whether a Normal world DCE image exists is implementation dependent.
+               3.13.1 Interface
+               3.13.1.1   Input values
+               The input values are fields of the DRTM_PARAMETERS structure in memory, not registers. The Register column gives the byte offset of each field from the start of the structure. This section does not say which register passes the structure's address.
+        Name                   Register        Bits        Type        Description
+        revision               Offset 0        15:0        UInt16      Revision of this data structure. Must be 2 for this revision of the DRTM architecture for Arm. For a given DRTM major version number (see DRTM_VERSION, 3.2), the structure is always extended in a backwards compatible way.
+        reserved               Offset 2        15:0        UInt16      Must be zero.
+        launch_features        Offset 4        31:0        Bits32      Selects optional features, if the implementation supports them:
+                                                                       Bits[31:8]: Reserved. Must be zero.
+                                                                       Bit[7]: Request to disable Secure interrupts during dynamic launch. 0: not requested. 1: requested.
+                                                                       Bit[6]: DLME image authentication. 0: not requested. 1: requested.
+                                                                       Bits[5:3]: Memory protection type. 0: All, complete DMA protection requested. 1: Region, region-based DMA protection requested. 2-7: Reserved.
+                                                                       Bits[2:1]: Requested PCR Usage Schema. 0: Default Schema (see section 4.8.4). 1: DLME Authorities Schema (see section 4.8.5). 2-3: Reserved.
+                                                                       Bit[0]: Type of hashing. 0: firmware-based hashing requested (see section 2.7.1). 1: TPM-based hashing requested (see section 2.7.2).
+        dlme_region_addr       Offset 8        63:0        Address     Starting PA of the DLME region
+        dlme_region_size       Offset 16       63:0        UInt64      Size of the DLME region in bytes
+        dlme_image_start       Offset 24       63:0        UInt64      Offset in bytes to the start of the DLME image within the DLME region. See Figure 8.
+        dlme_entry_offset      Offset 32       63:0        UInt64      Offset in bytes from the start of the DLME image to the DLME image entry point
+        dlme_image_size        Offset 40       63:0        UInt64      Size of the DLME executable image in bytes
+        dlme_data_offset       Offset 48       63:0        UInt64      Offset in bytes to the DLME data within the DLME region. See Figure 8.
+        nw_dce_region_addr     Offset 56       63:0        Address     PA of the Normal world DCE region. Must be 4KB aligned. Must be zero if a Normal world DCE is not in use.
+        nw_dce_region_size     Offset 64       63:0        UInt64      Size of the Normal world DCE region in bytes. Must be zero if a Normal world DCE is not in use.
+        mem_prot_table_addr    Offset 72       63:0        Address     If the memory protection type is Region, the 64-bit PA of the memory protection table that describes all memory regions to protect. Must be 4KB aligned. Must be zero if region-based DMA protection is not used.
+        mem_prot_table_size    Offset 80       63:0        UInt64      If the memory protection type is Region, the size of the memory protection table in bytes. Must be zero if region-based DMA protection is not used.
+               3.13.1.2   Output values
+               This section does not define any output values.
+               3.13.2 Failure conditions
+               This section does not name a return code for any of these failures. Each post: line therefore leaves the code unspecified.
+  ID                          Condition
+  R312000                     pre: !IsNonSecure(params) || !IsPhysicallyContiguous(params)
+                              post: ResultEqual(result, <not specified in this section>)
+  R312010                     pre: !Is4KBAligned(params)
+                              post: ResultEqual(result, <not specified in this section>)
+  R312020                     pre: AddressRangesOverlap(params)
+                              post: ResultEqual(result, <not specified in this section>)
+  R312030                     pre: AnyAddressRangeWraps(params)
+                              post: ResultEqual(result, <not specified in this section>)
+  R312040                     pre: !DlmeImageWithinRegion(params.dlme_image_start, params.dlme_image_size, params.dlme_region_size)
+                              post: ResultEqual(result, <not specified in this section>)
+  R312050                     pre: params.dlme_entry_offset >= params.dlme_image_size
+                              post: ResultEqual(result, <not specified in this section>)
+  R312060                     pre: !DlmeRegionMeetsRequirements(params.dlme_region_addr, params.dlme_region_size)
+                              post: ResultEqual(result, <not specified in this section>)
+  R312070                     pre: NwDceInUse(params) && (!IsNonSecure(params.nw_dce_region_addr, params.nw_dce_region_size) || !IsPhysicallyContiguous(params.nw_dce_region_addr, params.nw_dce_region_size))
+                              post: ResultEqual(result, <not specified in this section>)
+  R312080                     pre: NwDceInUse(params) && !Is4KBAligned(params.nw_dce_region_addr)
+                              post: ResultEqual(result, <not specified in this section>)
+  R312090                     pre: params.launch_features[2:1] == 1 && params.launch_features[6] == 0
+                              post: ResultEqual(result, <not specified in this section>)
+  R312100                     pre: !Is4KBAligned(params.mem_prot_table_addr)
+                              post: ResultEqual(result, <not specified in this section>)
+  revision                    pre: params.revision != 2
+                              post: ResultEqual(result, <not specified in this section>)
+  reserved                    pre: params.reserved != 0 || params.launch_features[31:8] != 0
+                              post: ResultEqual(result, <not specified in this section>)
+  nw_dce_unused               pre: !NwDceInUse(params) && (params.nw_dce_region_addr != 0 || params.nw_dce_region_size != 0)
+                              post: ResultEqual(result, <not specified in this section>)
+  mem_prot_unused             pre: params.launch_features[5:3] != 1 && (params.mem_prot_table_addr != 0 || params.mem_prot_table_size != 0)
+                              post: ResultEqual(result, <not specified in this section>)
+               3.13.2.1   Failure condition ordering
+               The DRTM_PARAMETERS command does not have any failure condition orderings.
+               3.13.3 Success conditions
+               This section does not define any success conditions or a success return code.
+               3.13.4 Footprint
+               This section does not specify any state that the function may modify.

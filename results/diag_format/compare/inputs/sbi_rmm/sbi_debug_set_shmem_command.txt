@@ -1,0 +1,39 @@
+19.2 sbi_debug_set_shmem command
+               Sets and enables the shared memory for debug trigger configuration on the calling hart, or disables it.
+               19.2.1 Interface
+               19.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 1
+        shmem_phys_lo       a0           XLEN-1:0    unsigned long                         Lower XLEN bits of the shared memory physical base address, or all-ones (with shmem_phys_hi) to disable the shared memory
+        shmem_phys_hi       a1           XLEN-1:0    unsigned long                         Upper XLEN bits of the shared memory physical base address, or all-ones (with shmem_phys_lo) to disable the shared memory
+        flags               a2           XLEN-1:0    unsigned long                         Reserved for future use. Must be zero
+               19.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    sbiret.error                          Command return status
+               19.2.2 Failure conditions
+  ID                          Condition
+  flags_nonzero               pre: flags != 0
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  shmem_align                 pre: !IsAllOnes(shmem_phys_lo, shmem_phys_hi)
+                                   && !IsAligned(shmem_phys_lo, XLEN / 8)
+                              post: ResultEqual(error, SBI_ERR_INVALID_ADDRESS) is not used; post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  shmem_addr                  pre: !IsAllOnes(shmem_phys_lo, shmem_phys_hi)
+                                   && !ShmemSatisfiesRequirements(shmem_phys_hi:shmem_phys_lo, trig_max * (XLEN / 2))
+                              post: ResultEqual(error, SBI_ERR_INVALID_ADDRESS)
+  failed                      pre: RequestFailedForOtherReason()
+                              post: ResultEqual(error, SBI_ERR_FAILED)
+               19.2.2.1   Failure condition ordering
+               The sbi_debug_set_shmem command does not have any failure condition orderings.
+               19.2.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  shmem_enable                post: !IsAllOnes(shmem_phys_lo, shmem_phys_hi)
+                                    ==> DebugShmem(CallingHart()).enabled == TRUE
+                                        && DebugShmem(CallingHart()).base == shmem_phys_hi:shmem_phys_lo
+                                        && DebugShmem(CallingHart()).size == trig_max * (XLEN / 2)
+  shmem_disable               post: IsAllOnes(shmem_phys_lo, shmem_phys_hi)
+                                    ==> DebugShmem(CallingHart()).enabled == FALSE
+               19.2.4 Footprint
+    ID                        Value
+    shmem_enabled             DebugShmem(CallingHart()).enabled
+    shmem_base                DebugShmem(CallingHart()).base

@@ -1,0 +1,30 @@
+14.5 FFA_NORMAL_WORLD_RESUME command
+               Asks the SPMD to resume Normal world execution on the current PE after the exception that preempted the Normal world has been handled.
+               The SPMC in S-EL2 or S-EL1 uses this function to make the request once the exception has been handled.
+               Valid FF-A instance and conduit: Secure physical, SMC.
+               14.5.1 Interface
+               14.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400007C or 0xC400007C
+        reserved            W1-W7        31:0        UInt32                                Reserved (SBZ)
+        reserved            X1-X17       63:0        UInt64                                Reserved (SBZ)
+               14.5.1.2   Output values
+               Success is indicated when the function completes through an invocation of any FF-A function. On failure, the result is returned through FFA_ERROR:
+        Name                Register     Bits        Type                                  Description
+        result              W2           31:0        Int32                                 Error code (FFA_ERROR encoding)
+               14.5.2 Failure conditions
+  ID                          Condition
+  not_preempted               pre: IsSecurePhysicalInstance(instance) && !NormalWorldWasPreempted(current_pe)
+                              post: ResultEqual(result, DENIED)
+  instance                    pre: !IsSecurePhysicalInstance(instance)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               14.5.2.1   Failure condition ordering
+               The FFA_NORMAL_WORLD_RESUME command does not have any failure condition orderings.
+               14.5.3 Success conditions
+  ID                          Condition
+  nw_resumed                  post: NormalWorldExecutionResumed(current_pe)
+  pe_state                    post: NormalWorldPeState(current_pe) == SavedPreemptedPeState(current_pe)
+  completion                  post: CompletedByFfaFunctionInvocation(ERET)
+               14.5.4 Footprint
+    ID                        Value
+    pe_state                  NormalWorldPeState(current_pe)

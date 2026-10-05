@@ -1,0 +1,71 @@
+3.12.4.10 TELEMETRY_CONFIG_SET command
+               Configures and enables telemetry data capture.
+               This command is mandatory.
+               3.12.4.10.1 Interface
+               3.12.4.10.1.1   Input values
+        Name                    Register        Bits        Type        Description
+        message_id              Header          -           UInt        Message identifier, value 0x8
+        protocol_id             Header          -           UInt        Protocol identifier, value 0x1B
+        group_identifier        Parameter 0     31:0        UInt32      Event group identifier
+        control.reserved        Parameter 1     31:9        UInt32      Reserved, must be zero
+        control.selector        Parameter 1     8:5         UInt32      Selector:
+                                                                         0: applies to all DEs not associated with any event group; does not apply to any DE associated with an event group; group_identifier is ignored
+                                                                         1: applies only to the DEs in the event group given by group_identifier
+                                                                         2: applies to all DEs and all event groups; group_identifier is ignored
+                                                                         All other values are reserved
+                                                                         Must be 2 if Bit[18] of attributes_1 of PROTOCOL_ATTRIBUTES is 0
+        control.mode            Parameter 1     4:1         UInt32      Mode, how the agent consumes telemetry:
+                                                                         0: on-demand read, no platform notification. The platform ignores this value and uses continuous notification if the telemetry interface does not support on-demand collection. The platform must not make this change if all telemetry interfaces support on-demand read
+                                                                         1: continuous notifications
+                                                                         2: single-sample asynchronous read. The platform disables telemetry automatically once the TELEMETRY_READING_COMPLETE response has been provided
+                                                                         All other values are reserved
+                                                                         Ignored if control.enable is 0
+        control.enable          Parameter 1     0           UInt32      Telemetry enable:
+                                                                         1: enable telemetry collection
+                                                                         0: disable telemetry collection; data associated with the DEs might be lost
+        sampling_rate.reserved  Parameter 2     31:21       UInt32      Reserved
+        sampling_rate.sec       Parameter 2     20:5        UInt32      sec, seconds
+        sampling_rate.exponent  Parameter 2     4:0         Int32       Power-of-10 multiplier applied to sec, in two's complement. Sampling rate = sec x 10^exponent seconds
+                                                                         The whole sampling_rate field is ignored if control.enable is 0 or control.mode is 2
+               3.12.4.10.1.2   Output values
+        Name                    Register        Bits        Type        Description
+        status                  Return 0        31:0        Int32       Command return status. The possible values include, but are not limited to, the codes listed in this section
+               3.12.4.10.2 Failure conditions
+  ID                          Condition
+  invalid_params              pre: !AreValidTelemetryConfigParams(group_identifier, control, sampling_rate)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  ctrl_reserved               pre: control.reserved != 0
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  selector_reserved           pre: control.selector > 2
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  selector_no_groups          pre: ProtocolAttributes().attributes_1[18] == 0
+                                   && control.selector != 2
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  mode_reserved               pre: control.enable == 1 && control.mode > 2
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  no_de_enabled               pre: NoDeEnabled(control.selector, group_identifier, control)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  enable_limit                pre: control.enable == 1
+                                   && EnabledDeOrGroupLimitReached(control.selector, group_identifier, control.mode)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+               3.12.4.10.2.1   Failure condition ordering
+               The TELEMETRY_CONFIG_SET command does not have any failure condition orderings.
+               3.12.4.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  de_enable                   post: forall de in TargetDes(control.selector, group_identifier):
+                                        TelemetryEnabled(de) == control.enable
+  de_mode                     post: control.enable == 1 ==>
+                                    forall de in TargetDes(control.selector, group_identifier):
+                                        TelemetryMode(de) == control.mode
+                                        || (control.mode == 0
+                                            && !InterfaceSupportsOnDemand(de)
+                                            && TelemetryMode(de) == 1)
+  de_rate                     post: (control.enable == 1 && control.mode != 2) ==>
+                                    forall de in TargetDes(control.selector, group_identifier):
+                                        SamplingRate(de) == sampling_rate.sec * 10^sampling_rate.exponent
+               3.12.4.10.4 Footprint
+    ID                        Value
+    de_enable                 TelemetryEnabled(de) for de in TargetDes(control.selector, group_identifier)
+    de_mode                   TelemetryMode(de) for de in TargetDes(control.selector, group_identifier)
+    de_rate                   SamplingRate(de) for de in TargetDes(control.selector, group_identifier)

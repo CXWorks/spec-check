@@ -1,0 +1,32 @@
+3.3.2.8 POWER_STATE_NOTIFY command
+               Lets the caller ask the platform for notifications when the state of a specific power domain changes. The platform sends these notifications in POWER_STATE_CHANGED messages (see Section 3.3.3.1).
+               This command is optional. Notification support is also optional. Use PROTOCOL_MESSAGE_ATTRIBUTES to discover whether this command is implemented.
+               The platform must disable these notifications by default during its initial boot.
+               3.3.2.8.1 Interface
+               3.3.2.8.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        message_id          Message header       -           UInt                                  Message identifier, value 0x6
+        protocol_id         Message header       -           UInt                                  Protocol identifier, value 0x11
+        domain_id           Parameter word 0     31:0        UInt32                                Identifier for the power domain
+        notify_enable       Parameter word 1     31:0        UInt32                                Bits[31:1]: Reserved, must be zero.
+                                                                                                   Bit[0]: Notify enable.
+                                                                                                   0: the platform does not send any POWER_STATE_CHANGED messages to the calling agent.
+                                                                                                   1: the platform sends POWER_STATE_CHANGED messages to the calling agent when the domain changes power state.
+               3.3.2.8.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Return word 0        31:0        Int32                                 Command return status (see Section 3.1.4)
+               3.3.2.8.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowerDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  notify_enable_valid         pre: !IsValidNotifyEnable(notify_enable)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.3.2.8.2.1   Failure condition ordering
+               The POWER_STATE_NOTIFY command does not have any failure condition orderings.
+               3.3.2.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_state                post: PowerStateNotifyEnabled(calling_agent, domain_id) == (notify_enable[0] == 1)
+               3.3.2.8.4 Footprint
+    ID                        Value
+    notify_state              PowerStateNotifyEnabled(calling_agent, domain_id)

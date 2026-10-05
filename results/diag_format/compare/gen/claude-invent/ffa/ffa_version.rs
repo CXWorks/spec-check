@@ -1,0 +1,65 @@
+pub open spec fn ffa_version_spec(input_version: u32, input_flags: u32, result: i32, old_s: S, new_s: S) -> bool {
+    (!FfaCalleeImplementsAnyVersion(old_s) && (input_version & 0x8000_0000u32) == 0 && (input_flags & 0x3u32) != 3
+        ==> result == -1i32 && new_s == old_s)
+    && (FfaCalleeImplementsAnyVersion(old_s) && ((input_version & 0x8000_0000u32) != 0 || (input_flags & 0x3u32) == 3)
+        ==> result == -3i32 && new_s == old_s)
+    && (!FfaCalleeImplementsAnyVersion(old_s) && ((input_version & 0x8000_0000u32) != 0 || (input_flags & 0x3u32) == 3)
+        ==> (result == -1i32 || result == -3i32) && new_s == old_s)
+    && (FfaCalleeImplementsAnyVersion(old_s) && (input_version & 0x8000_0000u32) == 0 && (input_flags & 0x3u32) == 2
+        ==> result == FfaNegotiatedVersion(old_s) as i32 && new_s == old_s)
+    && (FfaCalleeImplementsAnyVersion(old_s) && (input_version & 0x8000_0000u32) == 0 && (input_flags & 0x3u32) == 1
+        ==> new_s == old_s
+            && ((exists |v: u32| FfaCalleeImplementsVersion(old_s, v)
+                    && ((v >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= (v & 0xffffu32))
+                ==> result >= 0
+                    && FfaCalleeImplementsVersion(old_s, result as u32)
+                    && (((result as u32) >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= ((result as u32) & 0xffffu32))
+            && ((!exists |v: u32| FfaCalleeImplementsVersion(old_s, v)
+                    && ((v >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= (v & 0xffffu32))
+                && (exists |v: u32| FfaCalleeImplementsVersion(old_s, v) && v < input_version)
+                ==> result == FfaHighestImplementedVersionBelow(old_s, input_version) as i32)
+            && ((!exists |v: u32| FfaCalleeImplementsVersion(old_s, v)
+                    && ((v >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= (v & 0xffffu32))
+                && (!exists |v: u32| FfaCalleeImplementsVersion(old_s, v) && v < input_version)
+                ==> result == FfaLowestImplementedVersionAbove(old_s, input_version) as i32))
+    && (FfaCalleeImplementsAnyVersion(old_s) && (input_version & 0x8000_0000u32) == 0 && (input_flags & 0x3u32) == 0
+        && FfaCallerIsSpmcWithSeparateSpmd(old_s)
+        ==> result == FfaNegotiatedVersion(old_s) as i32 && new_s == old_s)
+    && (FfaCalleeImplementsAnyVersion(old_s) && (input_version & 0x8000_0000u32) == 0 && (input_flags & 0x3u32) == 0
+        && !FfaCallerIsSpmcWithSeparateSpmd(old_s)
+        ==> ((!exists |v: u32| FfaCalleeImplementsVersion(old_s, v)
+                    && ((v >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= (v & 0xffffu32))
+                ==> new_s == old_s
+                    && ((exists |v: u32| FfaCalleeImplementsVersion(old_s, v) && v < input_version)
+                        ==> result == FfaHighestImplementedVersionBelow(old_s, input_version) as i32)
+                    && ((!exists |v: u32| FfaCalleeImplementsVersion(old_s, v) && v < input_version)
+                        ==> (result == FfaLowestImplementedVersionAbove(old_s, input_version) as i32 || result == -1i32)))
+            && ((exists |v: u32| FfaCalleeImplementsVersion(old_s, v)
+                    && ((v >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= (v & 0xffffu32))
+                && FfaInUseByCaller(old_s)
+                ==> result == 0i32 && new_s == old_s)
+            && ((exists |v: u32| FfaCalleeImplementsVersion(old_s, v)
+                    && ((v >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= (v & 0xffffu32))
+                && !FfaInUseByCaller(old_s)
+                && input_version < FfaNegotiatedVersion(old_s)
+                && !FfaNegotiatedVersionDowngradeAllowed(old_s)
+                ==> result == 0i32 && new_s == old_s)
+            && ((exists |v: u32| FfaCalleeImplementsVersion(old_s, v)
+                    && ((v >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= (v & 0xffffu32))
+                && !FfaInUseByCaller(old_s)
+                && !(input_version < FfaNegotiatedVersion(old_s) && !FfaNegotiatedVersionDowngradeAllowed(old_s))
+                ==> result >= 0
+                    && FfaCalleeImplementsVersion(old_s, result as u32)
+                    && (((result as u32) >> 16u32) & 0x7fffu32) == ((input_version >> 16u32) & 0x7fffu32)
+                    && (input_version & 0xffffu32) <= ((result as u32) & 0xffffu32)
+                    && FfaNegotiatedVersion(new_s) == input_version
+                    && FfaStateUnchangedExceptNegotiatedVersion(old_s, new_s)))
+}

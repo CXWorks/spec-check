@@ -1,0 +1,28 @@
+17.12 sbi_sse_disable command
+               Disables the software event specified by event_id.
+               17.12.1 Interface
+               17.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           —                                     FID, value 5
+        event_id            —            31:0        uint32_t                              Identifier of the software event to disable
+               17.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        ret                 —            —           struct sbiret                         Command return status
+               17.12.2 Failure conditions
+  ID                          Condition
+  event_state                 pre: SseEventState(event_id) != ENABLED
+                              post: ResultIsError(ret)
+               The specific error code for this condition is not named in this excerpt; the possible error codes are listed in Table 86, which is not included here.
+               17.12.2.1   Failure condition ordering
+               The sbi_sse_disable command does not have any failure condition orderings.
+               17.12.3 Success conditions
+  ID                          Condition
+  result                      post: ResultIsSuccess(ret)
+  event_state_local           pre: IsLocalEvent(event_id)
+                              post: SseEventState(event_id, CallingHart()) == REGISTERED
+  event_state_global          pre: IsGlobalEvent(event_id)
+                              post: forall hart: SseEventState(event_id, hart) == REGISTERED
+               17.12.4 Footprint
+    ID                        Value
+    event_state_local         SseEventState(event_id, CallingHart())
+    event_state_global        SseEventState(event_id, hart) for all harts

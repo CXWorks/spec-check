@@ -1,0 +1,40 @@
+3.2.2.13 BASE_RESET_AGENT_CONFIGURATION command
+               Resets platform resource settings that an agent configured earlier. If requested, it also resets the agent's device and protocol access permissions. This command is optional.
+               3.2.2.13.1 Interface
+               3.2.2.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0xB
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x10
+        agent_id            Param[0]     31:0        UInt32                                Identifier of the Agent
+        flags               Param[1]     31:1        UInt32                                Reserved, must be zero
+                            Param[1]     0           Bits1                                 Permissions Reset: 0 = keep all access permission settings of the agent; 1 = reset all access permission settings of the agent
+               3.2.2.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status
+               3.2.2.13.2 Failure conditions
+  ID                          Condition
+  agent_exists                pre: !AgentExists(agent_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  flags_valid                 pre: !AreValidResetFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  cmd_supported               pre: !IsCommandImplemented(BASE_RESET_AGENT_CONFIGURATION)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  caller_permitted            pre: !CallerMayResetAgent(caller, agent_id)
+                              post: ResultEqual(status, DENIED)
+               3.2.2.13.2.1   Failure condition ordering
+               The BASE_RESET_AGENT_CONFIGURATION command does not have any failure condition orderings.
+               3.2.2.13.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  dedicated_res               post: ResourcesDedicatedTo(agent_id) are in their default state
+  shared_res                  post: SharedResourcesUsedBy(agent_id) are in a state that still meets the requirements of the remaining agents that use them
+  perm_reset                  pre: flags[0] == 1
+                              post: AccessPermissions(agent_id) == ImplDefinedDefaultPermissions(agent_id)
+  perm_keep                   pre: flags[0] == 0
+                              post: AccessPermissions(agent_id) is unchanged
+               3.2.2.13.4 Footprint
+    ID                        Value
+    dedicated_res             ResourceSettings(ResourcesDedicatedTo(agent_id))
+    shared_res                ResourceSettings(SharedResourcesUsedBy(agent_id))
+    perm_reset                AccessPermissions(agent_id)
+    pending_reqs              PendingRequests(agent_id)

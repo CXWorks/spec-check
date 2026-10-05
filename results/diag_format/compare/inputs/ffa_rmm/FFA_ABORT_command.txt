@@ -1,0 +1,27 @@
+13.14 FFA_ABORT command
+               A partition execution context calls this to enter the aborted state after it hits a fatal error. An invocation of this command does not complete.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                         Valid conduits
+        1                   Secure physical                       SMC
+        2                   Secure virtual                        SMC, HVC, SVC
+               13.14.1 Interface
+               13.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x84000090 or 0xC4000090
+        reserved_1          W1/X1        63:0        UInt64                                Reserved (SBZ)
+        impdef              W2/X2        63:0        UInt32/UInt64                         IMPLEMENTATION DEFINED value
+        reserved_other      W3-W7        31:0        UInt32                                Reserved (SBZ)
+                            X3-X17       63:0        UInt64
+               13.14.1.2   Output values
+               The FFA_ABORT command has no output values because an invocation of this command does not complete.
+               13.14.2 Failure conditions
+               The FFA_ABORT command does not have any failure conditions.
+               13.14.2.1   Failure condition ordering
+               The FFA_ABORT command does not have any failure condition orderings.
+               13.14.3 Success conditions
+  ID                          Condition
+  abort_state                 post: ExecutionContextState(caller) == ABORTED
+  no_return                   post: InvocationDoesNotComplete()
+               13.14.4 Footprint
+    ID                        Value
+    abort_state               ExecutionContextState(caller)

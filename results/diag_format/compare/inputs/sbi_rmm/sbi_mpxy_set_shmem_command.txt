@@ -1,0 +1,34 @@
+20.6 sbi_mpxy_set_shmem command
+               Sets the shared memory used to send and receive messages on the calling hart, or disables it.
+               20.6.1 Interface
+               20.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 -            -           UInt                                  FID, value 1
+        shmem_phys_lo       -            XLEN-1:0    unsigned long                         Lower XLEN bits of the shared memory physical base address. All-ones in both shmem_phys_lo and shmem_phys_hi disables shared memory
+        shmem_phys_hi       -            XLEN-1:0    unsigned long                         Upper XLEN bits of the shared memory physical base address. All-ones in both shmem_phys_lo and shmem_phys_hi disables shared memory
+        flags               -            XLEN-1:2    Reserved                              Reserved for future use. Must be zero
+                                         1:0         Shared memory setup mode              Shared memory setup mode
+               20.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        ret                 -            -           struct sbiret                         Command return status
+               20.6.2 Failure conditions
+               This section names no error return codes, so the failure conditions table has no rows. The section does state these input requirements:
+  ID                          Condition
+  shmem_align                 pre: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)) && !IsAligned(shmem_phys_lo, 4096)
+                              post: (no return code given in the section)
+  flags_rsvd                  pre: flags[XLEN-1:2] != 0
+                              post: (no return code given in the section)
+               20.6.2.1   Failure condition ordering
+               The sbi_mpxy_set_shmem command does not have any failure condition orderings.
+               20.6.3 Success conditions
+  ID                          Condition
+  shmem_set                   pre: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi))
+                              post: ShmemBase(CallingHart()) == Concat(shmem_phys_hi, shmem_phys_lo)
+  shmem_size                  pre: !(IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi))
+                              post: ShmemSize(CallingHart()) == GetShmemSize()
+  shmem_disable               pre: IsAllOnes(shmem_phys_lo) && IsAllOnes(shmem_phys_hi)
+                              post: !ShmemEnabled(CallingHart())
+               20.6.4 Footprint
+    ID                        Value
+    shmem_base                ShmemBase(CallingHart())
+    shmem_enabled             ShmemEnabled(CallingHart())

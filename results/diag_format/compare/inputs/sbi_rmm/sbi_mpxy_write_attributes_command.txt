@@ -1,0 +1,27 @@
+20.9 sbi_mpxy_write_attributes command
+               Writes message channel attributes.
+               Supervisor software calls this command once per contiguous range of attribute IDs. base_attribute_id is the first ID in the range and attribute_count is the number of attributes in the range. If there are several ranges, supervisor software makes one call per range. Each range MUST exclude attributes with RO (Read Only) access. Message protocol specific attributes MUST be written in a separate call, using a range that does not overlap the MPXY standard attributes.
+               Before calling this command, supervisor software must write the attribute values into the calling hart's shared memory, starting at offset 0x0. The value for attribute_id = base_attribute_id + i MUST be placed at shared memory offset 4 * i.
+               20.9.1 Interface
+               20.9.1.1   Input values
+        Name                  Register     Bits        Type          Description
+        fid                   -            -           -             FID, value 4
+        channel_id            -            31:0        uint32_t      Message channel
+        base_attribute_id     -            31:0        uint32_t      First attribute ID in the contiguous range
+        attribute_count       -            31:0        uint32_t      Number of attributes in the contiguous range
+               20.9.1.2   Output values
+        Name                  Register     Bits        Type          Description
+        error                 -            -           -             Command return status, returned in sbiret.error
+               20.9.2 Failure conditions
+               The error codes for this command are defined in Table 114, MPXY Write Channel Attributes Errors. The entries of that table are not given in this section, so no failure conditions are listed here.
+               20.9.2.1   Failure condition ordering
+               The sbi_mpxy_write_attributes command does not have any failure condition orderings.
+               20.9.3 Success conditions
+  ID                          Condition
+  attr_write                  post: forall i in [0, attribute_count):
+                                    ChannelAttribute(channel_id, base_attribute_id + i)
+                                      == SharedMemWord(CallingHart(), 4 * i)
+               This section does not name the success return code.
+               20.9.4 Footprint
+    ID                        Value
+    attr_write                ChannelAttribute(channel_id, base_attribute_id + i), for i in [0, attribute_count)

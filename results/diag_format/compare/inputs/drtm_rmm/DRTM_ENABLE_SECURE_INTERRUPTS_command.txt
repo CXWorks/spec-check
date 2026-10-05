@@ -1,0 +1,31 @@
+3.11 DRTM_ENABLE_SECURE_INTERRUPTS command
+               The DLME uses this command to re-enable Secure interrupts after a dynamic launch.
+               3.11.1 Interface
+               3.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC400011A
+               3.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               3.11.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsDrtmSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  no_launch                   pre: !HasDynamicLaunchOccurred()
+                              post: ResultEqual(result, DENIED)
+  not_disabled                pre: !AreSecureInterruptsDisabled()
+                              post: ResultEqual(result, DENIED)
+  not_requested               pre: !DrtmParametersRequestedSecureInterruptDisable()
+                              post: ResultEqual(result, DENIED)
+               The command may also return other error codes, as defined in section 3.18.
+               3.11.2.1   Failure condition ordering
+               The DRTM_ENABLE_SECURE_INTERRUPTS command does not have any failure condition orderings.
+               3.11.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  sec_irq                     pre: AreSecureInterruptsInUseByPlatform()
+                              post: AreSecureInterruptsEnabled()
+               The DRTM implementation configures Secure firmware to re-enable Secure interrupts through a platform-dependent mechanism. If the platform is not using Secure interrupts when the command is called, the implementation does not have to enable them.
+               3.11.4 Footprint
+    ID                        Value
+    sec_irq                   SecureInterruptEnableState()

@@ -1,0 +1,31 @@
+3.10.3.7 POWERCAP_CAP_GET command
+               Gets the value of the power cap currently enforced for a power capping domain. This command is mandatory.
+               The returned power cap value may already be stale when the command completes, because another power cap change request may have been started and completed in the meantime.
+               3.10.3.7.1 Interface
+               3.10.3.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0x4
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x18
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the power capping domain
+        cpli                Payload[1]   31:0        UInt32                                Concurrent power limit identifier. Must be 0 if the domain does not support CPC
+               3.10.3.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        power_cap           Payload[1]   31:0        UInt32                                The power cap set for the domain and CPLI. A value of 0 means power capping for this domain is disabled
+               3.10.3.7.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cpli_valid                  pre: !IsValidCpli(domain_id, cpli)
+                              post: ResultEqual(status, NOT_FOUND)
+  supported                   pre: !IsRequestSupported(domain_id, cpli)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.10.3.7.2.1   Failure condition ordering
+               The POWERCAP_CAP_GET command does not have any failure condition orderings.
+               3.10.3.7.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  power_cap                   post: power_cap == EnforcedPowerCap(domain_id, cpli)
+  cap_disabled                post: (power_cap == 0) == PowerCappingDisabled(domain_id)
+               3.10.3.7.4 Footprint
+               The POWERCAP_CAP_GET command does not modify any state.

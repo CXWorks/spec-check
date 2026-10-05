@@ -1,0 +1,27 @@
+20.10 sbi_mpxy_send_message_with_response command
+               Sends a message to an MPXY channel and waits until the channel returns a message response.
+               This function is optional. If it is implemented, the corresponding bit in the CHANNEL_CAPABILITY attribute is set to 1.
+               20.10.1 Interface
+               20.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           —                                     FID, value 5
+        channel_id          —            31:0        uint32_t                              Identifier of the target MPXY channel
+        message_id          —            31:0        uint32_t                              Message protocol specific identifier of the message to be sent
+        message_data_len    —            XLEN-1:0    unsigned long                         Length in bytes of the message data, located at offset 0x0 in the shared memory set up by the calling hart
+               20.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               sbiret.error —           —                                     Command return status
+        uvalue              sbiret.uvalue —          —                                     Length in bytes of the message response data
+               20.10.2 Failure conditions
+               The section defines no failure conditions. The only return code it lists is SBI_SUCCESS.
+               20.10.2.1   Failure condition ordering
+               The sbi_mpxy_send_message_with_response command does not have any failure condition orderings.
+               20.10.3 Success conditions
+  ID                          Condition
+  resp_recv                   post: MessageResponseReceived(channel_id)
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  resp_data                   post: SharedMemoryAt(calling_hart, 0x0) == MessageResponseData(channel_id)
+  resp_len                    post: uvalue == MessageResponseDataLength(channel_id)
+               20.10.4 Footprint
+    ID                        Value
+    resp_data                 SharedMemoryAt(calling_hart, 0x0)

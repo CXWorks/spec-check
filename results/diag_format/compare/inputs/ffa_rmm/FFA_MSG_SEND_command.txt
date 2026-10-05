@@ -1,0 +1,37 @@
+18.4.1 FFA_MSG_SEND command
+               Sends a Partition message to a VM through the RX/TX buffers by using Indirect messaging. The Hypervisor copies the message from the TX buffer of the Sender NS-Endpoint to the RX buffer of the Receiver NS-endpoint. The scheduler is told that a message is pending in the Receiver's RX buffer. The Receiver reads the message when it is scheduled to run.
+               This command must not be invoked when the caller is processing a Direct request.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance              Valid conduits
+        1                   Non-secure virtual         SMC, HVC, ERET
+               The command is used with the ERET conduit to:
+               • Inform an endpoint that a message is available in its RX buffer.
+               • Inform the primary scheduler that the Receiver has a pending message in its RX buffer.
+               For caller and callee roles and responsibilities, see 18.4.1.2 Component responsibilities for FFA_MSG_SEND.
+               18.4.1.1 Interface
+               18.4.1.1.1   Input values
+        Name                Register     Bits        Type                  Description
+        fid                 W0           31:0        UInt32                Function ID, value 0x8400006E
+        sender_id           W1           31:16       UInt16                Sender endpoint ID
+        receiver_id         W1           15:0        UInt16                Receiver endpoint ID
+        reserved            W2/X2        31:0/63:0   UInt32/UInt64         Reserved for future use (MBZ)
+        msg_size            W3           31:0        UInt32                Length of the message payload in the RX buffer. Optional, and MBZ, when used with the ERET conduit at the Non-secure virtual FF-A instance and the callee is not the Receiver of the message
+               18.4.1.1.2   Output values
+        Name                Register     Bits        Type                  Description
+        result              W0           31:0        UInt32                FFA_SUCCESS function ID on success. On failure, an FFA_ERROR whose error code is encoded as in Table 18.17
+        reserved            W1/X1-W7/X7  —           —                     Reserved (MBZ) on success
+               18.4.1.2 Failure conditions
+               This section does not give the error cases. They are encoded as in Table 18.17, which is not included here. The section refers to a BUSY return, but it does not say when BUSY is returned. For the behaviour when BUSY is returned and the caller must be notified that the TX buffer is available, see 18.4.1.1 Target availability notification.
+               18.4.1.2.1   Failure condition ordering
+               This section does not give any failure condition ordering for the FFA_MSG_SEND command.
+               18.4.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  reserved_regs               post: RegistersAreZero(W1/X1, ..., W7/X7)
+  msg_copy                    post: RxBufferOf(receiver_id) contains the message copied from TxBufferOf(sender_id)
+  sched_notify                post: SchedulerInformedOfPendingMessage(receiver_id)
+               A successful return does not mean that the Receiver endpoint has read the message.
+               18.4.1.4 Footprint
+    ID                        Value
+    msg_copy                  RxBufferOf(receiver_id)
+    sched_notify              PendingMessageState(receiver_id)

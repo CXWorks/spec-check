@@ -1,0 +1,52 @@
+3.5.6.5 PERFORMANCE_DOMAIN_ATTRIBUTES command
+               Returns attributes that are specific to a given performance domain.
+               This command is mandatory.
+               3.5.6.5.1 Interface
+               3.5.6.5.1.1   Input values
+        Name                    Register          Bits     Type        Description
+        message_id              Message header    -        UInt        Message identifier, value 0x3
+        protocol_id             Message header    -        UInt        Protocol identifier, value 0x13
+        domain_id               Payload[0]        31:0     uint32      Identifier for the performance domain
+               3.5.6.5.1.2   Output values
+        Name                    Register          Bits     Type        Description
+        status                  Payload[0]        31:0     int32       Command return status. One of, but not limited to, SUCCESS and NOT_FOUND. See Section 3.1.4 for more status code definitions
+        attributes              Payload[1]        31:0     uint32      Domain attributes:
+                                                                       Bit[31]: Can set limits. 1 if the calling agent is allowed to set the performance limits on the domain, otherwise 0.
+                                                                       Bit[30]: Can set performance level. 1 if the calling agent is allowed to set the performance of the domain, otherwise 0.
+                                                                       Bit[29]: Performance limits change notifications support. 1 if supported for this domain, otherwise 0.
+                                                                       Bit[28]: Performance level change notifications support. 1 if supported for this domain, otherwise 0.
+                                                                       Bit[27]: FastChannel support. 1 if there is at least one FastChannel available for this domain, 0 if there are none.
+                                                                       Bit[26]: Extended performance domain name. 1 if the performance domain name is greater than 16 bytes; the extended name is provided by the PERFORMANCE_DOMAIN_NAME_GET command (Section 3.5.6.19). 0 if the extended performance domain name is not supported.
+                                                                       Bit[25]: Level Indexing Mode. 1 if the domain uses Level Indexing Mode, in which case all commands that take a performance level as a parameter specify the corresponding level index instead. 0 if Level Indexing Mode is not used.
+                                                                       Bit[24]: Asynchronous QoS configuration support. 1 if all QoS capabilities of this domain can be configured asynchronously. 0 if they can only be configured synchronously.
+                                                                       Bit[23]: QoS only domain. 1 if this domain does not support performance levels or their visibility to the agent. 0 if this domain supports agent visible performance levels, with Bits[31:28] specifying the performance controls available.
+                                                                       Bit[22]: Sustained performance reduction support. 1 if the calling agent can voluntarily request a reduction of the sustained performance level of the domain through the REDUCE_SUSTAINED_PERFORMANCE_LEVEL command (Section 3.5.6.13). 0 if the domain does not support reducing the sustained performance level.
+                                                                       Bits[21:0]: Reserved and set to zero.
+        rate_limit              Payload[2]        31:0     uint32      Bits[31:20]: Reserved and set to zero.
+                                                                       Bits[19:0]: Rate limit in microseconds, the minimum time required between successive requests. 0 means the platform does not support this field. This field does not apply to FastChannels.
+        sustained_freq          Payload[3]        31:0     uint32      Base frequency, in kHz, corresponding to the sustained performance level
+        sustained_perf_level    Payload[4]        31:0     uint32      Performance level value that corresponds to the maximum sustained performance level for the domain. This value is platform specific. It does not change when an agent voluntarily reduces the domain's sustained performance requirement through the REDUCE_SUSTAINED_PERFORMANCE_LEVEL command (Section 3.5.6.13)
+        name                    Payload[5:8]      -        uint8[16]   Null terminated ASCII string, up to 16 bytes long, describing the domain name. When attributes Bit[26] is 1, this field contains the lower 15 bytes of the null terminated performance domain name
+        guaranteed_perf_level   Payload[9]        31:0     uint32      Performance level value that corresponds to the guaranteed performance delivered by the platform. 0 if the platform does not specify the guaranteed performance level
+        qos_capability_types    Payload[10]       31:0     uint32      Bitmap of supported QoS capability Types:
+                                                                       Bits[31:24]: Reserved, must be zero.
+                                                                       Bits[23:16]: OEM QoS capability Type bitmap. Each bit indicates support for an OEM capability Type. More than one bit can be set.
+                                                                       Bits[15:8]: Reserved, must be zero.
+                                                                       Bits[7:0]: Architected QoS capability Type bitmap. Each bit indicates support for an architected capability Type (see Section 3.5.4.1 and Table 13). More than one bit can be set.
+        qos_parent_id           Payload[11]       31:0     uint32      Identifier of the parent domain that contains this domain, used to construct a QoS topology. 0xFFFFFFFF means this domain is not contained within any parent domain. This field is valid for QoS capabilities only. It can be ignored if the capability types field is 0
+               3.5.6.5.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerformanceDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.5.2.1   Failure condition ordering
+               The PERFORMANCE_DOMAIN_ATTRIBUTES command does not have any failure condition orderings.
+               3.5.6.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  attr_reserved               post: attributes[21:0] == 0
+  attr_qos_only_ctrl          post: attributes[23] == 1 ==> attributes[31:28] == 0
+  attr_qos_only_reduce        post: attributes[23] == 1 ==> attributes[22] == 0
+  rate_reserved               post: rate_limit[31:20] == 0
+  qos_types_reserved          post: qos_capability_types[31:24] == 0 && qos_capability_types[15:8] == 0
+               3.5.6.5.4 Footprint
+               The section does not identify any state that the PERFORMANCE_DOMAIN_ATTRIBUTES command modifies.

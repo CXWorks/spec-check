@@ -1,0 +1,39 @@
+14.2 FFA_YIELD command
+               Yields execution of the calling endpoint execution context back to the FF-A component that scheduled it. The calling execution context goes from the running state to the blocked state. The call completes when that execution context returns to the running state.
+               14.2.1 Interface
+               14.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400006C or 0xC400006C (see 11.1.2 Parameter Register Preservation)
+        endpoint_id         W1           31:16       UInt16                                Endpoint ID of the caller endpoint. Used by an SPMC at the Secure physical FF-A instance with the SMC conduit, by an SPMC at the Secure virtual FF-A instance with the ERET conduit, by the SPMD at the Non-secure physical FF-A instance with the ERET conduit, and by the Hypervisor at the Non-secure virtual FF-A instance with the ERET conduit. Reserved (MBZ) in all other cases
+        vcpu_id             W1           15:0        UInt16                                vCPU ID of the caller endpoint. Used in the same cases as endpoint_id. Reserved (MBZ) in all other cases
+        timeout_lo          W2           31:0        UInt32                                Bits[31:0] of an interval in nanoseconds after which the vCPU of the endpoint specified in W1 must be run. MBZ if the caller does not specify a timeout. Used by the Hypervisor at the Non-secure virtual FF-A instance with the ERET conduit. Reserved (MBZ) in all other cases
+        timeout_hi          W3           31:0        UInt32                                Bits[63:32] of an interval in nanoseconds after which the vCPU of the endpoint specified in W1 must be run. MBZ if the caller does not specify a timeout. Used by the Hypervisor at the Non-secure virtual FF-A instance with the ERET conduit. Reserved (MBZ) in all other cases
+        reserved            W4-W7        31:0        -                                     Reserved (SBZ)
+        reserved            X4-X17       63:0        -                                     Reserved (SBZ)
+               14.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                Function ID of the completing call: FFA_RUN or FFA_INTERRUPT on success, FFA_ERROR on failure
+        status              W2           31:0        Int32                                 Error status when result is FFA_ERROR
+               14.2.2 Failure conditions
+  ID                          Condition
+  unsupported                 pre: !IsFfaYieldImplemented(ffa_instance)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  invalid_ids                 pre: conduit == ERET && !IsValidEndpointVcpuId(endpoint_id, vcpu_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  denied                      pre: !CalleeCanHandleRequest(callee)
+                              post: ResultEqual(result, DENIED)
+               14.2.2.1   Failure condition ordering
+               The FFA_YIELD command does not have any failure condition orderings.
+               14.2.3 Success conditions
+  ID                          Condition
+  ctx_blocked                 post: CallerContext().state transitions from RUNNING to BLOCKED when the call is made
+  ctx_resumed                 post: CallerContext().state == RUNNING
+  resume_run                  post: ResultEqual(result, FFA_RUN)
+  resume_interrupt            pre: !IsSEl0Endpoint(caller)
+                              post: ResultEqual(result, FFA_INTERRUPT)
+  vcpu_timeout                pre: IsVmVcpu(caller) && TimeoutSpecified(timeout_hi, timeout_lo)
+                              post: VcpuScheduledAfter(endpoint_id, vcpu_id, timeout_hi:timeout_lo)
+               14.2.4 Footprint
+    ID                        Value
+    ctx_state                 CallerContext().state
+    vcpu_timeout              VcpuSchedule(endpoint_id, vcpu_id)

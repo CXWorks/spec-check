@@ -1,0 +1,28 @@
+3.6.2.11 CLOCK_NAME_GET command
+               Returns the extended name associated with a specific clock device.
+               This command is mandatory only if extended clock name is supported. Extended clock name is supported when Bit[29] of the attributes field of the CLOCK_ATTRIBUTES command is set to 1. See Section 3.6.2.5.
+               3.6.2.11.1 Interface
+               3.6.2.11.1.1   Input values
+        Name                Register        Bits        Type                                  Description
+        message_id          Header          7:0         UInt8                                 Message identifier, value 0x8
+        protocol_id         Header          17:10       UInt8                                 Protocol identifier, value 0x14
+        clock_id            Payload[0]      31:0        UInt32                                Identifier for the clock device
+               3.6.2.11.1.2   Output values
+        Name                Register        Bits        Type                                  Description
+        status              Payload[0]      31:0        Int32                                 Command return status (see Section 3.1.4)
+        flags               Payload[1]      31:0        UInt32                                Reserved, must be zero
+        name                Payload[2:17]   511:0       UInt8[64]                             Null-terminated ASCII string, up to 64 bytes long, describing the clock extended name
+               3.6.2.11.2 Failure conditions
+  ID                          Condition
+  clock_exists                pre: !ClockExists(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.6.2.11.2.1   Failure condition ordering
+               The CLOCK_NAME_GET command does not have any failure condition orderings.
+               3.6.2.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags                       post: flags == 0
+  name                        post: name == ClockExtendedName(clock_id)
+  name_term                   post: IsNullTerminatedAscii(name, 64)
+               3.6.2.11.4 Footprint
+               The CLOCK_NAME_GET command does not modify any state.

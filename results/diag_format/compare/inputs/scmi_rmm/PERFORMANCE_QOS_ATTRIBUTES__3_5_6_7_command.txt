@@ -1,0 +1,56 @@
+3.5.6.7 PERFORMANCE_QOS_ATTRIBUTES command
+
+Returns the name and attributes associated with a QoS capability.
+
+message_id: 0xE
+protocol_id: 0x13
+
+This command is mandatory if the platform supports QoS capabilities.
+
+3.5.6.7.1 Interface
+
+3.5.6.7.1.1 Input values
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| domain_id | — | 31:0 | uint32 | Identifier for the performance domain |
+| capability | — | 31:0 | uint32 | QoS capability, as described by Table 14. Only one QoS capability Type bit can be set. At most one QoS capability Subtype bit can be set. |
+
+3.5.6.7.1.2 Output values
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| status | — | 31:0 | int32 | Command return status. See Section 3.1.4 for status code definitions. |
+| qos_attribute_1 | — | 31:0 | uint32 | First attribute of the specified QoS capability of this domain. See Section 3.5.4.1 for attribute details of each QoS capability Type. |
+| name | — | 16 bytes | uint8[16] | Null-terminated ASCII string of up to 16 bytes that holds the name of the QoS capability |
+
+3.5.6.7.2 Failure conditions
+
+| ID | Condition |
+|---|---|
+| domain_valid | pre: !IsValidPerformanceDomain(domain_id)<br>post: ResultEqual(status, NOT_FOUND) |
+| capability_valid | pre: !IsValidQosCapabilityOfDomain(domain_id, capability)<br>post: ResultEqual(status, NOT_FOUND) |
+| capability_type_bits | pre: CountQosCapabilityTypeBits(capability) > 1<br>post: ResultEqual(status, INVALID_PARAMETERS) |
+| capability_subtype_bits | pre: CountQosCapabilitySubtypeBits(capability) > 1<br>post: ResultEqual(status, INVALID_PARAMETERS) |
+
+The returned status is not limited to the codes listed above. See Section 3.1.4 for more status code definitions.
+
+3.5.6.7.2.1 Failure condition ordering
+
+| Precedence |
+|---|
+| domain_valid < capability_valid |
+
+The capability is checked against the capabilities of the domain given by domain_id, so domain_valid comes before capability_valid. The section does not specify any other failure condition orderings.
+
+3.5.6.7.3 Success conditions
+
+| ID | Condition |
+|---|---|
+| status | post: ResultEqual(status, SUCCESS) |
+| attribute | post: qos_attribute_1 == QosCapabilityFirstAttribute(domain_id, capability) |
+| name | post: name == QosCapabilityName(domain_id, capability) |
+
+3.5.6.7.4 Footprint
+
+The PERFORMANCE_QOS_ATTRIBUTES command does not modify any state.

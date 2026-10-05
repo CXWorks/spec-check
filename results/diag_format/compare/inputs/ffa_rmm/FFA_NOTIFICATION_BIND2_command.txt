@@ -1,0 +1,53 @@
+16.7 FFA_NOTIFICATION_BIND2 command
+               Binds the notifications in the Notification bitmap to the Sender endpoint, if the FF-A component supports Extended notifications.
+               16.7.1 Interface
+               16.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC4000094
+        sender_id           W1           31:16       UInt16                                Sender endpoint ID
+        receiver_id         W1           15:0        UInt16                                Receiver endpoint ID
+        flags               X2           63:0        UInt64                                Notification flags. Bit[0]: Per-vCPU notification flag (b'1: all notifications in the bitmap are per-vCPU notifications; b'0: all notifications in the bitmap are global notifications). Bits[63:1]: Reserved (SBZ)
+        notification_bitmap X3-X8        b:0         Bitmap                                Notifications that the Sender endpoint is allowed to signal. b is the number of supported notifications - 1. Bit i is Bit[i % 64] of X(i / 64 + 3). b'1: the Sender endpoint can signal this notification. b'0: has no effect. Bits for unimplemented notification IDs MBZ
+        reserved            X9-X17       63:0        UInt64                                Reserved (SBZ)
+               16.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              -            -           FfaReturn                             FFA_SUCCESS with no further parameters, or FFA_ERROR
+        error_code          W2           31:0        Int32                                 Error code returned with FFA_ERROR
+               16.7.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_BIND2, current_instance)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  sender_id                   pre: !IsValidEndpointId(sender_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  receiver_id                 pre: !IsValidEndpointId(receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  per_vcpu_flag               pre: flags[0] == 1 && !PerVcpuNotificationsSupported()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bitmap_range                pre: BitmapExceedsSupportedNotifications(notification_bitmap)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bitmap_empty                pre: notification_bitmap == 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bound_other                 pre: Exists(i in notification_bitmap :
+                                     IsNotificationBound(receiver_id, i)
+                                     && NotificationSender(receiver_id, i) != sender_id)
+                              post: ResultEqual(result, DENIED)
+  pending                     pre: Exists(i in notification_bitmap :
+                                     IsNotificationPending(receiver_id, i))
+                              post: ResultEqual(result, DENIED)
+  caller                      pre: !IsCallerAllowedToInvoke(FFA_NOTIFICATION_BIND2)
+                              post: ResultEqual(result, DENIED)
+  aborted                     pre: HasAborted(sender_id)
+                              post: ResultEqual(result, ABORTED)
+               16.7.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_BIND2 command does not have any failure condition orderings.
+               16.7.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  binding                     post: ForAll(i in notification_bitmap :
+                                     NotificationSender(receiver_id, i) == sender_id)
+  binding_type                post: ForAll(i in notification_bitmap :
+                                     IsPerVcpuNotification(receiver_id, i) == (flags[0] == 1))
+               16.7.4 Footprint
+    ID                        Value
+    binding                   NotificationSender(receiver_id, i) for each i in notification_bitmap
+    binding_type              IsPerVcpuNotification(receiver_id, i) for each i in notification_bitmap

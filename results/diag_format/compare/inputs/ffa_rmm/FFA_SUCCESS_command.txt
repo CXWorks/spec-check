@@ -1,0 +1,34 @@
+12.3 FFA_SUCCESS command
+               Returns results on successful completion of a previous invocation of an FF-A function.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                              Valid conduits
+        1                   Secure and Non-secure physical             SMC, ERET
+        2                   Non-secure virtual FF-A                    SMC, HVC, ERET
+        3                   Secure virtual FF-A                        SMC, ERET
+               12.3.1 Interface
+               12.3.1.1   Input values
+        Name                Register     Bits        Type                  Description
+        fid                 W0           31:0        UInt32                FID, value 0x84000061 or 0xC4000061.
+                                                                           0xC4000061 (FFA_SUCCESS64) is used only if any
+                                                                           result register encodes a 64-bit parameter, or
+                                                                           if the caller only implements SMC64 FIDs as
+                                                                           described in 11.1.2 Parameter Register Preservation
+        target_info         W1           31:0        UInt32                Information to identify the target SP/VM.
+                                                                           Valid only when the SMC conduit is used at the
+                                                                           Non-secure virtual FF-A instance. MBZ otherwise
+          target_id         W1           31:16       UInt16                ID of SP/VM
+          target_vcpu       W1           15:0        UInt16                ID of the vCPU of the SP/VM to deliver results to
+        results             W2-W7        31:0        UInt32                FF-A function-specific return results. See the
+                            X2-X17       63:0        UInt64                definition of the function for the result encoding.
+                                                                           Reserved (SBZ) if not explicitly specified
+               12.3.1.2   Output values
+               The section does not define any output values for the FFA_SUCCESS command.
+               12.3.2 Failure conditions
+               The FFA_SUCCESS command does not have any failure conditions.
+               12.3.2.1   Failure condition ordering
+               The FFA_SUCCESS command does not have any failure condition orderings.
+               12.3.3 Success conditions
+  ID                          Condition
+  results_returned            post: ResultsDeliveredTo(PreviousInvoker(), results)
+               12.3.4 Footprint
+               The section does not define the footprint of the FFA_SUCCESS command.

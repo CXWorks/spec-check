@@ -1,0 +1,44 @@
+3.9.2.6 VOLTAGE_DESCRIBE_LEVELS command
+               Returns the voltage levels that a voltage domain supports.
+               The command returns an array of voltage level entries. If one call cannot return the whole array, the agent can make several calls. Each call also returns the number of voltage levels still to be described. The number of entries one call returns depends on how many return values the transport can carry.
+               If describing each level separately would be too costly, the command can instead return a segment. A segment gives the lowest voltage level, the highest voltage level and the step size between two successive levels.
+               For an example of using this kind of API, see Section 3.5.6.8.
+               message_id: 0x4
+               protocol_id: 0x17
+               This command is mandatory.
+               3.9.2.6.1 Interface
+               3.9.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        domain_id           Param[0]     31:0        uint32                                Identifier for the voltage domain
+        level_index         Param[1]     31:0        uint32                                Index of the first voltage level to describe in the returned voltage array
+               3.9.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Ret[0]       31:0        int32                                 Command return status. See Section 3.1.4 for status code definitions
+        flags               Ret[1]       31:16       uint32                                Number of remaining voltage levels. This field should be 0 if Bit[12] is 1
+                                         15:13                                             Reserved, must be zero
+                                         12                                                Return format. 1: the voltage array is the segment {lowest voltage level, highest voltage level, step size}. 0: each voltage array element is a discrete voltage level that the domain supports
+                                         11:0                                              Number of voltage levels returned by this call. This field should be 3 if Bit[12] is 1
+        voltage[N]          Ret[2..]     31:0        int32 array                           Voltage array in microvolts (uV). N is given by flags Bits[11:0]
+               3.9.2.6.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !VoltageDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  level_range                 pre: !IsValidVoltageLevelIndex(domain_id, level_index)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  supported                   pre: !IsRequestSupported(VOLTAGE_DESCRIBE_LEVELS)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  permission                  pre: !AgentMayGetVoltageLevels(calling_agent, domain_id)
+                              post: ResultEqual(status, DENIED)
+               The return status is not limited to the codes above.
+               3.9.2.6.2.1   Failure condition ordering
+               The VOLTAGE_DESCRIBE_LEVELS command does not have any failure condition orderings.
+               3.9.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  reserved                    post: flags[15:13] == 0
+  count                       post: N == flags[11:0]
+  segment_format              post: flags[12] == 1 ⇒ (flags[11:0] == 3 && flags[31:16] == 0 && voltage[0] == LowestVoltageLevel(domain_id) && voltage[1] == HighestVoltageLevel(domain_id) && voltage[2] == VoltageStepSize(domain_id))
+  discrete_format             post: flags[12] == 0 ⇒ for each i < N: IsSupportedVoltageLevel(domain_id, voltage[i])
+  ascending                   post: voltage[0..N-1] should be in ascending numeric order
+               3.9.2.6.4 Footprint
+               The section does not say that VOLTAGE_DESCRIBE_LEVELS changes any state.

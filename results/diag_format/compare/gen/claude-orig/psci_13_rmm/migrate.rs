@@ -1,0 +1,16 @@
+pub open spec fn migrate_spec(fid: UInt64, target_cpu: Mpidr, result: PsciReturnCode, old_s: S, new_s: S) -> bool {
+    ((!MigrateIsImplemented(old_s) || !MigrationIsRequired(old_s)) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsValidMpidr(old_s, target_cpu) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && ((CallerRegisterWidth(old_s) != FidRegisterWidth(fid)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && ((TrustedOsIsUp(old_s) && !TrustedOsIsMigrateCapable(old_s)) ==> ResultEqual(result, DENIED))
+    && (MigrateImplementationDefinedFailure(old_s, target_cpu) ==> ResultEqual(result, INTERNAL_FAILURE))
+    && ((CurrentCpu(old_s) != TrustedOsResidentCore(old_s)) ==> ResultEqual(result, NOT_PRESENT))
+    && ((MigrateIsImplemented(old_s)
+        && MigrationIsRequired(old_s)
+        && IsValidMpidr(old_s, target_cpu)
+        && CallerRegisterWidth(old_s) == FidRegisterWidth(fid)
+        && !(TrustedOsIsUp(old_s) && !TrustedOsIsMigrateCapable(old_s))
+        && !MigrateImplementationDefinedFailure(old_s, target_cpu)
+        && CurrentCpu(old_s) == TrustedOsResidentCore(old_s))
+        ==> (TrustedOsResidentCore(new_s) == target_cpu))
+}

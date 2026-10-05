@@ -1,0 +1,34 @@
+19.8 sbi_debug_disable_triggers command
+               Disables a set of debug triggers on the calling hart. The set is given by trig_idx_base and trig_idx_mask.
+               19.8.1 Interface
+               19.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 7
+        trig_idx_base       a0           XLEN-1:0    unsigned long                         Starting trigger index
+        trig_idx_mask       a1           XLEN-1:0    unsigned long                         Bitmask of the triggers to disable, relative to trig_idx_base. Each bit corresponds to one trigger.
+               19.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    sbiret.error                          Command return status
+               19.8.2 Failure conditions
+  ID                          Condition
+  trig_unmapped               pre: Exists(trig_idx in TriggerSet(trig_idx_base, trig_idx_mask) :
+                                     !IsMappedToHwTrigger(trig_idx))
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  trig_bound                  pre: Exists(trig_idx in TriggerSet(trig_idx_base, trig_idx_mask) :
+                                     trig_idx >= trig_max)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+               19.8.2.1   Failure condition ordering
+               The sbi_debug_disable_triggers command does not have any failure condition orderings.
+               19.8.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  trig_disabled               post: ForAll(trig_idx in TriggerSet(trig_idx_base, trig_idx_mask) :
+                                     HwTriggerOf(trig_idx).vs == 0 &&
+                                     HwTriggerOf(trig_idx).vu == 0 &&
+                                     HwTriggerOf(trig_idx).s == 0 &&
+                                     HwTriggerOf(trig_idx).u == 0)
+               19.8.4 Footprint
+    ID                        Value
+    trig_disabled             ForAll(trig_idx in TriggerSet(trig_idx_base, trig_idx_mask) :
+                                HwTriggerOf(trig_idx).vs, HwTriggerOf(trig_idx).vu,
+                                HwTriggerOf(trig_idx).s, HwTriggerOf(trig_idx).u)

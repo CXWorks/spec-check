@@ -1,0 +1,31 @@
+9.4 sbi_hart_suspend command
+               Asks the SBI implementation to put the calling hart in a platform-specific suspend (or low power) state, selected by suspend_type.
+               9.4.1 Interface
+               9.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           —                                     FID, value 3
+        suspend_type        —            31:0        UInt32                                Platform-specific suspend (or low power) state to enter
+        resume_addr         —            —           unsigned long                         Resume address. Not used during retentive suspend
+        opaque              —            —           unsigned long                         Opaque value
+               9.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        ret                 —            —           struct sbiret                         Command return status
+               9.4.2 Failure conditions
+               The section does not specify any failure conditions.
+               9.4.2.1   Failure condition ordering
+               The sbi_hart_suspend command does not have any failure condition orderings.
+               9.4.3 Success conditions
+  ID                          Condition
+  hart_state                  post: HartIsSuspended(CallingHart(), suspend_type)
+  hart_wake                   post: HartResumesOn(CallingHart(), InterruptOrPlatformEvent())
+  ret_retentive               pre: IsRetentiveSuspendType(suspend_type)
+                              post: CallReturnsWithoutFailure(ret)
+  regs_retentive              pre: IsRetentiveSuspendType(suspend_type)
+                              post: HartRegistersAndCsrsPreserved(CallingHart(), AllPrivilegeModes)
+  regs_nonretentive           pre: !IsRetentiveSuspendType(suspend_type)
+                              post: !HartRegistersAndCsrsPreserved(CallingHart(), AllPrivilegeModes)
+               9.4.4 Footprint
+    ID                        Value
+    hart_state                HartAt(CallingHart()).suspend_state
+    hart_regs                 HartAt(CallingHart()).registers
+    hart_csrs                 HartAt(CallingHart()).csrs

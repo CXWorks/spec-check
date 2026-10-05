@@ -1,0 +1,16 @@
+pub open spec fn ffa_msg_send2_spec(result: UInt32, old_s: S, new_s: S) -> bool {
+    (!IsNonSecurePhysicalInstance() && w1(old_s) != 0 ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (IsNonSecurePhysicalInstance() && !IsValidSenderVmId(w1(old_s)) ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (!IsValidEndpointId(MsgHeader(old_s).sender_id) || !IsValidEndpointId(MsgHeader(old_s).receiver_id) ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (MsgHeader(old_s).offset < MsgHeaderSize() ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (!MsgPayloadFitsInTxBuffer(MsgHeader(old_s)) ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (!IsRecognizedUuid(MsgHeader(old_s).uuid) ==> ResultEqual(result, FFA_ERROR_INVALID_PARAMETERS))
+    && (!RxBufferIsFree(MsgHeader(old_s).receiver_id) ==> ResultEqual(result, FFA_ERROR_BUSY))
+    && (!CalleeCanHandleRequest() ==> ResultEqual(result, FFA_ERROR_DENIED))
+    && (!CallerMayInvoke(FFA_MSG_SEND2) ==> ResultEqual(result, FFA_ERROR_DENIED))
+    && (!SupportsIndirectMessaging(MsgHeader(old_s).receiver_id) ==> ResultEqual(result, FFA_ERROR_DENIED))
+    && (!RxBufferHasSpaceFor(MsgHeader(old_s).receiver_id, MsgHeader(old_s)) ==> ResultEqual(result, FFA_ERROR_NO_MEMORY))
+    && (!IsImplementedAtInstance(FFA_MSG_SEND2) ==> ResultEqual(result, FFA_ERROR_NOT_SUPPORTED))
+    && (ResultEqual(result, FFA_SUCCESS) ==> RxBufferContains(new_s, MsgHeader(old_s).receiver_id, PartitionMessage(SenderTxBuffer(old_s))))
+    && (ResultEqual(result, FFA_SUCCESS) ==> RxBufferFullNotified(new_s, MsgHeader(old_s).receiver_id))
+}

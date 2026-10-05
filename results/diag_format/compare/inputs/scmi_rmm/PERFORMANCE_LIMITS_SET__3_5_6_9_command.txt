@@ -1,0 +1,43 @@
+3.5.6.9 PERFORMANCE_LIMITS_SET command
+               Sets limits on the performance level of a domain. If the platform uses Level Indexing Mode, the limits are given as level indices, not performance levels.
+               This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES command is 0 for any domain.
+               3.5.6.9.1 Interface
+               3.5.6.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       -           UInt                                  Protocol identifier, value 0x13
+        message_id          Header       -           UInt                                  Message identifier, value 0x5
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the performance domain
+        range_max           Payload[1]   31:0        UInt32                                Maximum allowed performance level, or level index. If 0, the platform ignores this field and leaves any existing maximum limit unchanged
+        range_min           Payload[2]   31:0        UInt32                                Minimum allowed performance level, or level index. If 0, the platform ignores this field and leaves any existing minimum limit unchanged
+               3.5.6.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+               3.5.6.9.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PerformanceDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  limits_range                pre: !LimitsWithinDescribedLevels(domain_id, range_max, range_min)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  limits_both_zero            pre: range_max == 0 && range_min == 0
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  agent_permission            pre: !AgentMayChangePerformanceLimits(domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.5.6.9.2.1   Failure condition ordering
+               The PERFORMANCE_LIMITS_SET command does not have any failure condition orderings.
+               3.5.6.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  limit_max_set               pre: range_max != 0
+                              post: PerformanceDomain(domain_id).range_max == range_max
+  limit_max_kept              pre: range_max == 0
+                              post: PerformanceDomain(domain_id).range_max == Old(PerformanceDomain(domain_id).range_max)
+  limit_min_set               pre: range_min != 0
+                              post: PerformanceDomain(domain_id).range_min == range_min
+  limit_min_kept              pre: range_min == 0
+                              post: PerformanceDomain(domain_id).range_min == Old(PerformanceDomain(domain_id).range_min)
+  level_change                post: If a new limit requires the domain's current performance level to change, the change takes place. The command can return before the change has completed.
+               3.5.6.9.4 Footprint
+    ID                        Value
+    limit_max                 PerformanceDomain(domain_id).range_max
+    limit_min                 PerformanceDomain(domain_id).range_min
+    level_change              PerformanceDomain(domain_id).performance_level

@@ -1,0 +1,55 @@
+16.6 FFA_NOTIFICATION_GET command
+               Retrieves the notifications that are pending in the notification bitmaps selected by the Flags parameter.
+               An endpoint calls this command at a virtual FF-A instance through the SMC, HVC or SVC conduit. The partition manager then returns the endpoint's pending notifications.
+               The Hypervisor calls this command at the Non-secure physical FF-A instance through the SMC conduit. The SPMC then returns the pending SP or SPM Framework notifications, as selected by the Flags parameter, for the VM given in the Receiver endpoint ID field. The SPMC uses the Receiver vCPU ID field to return any pending per-vCPU notifications.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance              Valid conduits
+        1                   Non-secure virtual         SMC, HVC
+        2                   Secure virtual             SMC, HVC, SVC
+        3                   Non-secure physical        SMC
+        4                   Secure physical            ERET
+               16.6.1 Interface
+               16.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x84000082
+        receiver_vcpu_id    W1           31:16       UInt16                                Receiver vCPU ID
+        receiver_id         W1           15:0        UInt16                                Receiver endpoint ID
+        flags_sp            W2           0           Bits1                                 Receiver's SP notifications bitmap identifier. b'1: return the bitmap of notifications pended by SPs. b'0: do not return it
+        flags_vm            W2           1           Bits1                                 Receiver's VM notifications bitmap identifier. b'1: return the bitmap of notifications pended by VMs. b'0: do not return it. SBZ at the Non-secure physical FF-A instance
+        flags_spm           W2           2           Bits1                                 Receiver's SPM Framework notifications bitmap identifier. b'1: return the bitmap of notifications pended by the SPM. b'0: do not return it
+        flags_hyp           W2           3           Bits1                                 Receiver's Hypervisor Framework notifications bitmap identifier. b'1: return the bitmap of notifications pended by the Hypervisor. b'0: do not return it. SBZ at the Non-secure physical FF-A instance
+        flags_reserved      W2           31:4        Bits28                                Reserved (SBZ)
+        reserved            W3-W7        31:0        UInt32                                Reserved (SBZ)
+               16.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                FFA_SUCCESS or FFA_ERROR function ID
+        error_code          W2           31:0        Int32                                 Error code. Valid only if result is FFA_ERROR
+        sp_bitmap_lo        W2           31:0        Bits32                                Bits[31:0] of the SP notifications bitmap. For each bit, b'1 means the notification for that bit position is pending for the Receiver and b'0 means it is not pending. The caller must ignore this field if flags_sp was not set
+        sp_bitmap_hi        W3           31:0        Bits32                                Bits[63:32] of the SP notifications bitmap. Bits are encoded as in sp_bitmap_lo. The caller must ignore this field if flags_sp was not set
+        vm_bitmap_lo        W4           31:0        Bits32                                Bits[31:0] of the VM notifications bitmap. Bits are encoded as in sp_bitmap_lo. The caller must ignore this field if flags_vm was not set
+        vm_bitmap_hi        W5           31:0        Bits32                                Bits[63:32] of the VM notifications bitmap. Bits are encoded as in sp_bitmap_lo. The caller must ignore this field if flags_vm was not set
+        spm_bitmap          W6           31:0        Bits32                                Bits[31:0] of the SPM Framework notifications bitmap. The SPM sets these bits to report notifications about events in the secure world. The caller must ignore this field if flags_spm was not set
+        hyp_bitmap          W7           31:0        Bits32                                Bits[31:0] of the Hypervisor Framework notifications bitmap. The Hypervisor sets these bits to report notifications about events in the normal world. The caller must ignore this field if flags_hyp was not set
+               16.6.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_GET, CurrentInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  denied                      pre: !CallerMayInvoke(FFA_NOTIFICATION_GET)
+                              post: ResultEqual(result, DENIED)
+  receiver_id                 pre: !IsRecognizedPartitionId(receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_reserved              pre: flags_reserved != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_ns_phys               pre: CurrentInstance() == NS_PHYSICAL && (flags_vm != 0 || flags_hyp != 0)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               16.6.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_GET command does not have any failure condition orderings.
+               16.6.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  sp_bitmap                   post: flags_sp == 1 ==> (sp_bitmap_hi:sp_bitmap_lo) == PendingNotifications(receiver_id, receiver_vcpu_id, SP)
+  vm_bitmap                   post: flags_vm == 1 ==> (vm_bitmap_hi:vm_bitmap_lo) == PendingNotifications(receiver_id, receiver_vcpu_id, VM)
+  spm_bitmap                  post: flags_spm == 1 ==> spm_bitmap == PendingNotifications(receiver_id, receiver_vcpu_id, SPM_FRAMEWORK)
+  hyp_bitmap                  post: flags_hyp == 1 ==> hyp_bitmap == PendingNotifications(receiver_id, receiver_vcpu_id, HYP_FRAMEWORK)
+               16.6.4 Footprint
+               The FFA_NOTIFICATION_GET section does not say what state the command modifies.

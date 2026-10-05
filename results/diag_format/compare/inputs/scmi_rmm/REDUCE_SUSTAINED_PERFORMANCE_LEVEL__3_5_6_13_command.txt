@@ -1,0 +1,35 @@
+3.5.6.13 REDUCE_SUSTAINED_PERFORMANCE_LEVEL command
+               Lets an agent voluntarily request a reduction in the sustained performance level of a performance domain, below the sustained_perf_level reported by PERFORMANCE_DOMAIN_ATTRIBUTES. This frees performance headroom that the platform can give to other domains. This command is optional.
+               3.5.6.13.1 Interface
+               3.5.6.13.1.1   Input values
+        Name                Register             Bits        Type        Description
+        message_id          Message header       -           -           Message identifier, value 0xF
+        protocol_id         Message header       -           -           Protocol identifier, value 0x13
+        domain_id           Parameter word 0     31:0        uint32      Identifier for the performance domain
+        sustained_level     Parameter word 1     31:0        uint32      Requested sustained performance level. In Level Indexing Mode, this is the level index
+               3.5.6.13.1.2   Output values
+        Name                Register             Bits        Type        Description
+        status              Return word 0        31:0        int32       Command return status. See Section 3.1.4 for status code definitions
+               3.5.6.13.2 Failure conditions
+  ID                          Condition
+  cmd_supported               pre: !IsCommandSupported(REDUCE_SUSTAINED_PERFORMANCE_LEVEL)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  domain_valid                pre: !IsValidPerfDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  domain_qos_only             pre: PerfDomainAttributes(domain_id).attributes[23] == 1
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_permitted             pre: !AgentMayReduceSustainedLevel(agent, domain_id)
+                              post: ResultEqual(status, DENIED)
+  level_range                 pre: !IsInAllowedRange(domain_id, sustained_level)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+               3.5.6.13.2.1   Failure condition ordering
+               The REDUCE_SUSTAINED_PERFORMANCE_LEVEL command does not have any failure condition orderings.
+               3.5.6.13.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  accepted                    post: PlatformHasAcceptedAndScheduled(domain_id, sustained_level)
+  attr_unchanged              post: PerfDomainAttributes(domain_id).sustained_perf_level == old(PerfDomainAttributes(domain_id).sustained_perf_level)
+               The command can return before the new sustained performance level has been set. The platform only has to acknowledge that it received the command. The sustained_perf_level reported by PERFORMANCE_DOMAIN_ATTRIBUTES stays the same, so the agent can return to the platform-specified sustained performance level at any time. The agent must not request a sustained performance level higher than the platform-specified sustained performance level.
+               3.5.6.13.4 Footprint
+    ID                        Value
+    provisioned_level         ProvisionedSustainedLevel(domain_id)

@@ -1,0 +1,28 @@
+14.1 sbi_cppc_probe command
+               Checks whether the platform implements the CPPC register given by cppc_reg_id.
+               14.1.1 Interface
+               14.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 0
+        cppc_reg_id         a0           31:0        uint32_t                              CPPC register ID to check
+               14.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    long                                  sbiret.error: command return status
+        value               a1           XLEN-1:0    long                                  sbiret.value: register width if the register is implemented, otherwise 0
+               14.1.2 Failure conditions
+  ID                          Condition
+  reg_id_reserved             pre: IsReservedCppcRegId(cppc_reg_id)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  probe_failed                pre: CppcProbeFailedForUnspecifiedReason(cppc_reg_id)
+                              post: ResultEqual(error, SBI_ERR_FAILED)
+               14.1.2.1   Failure condition ordering
+               The sbi_cppc_probe command does not have any failure condition orderings.
+               14.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  reg_implemented             pre: IsCppcRegImplemented(cppc_reg_id)
+                              post: value == CppcRegWidth(cppc_reg_id)
+  reg_not_implemented         pre: !IsCppcRegImplemented(cppc_reg_id)
+                              post: value == 0
+               14.1.4 Footprint
+               The sbi_cppc_probe command does not modify any state.

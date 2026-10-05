@@ -1,0 +1,53 @@
+3.11.2.5 PINCTRL_ATTRIBUTES command
+               Returns the attributes of a specific function, pin, or group of pins.
+               This command is mandatory.
+               3.11.2.5.1 Interface
+               3.11.2.5.1.1   Input values
+        Name                Register        Bits        Type                                  Description
+        message_id          Header          7:0         UInt8                                 Message ID, value 0x3
+        protocol_id         Header          17:10       UInt8                                 Protocol ID, value 0x19
+        identifier          Payload[0]      31:0        UInt32                                Identifier of the pin, group, or function. Only bits 15:0 are used. The platform ignores bits 31:16
+        flags               Payload[1]      31:0        UInt32                                Bits[31:2]: Reserved, must be zero
+                                                                                              Bits[1:0]: Selector. Selects whether identifier refers to a pin (0), a group (1), or a function (2). All other values are reserved for future use
+               3.11.2.5.1.2   Output values
+        Name                Register        Bits        Type                                  Description
+        status              Payload[0]      31:0        Int32                                 Command return status
+        attributes          Payload[1]      31:0        UInt32                                Attributes of the pin, group, or function selected by identifier and flags[1:0]
+                                                                                              Bit[31]: Extended name
+                                                                                              Bits[30:18]: Reserved, must be zero
+                                                                                              Bit[17]: GPIO function descriptor
+                                                                                              Bit[16]: Pin-only function descriptor
+                                                                                              Bits[15:0]: Number of pins or groups
+        name                Payload[2:5]    127:0       UInt8[16]                             Null-terminated ASCII name of the pin, group, or function, up to 16 bytes long
+               3.11.2.5.2 Failure conditions
+  ID                          Condition
+  id_exists                   pre: !PinctrlObjectExists(flags[1:0], identifier[15:0])
+                              post: ResultEqual(status, NOT_FOUND)
+               3.11.2.5.2.1   Failure condition ordering
+               The PINCTRL_ATTRIBUTES command does not have any failure condition orderings.
+               3.11.2.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  ext_name                    post: attributes[31] == 1 if PinctrlNameLength(flags[1:0], identifier[15:0]) > 16, in which case the full name is provided by PINCTRL_NAME_GET (Section 3.11.2.11)
+                              post: attributes[31] == 0 if extended name is not supported
+  gpio_func                   pre: flags[1:0] == 2
+                              post: attributes[17] == FunctionSupportsGpio(identifier[15:0])
+  gpio_unique                 post: attributes[17] == 1 for at most one function associated with a pin or a group
+  pin_only                    pre: flags[1:0] == 2
+                              post: attributes[16] == 1 if IsPinOnlyFunction(identifier[15:0]), meaning the function is supported only by individual pins and by no group
+                              post: attributes[16] == 0 if the function is supported only by groups
+  num_pin                     pre: flags[1:0] == 0
+                              post: attributes[15:0] == 1
+  num_group                   pre: flags[1:0] == 1
+                              post: attributes[15:0] == GroupPinCount(identifier[15:0])
+  num_func_pins               pre: flags[1:0] == 2 && attributes[16] == 1
+                              post: attributes[15:0] == FunctionPinCount(identifier[15:0])
+  num_func_groups             pre: flags[1:0] == 2 && attributes[16] == 0
+                              post: attributes[15:0] == FunctionGroupCount(identifier[15:0])
+  name_short                  pre: attributes[31] == 0
+                              post: name == PinctrlName(flags[1:0], identifier[15:0]), null-terminated
+  name_ext                    pre: attributes[31] == 1
+                              post: name == lower 15 bytes of PinctrlName(flags[1:0], identifier[15:0]), null-terminated
+               The agent must ignore attributes[17] and attributes[16] when flags[1:0] is 0 or 1.
+               3.11.2.5.4 Footprint
+               The section does not say that the PINCTRL_ATTRIBUTES command modifies any state.

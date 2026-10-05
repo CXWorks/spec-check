@@ -1,0 +1,41 @@
+3.3.2.6 POWER_STATE_SET command
+               Sets the power state of a power domain. Power domains can be managed synchronously or asynchronously. This command is mandatory.
+               3.3.2.6.1 Interface
+               3.3.2.6.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        message_id          Message header       -           UInt                                  Message ID, value 0x4
+        protocol_id         Message header       -           UInt                                  Protocol ID, value 0x11
+        flags               Payload[0]           31:1        UInt32                                Reserved, must be zero
+                                                 0           Bool                                  Async flag. 1: the power state transition must be done asynchronously. 0: the power state transition must be done synchronously. Ignored for application processor domains.
+        domain_id           Payload[1]           31:0        UInt32                                Identifier for the power domain
+        power_state         Payload[2]           31:0        UInt32                                Platform-specific parameter identifying the power state of the domain. For device power domains, encoded as described in Table 6. If the domain has parents, the required power states of the child and its parents are encoded in this parameter in an IMPLEMENTATION DEFINED way.
+               3.3.2.6.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Payload[0]           31:0        Int32                                 Command return status (see Section 3.1.4)
+               3.3.2.6.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PowerDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  power_state                 pre: !IsValidPowerState(domain_id, power_state)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  supported                   pre: !IsRequestSupported(domain_id, flags, power_state)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  permission                  pre: !AgentMaySetPowerDomainState(caller, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.3.2.6.2.1   Failure condition ordering
+  [domain_exists] < [power_state]
+               3.3.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  sync_state                  post: (IsSyncOnlyDomain(domain_id) || (!IsApDomain(domain_id) && flags.async == 0))
+                                    ⇒ PowerDomainStateMatches(domain_id, power_state)
+  async_sched                 post: (!IsApDomain(domain_id) && flags.async == 1)
+                                    ⇒ PowerStateChangeScheduled(domain_id, power_state)
+  ap_return                   post: IsApDomain(domain_id)
+                                    ⇒ CommandReturnedBeforeApPowerDown(caller_ap)
+  ap_wfi                      post: IsApDomain(domain_id)
+                                    ⇒ TransitionStartsOnWfiObserved(domain_id, power_state)
+               3.3.2.6.4 Footprint
+    ID                        Value
+    domain_state              PowerDomain(domain_id).state
+    parent_state              PowerDomain(ParentsOf(domain_id)).state

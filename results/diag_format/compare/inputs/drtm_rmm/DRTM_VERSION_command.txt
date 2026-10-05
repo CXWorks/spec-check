@@ -1,0 +1,25 @@
+3.2 DRTM_VERSION command
+               Returns the version of the DRTM implementation.
+               3.2.1 Interface
+               3.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FID, value 0xC4000110
+               3.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                On success, the DRTM version. On error, NOT_SUPPORTED
+        result.mbz          W0           31          Bits1                                 Must be zero
+        result.major        W0           30:16       UInt15                                DRTM Major version
+        result.minor        W0           15:0        UInt16                                DRTM Minor version
+               3.2.2 Failure conditions
+  ID                          Condition
+  drtm_support                pre: !DrtmIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               3.2.2.1   Failure condition ordering
+               The DRTM_VERSION command does not have any failure condition orderings.
+               3.2.3 Success conditions
+  ID                          Condition
+  ver_mbz                     post: result[31] == 0
+  ver_major                   post: result[30:16] == 1
+  ver_minor                   post: result[15:0] == 4
+               3.2.4 Footprint
+               The DRTM_VERSION command does not have any footprint.

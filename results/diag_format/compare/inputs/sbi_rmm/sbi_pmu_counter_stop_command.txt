@@ -1,0 +1,51 @@
+11.10 sbi_pmu_counter_stop command
+               Stops or disables a set of counters on the calling hart.
+               11.10.1 Interface
+               11.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                              -           UInt                                  FID, value 4
+        counter_idx_base                 XLEN-1:0    unsigned long                         Base index of the set of counters
+        counter_idx_mask                 XLEN-1:0    unsigned long                         Mask that selects counters relative to counter_idx_base
+        stop_flags                       XLEN-1:0    unsigned long                         Stop flags
+               11.10.1.1.1   stop_flags bit fields
+        Name                               Bits          Description
+        SBI_PMU_STOP_FLAG_RESET            0:0           Reset the counter to event mapping
+        SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT    1:1           Save a snapshot of the given counters' values in the shared memory if available
+        RESERVED                           XLEN-1:2      Reserved for future use; must be zero
+               11.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              sbiret.error XLEN-1:0    long                                  Command return status
+               11.10.2 Failure conditions
+  ID                          Condition
+  counter_valid               pre: !AllCountersValid(counter_idx_base, counter_idx_mask)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  flags_reserved              pre: stop_flags[XLEN-1:2] != 0
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  counter_state               pre: AnyCounterStopped(counter_idx_base, counter_idx_mask)
+                              post: ResultEqual(result, SBI_ERR_ALREADY_STOPPED)
+  snapshot_shmem              pre: stop_flags[1] == 1 && !SnapshotShmemAvailable()
+                              post: ResultEqual(result, SBI_ERR_NO_SHMEM)
+               11.10.2.1   Failure condition ordering
+               The sbi_pmu_counter_stop command does not have any failure condition orderings.
+               11.10.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  counter_state               post: forall idx in CounterSet(counter_idx_base, counter_idx_mask):
+                                        CounterIsStopped(idx)
+  counter_reset               pre: stop_flags[0] == 1
+                              post: forall idx in CounterSet(counter_idx_base, counter_idx_mask):
+                                        CounterEventMappingIsReset(idx)
+  snapshot_values             pre: stop_flags[1] == 1
+                              post: forall idx in CounterSet(counter_idx_base, counter_idx_mask):
+                                        SnapshotShmem.counter_value[idx] == CounterValue(idx)
+  snapshot_others             pre: stop_flags[1] == 1
+                              post: forall idx not in CounterSet(counter_idx_base, counter_idx_mask):
+                                        SnapshotShmem.counter_value[idx] == Old(SnapshotShmem.counter_value[idx])
+  snapshot_overflow           pre: stop_flags[1] == 1
+                              post: SnapshotShmem.overflow_bitmap == CounterOverflowBitmap()
+               11.10.4 Footprint
+    ID                        Value
+    counter_state             CounterState(idx) for idx in CounterSet(counter_idx_base, counter_idx_mask)
+    counter_reset             CounterEventMapping(idx) for idx in CounterSet(counter_idx_base, counter_idx_mask)
+    snapshot_values           SnapshotShmem.counter_value[idx] for idx in CounterSet(counter_idx_base, counter_idx_mask)
+    snapshot_overflow         SnapshotShmem.overflow_bitmap

@@ -1,0 +1,39 @@
+3.11.2.9 PINCTRL_REQUEST command
+               An agent uses this command to request exclusive control of a pin or group. While the agent has control, no other agent can use the pin or group until the controlling agent calls PINCTRL_RELEASE.
+               This command is optional. To find out if it is implemented, a caller issues PROTOCOL_MESSAGE_ATTRIBUTES with the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES returns SUCCESS.
+               3.11.2.9.1 Interface
+               3.11.2.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x7
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x19
+        identifier          Param[0]     31:0        UInt32                                Identifier for the pin or group
+        flags               Param[1]     31:0        UInt32                                Bits[31:2]: Reserved, must be zero
+                                                                                           Bits[1:0]: Selector. Whether identifier refers to a pin or a group:
+                                                                                             0 – Pin
+                                                                                             1 – Group
+                                                                                           All other values are reserved for future use
+               3.11.2.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status (see Section 3.1.4 for more status code definitions)
+               3.11.2.9.2 Failure conditions
+  ID                          Condition
+  flags_rsvd                  pre: flags[31:2] != 0
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  flags_selector              pre: flags[1:0] != 0 && flags[1:0] != 1
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  id_valid                    pre: !IsValidPinOrGroup(identifier, flags[1:0])
+                              post: ResultEqual(status, NOT_FOUND)
+  agent_permitted             pre: !AgentMayRequestPinOrGroup(caller, identifier, flags[1:0])
+                              post: ResultEqual(status, DENIED)
+  in_use                      pre: IsUnderExclusiveControl(identifier, flags[1:0])
+                                   && ExclusiveOwner(identifier, flags[1:0]) != caller
+                              post: ResultEqual(status, IN_USE)
+               3.11.2.9.2.1   Failure condition ordering
+               The PINCTRL_REQUEST command does not have any failure condition orderings.
+               3.11.2.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  owner                       post: ExclusiveOwner(identifier, flags[1:0]) == caller
+               3.11.2.9.4 Footprint
+    ID                        Value
+    owner                     ExclusiveOwner(identifier, flags[1:0])

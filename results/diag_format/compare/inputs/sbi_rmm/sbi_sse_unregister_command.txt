@@ -1,0 +1,31 @@
+17.10 sbi_sse_unregister command
+               Unregisters the event handler for the given event_id.
+               17.10.1 Interface
+               17.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt32                                FID, value 3
+        event_id            —            31:0        uint32_t                              Identifier of the software event to unregister
+               17.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              —            —           struct sbiret                         Command return status
+               17.10.2 Failure conditions
+  ID                          Condition
+  event_state                 pre: SseEventState(event_id) != REGISTERED
+                              post: The function fails. The error code is not given in this excerpt; it would come from Table 84 (SSE Event Unregister Errors), whose contents are not included.
+               Other error codes are listed in Table 84 (SSE Event Unregister Errors), whose contents are not included in this excerpt.
+               17.10.2.1   Failure condition ordering
+               The sbi_sse_unregister command does not have any failure condition orderings.
+               17.10.3 Success conditions
+  ID                          Condition
+  event_state                 pre: IsLocalEvent(event_id)
+                              post: SseEventState(event_id) == UNUSED for the calling hart
+                              pre: IsGlobalEvent(event_id)
+                              post: SseEventState(event_id) == UNUSED for all harts
+  event_handler               pre: IsLocalEvent(event_id)
+                              post: !IsHandlerRegistered(event_id) for the calling hart
+                              pre: IsGlobalEvent(event_id)
+                              post: !IsHandlerRegistered(event_id) for all harts
+               17.10.4 Footprint
+    ID                        Value
+    event_state               SseEventState(event_id) (calling hart for local events; all harts for global events)
+    event_handler             SseEventHandler(event_id) (calling hart for local events; all harts for global events)

@@ -1,0 +1,19 @@
+4.3 sbi_get_impl_version command
+               Returns the current SBI implementation version.
+               4.3.1 Interface
+               4.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt64                                FID, value 2
+               4.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               —            —           struct sbiret.error                   Command return status
+        value               —            —           struct sbiret.value                   Current SBI implementation version. The encoding is specific to the SBI implementation.
+               4.3.2 Failure conditions
+               The sbi_get_impl_version command does not have any failure conditions.
+               4.3.2.1   Failure condition ordering
+               The sbi_get_impl_version command does not have any failure condition orderings.
+               4.3.3 Success conditions
+  ID                          Condition
+  impl_version                post: value == CurrentSbiImplVersion()
+               4.3.4 Footprint
+               The sbi_get_impl_version command does not modify any state.

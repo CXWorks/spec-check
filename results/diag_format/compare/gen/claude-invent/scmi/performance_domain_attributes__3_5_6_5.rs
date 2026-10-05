@@ -1,0 +1,33 @@
+pub open spec fn performance_domain_attributes__3_5_6_5_spec(domain_id: u32, status: i32, attributes: u32, rate_limit: u32, sustained_freq: u32, sustained_perf_level: u32, name: Seq<u8>, guaranteed_perf_level: u32, qos_capability_types: u32, qos_parent_id: u32, old_s: S, new_s: S) -> bool {
+    (!PerfDomainIsValid(old_s, domain_id) ==> status == NOT_FOUND)
+    && (status == SUCCESS ==> (
+        PerfDomainIsValid(old_s, domain_id)
+        && ((((attributes >> 31u32) & 1u32) == 1u32) == PerfDomainAgentCanSetLimits(old_s, domain_id))
+        && ((((attributes >> 30u32) & 1u32) == 1u32) == PerfDomainAgentCanSetLevel(old_s, domain_id))
+        && ((((attributes >> 29u32) & 1u32) == 1u32) == PerfDomainLimitsNotifySupported(old_s, domain_id))
+        && ((((attributes >> 28u32) & 1u32) == 1u32) == PerfDomainLevelNotifySupported(old_s, domain_id))
+        && ((((attributes >> 27u32) & 1u32) == 1u32) == PerfDomainHasFastChannel(old_s, domain_id))
+        && ((((attributes >> 26u32) & 1u32) == 1u32) == PerfDomainHasExtendedName(old_s, domain_id))
+        && ((((attributes >> 25u32) & 1u32) == 1u32) == PerfDomainUsesLevelIndexingMode(old_s, domain_id))
+        && ((((attributes >> 24u32) & 1u32) == 1u32) == PerfDomainAsyncQosSupported(old_s, domain_id))
+        && ((((attributes >> 23u32) & 1u32) == 1u32) == PerfDomainIsQosOnly(old_s, domain_id))
+        && ((((attributes >> 22u32) & 1u32) == 1u32) == PerfDomainSustainedReductionSupported(old_s, domain_id))
+        && ((((attributes >> 23u32) & 1u32) == 1u32) ==> (((attributes >> 28u32) & 0xFu32) == 0u32 && ((attributes >> 22u32) & 1u32) == 0u32))
+        && ((attributes & 0x3F_FFFFu32) == 0u32)
+        && ((rate_limit >> 20u32) == 0u32)
+        && ((rate_limit & 0xF_FFFFu32) == PerfDomainRateLimit(old_s, domain_id))
+        && ((((attributes >> 23u32) & 1u32) == 0u32) ==> sustained_freq == PerfDomainSustainedFreq(old_s, domain_id))
+        && ((((attributes >> 23u32) & 1u32) == 0u32) ==> sustained_perf_level == PerfDomainSustainedPerfLevel(old_s, domain_id))
+        && name.len() == 16
+        && IsNullTerminatedAscii(name)
+        && ((((attributes >> 26u32) & 1u32) == 1u32) ==> name.subrange(0, 15) == PerfDomainName(old_s, domain_id).subrange(0, 15))
+        && ((((attributes >> 26u32) & 1u32) == 0u32) ==> IsNullTerminatedPrefixOf(name, PerfDomainName(old_s, domain_id)))
+        && (guaranteed_perf_level == 0u32 || guaranteed_perf_level == PerfDomainGuaranteedPerfLevel(old_s, domain_id))
+        && ((qos_capability_types >> 24u32) == 0u32)
+        && (((qos_capability_types >> 8u32) & 0xFFu32) == 0u32)
+        && (qos_capability_types == PerfDomainQosCapabilityTypes(old_s, domain_id))
+        && (qos_capability_types != 0u32 ==> ((qos_parent_id == 0xFFFF_FFFFu32) == !PerfDomainHasQosParent(old_s, domain_id)))
+        && (qos_capability_types != 0u32 && qos_parent_id != 0xFFFF_FFFFu32 ==> qos_parent_id == PerfDomainQosParentId(old_s, domain_id))
+    ))
+    && new_s == old_s
+}

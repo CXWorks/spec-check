@@ -1,0 +1,56 @@
+3.10.3.17 POWERCAP_DESCRIBE_FASTCHANNEL command
+               Lets the agent discover the attributes of the FastChannel for a given power capping domain and message.
+               The POWERCAP_DOMAIN_ATTRIBUTES command tells whether a power capping domain supports FastChannels. The PROTOCOL_MESSAGE_ATTRIBUTES command tells whether a command, identified by message_id, supports FastChannels.
+               protocol_id: 0x13, message_id: 0xC. This command is optional.
+               3.10.3.17.1 Interface
+               3.10.3.17.1.1   Input values
+        Name                Register        Bits        Type        Description
+        domain_id           Parameter 0     31:0        UInt32      ID of the power capping domain that the FastChannel is allocated for
+        message_id          Parameter 1     31:0        UInt32      ID of the message that the FastChannel is allocated for
+        cpli                Parameter 2     31:0        UInt32      ID of the concurrent power limit that the FastChannel is allocated for. Must be 0 if the domain does not support CPC, or if message_id does not take cpli as an input parameter
+               3.10.3.17.1.2   Output values
+        Name                            Register        Bits        Type        Description
+        status                          Return 0        31:0        Int32       Command return status
+        attributes                      Return 1        31:3        UInt32      Reserved. Should be zero in this version of the specification
+                                                        2:1                     Doorbell register width. Valid only if Doorbell Support is 1. 0: 8 bits, 1: 16 bits, 2: 32 bits, 3: 64 bits
+                                                        0                       Doorbell Support. 0: the FastChannel has no doorbell register. 1: the FastChannel has a doorbell register
+        rate_limit                      Return 2        31:20       UInt32      Reserved and set to zero
+                                                        19:0                    Rate limit in microseconds: the minimum time needed between successive requests. 0 means the field does not apply or is not supported on the platform
+        chan_addr_low                   Return 3        31:0        UInt32      Lower 32 bits of the FastChannel address
+        chan_addr_high                  Return 4        31:0        UInt32      Upper 32 bits of the FastChannel address
+        chan_size                       Return 5        31:0        UInt32      Size of the FastChannel in bytes. Should be large enough to hold the payload of the message that the FastChannel is used for (see Section 3.5.5.1)
+        doorbell_addr_low               Return 6        31:0        UInt32      Lower 32 bits of the doorbell address. Not used if doorbell is not supported
+        doorbell_addr_high              Return 7        31:0        UInt32      Upper 32 bits of the doorbell address. Not used if doorbell is not supported
+        doorbell_set_mask_low           Return 8        31:0        UInt32      Lower 32 bits of the mask to set when writing to the doorbell register. If the doorbell register width n is less than 32 bits, only the lower n bits are used. Not used if doorbell is not supported
+        doorbell_set_mask_high          Return 9        31:0        UInt32      Upper 32 bits of the mask to set when writing to the doorbell register. Valid only if the doorbell register width is 64 bits. Not used if doorbell is not supported
+        doorbell_preserve_mask_low      Return 10       31:0        UInt32      Lower 32 bits of the mask to preserve when writing to the doorbell register. If the doorbell register width n is less than 32 bits, only the lower n bits are used. Not used if doorbell is not supported
+        doorbell_preserve_mask_high     Return 11       31:0        UInt32      Upper 32 bits of the mask to preserve when writing to the doorbell register. Valid only if the doorbell register width is 64 bits. Not used if doorbell is not supported
+               Bits that are set in neither set_mask nor preserve_mask are cleared.
+               status can be one of, but is not limited to, the codes below. Section 3.1.4 defines further status codes.
+               3.10.3.17.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  message_valid               pre: !IsValidMessage(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cpli_valid                  pre: !IsValidCpli(domain_id, cpli)
+                              post: ResultEqual(status, NOT_FOUND)
+  domain_fc_support           pre: !DomainSupportsFastChannel(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  message_fc_support          pre: !MessageSupportsFastChannel(message_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.10.3.17.2.1   Failure condition ordering
+               The POWERCAP_DESCRIBE_FASTCHANNEL command does not have any failure condition orderings.
+               3.10.3.17.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  fc_found                    post: IsValidFastChannel(domain_id, message_id, cpli)
+  attr_reserved               post: attributes[31:3] == 0
+  attr_db_support             post: attributes[0] == FastChannelHasDoorbell(domain_id, message_id, cpli)
+  attr_db_width               post: attributes[0] == 1 ==> attributes[2:1] == DoorbellWidthEncoding(domain_id, message_id, cpli)
+  rate_reserved               post: rate_limit[31:20] == 0
+  chan_addr                   post: (chan_addr_high << 32 | chan_addr_low) == FastChannelAddress(domain_id, message_id, cpli)
+  chan_size                   post: chan_size == FastChannelSize(domain_id, message_id, cpli)
+  db_addr                     post: attributes[0] == 1 ==> (doorbell_addr_high << 32 | doorbell_addr_low) == DoorbellAddress(domain_id, message_id, cpli)
+               3.10.3.17.4 Footprint
+               The POWERCAP_DESCRIBE_FASTCHANNEL command does not have a footprint.

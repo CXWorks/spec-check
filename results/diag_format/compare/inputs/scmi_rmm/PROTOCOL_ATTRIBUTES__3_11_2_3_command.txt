@@ -1,0 +1,27 @@
+3.11.2.3 PROTOCOL_ATTRIBUTES command
+               Returns the implementation details associated with this protocol.
+               This command is mandatory.
+               3.11.2.3.1 Interface
+               3.11.2.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0x1
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x19
+               3.11.2.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        num_pin_groups      Return[1]    31:16       UInt16                                attributes_low: Number of pin groups
+        num_pins            Return[1]    15:0        UInt16                                attributes_low: Number of pins
+        reserved            Return[2]    31:16       UInt16                                attributes_high: Reserved, must be zero
+        num_functions       Return[2]    15:0        UInt16                                attributes_high: Number of functions
+               3.11.2.3.2 Failure conditions
+               The PROTOCOL_ATTRIBUTES command does not have any failure conditions.
+               3.11.2.3.2.1   Failure condition ordering
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+               3.11.2.3.3 Success conditions
+  ID                          Condition
+  pin_groups                  post: num_pin_groups == NumPinGroups()
+  pins                        post: num_pins == NumPins()
+  functions                   post: num_functions == NumFunctions()
+  reserved                    post: reserved == 0
+               3.11.2.3.4 Footprint
+               The PROTOCOL_ATTRIBUTES command does not modify any state.

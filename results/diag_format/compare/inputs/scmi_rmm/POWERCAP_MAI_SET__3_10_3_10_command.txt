@@ -1,0 +1,35 @@
+3.10.3.10 POWERCAP_MAI_SET command
+               Lets an agent set the power measurement averaging interval (MAI) for a power capping domain.
+               This command is mandatory if any domain supports configuring the MAI.
+               3.10.3.10.1 Interface
+               3.10.3.10.1.1   Input values
+        Name                Register             Bits        Type                Description
+        message_id          Message header       —           —                   Message identifier, value 0x7
+        protocol_id         Message header       —           —                   Protocol identifier, value 0x18
+        domain_id           Parameter            31:0        UInt32              Identifier for the power capping domain
+        flags               Parameter            31:0        UInt32              Reserved, must be zero
+        mai                 Parameter            31:0        UInt32              Power measurement averaging interval to set for the domain. Must not be zero
+               3.10.3.10.1.2   Output values
+        Name                Register             Bits        Type                Description
+        status              Return value         31:0        Int32               Command return status
+               3.10.3.10.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PowercapDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  supported                   pre: !IsMaiSetSupported(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  flags_valid                 pre: !AreValidMaiSetFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  mai_supported               pre: !IsSupportedMai(domain_id, mai)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  permission                  pre: !AgentMaySetMai(calling_agent, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.10.3.10.2.1   Failure condition ordering
+               The POWERCAP_MAI_SET command does not have any failure condition orderings.
+               3.10.3.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  mai_set                     post: PowercapDomain(domain_id).mai == mai
+               3.10.3.10.4 Footprint
+    ID                        Value
+    mai_set                   PowercapDomain(domain_id).mai

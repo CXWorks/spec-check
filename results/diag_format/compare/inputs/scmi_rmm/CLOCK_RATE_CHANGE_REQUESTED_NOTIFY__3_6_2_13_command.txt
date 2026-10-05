@@ -1,0 +1,26 @@
+3.6.2.13 CLOCK_RATE_CHANGE_REQUESTED_NOTIFY command
+               Enables or disables CLOCK_RATE_CHANGE_REQUESTED notifications to the calling agent for a clock device.
+               3.6.2.13.1 Interface
+               3.6.2.13.1.1   Input values
+        Name                Register        Bits        Type        Description
+        message_id          header          -           -           Message ID, value 0xA
+        protocol_id         header          -           -           Protocol ID, value 0x14
+        clock_id            payload[0]      31:0        uint32      Identifier for the clock device
+        notify_enable       payload[1]      31:1        uint32      Reserved, must be zero
+        notify_enable       payload[1]      0           uint32      Notify enable. 0: the platform does not send CLOCK_RATE_CHANGE_REQUESTED messages to the calling agent. 1: the platform sends CLOCK_RATE_CHANGE_REQUESTED messages to the calling agent when another agent or entity in the system, including the platform itself, requests a change in the clock rate
+               3.6.2.13.1.2   Output values
+        Name                Register        Bits        Type        Description
+        status              payload[0]      31:0        int32       Command return status
+               3.6.2.13.2 Failure conditions
+  ID                          Condition
+  clock_id                    pre: !IsValidClockId(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.6.2.13.2.1   Failure condition ordering
+               The CLOCK_RATE_CHANGE_REQUESTED_NOTIFY command does not have any failure condition orderings.
+               3.6.2.13.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_state                post: RateChangeRequestedNotifyEnabled(calling_agent, clock_id) == notify_enable[0]
+               3.6.2.13.4 Footprint
+    ID                        Value
+    notify_state              RateChangeRequestedNotifyEnabled(calling_agent, clock_id)

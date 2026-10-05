@@ -1,0 +1,17 @@
+pub open spec fn ffa_notification_set_spec(result: UInt32, old_s: S, new_s: S) -> bool {
+    (!IsImplementedAtInstance(old_s, FFA_NOTIFICATION_SET) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsRecognizedPartitionId(old_s, sender_id(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsRecognizedPartitionId(old_s, receiver_id(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!AreValidFlags(old_s, flags(old_s), instance(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == 0 && receiver_vcpu_id(old_s) != 0 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == 0 && BitmapHasPerVcpuNotification(old_s, receiver_id(old_s), bitmap(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == 1 && BitmapHasGlobalNotification(old_s, receiver_id(old_s), bitmap(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == 1 && !PerVcpuNotificationsSupported(old_s) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!SenderMaySignalAll(old_s, sender_id(old_s), receiver_id(old_s), bitmap(old_s)) ==> ResultEqual(result, DENIED))
+    && (!ReceiverSupportsNotifications(old_s, receiver_id(old_s)) ==> ResultEqual(result, DENIED))
+    && (ReceiverHasAborted(old_s, receiver_id(old_s)) ==> ResultEqual(result, ABORTED))
+    && (ResultEqual(result, FFA_SUCCESS) ==> (per_vcpu(old_s) == 0 ==> for_all(i: UInt32, bitmap(old_s)[i] == 1 ==> NotificationSignaled(old_s, receiver_id(old_s), i, new_s)) && per_vcpu(old_s) == 1 ==> for_all(i: UInt32, bitmap(old_s)[i] == 1 ==> NotificationSignaled(old_s, receiver_id(old_s), receiver_vcpu_id(old_s), i, new_s)))
+    && (per_vcpu(old_s) == 0 ==> NotificationState(old_s, receiver_id(old_s)).global == NotificationState(new_s, receiver_id(old_s)).global)
+    && (per_vcpu(old_s) == 1 ==> NotificationState(old_s, receiver_id(old_s), receiver_vcpu_id(old_s)).per_vcpu == NotificationState(new_s, receiver_id(old_s), receiver_vcpu_id(old_s)).per_vcpu)
+    && (ScheduleReceiverInterrupt(old_s).pending == ScheduleReceiverInterrupt(new_s).pending)
+}

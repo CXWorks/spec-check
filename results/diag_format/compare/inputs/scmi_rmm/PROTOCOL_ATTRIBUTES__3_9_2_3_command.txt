@@ -1,0 +1,34 @@
+3.9.2.3 PROTOCOL_ATTRIBUTES command
+
+               Returns the implementation details associated with this protocol.
+               This command is mandatory.
+
+               3.9.2.3.1 Interface
+
+               3.9.2.3.1.1   Input values
+        Name                Register        Bits        Type        Description
+        message_id          Message header  —           UInt32      Message identifier, value 0x1
+        protocol_id         Message header  —           UInt32      Protocol identifier, value 0x17
+
+               3.9.2.3.1.2   Output values
+        Name                Register        Bits        Type        Description
+        status              Return values   31:0        Int32       Command return status. See Section 3.1.4 for status code definitions.
+        attributes          Return values   31:16       UInt32      Reserved, must be zero
+                                            15:0                    Number of voltage domains
+
+               3.9.2.3.2 Failure conditions
+
+               The section does not define any failure conditions for the PROTOCOL_ATTRIBUTES command.
+
+               3.9.2.3.2.1   Failure condition ordering
+
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+
+               3.9.2.3.3 Success conditions
+  ID                          Condition
+  attr_rsvd                   post: attributes[31:16] == 0
+  attr_num_domains            post: attributes[15:0] == NumVoltageDomains()
+
+               3.9.2.3.4 Footprint
+
+               The PROTOCOL_ATTRIBUTES command does not modify any state.

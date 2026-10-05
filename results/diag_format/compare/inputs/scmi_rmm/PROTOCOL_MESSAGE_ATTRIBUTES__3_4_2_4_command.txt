@@ -1,0 +1,29 @@
+3.4.2.4 PROTOCOL_MESSAGE_ATTRIBUTES command
+               Returns implementation details for a specific message in this protocol. This command is mandatory.
+               3.4.2.4.1 Interface
+               3.4.2.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x12
+        message_id          Header       -           UInt32                                Message identifier of this command, value 0x2
+        message_id          Payload[0]   31:0        UInt32                                message_id of the queried message
+               3.4.2.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4)
+        attributes          Payload[1]   31:0        UInt32                                Flags associated with the queried message
+               3.4.2.4.2 Failure conditions
+  ID                          Condition
+  msg_found                   pre: !IsImplementedMessage(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  notify_support              pre: message_id == SYSTEM_POWER_STATE_NOTIFY_ID && !PowerStateNotificationsSupported()
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.4.2.4.2.1   Failure condition ordering
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not have any failure condition orderings.
+               3.4.2.4.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  warm_reset                  post: message_id == SYSTEM_POWER_STATE_SET_ID ==> attributes[31] == (SystemWarmResetSupported() ? 1 : 0)
+  suspend                     post: message_id == SYSTEM_POWER_STATE_SET_ID ==> attributes[30] == (SystemSuspendSupported() ? 1 : 0)
+  set_reserved                post: message_id == SYSTEM_POWER_STATE_SET_ID ==> attributes[29:0] == 0
+  attr_zero                   post: message_id != SYSTEM_POWER_STATE_SET_ID ==> attributes == 0
+               3.4.2.4.4 Footprint
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not modify any state.

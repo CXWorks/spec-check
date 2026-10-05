@@ -1,0 +1,31 @@
+3.7.2.8 SENSOR_TRIP_POINT_NOTIFY command
+               The agent uses this command to turn notifications on or off for all trip-points of a sensor that have been configured using the SENSOR_TRIP_POINT_CONFIG command. A notification is generated on a cross-over event.
+               This command is optional.
+               3.7.2.8.1 Interface
+               3.7.2.8.1.1   Input values
+        Name                    Register        Bits        Type        Description
+        message_id              Header          -           UInt        Message identifier, value 0x4
+        protocol_id             Header          -           UInt        Protocol identifier, value 0x15
+        sensor_id               Payload[0]      31:0        UInt32      Identifier for the sensor
+        sensor_event_control    Payload[1]      31:1        UInt32      Reserved
+                                                0           Bits1       Turns notifications on or off for all configured trip-points of the specified sensor. 1: a notification is sent whenever the sensor value crosses any trip-point configured using SENSOR_TRIP_POINT_CONFIG. 0: no notifications are sent for any of the trip-points.
+               3.7.2.8.1.2   Output values
+        Name                    Register        Bits        Type        Description
+        status                  Payload[0]      31:0        Int32       Command return status (see Section 3.1.4 for status code definitions)
+               3.7.2.8.2 Failure conditions
+  ID                          Condition
+  sensor_exists               pre: !IsExistingSensor(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  event_control               pre: !IsValidSensorEventControl(sensor_event_control)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  notify_supported            pre: !SensorSupportsTripPointNotify(sensor_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.7.2.8.2.1   Failure condition ordering
+               The SENSOR_TRIP_POINT_NOTIFY command does not have any failure condition orderings.
+               3.7.2.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_enable               post: SensorAt(sensor_id).trip_point_notify_enabled == sensor_event_control[0]
+               3.7.2.8.4 Footprint
+    ID                        Value
+    notify_enable             SensorAt(sensor_id).trip_point_notify_enabled

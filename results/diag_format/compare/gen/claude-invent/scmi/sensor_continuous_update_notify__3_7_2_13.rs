@@ -1,0 +1,20 @@
+pub open spec fn sensor_continuous_update_notify__3_7_2_13_spec(status: i32, agent_id: u32, sensor_id: u32, notify_enable: u32, old_s: S, new_s: S) -> bool {
+    (!SensorIdValid(old_s, sensor_id)
+        ==> (status == NOT_FOUND && new_s == old_s))
+    && ((SensorIdValid(old_s, sensor_id)
+        && !SensorSupportsContinuousUpdateNotify(old_s, sensor_id))
+        ==> (status == NOT_SUPPORTED && new_s == old_s))
+    && ((SensorIdValid(old_s, sensor_id)
+        && SensorSupportsContinuousUpdateNotify(old_s, sensor_id)
+        && (notify_enable & 0xFFFF_FFFEu32) != 0u32)
+        ==> (status == INVALID_PARAMETERS && new_s == old_s))
+    && ((SensorIdValid(old_s, sensor_id)
+        && SensorSupportsContinuousUpdateNotify(old_s, sensor_id)
+        && (notify_enable & 0xFFFF_FFFEu32) == 0u32)
+        ==> (status == SUCCESS
+            && SensorUpdateNotifyEnabled(new_s, agent_id, sensor_id) == ((notify_enable & 1u32) == 1u32)
+            && (forall|a: u32, sid: u32| !(a == agent_id && sid == sensor_id)
+                ==> SensorUpdateNotifyEnabled(new_s, a, sid) == SensorUpdateNotifyEnabled(old_s, a, sid))
+            && (forall|sid: u32| SensorIdValid(new_s, sid) == SensorIdValid(old_s, sid))
+            && (forall|sid: u32| SensorSupportsContinuousUpdateNotify(new_s, sid) == SensorSupportsContinuousUpdateNotify(old_s, sid))))
+}

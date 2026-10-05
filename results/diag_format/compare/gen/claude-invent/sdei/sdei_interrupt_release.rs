@@ -1,0 +1,21 @@
+pub open spec fn sdei_interrupt_release_spec(event: i32, result: i64, old_s: S, new_s: S) -> bool {
+    (!SdeiIsSupported(old_s) ==> (result == NOT_SUPPORTED && new_s == old_s))
+    && ((SdeiIsSupported(old_s)
+        && (!SdeiEventNumberIsValid(old_s, event) || !SdeiEventIsBound(old_s, event)))
+        ==> (result == INVALID_PARAMETERS && new_s == old_s))
+    && ((SdeiIsSupported(old_s)
+        && SdeiEventNumberIsValid(old_s, event)
+        && SdeiEventIsBound(old_s, event)
+        && !SdeiEventHandlerUnregisteredOnAllPes(old_s, event))
+        ==> (result == DENIED && new_s == old_s))
+    && ((SdeiIsSupported(old_s)
+        && SdeiEventNumberIsValid(old_s, event)
+        && SdeiEventIsBound(old_s, event)
+        && SdeiEventHandlerUnregisteredOnAllPes(old_s, event))
+        ==> (result == SUCCESS
+            && !SdeiEventIsBound(new_s, event)
+            && !SdeiEventNumberIsValid(new_s, event)
+            && SdeiBindSlotReturnedToPool(old_s, new_s, event)
+            && SdeiInterruptConfigRestored(old_s, new_s, event)
+            && SdeiInterruptDisabledAtController(new_s, SdeiBoundInterrupt(old_s, event))))
+}

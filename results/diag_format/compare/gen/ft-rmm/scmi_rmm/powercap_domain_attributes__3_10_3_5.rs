@@ -1,0 +1,21 @@
+pub open spec fn powercap_domain_attributes__3_10_3_5_spec(domain_id: UInt32, status: Int32, mai_notify: UInt64, meas_notify: UInt64, async_cap_set: UInt64, ext_name: UInt64, cap_config: UInt64, power_monitor: UInt64, mai_config: UInt64, power_unit: UInt64, fastchannel: UInt64, cap_notify: UInt64, cai_config: UInt64, cai_notify: UInt64, num_limits: UInt32, name: [UInt8; 16], min_mai: UInt32, max_mai: UInt32, mai_step: UInt32, min_power_cap: UInt32, max_power_cap: UInt32, power_cap_step: UInt32, sustainable_power: UInt32, accuracy: UInt32, parent_id: UInt32, min_cai: UInt32, max_cai: UInt32, cai_step: UInt32, old_s: S, new_s: S) -> bool {
+  (!PowercapDomainExists(old_s, domain_id[15:0]) ==> ResultEqual(status, NOT_FOUND))
+  && (ResultEqual(status, SUCCESS) ==> status == SUCCESS)
+  && (ResultEqual(status, SUCCESS) && (cap_config == 1) ==> (num_limits > 0))
+  && (ResultEqual(status, SUCCESS) ==> power_unit == 0 || power_unit == 1 || power_unit == 2)
+  && (ResultEqual(status, SUCCESS) && (cap_config == 1) ==> (num_limits > 0))
+  && (ResultEqual(status, SUCCESS) && (min_mai == max_mai) ==> !MaiIsConfigurable(old_s, domain_id[15:0]))
+  && (ResultEqual(status, SUCCESS) && (min_mai != max_mai) ==> (mai_step != 0))
+  && (ResultEqual(status, SUCCESS) && (min_power_cap != 0) && (max_power_cap != 0))
+  && (ResultEqual(status, SUCCESS) && (min_power_cap == max_power_cap) ==> !PowerCapIsConfigurable(old_s, domain_id[15:0]))
+  && (ResultEqual(status, SUCCESS) && (min_power_cap != max_power_cap) ==> (power_cap_step != 0))
+  && (ResultEqual(status, SUCCESS) && (min_cai == max_cai) ==> !CaiIsConfigurable(old_s, domain_id[15:0]))
+  && (ResultEqual(status, SUCCESS) && (min_cai != max_cai) ==> (cai_step != 0))
+  && ((!(PowercapDomainExists(old_s, domain_id[15:0])))
+    ==> ResultEqual(status, SUCCESS))
+  && (ResultEqual(status, SUCCESS)
+    ==> (cap_config == 1) || (power_monitor == 1))
+  && (result: Result<(), RmiStatusCode>,
+    (result.is_Ok()
+     ==> status == SUCCESS))
+}

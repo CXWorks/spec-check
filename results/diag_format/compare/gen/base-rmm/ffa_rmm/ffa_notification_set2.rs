@@ -1,0 +1,16 @@
+pub open spec fn ffa_notification_set2_spec(result: FfaReturnCode, error_code: Int32, old_s: FfaState, new_s: FfaState) -> bool {
+    (!IsImplementedAtInstance(old_s, FFA_NOTIFICATION_SET2) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsRecognizedPartitionId(old_s, sender_id(old_s)) || !IsRecognizedPartitionId(old_s, receiver_id(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidFlags(old_s) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == '0' && receiver_vcpu_id(old_s) != 0 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == '0' && BitmapContainsPerVcpuNotification(old_s, receiver_id(old_s), bitmap(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == '1' && BitmapContainsGlobalNotification(old_s, receiver_id(old_s), bitmap(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (per_vcpu(old_s) == '1' && !PerVcpuNotificationsSupported(old_s) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (BitmapExceedsSupportedNotifications(old_s, bitmap(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsEmptyBitmap(old_s, bitmap(old_s)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!SenderPermittedToSignalAll(old_s, sender_id(old_s), receiver_id(old_s), bitmap(old_s)) ==> ResultEqual(result, DENIED))
+    && (!SupportsNotificationReceipt(old_s, receiver_id(old_s)) ==> ResultEqual(result, DENIED))
+    && (HasAborted(old_s, receiver_id(old_s)) ==> ResultEqual(result, ABORTED))
+    && (ResultEqual(result, FFA_SUCCESS) ==> (per_vcpu(old_s) == '0' ==> (forall i: int, bitmap(old_s)[i] == '1' ==> NotificationSignaled(old_s, receiver_id(old_s), i))) && (per_vcpu(old_s) == '1' ==> (forall i: int, bitmap(old_s)[i] == '1' ==> NotificationSignaled(old_s, receiver_id(old_s), receiver_vcpu_id(old_s), i))))
+    && (ResultEqual(result, FFA_SUCCESS) ==> NotificationSignalState(old_s, receiver_id(old_s), bitmap(old_s)))
+}

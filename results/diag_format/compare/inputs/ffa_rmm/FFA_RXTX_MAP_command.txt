@@ -1,0 +1,24 @@
+13.6 FFA_RXTX_MAP command
+               Maps the RX/TX buffer pair in the translation regime of the callee on behalf of an endpoint or Hypervisor.
+               The buffer pair is described as follows:
+                 • An SP describes to the SPM the VA or IPA contiguous pages allocated for each buffer in the pair.
+                 • A VM describes to the Hypervisor the VA or IPA contiguous pages allocated for each buffer in the pair.
+                 • A Hypervisor or OS Kernel describes to the SPM the physically contiguous pages allocated for each buffer in the pair.
+                 • A Hypervisor forwards to the SPM the description of the pages that a VM allocated for each buffer in the pair.
+                      – The Hypervisor puts the description of the buffer pair in its own TX buffer, as described in Table
+               13.6.1 Interface
+               13.6.1.1   Input values
+               The section does not give the input parameters, registers or function ID.
+               13.6.1.2   Output values
+               The section does not give the output values.
+               13.6.2 Failure conditions
+               The section does not give any failure conditions or error return codes.
+               13.6.2.1   Failure condition ordering
+               The FFA_RXTX_MAP command does not have any failure condition orderings.
+               13.6.3 Success conditions
+  ID                          Condition
+  rxtx_mapped                 post: RxTxBufferPairIsMapped(callee_translation_regime, buffer_pair)
+               The section does not give a success return code.
+               13.6.4 Footprint
+    ID                        Value
+    rxtx_mapped               CalleeTranslationRegime.Mapping(buffer_pair)

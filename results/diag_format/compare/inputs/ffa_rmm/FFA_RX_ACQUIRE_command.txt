@@ -1,0 +1,34 @@
+13.4 FFA_RX_ACQUIRE command
+               Acquires ownership of a RX buffer before writing a message to it (see 4.10 RX/TX buffers).
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance             Valid conduits
+        1                   Non-secure Physical       SMC
+        2                   Secure Physical           ERET
+               13.4.1 Interface
+               13.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000084
+        vm_id               w1           15:0        UInt16                                ID of the VM whose RX buffer ownership is to be acquired
+        reserved            w1           31:16       UInt16                                Reserved (SBZ)
+        reserved            w2-w7        31:0        UInt32                                Reserved (SBZ)
+               13.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                FFA_SUCCESS on success (no further parameters), FFA_ERROR on failure
+        error_code          w2           31:0        Int32                                 Error code, valid only when result is FFA_ERROR
+               13.4.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_RX_ACQUIRE)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  no_buffer_pair              pre: !IsBufferPairRegistered(vm_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  rx_denied                   pre: !CanRelinquishRxBufferOwnership(vm_id)
+                              post: ResultEqual(result, DENIED)
+               13.4.2.1   Failure condition ordering
+               The FFA_RX_ACQUIRE command does not have any failure condition orderings.
+               13.4.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  rx_owner                    post: RxBufferOwner(vm_id) == Caller
+               13.4.4 Footprint
+    ID                        Value
+    rx_owner                  RxBufferOwner(vm_id)

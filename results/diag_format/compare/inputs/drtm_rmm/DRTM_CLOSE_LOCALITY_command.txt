@@ -1,0 +1,30 @@
+3.6 DRTM_CLOSE_LOCALITY command
+               Closes a locality in the TPM.
+               3.6.1 Interface
+               3.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FID, value 0xC4000115
+        locality            X1           31:0        UInt32                                Locality to close. Valid values are 2 and 3.
+               3.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               3.6.2 Failure conditions
+  ID                          Condition
+  drtm_support                pre: !DrtmIsSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  locality_valid              pre: locality != 2 && locality != 3
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  locality_closed             pre: TpmLocalityIsClosed(locality)
+                              post: ResultEqual(result, ALREADY_CLOSED)
+  locality_relinquished       pre: !TpmLocalityIsRelinquished(locality)
+                              post: ResultEqual(result, DENIED)
+               Note: This function may return other error codes as defined in section 3.18.
+               3.6.2.1   Failure condition ordering
+               The DRTM_CLOSE_LOCALITY command does not have any failure condition orderings.
+               3.6.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  locality_closed             post: TpmLocalityIsClosed(locality)
+               3.6.4 Footprint
+    ID                        Value
+    locality_closed           TpmLocalityState(locality)

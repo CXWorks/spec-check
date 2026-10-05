@@ -1,0 +1,32 @@
+17.1 FFA_EL3_INTR_HANDLE command
+               Requests EL3 firmware to handle a pending interrupt.
+               An S-EL2 or S-EL1 SPMC uses this command to delegate the handling of an EL3 interrupt to EL3 firmware. On a GICv3 system with SCR_EL3.FIQ=0, the SPMC uses it for a pending Group 0 interrupt that it cannot handle at its own Exception level or at a lower one.
+               Valid FF-A instance and conduit:
+        Config No.          FF-A instance                         Valid conduits
+        1                   Secure physical FF-A                  SMC
+               17.1.1 Interface
+               17.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x8400008C
+        reserved            w1-w7        31:0        UInt32                                Reserved (SBZ)
+               17.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                Return function ID: FFA_SUCCESS on success (no other parameters), or FFA_ERROR on failure
+        error_code          w2           31:0        Int32                                 Error code, valid when result is FFA_ERROR
+               17.1.2 Failure conditions
+  ID                          Condition
+  instance                    pre: !IsSupportedFfaInstance(current_instance)
+                              post: ResultEqual(result, FFA_ERROR) && error_code == NOT_SUPPORTED
+  fiq_routing                 pre: (CallerEl() == S_EL1 || CallerEl() == S_EL2) && SCR_EL3.FIQ == 1
+                              post: ResultEqual(result, FFA_ERROR) && error_code == NOT_SUPPORTED
+               17.1.2.1   Failure condition ordering
+               The FFA_EL3_INTR_HANDLE command does not have any failure condition orderings.
+               17.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  handled                     post: PendingInterruptHandledByEl3Firmware()
+  sec_state                   post: SecurityStateOnReturn() == Secure && ReturnEl() == CallerEl()
+               EL3 firmware does not switch to another Security state while it handles this command. The command is handled entirely in EL3 firmware, which then returns to the calling Exception level in the Secure state.
+               17.1.4 Footprint
+    ID                        Value
+    intr_state                PendingInterrupt().state

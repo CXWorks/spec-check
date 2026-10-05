@@ -1,0 +1,67 @@
+13.13 FFA_NS_RES_INFO_GET command
+               Retrieves information about which resources in the Non-secure Security state are accessible from S-Endpoints. For the only defined NS resource type (b'00), this is the list of regions in the NS PAS that S-Endpoints can access. The information is returned in a Resource information descriptor in the RX buffer of the caller.
+               Valid FF-A instances and conduits:
+        Config No.    FF-A instance              Valid conduits
+        1             Non-secure physical        SMC
+        2             Secure physical            ERET
+               13.13.1 Interface
+               13.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC400008F
+        target_id           X1           15:0        UInt16                                Target S-Endpoint ID. The command returns information about NS resources that this endpoint can access. Valid only if flags.target_id_valid is b'1, otherwise Reserved (SBZ)
+                            X1           63:16       Bits48                                Reserved (SBZ)
+        flags               X2           0           Bits1                                 Target S-Endpoint ID valid. b'0: information is returned for all S-Endpoints. b'1: information is returned only for the specified S-Endpoint
+                            X2           1           Bits1                                 Reserved (SBZ)
+                            X2           3:2         Bits2                                 NS resource type. b'00: list of regions in the NS PAS that an S-Endpoint can access. All other values are reserved
+                            X2           4           Bits1                                 Request type. b'0: start retrieval of the Resource information descriptor. b'1: continue retrieval of the Resource information descriptor
+                            X2           63:5        Bits59                                Reserved (SBZ)
+        (other)             X3-X17       63:0        Bits64                                Reserved (SBZ)
+               13.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                Command return status: FFA_SUCCESS, or FFA_ERROR with error_code
+        error_code          W2           31:0        Int32                                 Error code, on FFA_ERROR only
+        remaining_size      X2           31:0        UInt32                                On FFA_SUCCESS: number of bytes of the Resource information descriptor still to be sent to the caller
+        written_size        X2           63:32       UInt32                                On FFA_SUCCESS: number of bytes of the Resource information descriptor written to the RX buffer in this invocation
+        (other)             X3-X17       63:0        Bits64                                On FFA_SUCCESS: Reserved (MBZ)
+               13.13.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_NS_RES_INFO_GET)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  target_rsvd                 pre: target_id[63:16] != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  target_unused               pre: flags[0] == 0 && target_id[15:0] != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_rsvd                  pre: flags[63:5] != 0 || flags[1] != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  res_type                    pre: flags[3:2] != 0b00
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  regs_rsvd                   pre: !AreReservedRegistersZero(X3, X17)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  target_id                   pre: flags[0] == 1 && !IsValidSEndpointId(target_id[15:0])
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  rx_unmapped                 pre: !IsRxBufferMappedInCallee(caller)
+                              post: ResultEqual(result, RETRY)
+  rx_owner                    pre: !IsRxBufferOwnedByCallee(caller)
+                              post: ResultEqual(result, RETRY)
+  callee_busy                 pre: IsCalleeBusy()
+                              post: ResultEqual(result, RETRY)
+  aborted                     pre: flags[4] == 1 && !CanContinueRetrieval()
+                              post: ResultEqual(result, ABORTED)
+               13.13.2.1   Failure condition ordering
+               The FFA_NS_RES_INFO_GET command does not have any failure condition orderings.
+               13.13.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  rx_desc                     post: RxBuffer(caller) holds written_size bytes of the Resource information descriptor
+  remaining                   post: remaining_size == number of bytes of the Resource information descriptor not yet sent to the caller
+  amd_single                  post: flags[0] == 1 ==> the descriptor holds one AMD for each region in the NS PAS that S-Endpoint target_id[15:0] can access
+  amd_all                     post: flags[0] == 0 ==> the descriptor holds one AMD for each region in the NS PAS that each S-Endpoint can access
+  amd_indirect                post: for each AMD describing a region with indirect access: AMD.Flags.AccessType == 1 && AMD.ComponentId == SpmcId() && AMD.RAP == MostPermissiveSpPermission(region)
+  amd_whole_pas               post: for each S-Endpoint that can access the entire NS PAS with Privileged and Unprivileged Read, Write and Execute permissions: AMD.Address == 0xFFFFFFFFFFFFFFFF && AMD.PageCount == 0 && AMD.RAP == 0x77
+  amd_s2_rap                  post: for each AMD describing a Static NS region of a physical S-EL1 SP running under an S-EL2 SPMC: AMD.RAP == Stage2BasePermsToRap(region), using the mapping in Table 13.65
+  amd_s1_rap                  post: for each AMD describing a Static NS region of a physical S-EL0 SP running under any SPMC: AMD.RAP holds the Unprivileged Stage 1 Base permissions in the EL1&0 or EL2&0 translation regime
+  empty                       post: (flags[3:2] == 0b00 && ((flags[0] == 1 && IsNsPasInaccessibleFrom(target_id[15:0])) || (flags[0] == 0 && IsNsPasInaccessibleFromAll()))) ==> written_size == 0 && remaining_size == 0
+               13.13.4 Footprint
+    ID                        Value
+    rx_desc                   RxBuffer(caller)
+    remaining                 ResourceInfoRetrievalState(caller)

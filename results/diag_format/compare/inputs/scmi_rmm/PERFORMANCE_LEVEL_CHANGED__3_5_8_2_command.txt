@@ -1,0 +1,27 @@
+3.5.8.2 PERFORMANCE_LEVEL_CHANGED command
+               Notifies a subscribed agent that the performance level of a performance domain has changed.
+               This is a notification sent by the platform to an agent that has subscribed to receive performance level change notifications for the domain identified by domain_id. The platform sends it in either of these cases:
+                 • Another agent or entity in the system, including the platform itself, changed the performance level of the domain. For example, the platform might change the level on its own to apply thermal or power constraints, or an external agent such as a system management agent might request a change.
+                 • The subscribing agent changed the performance level of the domain by issuing a PERFORMANCE_LEVEL_SET or PERFORMANCE_LIMITS_SET command.
+               This command is optional.
+               3.5.8.2.1 Interface
+               3.5.8.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          -            -           UInt                                  Message identifier, value 0x1
+        protocol_id         -            -           UInt                                  Protocol identifier, value 0x13
+        agent_id            Payload[0]   31:0        UInt32                                Identifier for the agent that caused the performance level change
+        domain_id           Payload[1]   31:0        UInt32                                Identifier for the performance domain whose level was changed
+        performance_level   Payload[2]   31:0        UInt32                                The new performance level, or level index, of the domain as a result of the change
+               3.5.8.2.1.2   Output values
+               The PERFORMANCE_LEVEL_CHANGED command does not have any output values.
+               3.5.8.2.2 Failure conditions
+               The PERFORMANCE_LEVEL_CHANGED command does not have any failure conditions.
+               3.5.8.2.2.1   Failure condition ordering
+               The PERFORMANCE_LEVEL_CHANGED command does not have any failure condition orderings.
+               3.5.8.2.3 Success conditions
+  ID                          Condition
+  subscribed                  pre: AgentIsSubscribedToLevelChange(recipient, domain_id)
+  level_changed               pre: PerformanceLevelChanged(domain_id)
+  new_level                   post: PerformanceLevelOf(domain_id) == performance_level
+               3.5.8.2.4 Footprint
+               The PERFORMANCE_LEVEL_CHANGED command does not modify any state.

@@ -1,0 +1,77 @@
+3.10.3.6 POWERCAP_CPC_ATTRIBUTES command
+
+Returns the CPC attributes associated with a power capping domain as an array of CPLi descriptors. If the transport cannot carry every descriptor in one call, the caller can make further calls. Each call reports how many descriptors remain. The number of descriptors returned depends on how many return values the transport can support. For an example of using this kind of API, see Section 3.5.6.8.
+
+This command is mandatory if CPC is supported for any domain.
+
+3.10.3.6.1 Interface
+
+3.10.3.6.1.1 Input values
+
+| Name        | Register    | Bits | Type   | Description |
+|-------------|-------------|------|--------|-------------|
+| message_id  | Header      | –    | UInt   | Message ID, value 0xD |
+| protocol_id | Header      | –    | UInt   | Protocol ID, value 0x18 |
+| domain_id   | Parameter 0 | 31:0 | UInt32 | Identifier for the power capping domain |
+| desc_index  | Parameter 1 | 31:0 | UInt32 | Index of the first CPLi descriptor to return in the CPLi descriptor array. This field does not refer to the CPL Identifier. |
+
+3.10.3.6.1.2 Output values
+
+| Name    | Register | Bits  | Type          | Description |
+|---------|----------|-------|---------------|-------------|
+| status  | Return 0 | 31:0  | Int32         | Command return status. See Section 3.1.4 for status code definitions. |
+| num_cpl | Return 1 | 31:16 | UInt16        | Number of remaining CPLi descriptors |
+| num_cpl | Return 1 | 15:0  | UInt16        | Number of CPLi descriptors returned by this call (N) |
+| desc    | Return 2 | –     | CPLi_DESC[N]  | Array of CPLi descriptors, in the format described in CPLi Descriptor |
+
+3.10.3.6.1.3 CPLi Descriptor
+
+The CPLi_DESC structure describes the properties of each CPL identifier.
+
+| Name           | Bits | Type      | Description |
+|----------------|------|-----------|-------------|
+| cpli           | 31:0 | UInt32    | Integer identifier associated with the concurrent power limit |
+| flags          | 31:1 | UInt32    | Reserved, must be zero |
+| flags          | 0    | UInt32    | Power cap configuration support. 1: this CPLi supports changing power caps. 0: this CPLi does not support changing power caps. |
+| min_power_cap  | 31:0 | UInt32    | Minimum power value that can be set as the power cap for this CPLi |
+| max_power_cap  | 31:0 | UInt32    | Maximum power value that can be set as a power cap for this CPLi |
+| power_cap_step | 31:0 | UInt32    | Step size between two consecutive power cap values supported by this CPLi |
+| min_cai        | 31:0 | UInt32    | Minimum supported power capping averaging interval (CAI) for this CPLi, in microseconds. Zero if the platform does not report this value. |
+| max_cai        | 31:0 | UInt32    | Maximum supported CAI for this CPLi, in microseconds. Zero if the platform does not report this value. |
+| cai_step       | 31:0 | UInt32    | Step size between two consecutive CAI values supported by this CPLi |
+| name           | –    | UInt8[16] | Null-terminated ASCII string of up to 16 bytes that describes the CPLi. Table 26 shows the recommended naming convention. |
+
+3.10.3.6.2 Failure conditions
+
+| ID             | Condition |
+|----------------|-----------|
+| domain_exists  | pre: !PowercapDomainExists(domain_id)<br>post: ResultEqual(status, NOT_FOUND) |
+| desc_range     | pre: !IsValidCpliDescIndex(domain_id, desc_index)<br>post: ResultEqual(status, OUT_OF_RANGE) |
+| cpc_support    | pre: !IsRequestSupported() \|\| !DomainSupportsCpc(domain_id)<br>post: ResultEqual(status, NOT_SUPPORTED) |
+
+These are the documented failure cases. The status can also take other values (see Section 3.1.4).
+
+3.10.3.6.2.1 Failure condition ordering
+
+The POWERCAP_CPC_ATTRIBUTES command does not have any failure condition orderings.
+
+3.10.3.6.3 Success conditions
+
+| ID              | Condition |
+|-----------------|-----------|
+| status          | post: ResultEqual(status, SUCCESS) |
+| num_returned    | post: num_cpl[15:0] == N, the number of CPLi descriptors in desc |
+| num_remaining   | post: num_cpl[31:16] == number of CPLi descriptors remaining after this call |
+| desc_start      | post: desc[0] == CpliDescriptor(domain_id, desc_index) |
+| desc_order      | post: IsAscending(desc[0..N-1].cpli) (the CPL Identifiers should be in ascending numeric order) |
+| flags_rsvd      | post: for each i < N: desc[i].flags[31:1] == 0 |
+| min_cap_nonzero | post: for each i < N: desc[i].min_power_cap != 0 |
+| max_cap_nonzero | post: for each i < N: desc[i].max_power_cap != 0 |
+| cap_fixed       | post: for each i < N: desc[i].min_power_cap == desc[i].max_power_cap means the power cap for desc[i].cpli is not configurable |
+| cap_step        | post: for each i < N: desc[i].min_power_cap != desc[i].max_power_cap implies desc[i].power_cap_step != 0 |
+| cai_fixed       | post: for each i < N: desc[i].min_cai == desc[i].max_cai means the CAI for desc[i].cpli is not configurable |
+| cai_step        | post: for each i < N: desc[i].min_cai != desc[i].max_cai implies desc[i].cai_step != 0 |
+
+3.10.3.6.4 Footprint
+
+The POWERCAP_CPC_ATTRIBUTES command does not modify any state.

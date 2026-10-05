@@ -1,0 +1,35 @@
+3.3.2.5 POWER_DOMAIN_ATTRIBUTES command
+               Returns the attribute flags associated with a specific power domain.
+               This command is mandatory.
+               3.3.2.5.1 Interface
+               3.3.2.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message identifier, value 0x3
+        protocol_id         Header       -           UInt                                  Protocol identifier, value 0x11
+        domain_id           Parameter    31:0        UInt32                                Identifier for the domain. Domain identifiers are limited to 16 bits. The platform ignores bits [31:16].
+               3.3.2.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return       31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        attributes          Return       31:0        UInt32                                Power domain attribute flags
+        name                Return       8 x 16      UInt8[16]                             Null-terminated ASCII string, up to 16 bytes, that describes the power domain name
+               3.3.2.5.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PowerDomainExists(domain_id[15:0])
+                              post: ResultEqual(status, NOT_FOUND)
+               3.3.2.5.2.1   Failure condition ordering
+               The POWER_DOMAIN_ATTRIBUTES command does not have any failure condition orderings.
+               3.3.2.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  attr_notify                 post: attributes[31] == (PowerStateChangeNotifySupported(domain_id[15:0]) ? 1 : 0)
+  attr_async                  post: attributes[30] == (PowerStateAsyncSetSupported(domain_id[15:0]) ? 1 : 0)
+  attr_sync                   post: attributes[29] == (PowerStateSyncSetSupported(domain_id[15:0]) ? 1 : 0)
+  attr_req_notify             post: attributes[28] == (PowerStateChangeRequestedNotifySupported(domain_id[15:0]) ? 1 : 0)
+  attr_ext_name               post: attributes[27] == (PowerDomainNameLength(domain_id[15:0]) > 16 ? 1 : 0)
+  attr_reserved               post: attributes[26:0] == 0
+  name                        post: attributes[27] == 0 ⇒ name == PowerDomainName(domain_id[15:0])
+  name_ext                    post: attributes[27] == 1 ⇒ name == NullTerminated(PowerDomainName(domain_id[15:0])[14:0])
+               If attributes[27] is 1, the POWER_DOMAIN_NAME_GET command (Section 3.3.2.10) provides the extended power domain name.
+               For some agents, the platform might allow those agents to register for and receive notifications for power domains, but not to set the power states of those domains.
+               3.3.2.5.4 Footprint
+               The POWER_DOMAIN_ATTRIBUTES command does not modify any state.

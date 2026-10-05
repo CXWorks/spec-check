@@ -1,0 +1,33 @@
+3.6.2.17 CLOCK_GET_PERMISSIONS command
+               Returns the restrictions on an agent's ability to change the configuration or settings of a specific clock.
+               This command is mandatory if Bit[1] of the attributes field returned by the CLOCK_ATTRIBUTES command (Section 3.6.2.5) is set to 1 for any clock. It is optional in all other cases.
+               3.6.2.17.1 Interface
+               3.6.2.17.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           -                                     Message identifier, value 0xF
+        protocol_id         Header       -           -                                     Protocol identifier, value 0x14
+        clock_id            Payload      31:0        uint32                                Identifier for the clock device
+               3.6.2.17.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        int32                                 Command return status. See Section 3.1.4 for more status code definitions
+        permissions         Payload      31:0        uint32                                Clock permissions bitmap
+               3.6.2.17.2 Failure conditions
+  ID                          Condition
+  clock_id                    pre: !IsValidClockId(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cmd_support                 pre: !IsRequestSupported(CLOCK_GET_PERMISSIONS)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.6.2.17.2.1   Failure condition ordering
+               The CLOCK_GET_PERMISSIONS command does not have any failure condition orderings.
+               3.6.2.17.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  state_ctrl                  post: permissions[31] == (AgentCanChangeClockState(clock_id) ? 1 : 0)
+  state_denied                post: permissions[31] == 0 ==> CLOCK_CONFIG_SET returns DENIED for attempts to change the state of clock_id
+  parent_ctrl                 post: permissions[30] == (AgentCanChangeClockParent(clock_id) ? 1 : 0)
+  parent_denied               post: permissions[30] == 0 ==> CLOCK_PARENT_SET returns DENIED for clock_id
+  rate_ctrl                   post: permissions[29] == (AgentCanChangeClockRate(clock_id) ? 1 : 0)
+  rate_denied                 post: permissions[29] == 0 ==> CLOCK_RATE_SET returns DENIED for clock_id
+  reserved                    post: permissions[28:0] == 0
+               3.6.2.17.4 Footprint
+               The CLOCK_GET_PERMISSIONS command only returns clock permissions, so it has no footprint.

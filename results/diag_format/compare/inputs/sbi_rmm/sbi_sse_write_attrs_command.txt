@@ -1,0 +1,64 @@
+17.8 sbi_sse_write_attrs command
+
+               Writes a range of event attribute values to a software event.
+
+               17.8.1 Interface
+
+               17.8.1.1   Input values
+        Name                Register     Bits          Type                  Description
+        fid                 a6           XLEN-1:0      UInt                  FID, value 1
+        event_id            a0           31:0          UInt32                Software event ID
+        base_attr_id        a1           31:0          UInt32                First event attribute ID in the range
+        attr_count          a2           31:0          UInt32                Number of event attributes in the range
+        input_phys_lo       a3           XLEN-1:0      unsigned long         Lower part of the physical address of the input shared memory
+        input_phys_hi       a4           XLEN-1:0      unsigned long         Upper part of the physical address of the input shared memory
+
+               17.8.1.2   Output values
+        Name                Register     Bits          Type                  Description
+        result              a0           XLEN-1:0      sbiret.error          Command return status
+
+               17.8.2 Failure conditions
+  ID                          Condition
+  evt_unsupported             pre: IsValidEventId(event_id) && !IsEventSupportedByPlatform(event_id)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED)
+  evt_invalid                 pre: !IsValidEventId(event_id)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  attr_count_zero             pre: attr_count == 0
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  attr_value_legal            pre: IsValidEventId(event_id) &&
+                                   Exists(i < attr_count :
+                                     !IsLegalAttrValue(event_id, base_attr_id + i, InputAttrValue(i)))
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  attr_read_only              pre: IsValidEventId(event_id) &&
+                                   Exists(i < attr_count : IsReadOnlyAttr(event_id, base_attr_id + i))
+                              post: ResultEqual(result, SBI_ERR_DENIED)
+  attr_value_state            pre: IsValidEventId(event_id) &&
+                                   Exists(i < attr_count :
+                                     !AttrValueSatisfiesStateRules(event_id, base_attr_id + i, InputAttrValue(i)))
+                              post: ResultEqual(result, SBI_ERR_INVALID_STATE)
+  attr_id_reserved            pre: Exists(i < attr_count : IsReservedAttrId(base_attr_id + i))
+                              post: ResultEqual(result, SBI_ERR_BAD_RANGE)
+  shmem_invalid               pre: !IsValidSharedMemory(input_phys_lo, input_phys_hi, (XLEN / 8) * attr_count)
+                              post: ResultEqual(result, SBI_ERR_INVALID_ADDRESS)
+  write_failed                pre: WriteFailedForUnspecifiedReason()
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+
+               17.8.2.1   Failure condition ordering
+               The section does not specify an ordering between failure conditions. It specifies one rule
+               for errors with attribute values (attr_value_legal, attr_value_state): if more than one
+               attribute index i matches, the error returned is the first one encountered in attribute ID
+               order.
+
+               17.8.3 Success conditions
+  ID                          Condition
+  result_ok                   post: ResultEqual(result, SBI_SUCCESS)
+  attr_written                post: ForAll(i < attr_count :
+                                      EventAttr(event_id, base_attr_id + i) ==
+                                      InputSharedMemoryAt((XLEN / 8) * (base_attr_id + i)))
+  attr_scope_local            post: IsLocalEvent(event_id) ==> attributes are updated only for the calling hart
+  attr_scope_global           post: IsGlobalEvent(event_id) ==> attributes are updated for all harts
+
+               17.8.4 Footprint
+    ID                        Value
+    attr_written              EventAttr(event_id, base_attr_id + i), for i < attr_count
+                              (calling hart for local events; all harts for global events)

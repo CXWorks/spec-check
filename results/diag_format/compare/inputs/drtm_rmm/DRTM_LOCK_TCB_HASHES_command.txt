@@ -1,0 +1,24 @@
+3.10 DRTM_LOCK_TCB_HASHES command
+               Used by firmware to prevent further hashes from being recorded.
+               3.10.1 Interface
+               3.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FID, value 0xC4000119
+               3.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+               3.10.2 Failure conditions
+  ID                          Condition
+  drtm_support                pre: !IsDrtmSupported()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  hashes_locked               pre: TcbHashesLocked()
+                              post: ResultEqual(result, DENIED)
+               3.10.2.1   Failure condition ordering
+               The DRTM_LOCK_TCB_HASHES command does not have any failure condition orderings.
+               3.10.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SUCCESS)
+  hashes_locked               post: TcbHashesLocked()
+               3.10.4 Footprint
+    ID                        Value
+    hashes_locked             TcbHashLockState

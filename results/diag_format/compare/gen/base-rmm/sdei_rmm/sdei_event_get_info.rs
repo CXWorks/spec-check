@@ -1,0 +1,15 @@
+pub open spec fn sdei_event_get_info_spec(result: Int64, event: Int32, info: UInt32, old_s: S, new_s: S) -> bool {
+    (!SdeiIsSupported() ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsValidEventNumber(event) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidInfo(info) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (info == EV_ROUTING_MODE && !IsSharedEvent(event) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (info == EV_ROUTING_MODE && !IsEventRegistered(event) ==> ResultEqual(result, DENIED))
+    && (info == EV_ROUTING_AFF && !IsSharedEvent(event) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (info == EV_ROUTING_AFF && !RoutingModeHasAffinity(EventRoutingMode(event)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (info == EV_ROUTING_AFF && !IsEventRegistered(event) ==> ResultEqual(result, DENIED))
+    && (info == EV_TYPE ==> result == (IsSharedEvent(event) ? 1 : 0))
+    && (info == EV_SIGNALED ==> result == (CanBeSoftwareSignaled(event) ? 0 : 1))
+    && (info == EV_PRIORITY ==> result == (IsCriticalPriority(event) ? 1 : 0))
+    && (info == EV_ROUTING_MODE ==> result == EventRoutingMode(event))
+    && (info == EV_ROUTING_AFF ==> result == EventRoutingAffinity(event))
+}

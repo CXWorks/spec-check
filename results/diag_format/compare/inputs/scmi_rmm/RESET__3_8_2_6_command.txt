@@ -1,0 +1,47 @@
+3.8.2.6 RESET command
+               Resets the specified reset domain.
+               3.8.2.6.1 Interface
+               3.8.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt                                  Message identifier, value 0x4
+        protocol_id         Header       —           UInt                                  Protocol identifier, value 0x16
+        domain_id           Payload      31:0        UInt32                                Identifier for the reset domain
+        flags               Payload      31:0        UInt32                                Request conditions and requirements:
+                                                                                           Bits[31:3]: Reserved, must be zero
+                                                                                           Bit[2]: Async flag, only valid if Bit[0] == 1
+                                                                                             (1 = complete asynchronously, 0 = complete synchronously)
+                                                                                           Bit[1]: Explicit signal, ignored if Bit[0] == 1
+                                                                                             (1 = explicitly assert reset signal, 0 = explicitly de-assert reset signal)
+                                                                                           Bit[0]: Autonomous reset action
+                                                                                             (1 = platform performs the reset autonomously,
+                                                                                              0 = caller explicitly asserts and de-asserts the reset signal)
+        reset_state         Payload      31:0        UInt32                                Requested reset state, in the format specified in Table 22
+               3.8.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status (see Section 3.1.4 for more status code definitions)
+               3.8.2.6.2 Failure conditions
+  ID                          Condition
+  domain_bound                pre: !ResetDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  flags_valid                 pre: !IsValidResetFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  state_valid                 pre: !IsSupportedResetState(domain_id, reset_state)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  access                      pre: !AgentMayResetDomain(caller, domain_id)
+                              post: ResultEqual(status, DENIED)
+  reset_failed                pre: ResetOperationFailed(domain_id)
+                              post: ResultEqual(status, GENERIC_ERROR)
+               3.8.2.6.2.1   Failure condition ordering
+               The RESET command does not have any failure condition orderings.
+               3.8.2.6.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  reset_auto                  post: flags[0] == 1 ⇒ ResetDomainAt(domain_id) has been reset autonomously by the platform
+  reset_assert                post: (flags[0] == 0 && flags[1] == 1) ⇒ ResetDomainAt(domain_id).reset_signal == ASSERTED
+  reset_deassert              post: (flags[0] == 0 && flags[1] == 0) ⇒ ResetDomainAt(domain_id).reset_signal == DEASSERTED
+  reset_async                 post: (flags[0] == 1 && flags[2] == 1) ⇒ the platform returns immediately on receipt of the request,
+                                    and sends a RESET_COMPLETE delayed response (Section 3.8.3.1) when the reset is done
+               3.8.2.6.4 Footprint
+    ID                        Value
+    reset_state               ResetDomainAt(domain_id).state
+    reset_signal              ResetDomainAt(domain_id).reset_signal

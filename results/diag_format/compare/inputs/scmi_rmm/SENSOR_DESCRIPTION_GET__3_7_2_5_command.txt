@@ -1,0 +1,55 @@
+3.7.2.5 SENSOR_DESCRIPTION_GET command
+               Returns descriptors for the platform's sensors so that an agent can discover them. On success, the platform returns an array of Sensor Descriptors, starting at a given index. The platform must implement this command.
+               3.7.2.5.1 Interface
+               3.7.2.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message ID, value 0x3
+        protocol_id         Header       -           UInt                                  Protocol ID, value 0x15
+        desc_index          Payload      31:0        UInt32                                Index of the first sensor descriptor to read from the sensor descriptor array
+               3.7.2.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status. Section 3.1.4 defines the status codes.
+        num_remaining       Payload      31:16       UInt16                                Field of num_sensor_flags. Number of sensor descriptors still to be read.
+        reserved            Payload      15:12       -                                     Field of num_sensor_flags. Reserved, must be zero.
+        num_returned        Payload      11:0        UInt12                                Field of num_sensor_flags. Number of sensor descriptors returned by this call.
+        desc                Payload      -           SENSOR_DESC[N]                        Array of sensor descriptors. The Sensor Descriptor format is given below.
+               3.7.2.5.1.3   Sensor Descriptor (SENSOR_DESC)
+        Name                         Bits        Type        Description
+        sensor_id                    31:0        UInt32      Identifier for the sensor
+        sensor_attributes_low        31          Bool        Asynchronous read support. 1: the sensor can be read asynchronously through SENSOR_READING_GET, and the value is returned in the SENSOR_READING_COMPLETE delayed response. 0: the sensor must be read with a synchronous SENSOR_READING_GET.
+                                     30          Bool        Continuous update notification support. 1: the platform sends SENSOR_UPDATE when an updated value is available, but only if the sensor is enabled and the agent has subscribed through SENSOR_CONTINUOUS_UPDATE_NOTIFY. 0: notifications are not supported, SENSOR_CONTINUOUS_UPDATE_NOTIFY is not available for this sensor, and values must be read with SENSOR_READING_GET.
+                                     29          Bool        Extended sensor name. 1: the name is longer than 16 bytes and SENSOR_NAME_GET (Section 3.7.2.14) provides it. 0: the extended name is not supported.
+                                     28:15       -           Reserved for future use
+                                     14:10       Int5        Timestamp exponent, in two's complement. Power-of-10 multiplier applied to timestamps to express them in seconds. Valid only if Bit[9] == 1.
+                                     9           Bool        Timestamp support. 1: the sensor can provide timestamped values. 0: it cannot.
+                                     8           Bool        Extended attributes support. 1: extended attributes follow sensor_name. 0: the sensor does not report extended attributes, and the platform does not allocate fields beyond sensor_name.
+                                     7:0         UInt8       Number of trip points supported
+        sensor_attributes_high       31:22       -           Reserved for future use
+                                     21:16       UInt6       Number of axes. Valid only if Bit[8] == 1, and must not be 0 in that case.
+                                     15:11       Int5        Exponent, in two's complement. Power-of-10 multiplier applied to the unit given by SensorType. Valid only if Bit[8] == 0. For axis sensors, see Section 3.7.2.6.
+                                     10:9        -           Reserved
+                                     8           Bool        Axis support. 1: the sensor reports values along one or more axes. 0: the sensor reports a scalar value.
+                                     7:0         UInt8       SensorType, as listed in Table 19. Valid only if Bit[8] == 0. For axis sensors, see Section 3.7.2.6.
+        sensor_name                  -           UInt8[16]   NULL-terminated UTF-8 sensor name of up to 16 bytes. If sensor_attributes_low Bit[29] == 1, this field holds the lower 15 bytes of the name.
+        sensor_power                 31:0        UInt32      Extended attribute. Average power consumed by the sensor while active, in uW. 0 if not reported. Present only if sensor_attributes_low Bit[8] == 1.
+        sensor_resolution            31:27       Int5        Extended attribute. Exponent applied to Res, in two's complement.
+                                     26:0        UInt27      Res: the sensor resolution, expressed as Res x 10^Exponent in SensorType units. 0x0 if not reported.
+        sensor_min_range_low         31:0        Int32       Extended attribute. Lower 32 bits of the minimum measurable value. 0x0 if not reported.
+        sensor_min_range_high        31:0        Int32       Extended attribute. Upper 32 bits of the minimum measurable value. 0x80000000 if not reported.
+        sensor_max_range_low         31:0        Int32       Extended attribute. Lower 32 bits of the maximum measurable value. 0xFFFFFFFF if not reported.
+        sensor_max_range_high        31:0        Int32       Extended attribute. Upper 32 bits of the maximum measurable value. 0x7FFFFFFF if not reported.
+               sensor_resolution, sensor_min_range_low, sensor_min_range_high, sensor_max_range_low and sensor_max_range_high are present only if sensor_attributes_high Bit[8] == 0 (scalar sensor) and sensor_attributes_low Bit[8] == 1. For axis sensors, see Section 3.7.2.6.
+               3.7.2.5.2 Failure conditions
+               This section does not specify any failure conditions for the SENSOR_DESCRIPTION_GET command. Section 3.1.4 defines the status codes.
+               3.7.2.5.2.1   Failure condition ordering
+               The SENSOR_DESCRIPTION_GET command does not have any failure condition orderings.
+               3.7.2.5.3 Success conditions
+  ID                          Condition
+  desc_first                  post: desc[0] == SensorDescriptorArray[desc_index]
+  num_returned                post: num_sensor_flags[11:0] == N
+  num_remaining               post: num_sensor_flags[31:16] == NumRemainingSensorDescriptors(desc_index, N)
+  flags_rsvd                  post: num_sensor_flags[15:12] == 0
+  num_axes                    post: desc[i].sensor_attributes_high[8] == 1 ==> desc[i].sensor_attributes_high[21:16] != 0
+  power_stable                post: desc[i].sensor_power == PreviousSensorDescription(desc[i].sensor_id).sensor_power
+               3.7.2.5.4 Footprint
+               This section does not specify any state that the SENSOR_DESCRIPTION_GET command modifies.

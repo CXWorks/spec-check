@@ -1,0 +1,52 @@
+15.4 FFA_MSG_SEND_DIRECT_REQ2 command
+               Sends a Partition message in parameter registers as a request to a Receiver endpoint, runs the endpoint and blocks until a response is available. The UUID parameter is used as described in 6.2.3 Protocol UUID usage.
+               Valid FF-A instances and conduits:
+        Config No.   FF-A instance            Valid conduits
+        1            Non-secure physical      SMC
+        2            Secure physical          SMC, ERET
+        3            Non-secure virtual       SMC, HVC, ERET
+        4            Secure virtual           SMC, HVC, SVC, ERET
+               15.4.1 Interface
+               15.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0xC400008D
+        sender_id           w1           31:16       UInt16                                Sender endpoint ID
+        receiver_id         w1           15:0        UInt16                                Receiver endpoint ID
+        uuid_lo             x2           63:0        UInt64                                Bytes[0...7] of UUID with byte 0 in the low-order bits, as specified in 6.2.3.2 UUID encodings
+        uuid_hi             x3           63:0        UInt64                                Bytes[8...15] of UUID with byte 8 in the low-order bits, as specified in 6.2.3.2 UUID encodings
+        impdef_params       x4-x17       63:0        UInt64                                IMPLEMENTATION DEFINED values
+               15.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w2           31:0        Int32                                 Error code, returned when the callee invokes FFA_ERROR
+               15.4.2 Failure conditions
+  ID                          Condition
+  endpoint_id                 pre: !IsValidEndpointId(sender_id) || !IsValidEndpointId(receiver_id) || !AreValidMessageFlags()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  uuid                        pre: !IsRecognizedUuid(uuid_lo, uuid_hi)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  caller_perm                 pre: !CallerMayInvoke(FFA_MSG_SEND_DIRECT_REQ2)
+                              post: ResultEqual(result, DENIED)
+  recv_support                pre: !EndpointSupportsDirectReq(receiver_id)
+                              post: ResultEqual(result, DENIED)
+  not_impl                    pre: !IsImplementedAtInstance(FFA_MSG_SEND_DIRECT_REQ2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  recv_busy                   pre: EndpointAt(receiver_id).state in {RUNNING, BLOCKED, PREEMPTED}
+                              post: ResultEqual(result, BUSY)
+  recv_aborted                pre: EndpointAt(receiver_id).state == ABORTED
+                              post: ResultEqual(result, ABORTED)
+  recv_ready                  pre: !EndpointIsReady(receiver_id)
+                              post: ResultEqual(result, NOT_READY)
+               15.4.2.1   Failure condition ordering
+               The FFA_MSG_SEND_DIRECT_REQ2 command does not have any failure condition orderings.
+               15.4.3 Success conditions
+  ID                          Condition
+  completion                  post: CalleeInvoked() in {FFA_MSG_SEND_DIRECT_RESP2, FFA_INTERRUPT, FFA_YIELD, FFA_SUCCESS}
+  direct_resp                 post: CalleeInvoked() == FFA_MSG_SEND_DIRECT_RESP2 ==> the callee has provided a response to the Direct request
+  interrupted                 post: CalleeInvoked() == FFA_INTERRUPT ==> the Direct request was interrupted and must be resumed through FFA_RUN
+  yielded                     post: CalleeInvoked() == FFA_YIELD ==> EndpointAt(receiver_id).state == BLOCKED and the endpoint must be resumed through FFA_RUN
+  no_resp                     post: CalleeInvoked() == FFA_SUCCESS ==> the Direct request completed without a corresponding Direct response, and all other parameter registers are zero
+               15.4.4 Footprint
+    ID                        Value
+    recv_state                EndpointAt(receiver_id).state

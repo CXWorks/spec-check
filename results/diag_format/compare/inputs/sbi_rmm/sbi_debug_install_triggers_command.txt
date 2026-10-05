@@ -1,0 +1,38 @@
+19.4 sbi_debug_install_triggers command
+               Installs debug triggers from an array of trigger configurations in the shared memory of the calling hart. Each installed trigger's trig_idx is written back to the shared memory.
+               19.4.1 Interface
+               19.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt                                  FID, value 3
+        trig_count          —            XLEN-1:0    unsigned long                         Number of trigger configuration entries in the shared memory, starting at offset 0x0
+               19.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        ret                 —            —           struct sbiret                         Command return value
+               19.4.2 Failure conditions
+               The section does not specify any failure conditions.
+               19.4.2.1   Failure condition ordering
+               The sbi_debug_install_triggers command does not have any failure condition orderings.
+               19.4.3 Success conditions
+  ID                          Condition
+  trig_order                  post: TriggerConfigsProcessedInIncreasingIndexOrder(0, trig_count)
+  trig_map                    post: forall i in [0, trig_count):
+                                      IsMappedUnusedHwTrigger(TrigIdxAt(i)) &&
+                                      HwTriggerMatchesConfig(HwTriggerOf(TrigIdxAt(i)), TriggerConfigAt(i))
+  trig_state                  post: forall i in [0, trig_count):
+                                      TrigState(TrigIdxAt(i)) == SavedPrivBits(TriggerConfigAt(i).trig_tdata1)
+                                      (bits vs, vu, s and u of trig_tdata1)
+  trig_csrs                   post: forall i in [0, trig_count):
+                                      HwTriggerOf(TrigIdxAt(i)).tdata1 == TriggerConfigAt(i).trig_tdata1 &&
+                                      HwTriggerOf(TrigIdxAt(i)).tdata2 == TriggerConfigAt(i).trig_tdata2 &&
+                                      HwTriggerOf(TrigIdxAt(i)).tdata3 == TriggerConfigAt(i).trig_tdata3
+  trig_writeback              post: forall i in [0, trig_count):
+                                      SharedMemWord(i * (XLEN / 2), 0) == TrigIdxAt(i)
+  trig_chain                  post: forall chain in TriggerConfigChains(0, trig_count):
+                                      TrigIdxValuesContiguous(chain) &&
+                                      HwTriggersContiguous(chain)
+               19.4.4 Footprint
+    ID                        Value
+    trig_writeback            SharedMemWord(i * (XLEN / 2), 0) for i in [0, trig_count)
+    trig_map                  Mapping of trig_idx values to HW debug triggers
+    trig_state                TrigState(trig_idx) for each installed trigger
+    trig_csrs                 tdata1, tdata2 and tdata3 CSRs of each mapped HW debug trigger

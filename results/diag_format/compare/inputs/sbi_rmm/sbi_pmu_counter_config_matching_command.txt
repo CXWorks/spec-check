@@ -1,0 +1,49 @@
+11.8 sbi_pmu_counter_config_matching command
+               Finds a counter, from a set of counters, that is not started (or enabled) and can monitor the specified event, and configures it.
+               11.8.1 Interface
+               11.8.1.1   Input values
+        Name                Register     Bits          Type                  Description
+        fid                 —            —             UInt                  FID, value 2
+        counter_idx_base    —            XLEN-1:0      unsigned long         Base of the set of counters
+        counter_idx_mask    —            XLEN-1:0      unsigned long         Mask of the set of counters, relative to counter_idx_base
+        config_flags        —            XLEN-1:0      unsigned long         Extra counter configuration and filter flags (see the config_flags fields below)
+        event_idx           —            XLEN-1:0      unsigned long         Event to be monitored
+        event_data          —            63:0          uint64_t              Extra event configuration
+               11.8.1.1.1   config_flags fields
+        Name                             Bits          Description
+        SBI_PMU_CFG_FLAG_SKIP_MATCH      0:0           Skip the counter matching
+        SBI_PMU_CFG_FLAG_CLEAR_VALUE     1:1           Clear (or zero) the counter value in counter configuration
+        SBI_PMU_CFG_FLAG_AUTO_START      2:2           Start the counter after configuring a matching counter
+        SBI_PMU_CFG_FLAG_SET_VUINH       3:3           Event counting inhibited in VU-mode
+        SBI_PMU_CFG_FLAG_SET_VSINH       4:4           Event counting inhibited in VS-mode
+        SBI_PMU_CFG_FLAG_SET_UINH        5:5           Event counting inhibited in U-mode
+        SBI_PMU_CFG_FLAG_SET_SINH        6:6           Event counting inhibited in S-mode
+        SBI_PMU_CFG_FLAG_SET_MINH        7:7           Event counting inhibited in M-mode
+        RESERVED                         XLEN-1:8      Reserved for future use. Must be zero.
+               The excerpt does not say which registers carry the input values.
+               11.8.1.2   Output values
+        Name                Register     Bits          Type                  Description
+        ret                 —            —             struct sbiret         Command return value
+               The excerpt does not say which fields of struct sbiret are returned or what they mean.
+               11.8.2 Failure conditions
+               The excerpt does not list any error cases or error return codes. The RESERVED bits of config_flags must be zero, but the excerpt does not say which error code is returned if they are not.
+               11.8.2.1   Failure condition ordering
+               The sbi_pmu_counter_config_matching command does not have any failure condition orderings.
+               11.8.3 Success conditions
+  ID                          Condition
+  ctr_in_set                  post: CounterInSet(selected_counter, counter_idx_base, counter_idx_mask)
+  ctr_match                   pre: !FlagSet(config_flags, SBI_PMU_CFG_FLAG_SKIP_MATCH)
+                              post: !CounterStarted'(selected_counter) && CounterCanMonitor(selected_counter, event_idx)
+  ctr_skip_match              pre: FlagSet(config_flags, SBI_PMU_CFG_FLAG_SKIP_MATCH)
+                              post: selected_counter == FirstCounterInSet(counter_idx_base, counter_idx_mask)
+  ctr_config                  post: CounterEvent(selected_counter) == event_idx && CounterEventData(selected_counter) == event_data
+  ctr_clear                   pre: FlagSet(config_flags, SBI_PMU_CFG_FLAG_CLEAR_VALUE)
+                              post: CounterValue(selected_counter) == 0
+  ctr_auto_start              pre: FlagSet(config_flags, SBI_PMU_CFG_FLAG_AUTO_START)
+                              post: CounterStarted(selected_counter)
+               In ctr_match, CounterStarted' is the state of the counter before the command runs. SBI_PMU_CFG_FLAG_AUTO_START does not change the counter value. config_flags[3:7] are event filtering hints, so they can be ignored or overridden by [the excerpt is cut off here]. The excerpt does not name a success return code.
+               11.8.4 Footprint
+    ID                        Value
+    ctr_config                CounterEvent(selected_counter), CounterEventData(selected_counter)
+    ctr_clear                 CounterValue(selected_counter)
+    ctr_auto_start            CounterStarted(selected_counter)

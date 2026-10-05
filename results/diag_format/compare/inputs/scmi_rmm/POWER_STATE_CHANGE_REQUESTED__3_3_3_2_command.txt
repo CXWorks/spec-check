@@ -1,0 +1,26 @@
+3.3.3.2 POWER_STATE_CHANGE_REQUESTED command
+               An agent can register through POWER_STATE_CHANGE_REQUESTED_NOTIFY to be told when the platform receives a request from a different agent to change the power state of a power domain. When the platform receives such a request, it sends this notification to the registered agent.
+               This command is optional.
+               For more details on how POWER_STATE_CHANGE_REQUESTED notifications can be used, see Section 3.3.2.9.
+               3.3.3.2.1 Interface
+               3.3.3.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          —            —           —                                     Message identifier, value 0x1
+        protocol_id         —            —           —                                     Protocol identifier, value 0x11
+        agent_id            —            31:0        UInt32                                Identifier of the agent that requested the power transition
+        domain_id           —            31:0        UInt32                                Identifier of the power domain whose power state change is being requested
+        power_state         —            31:0        UInt32                                The power state requested
+               3.3.3.2.1.2   Output values
+               The section does not define any output values for the POWER_STATE_CHANGE_REQUESTED command.
+               3.3.3.2.2 Failure conditions
+               The POWER_STATE_CHANGE_REQUESTED command does not have any failure conditions.
+               3.3.3.2.2.1   Failure condition ordering
+               The POWER_STATE_CHANGE_REQUESTED command does not have any failure condition orderings.
+               3.3.3.2.3 Success conditions
+  ID                          Condition
+  notify_sent                 pre: IsRegisteredForPowerStateChangeRequested(recipient_agent)
+                                   && PowerStateChangeRequestReceived(agent_id, domain_id, power_state)
+                                   && agent_id != recipient_agent
+                              post: NotificationSentTo(recipient_agent, agent_id, domain_id, power_state)
+               3.3.3.2.4 Footprint
+               The section does not identify any state that the POWER_STATE_CHANGE_REQUESTED command modifies.

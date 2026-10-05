@@ -1,0 +1,27 @@
+3.5.6.10 PERFORMANCE_LIMITS_GET command
+               Gets the range of allowed performance levels for a performance domain. If the platform uses Level Indexing Mode, the range is given as level indices. The returned values are the limits currently set for the performance domain. The platform might have set them implicitly, or a preceding PERFORMANCE_LIMIT_SET call might have set them explicitly.
+               This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES command is set to 0 for any domain.
+               3.5.6.10.1 Interface
+               3.5.6.10.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        message_id          Message header       -           -                                     Message identifier, value 0x6
+        protocol_id         Message header       -           -                                     Protocol identifier, value 0x13
+        domain_id           Payload word 0       31:0        uint32                                Identifier for the performance domain
+               3.5.6.10.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Payload word 0       31:0        int32                                 Command return status (see Section 3.1.4)
+        range_max           Payload word 1       31:0        uint32                                Maximum allowed performance level, or level index
+        range_min           Payload word 2       31:0        uint32                                Minimum allowed performance level, or level index
+               3.5.6.10.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerformanceDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.10.2.1   Failure condition ordering
+               The PERFORMANCE_LIMITS_GET command does not have any failure condition orderings.
+               3.5.6.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  range_max                   post: range_max == PerformanceDomain(domain_id).limits.max
+  range_min                   post: range_min == PerformanceDomain(domain_id).limits.min
+               3.5.6.10.4 Footprint
+               The PERFORMANCE_LIMITS_GET command does not modify any state.

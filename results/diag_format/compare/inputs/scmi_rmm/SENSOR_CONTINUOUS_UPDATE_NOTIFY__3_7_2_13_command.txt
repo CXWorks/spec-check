@@ -1,0 +1,35 @@
+3.7.2.13 SENSOR_CONTINUOUS_UPDATE_NOTIFY command
+               Lets the agent ask the platform to send SENSOR_UPDATE notifications (Section 3.7.4.2) when a sensor has values to report.
+               The platform sends SENSOR_UPDATE only while the sensor is enabled. Depending on the sensor, it can send one at every sensor update interval or whenever the sensor values change by a specific margin.
+               The sensor must support continuous update notifications. If no sensor in the platform supports them, this command can be omitted. This command is optional. PROTOCOL_MESSAGE_ATTRIBUTES (Section 3.2.2.4) can be used to check whether it is implemented.
+               When an agent first boots, these notifications must be disabled for that agent by default.
+               3.7.2.13.1 Interface
+               3.7.2.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           -                                     Message identifier, value 0xB
+        protocol_id         Header       -           -                                     Protocol identifier, value 0x15
+        sensor_id           Payload[0]   31:0        uint32                                Identifier for the sensor to be read
+        notify_enable       Payload[1]   31:1        uint32                                Reserved, must be zero
+                            Payload[1]   0                                                 Notify enable:
+                                                                                           0: the platform does not send any SENSOR_UPDATE notifications to the agent
+                                                                                           1: the platform sends SENSOR_UPDATE notifications to the agent
+               3.7.2.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        int32                                 Command return status (see Section 3.1.4)
+               3.7.2.13.2 Failure conditions
+  ID                          Condition
+  sensor_id                   pre: !IsValidSensorId(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  sensor_support              pre: !SensorSupportsContinuousUpdateNotify(sensor_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  notify_enable               pre: !IsValidNotifyEnable(notify_enable)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.7.2.13.2.1   Failure condition ordering
+               The SENSOR_CONTINUOUS_UPDATE_NOTIFY command does not have any failure condition orderings.
+               3.7.2.13.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_state                post: SensorUpdateNotifyEnabled(agent, sensor_id) == (notify_enable[0] == 1)
+               3.7.2.13.4 Footprint
+    ID                        Value
+    notify_state              SensorUpdateNotifyEnabled(agent, sensor_id)

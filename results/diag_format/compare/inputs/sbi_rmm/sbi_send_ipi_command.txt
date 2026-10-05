@@ -1,0 +1,28 @@
+7.1 sbi_send_ipi command
+               Sends an inter-processor interrupt to all the harts defined in hart_mask. The receiving harts get the interrupt as a supervisor software interrupt.
+               7.1.1 Interface
+               7.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           unsigned long                         FID, value 0
+        hart_mask           —            —           unsigned long                         Mask of target harts, relative to hart_mask_base
+        hart_mask_base      —            —           unsigned long                         Base hartid from which hart_mask is applied
+               7.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              —            —           struct sbiret (sbiret.error)          Command return status
+               7.1.2 Failure conditions
+  ID                          Condition
+  hart_valid                  pre: Exists(h in HartIdsFromMask(hart_mask_base, hart_mask)) :
+                                   !IsHartEnabledByPlatform(h) || !IsHartAvailableToSupervisor(h)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  failed                      pre: RequestFailedForUnspecifiedReason()
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+               7.1.2.1   Failure condition ordering
+               The sbi_send_ipi command does not have any failure condition orderings.
+               7.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  ipi_sent                    post: ForAll(h in HartIdsFromMask(hart_mask_base, hart_mask)) :
+                                    SupervisorSoftwareInterruptPending(h)
+               7.1.4 Footprint
+    ID                        Value
+    ipi_sent                  SupervisorSoftwareInterruptPending(h) for each h in HartIdsFromMask(hart_mask_base, hart_mask)

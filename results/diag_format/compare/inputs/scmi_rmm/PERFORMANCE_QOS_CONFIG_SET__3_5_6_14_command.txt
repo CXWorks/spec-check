@@ -1,0 +1,53 @@
+3.5.6.14 PERFORMANCE_QOS_CONFIG_SET command
+               Sets or resets the QoS configuration for a domain or group of domains, for a specified QoS capability.
+               This command is mandatory if the platform supports QoS capabilities.
+               3.5.6.14.1 Interface
+               3.5.6.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       7:0         UInt8                                 Message ID, value 0x20
+        protocol_id         Header       17:10       UInt8                                 Protocol ID, value 0x13
+        domain_id           Payload[0]   31:0        UInt32                                Performance domain identifier. Ignored if flags[4] == 1
+        capability          Payload[1]   31:0        QosCapabilityDescriptor               QoS capability (Table 14)
+        capability.oem_type Payload[1]   31          Bits1                                 QoS capability Type range: 0 = architected, 1 = OEM
+        capability.type     Payload[1]   23:16       Bits8                                 QoS capability Type bitmap. Exactly one bit must be set
+        capability.oem_sub  Payload[1]   15          Bits1                                 QoS capability Subtype range: 0 = architected, 1 = OEM
+        capability.subtype  Payload[1]   7:0         Bits8                                 QoS capability Subtype bitmap. At most one bit can be set
+        flags               Payload[2]   31:0        Bits32                                Configuration flags. Bits[31:5] are reserved and must be zero
+        flags.platform_rst  Payload[2]   4           Bits1                                 Reset the QoS values for the capability in all domains to the platform default
+        flags.sibling_rst   Payload[2]   3           Bits1                                 Reset the QoS values for the capability in this domain and its sibling domains to the platform default
+        flags.domain_rst    Payload[2]   2           Bits1                                 Reset the QoS value for the capability in this domain to the platform default
+        flags.async         Payload[2]   1           Bits1                                 1 = asynchronous, 0 = synchronous
+        flags.ignore_dresp  Payload[2]   0           Bits1                                 If flags.async == 1: do not send the PERFORMANCE_QOS_CONFIG_COMPLETE delayed response. Ignored if flags.async == 0
+        qos_value           Payload[3]   31:0        UInt32                                Requested QoS value. Ignored if any of flags[4:2] is 1
+               3.5.6.14.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+               3.5.6.14.2 Failure conditions
+  ID                          Condition
+  domain_bound                pre: flags[4] == 0 && !IsValidPerfDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cap_bound                   pre: !IsValidQosCapability(domain_id, capability)
+                              post: ResultEqual(status, NOT_FOUND)
+  cap_multi                   pre: CountSetBits(capability[23:16]) > 1 || CountSetBits(capability[7:0]) > 1
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  flags_valid                 pre: !AreValidQosConfigFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  qos_value                   pre: flags[4:2] == 0 && !IsSupportedQosValue(domain_id, capability, qos_value)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  permission                  pre: !AgentMayConfigureQos(agent, domain_id, capability)
+                              post: ResultEqual(status, DENIED)
+               3.5.6.14.2.1   Failure condition ordering
+               The PERFORMANCE_QOS_CONFIG_SET command does not have any failure condition orderings.
+               3.5.6.14.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  qos_set                     post: flags[1] == 0 && flags[4:2] == 0 ⇒ QosValue(domain_id, capability) == qos_value
+  domain_reset                post: flags[1] == 0 && flags[2] == 1 ⇒ QosValue(domain_id, capability) == PlatformDefaultQosValue(domain_id, capability)
+  sibling_reset               post: flags[1] == 0 && flags[3] == 1 ⇒ ∀ d ∈ {domain_id} ∪ SiblingDomains(domain_id): QosValue(d, capability) == PlatformDefaultQosValue(d, capability)
+  platform_reset              post: flags[1] == 0 && flags[4] == 1 ⇒ ∀ d ∈ AllPerfDomains(): QosValue(d, capability) == PlatformDefaultQosValue(d, capability)
+  async_queued                post: flags[1] == 1 ⇒ QosConfigRequestQueued(domain_id, capability, flags, qos_value)
+  async_complete              post: flags[1] == 1 && flags[0] == 0 ⇒ DelayedResponseSent(PERFORMANCE_QOS_CONFIG_COMPLETE)
+               3.5.6.14.4 Footprint
+    ID                        Value
+    qos_value                 QosValue(d, capability) for each domain d affected by the request
+    async_queue               PendingQosConfigRequests

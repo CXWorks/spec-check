@@ -1,0 +1,62 @@
+15.1 FFA_MSG_SEND2 command
+               Sends a partition message from the TX buffer of the caller endpoint to the RX buffer of the Receiver endpoint, using Indirect messaging (8.2). It also notifies the Receiver's scheduler that the Receiver endpoint must be run to process the message (10.8.1 RX buffer full notification).
+               At a physical FF-A instance with a valid conduit, the caller uses this command to ask the SPMC to send the message to an SP.
+               The partition message is encoded as described in Table 8.1.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance              Valid conduits
+        1                   Non-secure physical        SMC
+        2                   Secure physical            ERET
+        3                   Non-secure virtual         SMC, HVC
+        4                   Secure virtual             SMC, HVC, SVC
+               15.1.1 Interface
+               15.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000086
+        sender_vm_id        w1           31:16       UInt16                                ID of the Sender VM whose TX buffer the message is copied from, into the RX buffer of the target SP. Used at the Non-secure physical instance. MBZ otherwise
+                            w1           15:0        UInt16                                Reserved (SBZ)
+        flags               w2           0           Bits1                                 Reserved (SBZ)
+                            w2           1           Bits1                                 Delay Schedule Receiver interrupt flag. The guidance in 16.5.1 Delay Schedule Receiver interrupt flag applies to this command
+                            w2           31:2        Bits30                                Reserved (SBZ)
+                                                                                           The callee must ignore flags when the SVC conduit is used
+        reserved            w3-w7        31:0        UInt32                                Reserved (SBZ)
+               15.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                FFA_SUCCESS on success, with no further parameters. FFA_ERROR on failure
+        error_code          w2           31:0        Int32                                 Error code. Valid only when result is FFA_ERROR
+               15.1.2 Failure conditions
+  ID                          Condition
+  sender_mbz                  pre: !IsNonSecurePhysicalInstance() && w1 != 0
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  sender_id                   pre: IsNonSecurePhysicalInstance() && !IsValidSenderVmId(sender_vm_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  msg_ids                     pre: !IsValidEndpointId(MsgHeader().sender_id) || !IsValidEndpointId(MsgHeader().receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  msg_offset                  pre: MsgHeader().offset < MsgHeaderSize()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  msg_size                    pre: !MsgPayloadFitsInTxBuffer(MsgHeader())
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  msg_uuid                    pre: !IsRecognizedUuid(MsgHeader().uuid)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  rx_busy                     pre: !RxBufferIsFree(MsgHeader().receiver_id)
+                              post: ResultEqual(result, BUSY)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  caller_perm                 pre: !CallerMayInvoke(FFA_MSG_SEND2)
+                              post: ResultEqual(result, DENIED)
+  recv_indirect               pre: !SupportsIndirectMessaging(MsgHeader().receiver_id)
+                              post: ResultEqual(result, DENIED)
+  rx_space                    pre: !RxBufferHasSpaceFor(MsgHeader().receiver_id, MsgHeader())
+                              post: ResultEqual(result, NO_MEMORY)
+  not_impl                    pre: !IsImplementedAtInstance(FFA_MSG_SEND2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               15.1.2.1   Failure condition ordering
+               The FFA_MSG_SEND2 command does not have any failure condition orderings.
+               15.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  msg_copied                  post: RxBufferContains(MsgHeader().receiver_id, PartitionMessage(SenderTxBuffer()))
+  rx_full_notif               post: RxBufferFullNotified(MsgHeader().receiver_id)
+               15.1.4 Footprint
+    ID                        Value
+    msg_copied                RxBuffer(MsgHeader().receiver_id)
+    rx_full_notif             RxBufferFullNotification(MsgHeader().receiver_id)

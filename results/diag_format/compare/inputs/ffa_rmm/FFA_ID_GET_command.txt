@@ -1,0 +1,30 @@
+13.10 FFA_ID_GET command
+               Returns the 16-bit ID of the calling FF-A component.
+               Valid FF-A instances and conduits:
+        Config No.   FF-A instance              Valid conduits
+        1            Physical FF-A instance     SMC
+        2            Virtual FF-A instance      SMC, HVC, SVC
+               13.10.1 Interface
+               13.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        uint32                                Function ID, value 0x84000069
+        reserved            w1-w7        31:0        -                                     Reserved (SBZ)
+               13.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        id                  w2           15:0        uint32                                ID of the caller (FFA_SUCCESS encoding)
+        reserved            w2           31:16       -                                     Reserved (MBZ) (FFA_SUCCESS encoding)
+        result              w2           31:0        int32                                 Error code (FFA_ERROR encoding)
+               13.10.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_ID_GET)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               13.10.2.1   Failure condition ordering
+               The FFA_ID_GET command does not have any failure condition orderings.
+               13.10.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  id_value                    post: id == CallerId()
+  id_ns_phys                  post: IsNonSecurePhysicalInstance() ==> id == 0
+  id_reserved                 post: w2[31:16] == 0
+               13.10.4 Footprint
+               The FFA_ID_GET command does not modify any state.

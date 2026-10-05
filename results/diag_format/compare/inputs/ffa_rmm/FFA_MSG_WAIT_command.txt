@@ -1,0 +1,59 @@
+14.1 FFA_MSG_WAIT command
+               Moves the calling execution context from the running state to the waiting state. At the virtual or Secure physical FF-A instance, the caller can also give up ownership of its RX buffer.
+               14.1.1 Interface
+               14.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400006B or 0xC400006B (see 11.1.2 Parameter Register Preservation)
+        reserved            W1/X1        63:0        Bits64                                Reserved (SBZ)
+        flags               W2           31:0        Bits32                                Flags.
+                                                                                           Bit[0]: Retain RX Buffer Ownership flag. b'0: the caller relinquishes ownership of its RX buffer. b'1: the caller keeps ownership of its RX buffer. The callee ignores this flag if the caller does not own its RX buffer. The flag is valid only at the virtual or Secure physical FF-A instance, and the callee ignores it at all other instances.
+                                                                                           Bits[31:1]: Reserved (SBZ)
+        reserved            W3-W7, X3-X17 63:0       Bits64                                Reserved (SBZ)
+               14.1.1.2   Input values (ERET conduit at the Non-secure virtual FF-A instance)
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400006B
+        ids                 W1           31:0        Bits32                                Endpoint and vCPU IDs of the caller. Bits[31:16]: Endpoint ID. Bits[15:0]: vCPU ID
+        timeout_lo          W2           31:0        UInt32                                Bits[31:0] of an interval in nanoseconds. After this interval, the vCPU of the endpoint given in W1 must be run. MBZ if the caller does not specify a timeout
+        timeout_hi          W3           31:0        UInt32                                Bits[63:32] of an interval in nanoseconds. After this interval, the vCPU of the endpoint given in W1 must be run. MBZ if the caller does not specify a timeout
+        reserved            W4-W7, X4-X17 63:0       Bits64                                Reserved (MBZ)
+               14.1.1.3   Output values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                FFA_ERROR function, on failure
+        error_code          W2           31:0        Int32                                 Error code, on failure
+               14.1.2 Failure conditions
+  ID                          Condition
+  invalid_ids                 pre: (IsNonSecurePhysicalInstance() || IsNonSecureVirtualInstance())
+                                   && !IsRecognizedEndpointOrVcpuId(ids)
+                              post: ResultEqual(error_code, INVALID_PARAMETERS)
+  denied                      pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(error_code, DENIED)
+  not_supported               pre: !IsImplementedAtInstance(FFA_MSG_WAIT)
+                              post: ResultEqual(error_code, NOT_SUPPORTED)
+               14.1.2.1   Failure condition ordering
+               The FFA_MSG_WAIT command does not have any failure condition orderings.
+               14.1.3 Success conditions
+  ID                          Condition
+  ctx_state                   pre: (IsVirtualInstance() || IsSecurePhysicalInstance()) && IsValidConduit()
+                              post: CallerContext().state == WAITING
+  rx_release                  pre: (IsVirtualInstance() || IsSecurePhysicalInstance())
+                                   && CallerOwnsRxBuffer() && flags[0] == 0
+                              post: !CallerOwnsRxBuffer()
+  rx_retain                   pre: (IsVirtualInstance() || IsSecurePhysicalInstance())
+                                   && CallerOwnsRxBuffer() && flags[0] == 1
+                              post: CallerOwnsRxBuffer()
+  sched_notify                pre: IsPhysicalInstance() && IsValidConduit()
+                              post: SchedulerInformedOfWaitTransition(CallerContext())
+  hyp_notify                  pre: IsNonSecureVirtualInstance() && Conduit() == ERET
+                              post: SchedulerInformedOfWaitTransition(ids)
+  hyp_timeout                 pre: IsNonSecureVirtualInstance() && Conduit() == ERET
+                                   && IsVmVcpu(ids) && TimeoutSpecified(timeout_hi, timeout_lo)
+                              post: SchedulerRunsVcpuAfterTimeout(ids, timeout_hi:timeout_lo)
+  virt_complete               pre: IsVirtualInstance() && Conduit() in {SMC, HVC, SVC}
+                              post: CompletesWhenAllocatedCpuCycles(CallerContext())
+  sp_complete                 pre: IsSecurePhysicalInstance()
+                              post: CompletesOnInvocationOfAnyFfaAbi()
+               14.1.4 Footprint
+    ID                        Value
+    ctx_state                 CallerContext().state
+    rx_owner                  CallerRxBuffer().owner
+    hyp_timeout               SchedulerVcpuTimeout(ids)

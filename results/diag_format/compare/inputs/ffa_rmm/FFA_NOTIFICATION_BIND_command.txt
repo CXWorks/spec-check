@@ -1,0 +1,47 @@
+16.3 FFA_NOTIFICATION_BIND command
+               Binds the notifications in the Notification bitmap to the Sender endpoint. When the Hypervisor calls it at the Non-secure physical FF-A instance, it asks the SPMC to bind SP notifications to the SP given in the Sender endpoint ID parameter.
+               16.3.1 Interface
+               16.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x8400007F
+        receiver_id         w1           15:0        UInt16                                Receiver endpoint ID
+        sender_id           w1           31:16       UInt16                                Sender endpoint ID
+        per_vcpu            w2           0           Bool                                  Per-vCPU notification flag. 1: all notifications in the bitmap are per-vCPU notifications (only if per-vCPU notifications are supported). 0: all notifications in the bitmap are global notifications
+        flags_rsvd          w2           31:1        Bits31                                Reserved (SBZ)
+        bitmap_lo           w3           31:0        Bits32                                Bits[31:0] of the Notification bitmap. Each set bit identifies a notification the Sender endpoint is allowed to signal. A clear bit has no effect
+        bitmap_hi           w4           31:0        Bits32                                Bits[63:32] of the Notification bitmap. Each set bit identifies a notification the Sender endpoint is allowed to signal. A clear bit has no effect
+        rsvd                w5-w7        31:0        Bits32                                Reserved (SBZ)
+               16.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                FFA_SUCCESS (no further parameters) or FFA_ERROR
+        error_code          w2           31:0        Int32                                 Error code, valid if result is FFA_ERROR
+               16.3.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_BIND)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  endpoint_id                 pre: !IsValidEndpointId(sender_id) || !IsValidEndpointId(receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  per_vcpu_unsupported        pre: per_vcpu == 1 && !PerVcpuNotificationsSupported()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bound_or_pending            pre: Exists(i : bitmap[i] == 1 &&
+                                     (NotificationIsBoundToOtherSender(receiver_id, i, sender_id) ||
+                                      NotificationIsPending(receiver_id, i)))
+                              post: ResultEqual(result, DENIED)
+  caller_denied               pre: !CallerAllowedToInvoke(FFA_NOTIFICATION_BIND)
+                              post: ResultEqual(result, DENIED)
+  aborted                     pre: PartitionHasAborted(sender_id)
+                              post: ResultEqual(result, ABORTED)
+               where bitmap = bitmap_hi:bitmap_lo
+               16.3.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_BIND command does not have any failure condition orderings.
+               16.3.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  binding                     post: ForAll(i : bitmap[i] == 1 ==>
+                                     NotificationBinding(receiver_id, i).sender == sender_id)
+  binding_type                post: ForAll(i : bitmap[i] == 1 ==>
+                                     NotificationBinding(receiver_id, i).per_vcpu == per_vcpu)
+               16.3.4 Footprint
+    ID                        Value
+    binding                   NotificationBinding(receiver_id, i).sender, for each i where bitmap[i] == 1
+    binding_type              NotificationBinding(receiver_id, i).per_vcpu, for each i where bitmap[i] == 1

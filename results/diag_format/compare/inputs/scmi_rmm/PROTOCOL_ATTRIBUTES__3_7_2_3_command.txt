@@ -1,0 +1,53 @@
+3.7.2.3 PROTOCOL_ATTRIBUTES command
+
+               Returns the implementation details associated with this protocol.
+
+               This command is mandatory.
+
+               3.7.2.3.1 Interface
+
+               3.7.2.3.1.1   Input values
+        Name                     Register             Bits        Type        Description
+        message_id               Message header       —           UInt        Message identifier, value 0x1
+        protocol_id              Message header       —           UInt        Protocol identifier, value 0x15
+
+               3.7.2.3.1.2   Output values
+        Name                     Register             Bits        Type        Description
+        status                   Return payload       31:0        Int32       Command return status. See Section 3.1.4 for status code definitions.
+        attributes               Return payload       31:24       UInt32      Reserved, must be zero.
+                                                      23:16                   Maximum number of outstanding asynchronous commands that the platform supports.
+                                                      15:0                    Number of sensors that are present.
+        sensor_reg_address_low   Return payload       31:0        UInt32      Lower 32 bits of the physical address of the sensor shared memory region. Should be 64-bit aligned. Must be in the memory map of the calling agent. Invalid if sensor_reg_len is 0.
+        sensor_reg_address_high  Return payload       31:0        UInt32      Upper 32 bits of the physical address of the sensor shared memory region. Must be in the memory map of the calling agent. Invalid if sensor_reg_len is 0.
+        sensor_reg_len           Return payload       31:0        UInt32      Length in bytes of the sensor shared memory region. A value of 0 means the platform does not implement the sensor shared memory.
+
+               3.7.2.3.2 Failure conditions
+
+               This section does not define any failure conditions for the PROTOCOL_ATTRIBUTES command. Status codes are defined in Section 3.1.4.
+
+               3.7.2.3.2.1   Failure condition ordering
+
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+
+               3.7.2.3.3 Success conditions
+  ID                          Condition
+  attr_reserved               post: attributes[31:24] == 0
+  attr_max_async              post: attributes[23:16] == PlatformMaxOutstandingAsyncCommands()
+  attr_num_sensors            post: attributes[15:0] == NumSensorsPresent()
+  shmem_absent                pre: !PlatformImplementsSensorSharedMemory()
+                              post: sensor_reg_len == 0
+  shmem_len                   pre: PlatformImplementsSensorSharedMemory()
+                              post: sensor_reg_len == SensorSharedMemoryLength()
+  shmem_addr                  pre: sensor_reg_len != 0
+                              post: ((sensor_reg_address_high << 32) | sensor_reg_address_low) == SensorSharedMemoryBase()
+                                    && IsInCallerMemoryMap(SensorSharedMemoryBase())
+  shmem_addr_invalid          pre: sensor_reg_len == 0
+                              post: !IsValid(sensor_reg_address_low) && !IsValid(sensor_reg_address_high)
+
+               The value of sensor_reg_address_low should be 64-bit aligned.
+
+               3.7.2.3.4 Footprint
+
+               This section does not describe any state modified by the PROTOCOL_ATTRIBUTES command.
+
+               Note: The statistics capability has been marked for deprecation and is being replaced by system telemetry. The sensor shared memory region is described in Section 3.7.5.

@@ -1,0 +1,56 @@
+13.9 FFA_PARTITION_INFO_GET_REGS command
+               Returns information about FF-A components implemented in the system, such as the ID and other properties of partitions, in registers.
+               The callee holds the partition information for the queried UUID in an array. If the whole array does not fit in one response, the caller retrieves it over several invocations by advancing the start index. The callee identifies the version of the information with an IMPLEMENTATION DEFINED tag.
+               Valid FF-A instances and conduits:
+        Config      FF-A Instance            Valid Conduits
+        1           Non-secure physical      SMC
+        2           Secure physical          SMC, ERET
+        3           Non-secure virtual       SMC, HVC
+        4           Secure virtual           SMC, HVC, SVC
+               13.9.1 Interface
+               13.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC400008B
+        uuid_lo             X1           63:0        UInt64                                Bytes[0...7] of UUID with byte 0 in the low-order bits
+        uuid_hi             X2           63:0        UInt64                                Bytes[8...15] of UUID with byte 8 in the low-order bits
+        start_index         X3           15:0        UInt16                                Index into the callee's array of partition information from which information must be returned
+        tag                 X3           31:16       UInt16                                Information tag for the queried UUID. MBZ if start_index == 0. Tag known to the caller if start_index > 0
+        reserved            X3           63:32       Bits32                                Reserved, SBZ
+        reserved            X4-X17       63:0        Bits64                                Reserved, SBZ
+               13.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                FFA_SUCCESS64 on success, FFA_ERROR on failure
+        error_code          W2           31:0        Int32                                 Error code (on FFA_ERROR)
+        last_index          X2           15:0        UInt16                                Maximum index of the callee's array of partition information, relative to start_index. Total number of entries = last_index + 1 (on FFA_SUCCESS64)
+        current_index       X2           31:16       UInt16                                Maximum index of the array entries returned by the callee in this invocation, relative to start_index (on FFA_SUCCESS64)
+        callee_tag          X2           47:32       UInt16                                Information tag for the queried UUID known to the callee (on FFA_SUCCESS64)
+        desc_size           X2           63:48       UInt16                                Size in bytes of each partition information descriptor (on FFA_SUCCESS64)
+        partition_info      X3-X17       63:0        PartitionInfoDescriptor[]             Partition information descriptors. Each is 48 bytes, encoded in 6 registers in little-endian format, starting at xN for N = 3, 9. Unused registers are MBZ (on FFA_SUCCESS64)
+               13.9.2 Failure conditions
+  ID                          Condition
+  uuid_valid                  pre: !IsValidUuid(uuid_lo, uuid_hi)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  start_index_valid           pre: !IsValidStartIndex(uuid_lo, uuid_hi, start_index)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  implemented                 pre: !IsImplementedAtInstance(FFA_PARTITION_INFO_GET_REGS)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  tag_valid                   pre: start_index > 0 && tag != CalleeInfoTag(uuid_lo, uuid_hi)
+                              post: ResultEqual(result, RETRY)
+  callee_ready                pre: !CalleeIsReady()
+                              post: ResultEqual(result, NOT_READY)
+               13.9.2.1   Failure condition ordering
+               The FFA_PARTITION_INFO_GET_REGS command does not have any failure condition orderings.
+               13.9.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS64)
+  last_index                  post: last_index >= start_index
+  current_index               post: current_index >= start_index
+  entry_count                 post: NumEntriesReturned() == (current_index - start_index) + 1
+  tag                         post: callee_tag == CalleeInfoTag(uuid_lo, uuid_hi)
+  desc_proto_uuid             post: !IsNilUuid(uuid_lo, uuid_hi) ==> DescProtocolUuidFieldsAreZero(partition_info)
+  desc_unused                 post: UnusedRegistersAreZero(partition_info)
+  complete                    post: (last_index == current_index) ==> AllEntriesReturned()
+               13.9.4 Footprint
+               The FFA_PARTITION_INFO_GET_REGS command has no footprint.

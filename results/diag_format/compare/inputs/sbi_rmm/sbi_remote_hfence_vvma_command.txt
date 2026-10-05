@@ -1,0 +1,33 @@
+8.7 sbi_remote_hfence_vvma command
+               Instructs the remote harts to execute one or more HFENCE.VVMA instructions. These cover the guest virtual addresses from start_addr to start_addr + size for the calling hart's current VMID, as held in its hgatp CSR. This call is valid only for harts that implement the hypervisor extension.
+               8.7.1 Interface
+               8.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 6
+        hart_mask           a0           XLEN-1:0    unsigned long                         Mask of target harts, relative to hart_mask_base
+        hart_mask_base      a1           XLEN-1:0    unsigned long                         Base hartid from which hart_mask is applied
+        start_addr          a2           XLEN-1:0    unsigned long                         Start of the guest virtual address range
+        size                a3           XLEN-1:0    unsigned long                         Size of the guest virtual address range
+               8.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    sbiret.error                          Command return status
+               8.7.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsFunctionImplemented(RemoteHfenceVvma) || !AllTargetHartsImplementHypervisorExt(hart_mask, hart_mask_base)
+                              post: ResultEqual(error, SBI_ERR_NOT_SUPPORTED)
+  invalid_address             pre: !IsValidAddressRange(start_addr, size)
+                              post: ResultEqual(error, SBI_ERR_INVALID_ADDRESS)
+  invalid_param               pre: !AllHartIdsValid(hart_mask, hart_mask_base)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  failed                      pre: RequestFailedForUnspecifiedReason()
+                              post: ResultEqual(error, SBI_ERR_FAILED)
+               8.7.2.1   Failure condition ordering
+               The sbi_remote_hfence_vvma command does not have any failure condition orderings.
+               8.7.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  ipi_sent                    post: IpiSentToAllTargetHarts(hart_mask, hart_mask_base)
+  hfence_vvma                 post: TargetHartsExecutedHfenceVvma(hart_mask, hart_mask_base, start_addr, start_addr + size, CurrentVmid(hgatp))
+               8.7.4 Footprint
+    ID                        Value
+    hfence_vvma               GuestTlbEntries(hart_mask, hart_mask_base, start_addr, start_addr + size, CurrentVmid(hgatp))

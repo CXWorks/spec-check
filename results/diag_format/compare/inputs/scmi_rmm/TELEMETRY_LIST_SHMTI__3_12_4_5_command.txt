@@ -1,0 +1,40 @@
+3.12.4.5 TELEMETRY_LIST_SHMTI command
+               Returns the details of the shared-memory based telemetry interfaces (SHMTIs) that are available.
+               All descriptors may not fit in one call, so the command can be called more than once. Each call returns an array of SHMTI descriptors and the number of descriptors that remain. The array size depends on how many return values the transport supports. Section 3.5.6.8 gives an example of this kind of API.
+               This command is mandatory if SHMTIs are supported, as Bits[15:0] of the attributes_high field in the PROTOCOL_ATTRIBUTES command indicate. Section 3.1.4 gives more details.
+               3.12.4.5.1 Interface
+               3.12.4.5.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        message_id          Message header       —           UInt32                                Message ID, value 0x3
+        protocol_id         Message header       —           UInt32                                Protocol ID, value 0x1B
+        index               Parameter word 0     31:0        UInt32                                Index of the first SHMTI descriptor to be described in the return array
+               3.12.4.5.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Return word 0        31:0        Int32                                 Command return status
+        num_SHMTI           Return word 1        31:16       UInt16                                Number of remaining SHMTIs
+                                                 15:0        UInt16                                Number of SHMTIs that this call returns (N)
+        SHMTI_desc[N]       Return words 2..     —           {UInt32 x 5}[N]                       Array of N SHMTI descriptors, each made of 5 32-bit words:
+                                                                                                   entry[0]: SHMTI ID, a unique 32-bit integer identifier
+                                                                                                   entry[1]: SHMTI address low, the lower 32 bits of the physical start address of the SHMTI memory region; this value should be 64-bit aligned
+                                                                                                   entry[2]: SHMTI address high, the higher 32 bits of the physical start address of the SHMTI memory region
+                                                                                                   entry[3]: SHMTI length, the length in bytes of the SHMTI region
+                                                                                                   entry[4]: SHMTI flags, Bits[31:0] reserved, must be zero
+               3.12.4.5.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsTelemetryListShmtiSupported()
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  not_found                   pre: !AnyShmtiAvailable()
+                              post: ResultEqual(status, NOT_FOUND)
+               The status is one of these codes but is not limited to them. Section 3.1.4 defines more status codes.
+               3.12.4.5.2.1   Failure condition ordering
+               The TELEMETRY_LIST_SHMTI command does not have any failure condition orderings.
+               3.12.4.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  num_returned                post: num_SHMTI[15:0] == NumShmtiDescriptorsReturned()
+  num_remaining               post: num_SHMTI[31:16] == NumShmtiRemaining(index, num_SHMTI[15:0])
+  desc_first                  post: SHMTI_desc[0] == ShmtiDescriptor(index)
+  desc_addr                   post: IsInCallerMemoryMap((SHMTI_desc[i].entry[2] << 32) | SHMTI_desc[i].entry[1])
+  desc_flags                  post: SHMTI_desc[i].entry[4] == 0
+               3.12.4.5.4 Footprint
+               The section does not describe any state that the TELEMETRY_LIST_SHMTI command modifies.

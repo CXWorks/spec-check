@@ -1,0 +1,27 @@
+3.3.3.1 POWER_STATE_CHANGED command
+               Notifies an agent that the power state of a power domain has changed. This notification is optional.
+               If an agent has registered to receive power state change notifications for the power domain identified by domain_id, the platform sends this notification to that agent whenever that power domain changes state, including transitions to an ON state.
+               The notified power state might not match the power state that the notified agent requested. The platform coordinates the requests from all agents on the same domain, so the power state it finally selects can differ from any one agent's request.
+               3.3.3.1.1 Interface
+               3.3.3.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt32                                Message identifier, value 0x0
+        protocol_id         Header       —           UInt32                                Protocol identifier, value 0x11
+        agent_id            Payload[0]   31:0        UInt32                                Identifier of the agent that caused the power transition
+        domain_id           Payload[1]   31:0        UInt32                                Identifier of the power domain whose power state changed
+        power_state         Payload[2]   31:0        UInt32                                Power state that the power domain transitioned to
+               3.3.3.1.1.2   Output values
+               The POWER_STATE_CHANGED command does not have any output values.
+               3.3.3.1.2 Failure conditions
+               The POWER_STATE_CHANGED command does not have any failure conditions.
+               3.3.3.1.2.1   Failure condition ordering
+               The POWER_STATE_CHANGED command does not have any failure condition orderings.
+               3.3.3.1.3 Success conditions
+  ID                          Condition
+  notif_target                pre: IsRegisteredForPowerStateNotification(recipient_agent, domain_id)
+                              post: NotificationSentTo(recipient_agent)
+  notif_complete              post: PowerStateTransitionCompleted(domain_id)
+  notif_state                 post: PowerDomainAt(domain_id).state == power_state
+  notif_cause                 post: PowerTransitionCausedBy(domain_id, agent_id)
+               3.3.3.1.4 Footprint
+               The POWER_STATE_CHANGED command does not modify any state.

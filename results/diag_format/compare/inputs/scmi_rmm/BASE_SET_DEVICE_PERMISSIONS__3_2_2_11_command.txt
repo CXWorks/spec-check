@@ -1,0 +1,38 @@
+3.2.2.11 BASE_SET_DEVICE_PERMISSIONS command
+               Sets whether an agent may access a device, identified by its device identifier. If the agent has access to a device, it can also operate on the power, performance, clock, sensor, reset and voltage domains associated with that device. At system boot, an agent's default access permission for each device is IMPLEMENTATION defined. Arm recommends that only trusted agents are given permission to invoke this command. The Base protocol does not cover how device identifiers are discovered. Callers get them from firmware tables in FDT or ACPI.
+               This command is optional. A caller can check whether it is implemented by issuing PROTOCOL_MESSAGE_ATTRIBUTES with the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES returns SUCCESS.
+               3.2.2.11.1 Interface
+               3.2.2.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message identifier, value 0x9
+        protocol_id         Header       -           UInt                                  Protocol identifier, value 0x10
+        agent_id            Payload[0]   31:0        UInt32                                Identifier of the agent
+        device_id           Payload[1]   31:0        UInt32                                Identifier of the device
+        flags               Payload[2]   31:0        UInt32                                Flags
+        flags.reserved      Payload[2]   31:1        Bits31                                Reserved, must be zero
+        flags.access_type   Payload[2]   0           Bits1                                 Access type: the agent's permission to access platform resources associated with the device. 0: deny agent access to the device. 1: allow agent access to the device
+               3.2.2.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4)
+               3.2.2.11.2 Failure conditions
+  ID                          Condition
+  agent_exists                pre: !AgentExists(agent_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  device_exists               pre: !DeviceExists(device_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  flags_valid                 pre: !IsValidDevicePermissionFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  cmd_supported               pre: !IsCommandSupported(BASE_SET_DEVICE_PERMISSIONS)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  caller_permitted            pre: !CallerMaySetPermissionsOf(agent_id)
+                              post: ResultEqual(status, DENIED)
+               3.2.2.11.2.1   Failure condition ordering
+               The BASE_SET_DEVICE_PERMISSIONS command does not have any failure condition orderings.
+               3.2.2.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  perm_allow                  post: (flags.access_type == 1) ==> DeviceAccessAllowed(agent_id, device_id)
+  perm_deny                   post: (flags.access_type == 0) ==> !DeviceAccessAllowed(agent_id, device_id)
+               3.2.2.11.4 Footprint
+    ID                        Value
+    device_perm               DeviceAccessAllowed(agent_id, device_id)

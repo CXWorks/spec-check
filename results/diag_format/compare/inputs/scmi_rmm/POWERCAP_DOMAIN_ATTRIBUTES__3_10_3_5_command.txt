@@ -1,0 +1,62 @@
+3.10.3.5 POWERCAP_DOMAIN_ATTRIBUTES command
+               Returns the attributes of a specific power capping domain. This command is mandatory.
+               3.10.3.5.1 Interface
+               3.10.3.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x18
+        message_id          Header       -           UInt32                                Message identifier, value 0x3
+        domain_id           Param[0]     15:0        UInt32                                Identifier of the power capping domain
+                            Param[0]     31:16       -                                     Ignored by the platform
+               3.10.3.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Ret[0]       31:0        Int32                                 Command return status. Section 3.1.4 lists more status codes.
+        mai_notify          Ret[1]       31          Bits1                                 1: MAI change notifications are supported for this domain. 0: they are not supported.
+        meas_notify         Ret[1]       30          Bits1                                 1: Power measurement change notifications are supported for this domain. 0: they are not supported.
+        async_cap_set       Ret[1]       29          Bits1                                 1: The power cap can be set asynchronously. 0: The power cap can only be set synchronously.
+        ext_name            Ret[1]       28          Bits1                                 1: The domain name is longer than 16 bytes. The full name is returned by POWERCAP_DOMAIN_NAME_GET (Section 3.10.3.13). 0: Extended domain names are not supported.
+        cap_config          Ret[1]       27          Bits1                                 1: The domain supports changing power caps. 0: It does not.
+        power_monitor       Ret[1]       26          Bits1                                 1: The domain supports power monitoring. 0: It does not.
+        mai_config          Ret[1]       25          Bits1                                 1: The domain supports changing the MAI. 0: It does not.
+        power_unit          Ret[1]       24:23       Bits2                                 Power unit used for capping and monitoring. 0x2: milliwatts (mW). 0x1: microwatts (uW). 0x0: abstract linear integer scale. All other values are reserved.
+        fastchannel         Ret[1]       22          Bits1                                 1: At least one FastChannel is available for this domain. 0: No FastChannels are available.
+        cap_notify          Ret[1]       21          Bits1                                 1: Power cap change notifications are supported for this domain. 0: They are not supported.
+        cai_config          Ret[1]       20          Bits1                                 1: The domain supports changing the CAI. 0: It does not.
+        cai_notify          Ret[1]       19          Bits1                                 1: CAI change notifications are supported for this domain. 0: They are not supported.
+        num_limits          Ret[1]       18:15       UInt4                                 Number of concurrent power limits supported by this domain. CPC is supported if this value is greater than 1.
+                            Ret[1]       14:0        -                                     Reserved, must be zero
+        name                Ret[2:5]     -           UInt8[16]                             Null-terminated ASCII domain name, up to 16 bytes. When ext_name is 1, this field holds the lower 15 bytes of the null-terminated domain name.
+        min_mai             Ret[6]       31:0        UInt32                                Minimum supported power measurement averaging interval (MAI), in microseconds. Zero if the platform does not report this value.
+        max_mai             Ret[7]       31:0        UInt32                                Maximum supported MAI, in microseconds. Zero if the platform does not report this value.
+        mai_step            Ret[8]       31:0        UInt32                                Step size between two consecutive supported MAI values
+        min_power_cap       Ret[9]       31:0        UInt32                                Minimum power value that can be set as the power cap. If CPC is supported, this field refers to CPL0.
+        max_power_cap       Ret[10]      31:0        UInt32                                Maximum power value that can be set as the power cap. If CPC is supported, this field refers to CPL0.
+        power_cap_step      Ret[11]      31:0        UInt32                                Step size between two consecutive supported power cap values. If CPC is supported, this field refers to CPL0.
+        sustainable_power   Ret[12]      31:0        UInt32                                Maximum sustainable power consumption under normal conditions, taking into account all known external factors such as thermal constraints
+        accuracy            Ret[13]      31:0        UInt32                                Power measurement accuracy, in integral multiples of 0.001 percent. Zero if the platform does not report this value.
+        parent_id           Ret[14]      31:0        UInt32                                Identifier of the parent power capping domain. 0xFFFFFFFF: the domain has no parent domain.
+        min_cai             Ret[15]      31:0        UInt32                                Minimum supported power capping averaging interval (CAI), in microseconds. If CPC is supported, this field refers to CPL0. Zero if the platform does not report this value.
+        max_cai             Ret[16]      31:0        UInt32                                Maximum supported CAI, in microseconds. If CPC is supported, this field refers to CPL0. Zero if the platform does not report this value.
+        cai_step            Ret[17]      31:0        UInt32                                Step size between two consecutive supported CAI values. If CPC is supported, this field refers to CPL0.
+               3.10.3.5.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PowercapDomainExists(domain_id[15:0])
+                              post: ResultEqual(status, NOT_FOUND)
+               3.10.3.5.2.1   Failure condition ordering
+               The POWERCAP_DOMAIN_ATTRIBUTES command does not have any failure condition orderings.
+               3.10.3.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  attrs                       post: Valid attributes of PowercapDomain(domain_id[15:0]) are returned
+  cap_mon                     post: (cap_config == 1) || (power_monitor == 1)
+  power_unit                  post: power_unit IN {0x0, 0x1, 0x2}
+  num_limits                  post: (cap_config == 1) ==> (num_limits > 0)
+  reserved                    post: attributes[14:0] == 0
+  mai_cfg                     post: (min_mai == max_mai) ==> !MaiIsConfigurable(domain_id[15:0])
+  mai_step                    post: (min_mai != max_mai) ==> (mai_step != 0)
+  cap_nonzero                 post: (min_power_cap != 0) && (max_power_cap != 0)
+  cap_cfg                     post: (min_power_cap == max_power_cap) ==> !PowerCapIsConfigurable(domain_id[15:0])
+  cap_step                    post: (min_power_cap != max_power_cap) ==> (power_cap_step != 0)
+  cai_cfg                     post: (min_cai == max_cai) ==> !CaiIsConfigurable(domain_id[15:0])
+  cai_step                    post: (min_cai != max_cai) ==> (cai_step != 0)
+               3.10.3.5.4 Footprint
+               The POWERCAP_DOMAIN_ATTRIBUTES command does not have a footprint.

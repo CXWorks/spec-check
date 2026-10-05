@@ -1,0 +1,37 @@
+13.3 FFA_FEATURES command
+               Queries the presence, properties and implementation of optional features of an FF-A interface, or the presence and properties of a feature that the Framework supports and that is not specific to an FF-A interface.
+               An FF-A component at the lower EL at an FF-A instance invokes this command. The valid conduits are:
+        Config No.          FF-A instance                          Valid conduits
+        1                   Non-secure physical                    SMC
+        2                   Secure physical                        ERET, SMC
+        3                   Secure and Non-secure virtual          SMC, HVC, SVC
+               13.3.1 Interface
+               13.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000064
+        id_type             w1           31          Bits1                                 FF-A function ID or Feature ID selector
+                                                                                           b'1: w1 is the Function ID of the FF-A interface whose implementation is being queried. Bit[31] of the SMCCC Function ID (the Fastcall bit) separates a function ID from a feature ID. If an interface defines both SMC32 and SMC64 FIDs, either FID can be used.
+                                                                                           b'0: w1 is the ID of a feature that the Framework supports at this FF-A instance
+        function_id         w1           31:0        UInt32                                Function ID of the queried FF-A interface (when id_type == b'1)
+        feature_reserved    w1           30:8        Bits23                                Reserved, MBZ (when id_type == b'0)
+        feature_id          w1           7:0         UInt8                                 Feature ID (when id_type == b'0). Table 13.14 lists the supported feature IDs.
+        input_properties    w2           31:0        UInt32                                Properties the caller expects for the Function ID in w1. Reserved (MBZ) when w1 contains a Feature ID.
+        reserved            w3-w7        31:0        UInt32                                Reserved, SBZ
+               13.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                Function ID of the completing interface: FFA_SUCCESS or FFA_ERROR
+        interface_properties w2-w3       31:0        UInt32                                On FFA_SUCCESS: any optional features that the queried interface or feature implements, or any properties it exports
+               13.3.2 Failure conditions
+  ID                          Condition
+  id_invalid                  pre: !IsValidFunctionOrFeatureId(w1)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  id_not_impl                 pre: !IsImplementedFunctionOrFeature(w1)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               13.3.2.1   Failure condition ordering
+               The FFA_FEATURES command does not have any failure condition orderings.
+               13.3.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  properties                  post: interface_properties == PropertiesOf(w1)
+               13.3.4 Footprint
+               The section does not specify any state that the FFA_FEATURES command modifies.

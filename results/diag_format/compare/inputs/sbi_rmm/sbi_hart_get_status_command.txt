@@ -1,0 +1,26 @@
+9.3 sbi_hart_get_status command
+               Gets the current status (HSM state id) of the given hart.
+               9.3.1 Interface
+               9.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    unsigned long                         FID, value 2
+        hartid              a0           XLEN-1:0    unsigned long                         Target hart for which status is required
+               9.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    long                                  sbiret.error: error code
+        value               a1           XLEN-1:0    long                                  sbiret.value: current status (HSM state id) of the hart
+               9.3.2 Failure conditions
+  ID                          Condition
+  hartid_valid                pre: !IsValidHartid(hartid)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+               9.3.2.1   Failure condition ordering
+               The sbi_hart_get_status command does not have any failure condition orderings.
+               9.3.3 Success conditions
+  ID                          Condition
+  hart_status                 post: IsHsmStateId(value)
+                              (value is one of the HSM state ids described in Table 17)
+               Note: Harts may change HSM state at any time because of concurrent sbi_hart_start(),
+               sbi_hart_stop() or sbi_hart_suspend() calls. The returned value may therefore not match
+               the hart's actual state when the caller checks it.
+               9.3.4 Footprint
+               The sbi_hart_get_status command does not modify any state.

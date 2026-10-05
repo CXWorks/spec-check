@@ -1,0 +1,25 @@
+3.2.2.10 BASE_NOTIFY_ERRORS command
+               Turns notification of platform errors to the calling agent on or off. Errors are reported through BASE_ERROR_EVENT notifications (see Section 3.2.3.1). This command is optional. A caller can check whether it is implemented by sending PROTOCOL_MESSAGE_ATTRIBUTES with this command's message_id. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES returns SUCCESS.
+               3.2.2.10.1 Interface
+               3.2.2.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message ID, value 0x8
+        protocol_id         Header       -           UInt                                  Protocol ID, value 0x10
+        notify_enable       Payload      31:0        UInt32                                Notification control. Bits[31:1]: Reserved, must be zero. Bit[0]: Notify enable. When 0, the platform does not send any BASE_ERROR_EVENT messages to the calling agent. When 1, the platform sends BASE_ERROR_EVENT messages to the calling agent when it detects an error.
+               3.2.2.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status (see Section 3.1.4)
+               3.2.2.10.2 Failure conditions
+  ID                          Condition
+  notify_enable_valid         pre: !IsValidNotifyEnable(notify_enable)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.2.2.10.2.1   Failure condition ordering
+               The BASE_NOTIFY_ERRORS command does not have any failure condition orderings.
+               3.2.2.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_on                   post: (notify_enable[0] == 1) ==> ErrorNotifyEnabled(caller_agent)
+  notify_off                  post: (notify_enable[0] == 0) ==> !ErrorNotifyEnabled(caller_agent)
+               3.2.2.10.4 Footprint
+    ID                        Value
+    notify_state              ErrorNotifyEnabled(caller_agent)

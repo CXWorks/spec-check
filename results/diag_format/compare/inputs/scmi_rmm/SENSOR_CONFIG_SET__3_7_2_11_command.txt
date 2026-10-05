@@ -1,0 +1,39 @@
+3.7.2.11 SENSOR_CONFIG_SET command
+               Sets a sensor's update interval and timestamp reporting, and enables or disables the sensor.
+               3.7.2.11.1 Interface
+               3.7.2.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message ID, value 0xA
+        protocol_id         Header       -           UInt                                  Protocol ID, value 0x15
+        sensor_id           Payload[0]   31:0        UInt32                                Identifier for the sensor
+        sensor_config       Payload[1]   31:16       UInt16                                sensor_update_interval.sec: seconds. The update interval is sec x 10^exponent seconds. Set the whole interval field (Bits[31:11]) to 0 if the interval does not need to change or if the sensor does not support setting it
+                            Payload[1]   15:11       Int5                                  sensor_update_interval.exponent: two's complement power-of-10 multiplier applied to sec
+                            Payload[1]   10          Bool                                  Autonomous rounding: 1 = the platform picks the update interval closest to the request, and Bit[9] is ignored
+                            Payload[1]   9           Bool                                  Round direction, used when Bit[10] == 0: 1 = round up, 0 = round down
+                            Payload[1]   8:2         -                                     Reserved
+                            Payload[1]   1           Bool                                  Timestamp reporting: 1 = timestamp sensor values, 0 = do not timestamp. Set to 0 if the sensor does not support timestamp reporting or its configuration
+                            Payload[1]   0           Bool                                  Sensor state: 1 = enable the sensor, 0 = disable the sensor
+               3.7.2.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+               3.7.2.11.2 Failure conditions
+  ID                          Condition
+  sensor_id                   pre: !IsExistingSensor(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  params                      pre: !AreValidSensorConfigParameters(sensor_config)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  config_supp                 pre: !IsSensorConfigSupported(sensor_id, sensor_config)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.7.2.11.2.1   Failure condition ordering
+               The SENSOR_CONFIG_SET command does not have any failure condition orderings.
+               3.7.2.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  sensor_state                post: SensorAt(sensor_id).enabled == sensor_config[0]
+  timestamp                   post: SensorAt(sensor_id).timestamp_enabled == sensor_config[1]
+  interval                    post: (sensor_config[31:11] != 0) ==> SensorAt(sensor_id).update_interval == RoundedUpdateInterval(sensor_config[31:16], sensor_config[15:11], sensor_config[10], sensor_config[9])
+               3.7.2.11.4 Footprint
+    ID                        Value
+    sensor_state              SensorAt(sensor_id).enabled
+    timestamp                 SensorAt(sensor_id).timestamp_enabled
+    interval                  SensorAt(sensor_id).update_interval

@@ -1,0 +1,17 @@
+pub open spec fn sdei_event_routing_set_spec(result: Int64, event: Int32, routing_mode: UInt64, affinity: UInt64, old_s: S, new_s: S) -> bool {
+    (!SdeiIsSupported(old_s) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsValidEventNumber(event) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && ((IsValidEventNumber(event) && !IsSharedEvent(old_s, event)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidRoutingMode(routing_mode) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (((RoutingMode(routing_mode) == RM_PE) && !IsValidMpidr(old_s, affinity)) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && ((IsValidEventNumber(event) && EventAt(old_s, event).handler_state != HANDLER_REGISTERED) ==> ResultEqual(result, DENIED))
+    && ((SdeiIsSupported(old_s)
+        && IsValidEventNumber(event)
+        && IsSharedEvent(old_s, event)
+        && IsValidRoutingMode(routing_mode)
+        && !((RoutingMode(routing_mode) == RM_PE) && !IsValidMpidr(old_s, affinity))
+        && EventAt(old_s, event).handler_state == HANDLER_REGISTERED)
+        ==> (ResultEqual(result, SUCCESS)
+            && EventAt(new_s, event).routing_mode == RoutingMode(routing_mode)
+            && ((RoutingMode(routing_mode) == RM_PE) ==> (EventAt(new_s, event).affinity == affinity))))
+}

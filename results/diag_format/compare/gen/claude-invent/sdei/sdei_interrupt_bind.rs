@@ -1,0 +1,48 @@
+pub open spec fn sdei_interrupt_bind_spec(interrupt: UInt32, result: i64, old_s: S, new_s: S) -> bool {
+    (!SdeiIsSupported(old_s) ==> (result == NOT_SUPPORTED && new_s == old_s))
+    && ((SdeiIsSupported(old_s)
+        && (!SdeiInterruptIsValid(old_s, interrupt)
+            || SdeiInterruptIsSgi(old_s, interrupt)
+            || !SdeiInterruptOwnedByClient(old_s, interrupt)))
+        ==> (result == INVALID_PARAMETERS && new_s == old_s))
+    && ((SdeiIsSupported(old_s)
+        && SdeiInterruptIsValid(old_s, interrupt)
+        && !SdeiInterruptIsSgi(old_s, interrupt)
+        && SdeiInterruptOwnedByClient(old_s, interrupt)
+        && !SdeiInterruptIsBound(old_s, interrupt)
+        && !SdeiInterruptIsInactive(old_s, interrupt))
+        ==> (result == DENIED && new_s == old_s))
+    && ((SdeiIsSupported(old_s)
+        && SdeiInterruptIsValid(old_s, interrupt)
+        && !SdeiInterruptIsSgi(old_s, interrupt)
+        && SdeiInterruptOwnedByClient(old_s, interrupt)
+        && !SdeiInterruptIsBound(old_s, interrupt)
+        && SdeiInterruptIsInactive(old_s, interrupt)
+        && !SdeiHasFreeBindSlot(old_s))
+        ==> (result == OUT_OF_RESOURCE && new_s == old_s))
+    && ((SdeiIsSupported(old_s)
+        && SdeiInterruptIsValid(old_s, interrupt)
+        && !SdeiInterruptIsSgi(old_s, interrupt)
+        && SdeiInterruptOwnedByClient(old_s, interrupt)
+        && SdeiInterruptIsBound(old_s, interrupt))
+        ==> (result >= 0
+            && (result as int) < 0x1_0000_0000
+            && (result as int) == SdeiBoundEventNumber(old_s, interrupt) as int
+            && new_s == old_s))
+    && ((SdeiIsSupported(old_s)
+        && SdeiInterruptIsValid(old_s, interrupt)
+        && !SdeiInterruptIsSgi(old_s, interrupt)
+        && SdeiInterruptOwnedByClient(old_s, interrupt)
+        && !SdeiInterruptIsBound(old_s, interrupt)
+        && SdeiInterruptIsInactive(old_s, interrupt)
+        && SdeiHasFreeBindSlot(old_s))
+        ==> (result >= 0
+            && (result as int) < 0x1_0000_0000
+            && SdeiInterruptIsBound(new_s, interrupt)
+            && (result as int) == SdeiBoundEventNumber(new_s, interrupt) as int
+            && SdeiIsVendorEventNumber(new_s, SdeiBoundEventNumber(new_s, interrupt))
+            && SdeiEventIsNormalPriority(new_s, SdeiBoundEventNumber(new_s, interrupt))
+            && (SdeiInterruptIsPpi(old_s, interrupt) ==> SdeiEventIsPrivate(new_s, SdeiBoundEventNumber(new_s, interrupt)))
+            && (SdeiInterruptIsSpi(old_s, interrupt) ==> SdeiEventIsShared(new_s, SdeiBoundEventNumber(new_s, interrupt)))
+            && (SdeiBindSlotsUsed(new_s) as int) == (SdeiBindSlotsUsed(old_s) as int) + 1))
+}

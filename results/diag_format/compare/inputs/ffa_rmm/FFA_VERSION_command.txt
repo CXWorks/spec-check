@@ -1,0 +1,72 @@
+13.2 FFA_VERSION command
+               Returns the version of the Firmware Framework implementation at an FF-A instance. Depending on the Version query type, the caller can use it to negotiate a version, check whether the callee has a compatible version, or read the version already negotiated.
+               Valid FF-A instances and conduits:
+               Config 1: Secure and Non-secure physical. Conduit: SMC.
+               Config 2: Secure and Non-secure virtual. Conduits: SMC, HVC, SVC.
+               13.2.1 Interface
+               13.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000063
+        input_version       w1           31          UInt32                                Must be 0
+                            w1           30:16       UInt32                                Major Version number
+                            w1           15:0        UInt32                                Minor Version number. The whole field is Reserved (SBZ) when Version query type is b'10
+        flags               w2           31:2        UInt32                                Reserved (SBZ)
+                            w2           1:0         UInt32                                Version query type: b'00 = negotiate the version in input_version; b'01 = ask whether the callee has a version compatible with input_version; b'10 = read the negotiated version for the caller; all other values are reserved
+        (reserved)          w3-w7        31:0        UInt32                                Reserved (SBZ)
+               13.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        Int32                                 Output version number on success, or SMCCC error code on failure
+                            w0           31          Int32                                 On success: Must be 0
+                            w0           30:16       Int32                                 On success: Major Version number
+                            w0           15:0        Int32                                 On success: Minor Version number
+        (reserved)          w1-w7        31:0        UInt32                                Reserved (MBZ)
+               13.2.2 Failure conditions
+  ID                          Condition
+  ffa_impl                    pre: !CalleeImplementsFfa()
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  version_bit31               pre: input_version[31] != 0
+                              post: ResultEqual(result, INVALID_PARAMETER)
+  query_type                  pre: !IsValidVersionQueryType(flags[1:0])
+                              post: ResultEqual(result, INVALID_PARAMETER)
+               13.2.2.1   Failure condition ordering
+               The FFA_VERSION command does not have any failure condition orderings.
+               13.2.3 Success conditions
+  ID                          Condition
+  out_bit31                   post: result[31] == 0
+  neg_in_use                  post: (flags[1:0] == 0b00) && !CallerIsSpmcAtSeparateEl() && FfaInUse(caller)
+                                    ==> (result == NULL_VERSION) && (NegotiatedVersion(caller) == old(NegotiatedVersion(caller)))
+  neg_downgrade               post: (flags[1:0] == 0b00) && !CallerIsSpmcAtSeparateEl() && !FfaInUse(caller)
+                                    && VersionLessThan(input_version, old(NegotiatedVersion(caller))) && !CalleeAllowsDowngrade()
+                                    ==> (result == NULL_VERSION) && (NegotiatedVersion(caller) == old(NegotiatedVersion(caller)))
+  neg_compat                  post: (flags[1:0] == 0b00) && !CallerIsSpmcAtSeparateEl() && !FfaInUse(caller)
+                                    && !(VersionLessThan(input_version, old(NegotiatedVersion(caller))) && !CalleeAllowsDowngrade())
+                                    && CalleeImplementsCompatibleVersion(input_version)
+                                    ==> IsCompatible(result, input_version) && !VersionLessThan(result, input_version)
+                                        && (NegotiatedVersion(caller) == input_version)
+  neg_incompat_lower          post: (flags[1:0] == 0b00) && !CallerIsSpmcAtSeparateEl() && CalleeIncompatibleVersionsOnlyLower(input_version)
+                                    ==> (result == HighestIncompatibleVersion(input_version))
+                                        && (NegotiatedVersion(caller) == old(NegotiatedVersion(caller)))
+  neg_incompat_higher         post: (flags[1:0] == 0b00) && !CallerIsSpmcAtSeparateEl() && CalleeIncompatibleVersionsOnlyHigher(input_version)
+                                    ==> ((result == LowestIncompatibleVersion(input_version)) || ResultEqual(result, NOT_SUPPORTED))
+                                        && (NegotiatedVersion(caller) == old(NegotiatedVersion(caller)))
+                              (Completing with LowestIncompatibleVersion(input_version) is strongly recommended.)
+  neg_incompat_both           post: (flags[1:0] == 0b00) && !CallerIsSpmcAtSeparateEl() && CalleeIncompatibleVersionsHigherAndLower(input_version)
+                                    ==> (result == HighestIncompatibleVersion(input_version))
+                                        && (NegotiatedVersion(caller) == old(NegotiatedVersion(caller)))
+  neg_spmc                    post: (flags[1:0] == 0b00) && CallerIsSpmcAtSeparateEl()
+                                    ==> (result == NegotiatedVersionAtStart(SPMC))
+                                        && (NegotiatedVersion(SPMC) == old(NegotiatedVersion(SPMC)))
+  compat_ok                   post: (flags[1:0] == 0b01) && CalleeImplementsCompatibleVersion(input_version)
+                                    ==> IsCompatible(result, input_version) && !VersionLessThan(result, input_version)
+  compat_incompat_lower       post: (flags[1:0] == 0b01) && CalleeIncompatibleVersionsOnlyLower(input_version)
+                                    ==> (result == HighestIncompatibleVersion(input_version))
+  compat_incompat_higher      post: (flags[1:0] == 0b01) && CalleeIncompatibleVersionsOnlyHigher(input_version)
+                                    ==> (result == LowestIncompatibleVersion(input_version))
+  compat_incompat_both        post: (flags[1:0] == 0b01) && CalleeIncompatibleVersionsHigherAndLower(input_version)
+                                    ==> (result == HighestIncompatibleVersion(input_version))
+  query_negotiated            post: (flags[1:0] == 0b10) ==> (result == NegotiatedVersion(caller))
+  query_null                  post: (flags[1:0] == 0b10) && !VersionNegotiated(caller) ==> (result == NULL_VERSION)
+  query_no_change             post: (flags[1:0] != 0b00) ==> (NegotiatedVersion(caller) == old(NegotiatedVersion(caller)))
+               13.2.4 Footprint
+    ID                        Value
+    negotiated_version        NegotiatedVersion(caller)

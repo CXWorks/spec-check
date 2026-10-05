@@ -1,0 +1,30 @@
+3.7.4.2 SENSOR_UPDATE command
+               The platform sends this notification to give a sensor reading to an agent. The agent must have asked for continuous update notifications from the sensor with the SENSOR_CONTINUOUS_UPDATE_NOTIFY command.
+               This notification is mandatory if at least one sensor supports continuous update notifications. If no sensors support continuous update notifications, the platform does not need to implement it.
+               3.7.4.2.1 Interface
+               3.7.4.2.1.1   Input values
+        Name                Register          Bits        Type                                  Description
+        message_id          Message header    -           -                                     Message identifier, value 0x1
+        protocol_id         Message header    -           -                                     Protocol identifier, value 0x15
+               3.7.4.2.1.2   Output values
+        Name                Register          Bits        Type                                  Description
+        agent_id            Payload           31:0        uint32                                The agent that caused this event. In the current version of the specification this is set to 0, meaning the platform generates all sensor events
+        sensor_id           Payload           31:0        uint32                                Identifier for the sensor
+        readings            Payload           -           SENSOR_READING[N]                     Array of sensor readings in the format given in Sensor Reading Descriptor. N is 1 for sensors that measure scalar values. For sensors that report values along axes, N is the number of sensor axes
+               3.7.4.2.2 Failure conditions
+               The SENSOR_UPDATE command does not have any failure conditions.
+               3.7.4.2.2.1   Failure condition ordering
+               The SENSOR_UPDATE command does not have any failure condition orderings.
+               3.7.4.2.3 Success conditions
+  ID                          Condition
+  notify_req                  post: AgentRequestedContinuousUpdates(agent, sensor_id)
+  sensor_en                   post: SensorIsEnabled(sensor_id)
+  agent_id                    post: agent_id == 0
+  readings_scalar             post: IsScalarSensor(sensor_id) ⇒ Len(readings) == 1
+  readings_axes               post: IsAxisSensor(sensor_id) ⇒ Len(readings) == NumSensorAxes(sensor_id)
+  readings_order              post: IsAxisSensor(sensor_id) ⇒ AllAxesReportedInOrder(readings)
+  readings_latest             post: readings == LatestSensorValues(sensor_id)
+  rate                        post: NotificationInterval(sensor_id) >= ConfiguredUpdatePeriod(sensor_id)
+               Depending on the sensor, the notification can be generated at every sensor update interval, or when the sensor values change by a specific margin. If hardware constraints mean the agent or the platform cannot handle the configured rate, the platform may generate notifications more slowly than the configured sensor update period.
+               3.7.4.2.4 Footprint
+               The SENSOR_UPDATE command does not have a footprint.

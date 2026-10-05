@@ -1,0 +1,28 @@
+3.7.2.14 SENSOR_NAME_GET command
+               Returns the extended name associated with a specific sensor.
+               This command is mandatory only if extended sensor name is supported. Extended sensor name is supported when Bit[29] of the sensor_attributes_low field of the SENSOR_DESCRIPTION_GET command is set to 1 (see Section 3.7.2.5).
+               3.7.2.14.1 Interface
+               3.7.2.14.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt                                  Message identifier, value 0xC
+        protocol_id         Header       —           UInt                                  Protocol identifier, value 0x15
+        sensor_id           Payload[0]   31:0        UInt32                                Identifier for the sensor
+               3.7.2.14.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4)
+        flags               Payload[1]   31:0        UInt32                                Reserved, must be zero
+        name                Payload[2]   511:0       UInt8[64]                             Null-terminated UTF-8 string of up to 64 bytes describing the sensor extended name
+               3.7.2.14.2 Failure conditions
+  ID                          Condition
+  sensor_exists               pre: !SensorExists(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.7.2.14.2.1   Failure condition ordering
+               The SENSOR_NAME_GET command does not have any failure condition orderings.
+               3.7.2.14.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags                       post: flags == 0
+  name                        post: name == SensorExtendedName(sensor_id)
+  name_format                 post: IsNullTerminatedUtf8(name, 64)
+               3.7.2.14.4 Footprint
+               The SENSOR_NAME_GET command does not modify any state.

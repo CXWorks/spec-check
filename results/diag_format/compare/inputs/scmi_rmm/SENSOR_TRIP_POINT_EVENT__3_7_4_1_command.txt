@@ -1,0 +1,29 @@
+3.7.4.1 SENSOR_TRIP_POINT_EVENT command
+               The platform issues this notification when a sensor crosses a trip point for which the agent requested event notification with the SENSOR_TRIP_POINT_CONFIG command. This notification is optional.
+               The platform might poll sensors at intervals, or it might program sensors to raise interrupts on trip points. This depends on the implementation. A sensor value might cross several trip points between two successive platform reads. In that case, the platform might send only one notification to stand for all of those crossings.
+               3.7.4.1.1 Interface
+               3.7.4.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          -            -           -                                     Message identifier, value 0x0
+        protocol_id         -            -           -                                     Protocol identifier, value 0x15
+               3.7.4.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        agent_id            -            31:0        uint32                                The agent that caused this event. In the current version of the specification, this field is 0. This means the platform generates all sensor events.
+        sensor_id           -            31:0        uint32                                Identifier of the sensor that tripped
+        trip_point_desc     -            31:17       uint32                                Reserved
+                            -            16          uint32                                Direction. 1: the trip point was reached or crossed in the positive direction. 0: the trip point was reached or crossed in the negative direction.
+                            -            15:8        uint32                                Reserved for future use
+                            -            7:0         uint32                                trip_point_id: identifier of the trip point that was crossed or reached
+               3.7.4.1.2 Failure conditions
+               The SENSOR_TRIP_POINT_EVENT notification does not have any failure conditions.
+               3.7.4.1.2.1   Failure condition ordering
+               The SENSOR_TRIP_POINT_EVENT notification does not have any failure condition orderings.
+               3.7.4.1.3 Success conditions
+  ID                          Condition
+  trip_cfg                    pre: TripPointEventRequested(sensor_id, trip_point_desc.trip_point_id)
+  trip_cross                  pre: SensorCrossedOrReachedTripPoint(sensor_id, trip_point_desc.trip_point_id)
+  agent                       post: agent_id == 0
+  dir_pos                     post: (trip_point_desc[16] == 1) == TripPointCrossedPositive(sensor_id, trip_point_desc.trip_point_id)
+  dir_neg                     post: (trip_point_desc[16] == 0) == TripPointCrossedNegative(sensor_id, trip_point_desc.trip_point_id)
+               3.7.4.1.4 Footprint
+               The SENSOR_TRIP_POINT_EVENT notification does not specify any state that it modifies.

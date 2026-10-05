@@ -1,0 +1,507 @@
+[
+ {
+  "file": "base_rmm/psci_13_rmm/affinity_info.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> affinity_info_unsat.rs:51:16\n   |\n51 |     && (Exists core in AffinityInstance(old_s, lowest_affinity_level, target_affinity) such that (CoreEnabledByCpuOn(core) || IsCold...\n   |                ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/cpu_default_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/cpu_freeze.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/cpu_off.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> cpu_off_unsat.rs:57:16\n   |\n57 |     && (forall node: Node. (AllCoresCalledCpuOff(old_s, node) || RemainingCoresSuspendedAtOrAbove(old_s, node.level)) ==> PowerState...\n   |                ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/cpu_on.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/cpu_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/mem_protect.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> mem_protect_unsat.rs:26:56\n   |\n26 |     && (ResultEqual(result, Old(MemProtectEnabled()) ? 1 : 0))\n   |                                                        ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/mem_protect_check_range.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/migrate.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> migrate_unsat.rs:283:8\n    |\n 36 | pub open spec fn migrate_spec(result: PsciReturnCode, old_s: S, new_s: S) -> bool {\n    |                                                                                   - closing delimiter possibly meant for this\n...\n283 |     && (result == NOT_PRESENT ==> TrustedOsResidentCore(new_s)\n    |        ^ unclosed delimiter\n...\n290 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> migrate_unsat.rs:290:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/migrate_info_type.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> migrate_info_type_unsat.rs:61:57\n   |\n61 |     && (ResultEqual(result, 0) ==> ReturnOf(CPU_OFF, on TrustedOsResidentCpu()) == DENIED)\n   |                                                         ^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/node_hw_state.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/psci_features.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> psci_features_unsat.rs:30:109\n   |\n30 |     && (IsCpuSuspendFid(psci_func_id) ==> (result[31:2] == 0 && result[1] == (UsesExtendedStateIdFormat() ? 1 : 0) && result[0] == (...\n   |                                                                                                             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/psci_set_suspend_mode.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> psci_set_suspend_mode_unsat.rs:186:58\n    |\n 43 | pub open spec fn psci_set_suspend_mode_spec(result: PsciReturnCode, old_s: S, new_s: S) -> bool {\n    |                                                                                                 - closing delimiter possibly meant for this\n...\n186 |     && (ResultEqual(result, NOT_SUPPORTED) || ResultEqual(result,\n    |                                                          ^ unclosed delimiter\n...\n193 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> psci_set_suspend_mode_unsat.rs:193:13\n    |\n  2 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/psci_stat_count.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> psci_stat_count_unsat.rs:39:86\n   |\n39 |     && (IsOsInitiatedMode() ==> LastManLevelField(power_state(old_s)) is disregarded when the local state is selected)\n   |                                                                                      ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/psci_stat_residency.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> psci_stat_residency_unsat.rs:51:158\n   |\n51 | ...ld_s, power_state(old_s)), StatLocalState(power_state(old_s))) mod 2u64.pow(ResultBits(fid(old_s)) as int)))\n   |                                                                   ^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/psci_version.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> psci_version_unsat.rs:27:78\n   |\n27 |     && (IsFunctionImplemented(PSCI_VERSION) ==> (result[31] == 0 && result[30:16] == ImplementedPsciVersion().major && result[15:0] ...\n   |                                                                              ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/system_off2.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> system_off2_unsat.rs:353:8\n    |\n 37 | pub open spec fn system_off2_spec(result: PsciReturnCode, old_s: S, new_s: S) -> bool {\n    |                                                                                       - closing delimiter possibly meant for this\n...\n353 |     && (result == NOT_SUPPORTED ==> NextStart\n    |        ^ unclosed delimiter\n...\n360 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> system_off2_unsat.rs:360:13\n    |\n  3 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/system_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/system_reset2.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> system_reset2_unsat.rs:45:45\n   |\n45 |     && (reset_type[31] == 0 && reset_type[30:0] != SYSTEM_WARM_RESET ==> ResultEqual(result, INVALID_PARAMETERS))\n   |                                             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/psci_13_rmm/system_suspend.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> system_suspend_unsat.rs:44:21\n   |\n44 |     && (Exists(core : core != CallingCore() && CoreState(old_s, core) != OFF) ==> ResultEqual(result, DENIED))\n   |                     ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_complete.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_complete_and_resume.rs",
+  "unsat": "compile_error",
+  "error": "error: mismatched closing delimiter: `}`\n   --> sdei_event_complete_and_resume_unsat.rs:461:20\n    |\n 26 | pub open spec fn sdei_event_complete_and_resume_spec(result: Int64, old_s: S, new_s: S) -> bool {\n    |                                                                                                 - closing delimiter possibly meant for this\n...\n461 |     && (ResultEqual(result, DEN\n    |                    ^ unclosed delimiter\n...\n468 | } // verus!\n    | ^ mismatched closing delimiter\n\nerror: this file contains an unclosed delimiter\n   --> sdei_event_complete_and_resume_unsat.rs:468:13\n    |\n  3 | verus! {",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_context.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_disable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_enable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_get_info.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_event_get_info_unsat.rs:54:63\n   |\n54 |     && (info == EV_TYPE ==> result == (IsSharedEvent(event) ? 1 : 0))\n   |                                                               ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_register.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_routing_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_signal.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_status.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_event_unregister.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_features.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> sdei_features_unsat.rs:32:45\n   |\n32 |     && (feature == BIND_SLOTS ==> (result[63:32] == 0 && result[31:16] == SharedEventSlotCount() && result[15:0] == PrivateEventSlot...\n   |                                             ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_interrupt_bind.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> sdei_interrupt_bind_unsat.rs:78:18\n   |\n78 |     && (result[63:32] == 0)\n   |                  ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_interrupt_release.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_interrupt_release_unsat.rs:56:43\n   |\n56 |     && (IsPrivateEvent(event) && !(forall pe in RegisteredPes(event) : HandlerState(event, pe) == HANDLER_UNREGISTERED) ==> ResultEq...\n   |                                           ^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_pe_mask.rs",
+  "unsat": "compile_error",
+  "error": "error[E0061]: this function takes 3 arguments but 2 arguments were supplied\n  --> sdei_pe_mask_unsat.rs:34:14\n   |\n34 |     && (!old(PeIsMasked(CallingClient(), CallingPe())) ==> ResultEqual(result, 1))\n   |              ^^^^^^^^^^------------------------------ argument #3 of type `u64` is missing\n   |\nnote: function defined here\n  --> sdei_pe_mask_unsat.rs:25:18\n   |\n25 | pub open spec fn PeIsMasked(client: ClientId, pe: PeId, priority: Priority) -> bool;\n   |                  ^^^^^^^^^^                             ------------------\nhelp: provide the argument\n   |\n34 |     && (!old(PeIsMasked(CallingClient(), CallingPe(), /* u64 */)) ==> ResultEqual(result, 1))\n   |                                                     +++++++++++\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_pe_unmask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_private_reset.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_private_reset_unsat.rs:46:17\n   |\n46 |         (forall ev in PrivateEvents(CallingPe()): !EventIsRunning(ev) ==> EventState(new_s, ev) == UNREGISTERED)\n   |                 ^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_shared_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "base_rmm/sdei_rmm/sdei_version.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> sdei_version_unsat.rs:29:60\n   |\n29 |     && (SdeiIsSupported() ==> (result[63] == 0 && result[62:48] == 1 && result[47:32] == 1 && result[31:0] == VendorDefinedVersion()...\n   |                                                            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/affinity_info.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected closing delimiter: `}`\n  --> affinity_info_unsat.rs:78:1\n   |\n 3 | verus! {\n   |        - the nearest open delimiter\n...\n65 | pub open spec fn affinity_info_spec(lowest_affinity_level: UInt64, target_affinity: UInt64, result: Result<AffinityState, PsciStatusCode>, old_s: S, new_s: S) -> bool {\n   |                                                                                                                                                                        - the nearest open delimiter\n...\n69 |   && (result == ON ==> (Exists core in AffinityInstance(old_s, lowest_affinity_level, target_affinity) such that (CoreEnabledByCpuOn(old_s, core) || IsColdBootPrimaryCore(old_s, core)) && !CoreCalledCpuOff(old_s, core))))\n   |                                                                                                                                                                                                                             - missing open `(` for this delimiter\n70 |   && (result == OFF ==> (For all cores in AffinityInstance(old_s, lowest_affinity_level, target_affinity), CoreCalledCpuOff(old_s, core) && CpuOffProcessed(old_s, core))))\n   |                                                                                                                                                                           - missing open `(` for this delimiter\n...\n78 | }\n   | ^ unexpected closing delimiter",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/cpu_default_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/cpu_freeze.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/cpu_off.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/cpu_on.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> cpu_on_unsat.rs:67:52\n   |\n67 |   && (result.is_Ok() ==> CoreAt(new_s, target_cpu) restarts execution at entry_point_address in the return Exception level)\n   |                                                    ^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/cpu_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/mem_protect.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> mem_protect_unsat.rs:27:92\n   |\n27 |   && (result == 0 || result == 1 ==> ResultEqual(result, Old(new_s, MemProtectEnabled()) ? 1 : 0))\n   |                                                                                            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/mem_protect_check_range.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/migrate.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/migrate_info_type.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> migrate_info_type_unsat.rs:57:44\n   |\n57 |   && (result == 0 ==> ReturnOf(CPU_OFF, on TrustedOsResidentCpu(old_s)) == DENIED)\n   |                                            ^^^^^^^^^^^^^^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/node_hw_state.rs",
+  "verdict": "no_spec_fn"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/psci_features.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> psci_features_unsat.rs:29:92\n   |\n29 |   && (IsCpuSuspendFid(old_s, psci_func_id) ==> result[1] == (UsesExtendedStateIdFormat() ? 1 : 0))\n   |                                                                                            ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/psci_set_suspend_mode.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/psci_stat_count.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> psci_stat_count_unsat.rs:33:89\n   |\n33 |   && (IsOsInitiatedMode(old_s) ==> LastManLevelField(new_s, power_state) is disregarded when the local state is selected)\n   |                                                                                         ^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/psci_stat_residency.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> psci_stat_residency_unsat.rs:58:99\n   |\n58 |   && (result == NOT_SUPPORTED ==> IsOsInitiatedMode(new_s) ==> StatLocalState(new_s, power_state) ignores LastManLevelField(new_s, p...\n   |                                                                                                   ^^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/psci_version.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> psci_version_unsat.rs:35:47\n   |\n35 |   && ((result == NOT_SUPPORTED) ==> (result[30:16] == ImplementedPsciVersion().major))\n   |                                               ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/system_off2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/system_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/system_reset2.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> system_reset2_unsat.rs:47:43\n   |\n47 |   && (reset_type[31] == 0 && reset_type[30:0] != SYSTEM_WARM_RESET ==> ResultEqual(result, INVALID_PARAMETERS))\n   |                                           ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/psci_13_rmm/system_suspend.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> system_suspend_unsat.rs:53:101\n   |\n53 | pub open spec fn system_suspend_spec(entry_point_address: Address, context_id: UInt64, result: PSCI return code, old_s: S, new_s: S)...\n   |                                                                                                     ^^^^^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_complete.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_complete_and_resume.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_context.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_disable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_enable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_get_info.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_event_get_info_unsat.rs:60:70\n   |\n60 |   && (result == EV_TYPE ==> result == (IsSharedEvent(old_s, event) ? 1 : 0))\n   |                                                                      ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_register.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_routing_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_signal.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_status.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_event_status_unsat.rs:32:86\n   |\n32 |   && (result == SDEI_SUCCESS ==> result[2] == (EventHandlerIsRunning(old_s, event) ? 1 : 0))\n   |                                                                                      ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_event_unregister.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_features.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> sdei_features_unsat.rs:37:68\n   |\n37 |   && (result == SDEI_SUCCESS && feature == BIND_SLOTS ==> result[63:32] == 0)\n   |                                                                    ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_interrupt_bind.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> sdei_interrupt_bind_unsat.rs:64:32\n   |\n64 |   && (result >= 0 ==> result[63:32] == 0)\n   |                                ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_interrupt_release.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_interrupt_release_unsat.rs:48:48\n   |\n48 |   && (IsPrivateEvent(old_s, event) && !(forall pe in RegisteredPes(old_s, event) : HandlerState(old_s, event, pe) == HANDLER_UNREGIS...\n   |                                                ^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_pe_mask.rs",
+  "unsat": "compile_error",
+  "error": "error[E0061]: this function takes 4 arguments but 3 arguments were supplied\n  --> sdei_pe_mask_unsat.rs:37:27\n   |\n37 |   && (result.is_Ok() ==> !PeIsMasked(old_s, CallingClient(), CallingPe()) ==> ResultEqual(result, 1))\n   |                           ^^^^^^^^^^------------------------------------- argument #4 of type `u64` is missing\n   |\nnote: function defined here\n  --> sdei_pe_mask_unsat.rs:29:18\n   |\n29 | pub open spec fn PeIsMasked(s: S, client: ClientId, pe: PeId, priority: Priority) -> bool;\n   |                  ^^^^^^^^^^                                   ------------------\nhelp: provide the argument\n   |\n37 |   && (result.is_Ok() ==> !PeIsMasked(old_s, CallingClient(), CallingPe(), /* u64 */) ==> ResultEqual(result, 1))\n   |                                                                         +++++++++++\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_pe_unmask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_private_reset.rs",
+  "unsat": "compile_error",
+  "error": "error: expected `,`\n  --> sdei_private_reset_unsat.rs:63:53\n   |\n63 |   && (result == SdeiStatusCode::SUCCESS ==> (forall ev in PrivateEvents(new_s, CallingPe(new_s)): !EventIsRunning(ev) ==> EventState...\n   |                                                     ^^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_shared_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "ft_rmm/sdei_rmm/sdei_version.rs",
+  "unsat": "compile_error",
+  "error": "error: unexpected token, expected `]`\n  --> sdei_version_unsat.rs:32:35\n   |\n32 |   && (result.is_Ok() ==> result[62:48] == 1)\n   |                                   ^\n\nerror: aborting due to 1 previous error\n\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ }
+]

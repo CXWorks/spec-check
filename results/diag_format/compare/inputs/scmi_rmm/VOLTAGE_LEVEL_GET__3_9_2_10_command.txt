@@ -1,0 +1,31 @@
+3.9.2.10 VOLTAGE_LEVEL_GET command
+               Requests the current voltage level of a voltage domain.
+               3.9.2.10.1 Interface
+               3.9.2.10.1.1   Input values
+        Name                Register             Bits        Type                  Description
+        message_id          Message header       -           -                     Message ID, value 0x8
+        protocol_id         Message header       -           -                     Protocol ID, value 0x17
+        domain_id           Parameter word 0     31:0        uint32                Identifier for the voltage domain
+               3.9.2.10.1.2   Output values
+        Name                Register             Bits        Type                  Description
+        status              Return word 0        31:0        int32                 Command return status
+        voltage_level       Return word 1        31:0        int32                 Voltage level, in microvolts (uV), that the domain is set to
+               This command is mandatory.
+               3.9.2.10.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidVoltageDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  supported                   pre: !IsRequestSupported(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  access                      pre: !AgentMayGetVoltageLevel(caller, domain_id)
+                              post: ResultEqual(status, DENIED)
+               The status values listed are not exhaustive. See Section 3.1.4 for more status code definitions.
+               3.9.2.10.2.1   Failure condition ordering
+               The VOLTAGE_LEVEL_GET command does not have any failure condition orderings.
+               3.9.2.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  level                       post: voltage_level == VoltageDomain(domain_id).level
+               Note: The voltage_level value returned can be stale by the time the command completes, because another voltage level change request could have been started and completed in the meantime.
+               3.9.2.10.4 Footprint
+               The VOLTAGE_LEVEL_GET command does not modify any state.

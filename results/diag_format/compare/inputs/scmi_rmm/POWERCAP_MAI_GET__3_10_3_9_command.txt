@@ -1,0 +1,28 @@
+3.10.3.9 POWERCAP_MAI_GET command
+               Gets the value of the power measurement averaging interval (MAI) currently enforced for a power capping domain.
+               This command is mandatory if any domain supports reading the MAI.
+               The returned MAI value can be stale by the time the command completes. Another MAI change request could have been started and completed in the meantime.
+               3.10.3.9.1 Interface
+               3.10.3.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt32                                Message ID, value 0x6
+        protocol_id         Header       —           UInt32                                Protocol ID, value 0x18
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the power capping domain
+               3.10.3.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status (see Section 3.1.4)
+        mai                 Payload[1]   31:0        UInt32                                The power measurement averaging interval set for the domain
+               3.10.3.9.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  req_supported               pre: !IsRequestSupported(POWERCAP_MAI_GET)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.10.3.9.2.1   Failure condition ordering
+               The POWERCAP_MAI_GET command does not have any failure condition orderings.
+               3.10.3.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  mai                         post: mai == EnforcedMai(domain_id)
+               3.10.3.9.4 Footprint
+               The POWERCAP_MAI_GET command does not modify any state.

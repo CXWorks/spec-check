@@ -1,0 +1,16 @@
+pub open spec fn pinctrl_settings_configure__3_11_2_8_spec(result: Int32, old_s: S, new_s: S) -> bool {
+    (!IsValidPinOrGroup(old_s, identifier, selector) ==> ResultEqual(result, NOT_FOUND))
+    && (attributes[31:11] != 0 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (selector > 1 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (num_configs == 0 && function_id_valid == 0 ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (Exists(i < num_configs, configs[i].type[31:8] != 0) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsSortedIncreasingByConfigType(configs, num_configs) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (num_configs > TransportMaxConfigs() ==> ResultEqual(result, PROTOCOL_ERROR))
+    && (!IsConfigSupported(old_s, identifier, selector, configs, num_configs, function_id_valid, function_id) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!AgentMaySetConfig(old_s, calling_agent, identifier, selector) ==> ResultEqual(result, DENIED))
+    && (IsInUseByOtherAgent(old_s, identifier, selector, calling_agent) ==> ResultEqual(result, IN_USE))
+    && (ResultEqual(result, SUCCESS) ==> ForAll(i < num_configs, PinOrGroupConfig(identifier, selector, configs[i].config_type) == configs[i].config_value))
+    && (ResultEqual(result, SUCCESS) && function_id_valid == 1 && function_id != 0xFFFFFFFF ==> SelectedFunction(new_s, identifier, selector) == function_id)
+    && (ResultEqual(result, SUCCESS) && function_id_valid == 1 && function_id == 0xFFFFFFFF ==> !HasFunctionEnabled(new_s, identifier, selector))
+    && (ResultEqual(result, SUCCESS) && function_id_valid == 0 ==> SelectedFunction(new_s, identifier, selector) == SelectedFunction(old_s, identifier, selector))
+}

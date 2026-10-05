@@ -1,0 +1,16 @@
+pub open spec fn ffa_msg_send_direct_req_spec(result: UInt32, old_s: S, new_s: S) -> bool {
+    (!IsValidEndpointId(old_s, new_s.sender_id) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidEndpointId(old_s, new_s.receiver_id) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!AreValidMessageFlags(old_s, new_s.msg_type, new_s.reserved, new_s.msg_subtype) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!CalleeCanHandleRequest(old_s) ==> ResultEqual(result, DENIED))
+    && (!EndpointSupportsDirectReqReceipt(old_s, new_s.receiver_id) ==> ResultEqual(result, DENIED))
+    && (!IsImplementedAtInstance(old_s, FFA_MSG_SEND_DIRECT_REQ) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (EndpointState(old_s, new_s.receiver_id) in {RUNNING, BLOCKED, PREEMPTED} ==> ResultEqual(result, BUSY))
+    && (EndpointHasAborted(old_s, new_s.receiver_id) ==> ResultEqual(result, ABORTED))
+    && (!EndpointIsReady(old_s, new_s.receiver_id) ==> ResultEqual(result, NOT_READY))
+    && (result == FFA_MSG_SEND_DIRECT_RESP ==> true)
+    && (result == FFA_INTERRUPT ==> true)
+    && (result == FFA_YIELD ==> true)
+    && (result == FFA_SUCCESS ==> true)
+    && (result == FFA_ERROR ==> true)
+}

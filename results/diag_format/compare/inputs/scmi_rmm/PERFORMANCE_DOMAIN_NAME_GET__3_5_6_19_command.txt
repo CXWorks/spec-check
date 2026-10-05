@@ -1,0 +1,28 @@
+3.5.6.19 PERFORMANCE_DOMAIN_NAME_GET command
+               Returns the extended name of a performance domain.
+               This command is mandatory only if extended performance domain names are supported. They are supported when Bit[26] of the attributes field returned by the PERFORMANCE_DOMAIN_ATTRIBUTES command is set to 1. See Section 3.5.6.5.
+               3.5.6.19.1 Interface
+               3.5.6.19.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       -           UInt8                                 Protocol identifier, value 0x13
+        message_id          Header       -           UInt8                                 Message identifier, value 0xC
+        domain_id           Payload[0]   31:0        UInt32                                Identifier of the performance domain
+               3.5.6.19.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions
+        flags               Payload[1]   31:0        UInt32                                Reserved, must be zero
+        name                Payload[2]   -           UInt8[64]                             Extended name of the performance domain, as a null-terminated ASCII string of up to 64 bytes
+               3.5.6.19.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !PerformanceDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.19.2.1   Failure condition ordering
+               The PERFORMANCE_DOMAIN_NAME_GET command does not have any failure condition orderings.
+               3.5.6.19.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags                       post: flags == 0
+  name                        post: name == PerformanceDomainExtendedName(domain_id)
+  name_term                   post: IsNullTerminatedAscii(name, 64)
+               3.5.6.19.4 Footprint
+               The PERFORMANCE_DOMAIN_NAME_GET command does not have a footprint.

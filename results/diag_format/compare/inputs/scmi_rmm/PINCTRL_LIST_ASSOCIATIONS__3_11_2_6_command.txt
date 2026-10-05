@@ -1,0 +1,41 @@
+3.11.2.6 PINCTRL_LIST_ASSOCIATIONS command
+               Lists the pins associated with a group, the groups that can enable a function, or the pins that can enable a single-pin function.
+               The results may need several calls to retrieve. Each call returns part of the array and the number of pins or groups still remaining. The size of the array returned per call depends on how many return values the transport can support. For an example of using this kind of API, see Section 3.5.6.8.
+               This command is mandatory only if the number of implemented groups or functions is greater than 0. A caller can discover if this command is implemented by issuing PROTOCOL_MESSAGE_ATTRIBUTES with the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES returns SUCCESS.
+               3.11.2.6.1 Interface
+               3.11.2.6.1.1   Input values
+        Name                Register        Bits        Type        Description
+        message_id          Header          7:0         UInt8       Message ID, value 0x4
+        protocol_id         Header          17:10       UInt8       Protocol ID, value 0x19
+        identifier          Parameter[0]    31:0        UInt32      Identifier for the function or group
+        flags.reserved      Parameter[1]    31:2        UInt32      Reserved, must be zero
+        flags.selector      Parameter[1]    1:0         UInt32      Whether identifier refers to a group or a function: 0 = Reserved, 1 = Group, 2 = Function. All other values are reserved for future use
+        index               Parameter[2]    31:0        UInt32      If identifier refers to a group, or to a single-pin function supported only by individual pins: index of the first pin to be described in the return array. Otherwise: index of the first group to be described in the return array
+               3.11.2.6.1.2   Output values
+        Name                Register        Bits        Type        Description
+        status              Return[0]       31:0        Int32       Command return status
+        flags.remaining     Return[1]       31:16       UInt32      Number of remaining groups or pins
+        flags.reserved      Return[1]       15:12       UInt32      Reserved, must be zero
+        flags.num_returned  Return[1]       11:0        UInt32      Number of group or pin identifiers returned by this call
+        array[N]            Return[2..]     16 x N      UInt16[N]   Group or pin identifiers in numerically ascending order. N = flags.num_returned
+               3.11.2.6.2 Failure conditions
+  ID                          Condition
+  not_found                   pre: !GroupOrFunctionExists(identifier, flags.selector)
+                              post: ResultEqual(status, NOT_FOUND)
+  not_supported               pre: !IsRequestSupported(identifier, flags, index)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  denied                      pre: !AgentMayListAssociations(calling_agent, identifier, flags.selector)
+                              post: ResultEqual(status, DENIED)
+               The status values above are not the only possible ones. See Section 3.1.4 for other status code definitions.
+               3.11.2.6.2.1   Failure condition ordering
+               The PINCTRL_LIST_ASSOCIATIONS command does not have any failure condition orderings.
+               3.11.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  num_returned                post: flags.num_returned == N
+  remaining                   post: flags.remaining == NumRemainingAssociations(identifier, flags.selector, index, N)
+  contents                    post: array[0..N-1] == AssociatedIdentifiers(identifier, flags.selector)[index .. index+N-1]
+  ordering                    post: IsAscending(array[0..N-1])   (the specification says identifiers "should" be returned in this order)
+  reserved                    post: flags.reserved == 0
+               3.11.2.6.4 Footprint
+               The section does not identify any state that this command modifies.

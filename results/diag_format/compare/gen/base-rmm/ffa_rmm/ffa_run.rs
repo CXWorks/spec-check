@@ -1,0 +1,16 @@
+pub open spec fn ffa_run_spec(result: Int32, fid_out: UInt32, old_s: S, new_s: S) -> bool {
+    (!IsValidEndpointId(old_s, target_id) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsValidVcpuId(old_s, target_id, target_vcpu) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsVcpuPinnedToOtherPe(old_s, target_id, target_vcpu) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsImplementedAtInstance(old_s, FFA_RUN) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsCalleeInStateToHandleRequest(old_s, target_id, target_vcpu) ==> ResultEqual(result, DENIED))
+    && (!IsCallerAllowedToInvoke(old_s, FFA_RUN) ==> ResultEqual(result, DENIED))
+    && (IsVcpuBusy(old_s, target_id, target_vcpu) ==> ResultEqual(result, BUSY))
+    && (HasAborted(old_s, target_id, target_vcpu) ==> ResultEqual(result, ABORTED))
+    && (!IsReceiverReady(old_s, target_id) ==> ResultEqual(result, NOT_READY))
+    && (ExecContextAt(old_s, target_id, target_vcpu).state == WAITING ==> ExecContextAt(new_s, target_id, target_vcpu).state == RUNNING)
+    && (ExecContextAt(old_s, target_id, target_vcpu).state == BLOCKED ==> ExecContextAt(new_s, target_id, target_vcpu).state == RUNNING)
+    && (ExecContextAt(old_s, target_id, target_vcpu).state == PREEMPTED ==> ExecContextAt(new_s, target_id, target_vcpu).state == RUNNING)
+    && (ExecContextAt(new_s, CallerExecContext()).state == RUNNING)
+    && (fid_out == FFA_INTERRUPT || fid_out == FFA_MSG_WAIT || fid_out == FFA_YIELD || fid_out == FFA_MSG_SEND_DIRECT_RESP)
+}

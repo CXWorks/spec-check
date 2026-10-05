@@ -1,0 +1,30 @@
+17.13 sbi_sse_complete command
+               Completes supervisor event handling for the highest priority event in RUNNING state on the calling hart.
+               17.13.1 Interface
+               17.13.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt                                  FID, value 6
+               17.13.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              —            —           struct sbiret (error)                  Command return status
+               17.13.2 Failure conditions
+               The sbi_sse_complete command does not have any failure conditions.
+               17.13.2.1   Failure condition ordering
+               The sbi_sse_complete command does not have any failure condition orderings.
+               17.13.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  no_running                  pre: !HasEventInState(current_hart, RUNNING)
+                              post: no event state is modified
+  evt_oneshot                 pre: HasEventInState(current_hart, RUNNING)
+                                   && IsOneShot(HighestPriorityRunningEvent(current_hart))
+                              post: HighestPriorityRunningEvent(current_hart).state == REGISTERED
+  evt_enabled                 pre: HasEventInState(current_hart, RUNNING)
+                                   && !IsOneShot(HighestPriorityRunningEvent(current_hart))
+                              post: HighestPriorityRunningEvent(current_hart).state == ENABLED
+  resume                      pre: HasEventInState(current_hart, RUNNING)
+                              post: the interrupted supervisor state is resumed, as described in Section 17.6
+               17.13.4 Footprint
+    ID                        Value
+    evt_state                 HighestPriorityRunningEvent(current_hart).state
+    resume                    Interrupted supervisor state of current_hart

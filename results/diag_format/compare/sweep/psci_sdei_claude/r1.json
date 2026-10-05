@@ -1,0 +1,469 @@
+[
+ {
+  "file": "claude_invent/psci_13/affinity_info.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/cpu_default_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/cpu_freeze.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/cpu_off.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/cpu_on.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/cpu_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/mem_protect.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/mem_protect_check_range.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/migrate.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/migrate_info_type.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/node_hw_state.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/psci_features.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "claude_invent/psci_13/psci_set_suspend_mode.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/psci_stat_count.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/psci_stat_residency.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/psci_version.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "claude_invent/psci_13/system_off2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/system_reset.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "claude_invent/psci_13/system_reset2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/psci_13/system_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_complete.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_complete_and_resume.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_context.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_disable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_enable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_get_info.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_register.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_routing_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_signal.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_status.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_event_unregister.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_features.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_interrupt_bind.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_interrupt_release.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_pe_mask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_pe_unmask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_private_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_shared_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_invent/sdei/sdei_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/affinity_info.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/cpu_default_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/cpu_freeze.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/cpu_off.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> cpu_off_unsat.rs:13:48\n   |\n13 | pub spec const NOT_SUPPORTED: PsciReturnCode = -1;\n   |                               --------------   ^^ expected `i64`, found `int`\n   |                               |\n   |                               expected `i64` because of return type\n\nerror[E0308]: mismatched types\n  --> cpu_off_unsat.rs:14:53\n   |\n14 | pub spec const INVALID_PARAMETERS: PsciReturnCode = -2;\n   |                                    --------------   ^^ expected `i64`, found `int`\n   |                                    |\n   |                                    expected `i64` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/cpu_on.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/cpu_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/mem_protect.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> mem_protect_unsat.rs:12:32\n   |\n12 | pub const NOT_SUPPORTED: int = -2;\n   |                          ---   ^^ expected `int`, found integer\n   |                          |\n   |                          expected `vstd::prelude::int` because of return type\n\nerror[E0308]: mismatched types\n  --> mem_protect_unsat.rs:12:32\n   |\n12 | pub const NOT_SUPPORTED: int = -2;\n   |                                ^^ expected `int`, found integer\n\nerror: aborting due to 2 previous errors; 3 warnings emitted\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/mem_protect_check_range.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> mem_protect_check_range_unsat.rs:35:90\n   |\n35 |     && ((IsFunctionImplemented(MEM_PROTECT_CHECK_RANGE) && !IsRangeProtectedByMemProtect(base, base + length - 1)) ==> ResultEqual(r...\n   |                                                             ---------------------------- ^^^^ expected `int`, found `u64`\n   |                                                             |\n   |                                                             arguments to this function are incorrect\n   |\nnote: function defined here\n  --> mem_protect_check_range_unsat.rs:31:18\n   |\n31 | pub open spec fn IsRangeProtectedByMemProtect(start: int, end: int) -> bool;\n   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ----------\n\nerror[E0308]: mismatched types\n  --> mem_protect_check_range_unsat.rs:36:89",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/migrate.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> migrate_unsat.rs:13:48\n   |\n13 | pub spec const NOT_SUPPORTED: PsciReturnCode = -1;\n   |                               --------------   ^^ expected `i32`, found `int`\n   |                               |\n   |                               expected `i32` because of return type\n\nerror[E0308]: mismatched types\n  --> migrate_unsat.rs:14:53\n   |\n14 | pub spec const INVALID_PARAMETERS: PsciReturnCode = -2;\n   |                                    --------------   ^^ expected `i32`, found `int`\n   |                                    |\n   |                                    expected `i32` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/migrate_info_type.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/node_hw_state.rs",
+  "unsat": "compile_error",
+  "error": "error[E0308]: mismatched types\n  --> node_hw_state_unsat.rs:14:48\n   |\n14 | pub spec const NOT_SUPPORTED: PsciReturnCode = -1;\n   |                               --------------   ^^ expected `i64`, found `int`\n   |                               |\n   |                               expected `i64` because of return type\n\nerror[E0308]: mismatched types\n  --> node_hw_state_unsat.rs:15:53\n   |\n15 | pub spec const INVALID_PARAMETERS: PsciReturnCode = -2;\n   |                                    --------------   ^^ expected `i64`, found `int`\n   |                                    |\n   |                                    expected `i64` because of return type\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/psci_features.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/psci_set_suspend_mode.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/psci_stat_count.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/psci_stat_residency.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/psci_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/system_off2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/system_reset.rs",
+  "verdict": "vacuous_literal"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/system_reset2.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/psci_13_rmm/system_suspend.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_complete.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_complete_and_resume.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_context.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_disable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_enable.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_get_info.rs",
+  "unsat": "compile_error",
+  "error": "error[E0283]: type annotations needed\n  --> sdei_event_get_info_unsat.rs:52:71\n   |\n52 |             (info == EV_TYPE ==> result == (if IsSharedEvent(event) { 1 } else { 0 }))\n   |                                                                       ^ cannot infer type of the type parameter `hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat` declared on the function `spec_literal_integer`\n   |\n   = note: cannot satisfy `_: vstd::prelude::Integer`\nnote: required by a bound in `vstd::prelude::spec_literal_integer`\n  --> builtin/src/lib.rs:1037:0\nhelp: consider specifying the generic argument\n   |\n52 |             (info == EV_TYPE ==> result == (if IsSharedEvent(event) { 1::<hint_please_add_suffix_on_literal_like_100u32_or_100int_or_100nat> } else { 0 }))\n   |                                                                        +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\nerror: aborting due to 1 previous error; 11 warnings emitted\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_register.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_routing_set.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_signal.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_status.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_event_unregister.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_features.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_interrupt_bind.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_interrupt_release.rs",
+  "unsat": "compile_error",
+  "error": "error[E0061]: this function takes 3 arguments but 2 arguments were supplied\n  --> sdei_interrupt_release_unsat.rs:70:12\n   |\n70 |         && HandlerState(old_s, event) != HANDLER_UNREGISTERED)\n   |            ^^^^^^^^^^^^-------------- argument #3 of type `u64` is missing\n   |\nnote: function defined here\n  --> sdei_interrupt_release_unsat.rs:50:18\n   |\n50 | pub open spec fn HandlerState(s: S, event: Int32, pe: PeId) -> HandlerStateT;\n   |                  ^^^^^^^^^^^^                     --------\nhelp: provide the argument\n   |\n70 |         && HandlerState(old_s, event, /* u64 */) != HANDLER_UNREGISTERED)\n   |                                     +++++++++++\n",
+  "vacuous": "compile_error",
+  "verdict": "compile_error"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_pe_mask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_pe_unmask.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_private_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_shared_reset.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ },
+ {
+  "file": "claude_rmm/sdei_rmm/sdei_version.rs",
+  "unsat": "refuted",
+  "vacuous": "refuted",
+  "verdict": "consistent"
+ }
+]

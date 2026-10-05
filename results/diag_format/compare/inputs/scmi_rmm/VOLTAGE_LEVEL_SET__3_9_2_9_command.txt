@@ -1,0 +1,37 @@
+3.9.2.9 VOLTAGE_LEVEL_SET command
+               Sets the voltage level of a voltage domain.
+               3.9.2.9.1 Interface
+               3.9.2.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           —                                     Message ID, value 0x7
+        protocol_id         Header       —           —                                     Protocol ID, value 0x17
+        domain_id           Payload[0]   31:0        uint32                                Identifier for the voltage domain
+        flags               Payload[1]   31:1        uint32                                Reserved, must be zero
+                                         0                                                 Async flag: 1 = set the voltage level asynchronously, and complete the call with a VOLTAGE_LEVEL_SET_COMPLETE message (see Section 3.9.3.1); 0 = set the voltage level synchronously, and return once the level has been set
+        voltage_level       Payload[2]   31:0        int32                                 Voltage level to set the domain to, in microvolts (uV)
+               3.9.2.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        int32                                 Command return status (see Section 3.1.4)
+               3.9.2.9.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !VoltageDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  level_supported             pre: !VoltageLevelSupported(domain_id, voltage_level)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  request_supported           pre: !RequestSupported(domain_id, flags, voltage_level)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  agent_permitted             pre: !AgentMaySetVoltageLevel(caller, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.9.2.9.2.1   Failure condition ordering
+               The VOLTAGE_LEVEL_SET command does not have any failure condition orderings.
+               3.9.2.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  level_sync                  pre: flags[0] == 0
+                              post: VoltageDomain(domain_id).voltage_level == voltage_level
+  level_async                 pre: flags[0] == 1
+                              post: CommandQueued(VOLTAGE_LEVEL_SET, domain_id, voltage_level)
+                              Completion is signalled by a VOLTAGE_LEVEL_SET_COMPLETE message (see Section 3.9.3.1)
+               3.9.2.9.4 Footprint
+    ID                        Value
+    level                     VoltageDomain(domain_id).voltage_level

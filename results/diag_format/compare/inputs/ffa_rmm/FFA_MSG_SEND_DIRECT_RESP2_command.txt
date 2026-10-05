@@ -1,0 +1,50 @@
+15.5 FFA_MSG_SEND_DIRECT_RESP2 command
+               Sends a Partition message in parameter registers as a response to a target endpoint, runs the endpoint and waits until a new message is available. Also see 8.3 Direct messaging.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                Valid conduits
+        1                   Non-secure physical          ERET
+        2                   Secure physical              SMC, ERET
+        3                   Non-secure virtual           SMC, HVC, ERET
+        4                   Secure virtual               SMC, HVC, SVC, ERET
+               15.5.1 Interface
+               15.5.1.1     Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC400008E
+        src_id              W1           31:16       UInt16                                Source endpoint ID
+        dst_id              W1           15:0        UInt16                                Destination endpoint ID
+        reserved            X2           63:0        UInt64                                Reserved (SBZ)
+        reserved            X3           63:0        UInt64                                Reserved (SBZ)
+        impdef              X4-X17       63:0        UInt64                                IMPLEMENTATION DEFINED values
+               15.5.1.2     Output values
+               On success, outputs are returned in the same way as for the FFA_MSG_WAIT function (see 14.1 FFA_MSG_WAIT).
+               On failure, the FFA_ERROR function returns:
+        Name                Register     Bits        Type                                  Description
+        result              W2           31:0        Int32                                 Error code
+               15.5.2 Failure conditions
+  ID                          Condition
+  endpoint_id                 pre: !IsValidEndpointId(src_id) || !IsValidEndpointId(dst_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  msg_flags                   pre: !AreValidMessageFlags()
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  caller_support              pre: !CallerSupportsDirectRespSend(src_id)
+                              post: ResultEqual(result, DENIED)
+  receiver_support            pre: !ReceiverSupportsDirectRespReceipt(dst_id)
+                              post: ResultEqual(result, DENIED)
+  not_impl                    pre: !IsImplementedAtInstance(FFA_MSG_SEND_DIRECT_RESP2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  receiver_abort              pre: ReceiverAbortedOnUnexpectedError(dst_id)
+                              post: ResultEqual(result, ABORTED)
+               15.5.2.1     Failure condition ordering
+               The FFA_MSG_SEND_DIRECT_RESP2 command does not have any failure condition orderings.
+               15.5.3 Success conditions
+  ID                          Condition
+  msg_sent                    post: DirectRespMessageDeliveredTo(dst_id)
+  dst_run                     post: EndpointRun(dst_id)
+  src_wait                    post: EndpointWaitsForNewMessage(src_id)
+  result                      post: SuccessIndicatedAsFfaMsgWait(result)
+               15.5.4 Footprint
+    ID                        Value
+    dst_run                   EndpointAt(dst_id).run_state
+    src_wait                  EndpointAt(src_id).run_state

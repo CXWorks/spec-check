@@ -1,0 +1,15 @@
+pub open spec fn protocol_attributes__3_5_6_3_spec(attributes: uint32, statistics_address_low: uint32, statistics_address_high: uint32, statistics_len: uint32, result: RsiCommandReturnCode, old_s: S, new_s: S) -> bool {
+  (attributes[31..18] == 0)
+  && (attributes[17..16] == 0 || attributes[17..16] == 1 || attributes[17..16] == 2)
+  && (attributes[15..0] == NumPerformanceDomains())
+  && (statistics_len != 0 ==> (IsInCallerMemoryMap(statistics_address_high,statistics_address_low) && IsAligned64(statistics_address_high,statistics_address_low)))
+  && (statistics_len == 0 ==> !PlatformSupportsStatisticsRegion())
+  && ((!(attributes[31..18] == 0))
+    ==> (attributes[31..18] != 0))
+  && ((!(attributes[17..16] == 0 || attributes[17..16] == 1 || attributes[17..16] == 2))
+    ==> (attributes[17..16] != 0 && attributes[17..16] != 1 && attributes[17..16] != 2))
+  && ((!(attributes[15..0] == NumPerformanceDomains()))
+    ==> (attributes[15..0] != NumPerformanceDomains()))
+  && ((!(statistics_len != 0 ==> (IsInCallerMemoryMap(statistics_address_high,statistics_address_low) && IsAligned64(statistics_address_high,statistics_address_low))))
+    ==> (statistics_len == 0 || !((IsInCallerMemoryMap(statistics_address_high,statistics_address_low)) && (IsAligned64(statistics_address_high,statistics_address_low))))))
+}

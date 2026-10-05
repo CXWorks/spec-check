@@ -1,0 +1,18 @@
+pub open spec fn sdei_event_register_spec(result: Int64, old_s: S, new_s: S) -> bool {
+    (!SdeiIsSupported(old_s) ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsValidEvent(old_s, event) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (DispatcherCanDetermineInvalidAddress(old_s, entry_point_address) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsSharedEvent(old_s, event) && !IsValidRoutingMode(old_s, flags.routing_mode) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsSharedEvent(old_s, event) && flags.routing_mode == RM_PE && !IsValidMpidr(old_s, affinity) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (IsRegisteredByClient(old_s, event) ==> ResultEqual(result, DENIED))
+    && (EventHandlerState(old_s, event) == HANDLER_UNREGISTER_PENDING ==> ResultEqual(result, DENIED))
+    && (ResultEqual(result, SUCCESS) ==> IsRegisteredByClient(new_s, event))
+    && (ResultEqual(result, SUCCESS) ==> EventHandler(new_s, event).entry_point_address == entry_point_address)
+    && (ResultEqual(result, SUCCESS) ==> EventHandler(new_s, event).relative_mode == flags.relative_mode)
+    && (ResultEqual(result, SUCCESS) ==> EventHandler(new_s, event).ep_argument == ep_argument)
+    && (ResultEqual(result, SUCCESS) ==> !IsEnabled(new_s, event))
+    && (ResultEqual(result, SUCCESS) && IsSharedEvent(old_s, event) ==> HandlerRegisteredGloballyForClient(new_s, event))
+    && (ResultEqual(result, SUCCESS) && IsPrivateEvent(old_s, event) ==> HandlerRegisteredForCallingPe(new_s, event))
+    && (ResultEqual(result, SUCCESS) && IsSharedEvent(old_s, event) ==> RoutingMode(new_s, event) == flags.routing_mode)
+    && (ResultEqual(result, SUCCESS) && IsSharedEvent(old_s, event) && flags.routing_mode == RM_PE ==> RoutingAffinity(new_s, event) == affinity)
+}

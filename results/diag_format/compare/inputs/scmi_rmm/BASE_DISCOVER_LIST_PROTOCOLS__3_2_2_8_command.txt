@@ -1,0 +1,27 @@
+3.2.2.8 BASE_DISCOVER_LIST_PROTOCOLS command
+               Lets the agent discover which protocols it is allowed to access. This command is mandatory.
+               3.2.2.8.1 Interface
+               3.2.2.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt                                  Message identifier, value 0x6
+        protocol_id         Header       —           UInt                                  Protocol identifier, value 0x10
+        skip                Payload      31:0        uint32                                Number of protocols to skip
+               3.2.2.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        int32                                 Command return status (see Section 3.1.4)
+        num_protocols       Payload      31:0        uint32                                Number of protocols returned by this call
+        protocols           Payload      31:0        uint32[1+(num_protocols-1)/4]         Array of identifiers of the implemented protocols that the agent may access, excluding the Base protocol. Each array element holds four packed protocol identifiers.
+               3.2.2.8.2 Failure conditions
+  ID                          Condition
+  skip_valid                  pre: !IsValidSkip(skip)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.2.2.8.2.1   Failure condition ordering
+               The BASE_DISCOVER_LIST_PROTOCOLS command does not have any failure condition orderings.
+               3.2.2.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  list_content                post: protocols contains num_protocols identifiers of protocols the agent is allowed to access, excluding the Base protocol, starting after the first skip such protocols
+  list_packing                post: ProtocolsPackedFourPerElement(protocols, num_protocols)
+  list_order                  post: ProtocolsInAscendingOrder(protocols, num_protocols) (should hold)
+               3.2.2.8.4 Footprint
+               The section does not list any state that the BASE_DISCOVER_LIST_PROTOCOLS command modifies.

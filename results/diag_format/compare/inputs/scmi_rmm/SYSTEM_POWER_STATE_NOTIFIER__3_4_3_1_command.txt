@@ -1,0 +1,32 @@
+3.4.3.1 SYSTEM_POWER_STATE_NOTIFIER command
+               Notifies a registered agent of a system power state transition, or of a request for one.
+               The platform sends this notification to an agent that has registered for system power state notifications with SYSTEM_POWER_STATE_NOTIFY. Typically, the agent is either:
+                  • The OSPM, which starts a system power state transition when it receives this notification. The notification tells the OSPM that a remote entity, such as the management agent or the privileged agent, is requesting a graceful power state transition.
+                  • A management agent or a privileged agent that started a graceful power state transition and is waiting for the OSPM to carry it out. The notification confirms that the platform controller has received the power state transition request from the PSCI agent, or from the OSPM on systems that do not comply with PSCI.
+               This command is optional.
+               3.4.3.1.1 Interface
+               3.4.3.1.1.1   Input values
+        Name                Register     Bits        Type        Description
+        message_id          Header       -           UInt32      Message identifier, value 0x0
+        protocol_id         Header       -           UInt32      Protocol identifier, value 0x12
+        agent_id            Payload      31:0        UInt32      Identifier for the agent that caused the system power state transition
+        flags               Payload      31:1        UInt32      Reserved, must be zero
+                                         0                       Graceful request. 1: the system power state transition was requested gracefully. 0: the system power state was requested forcibly. When this notification goes to the management agent, 0 can also mean that the PSCI agent has requested a system power state transition in response to an initial graceful request from the management agent
+        system_state        Payload      31:0        UInt32      System power state that the system has transitioned to, or that has been requested. 0x0: System shutdown. 0x1: System cold reset. 0x2: System warm reset. 0x3: System power-up. 0x4: System suspend. 0x5 – 0x7FFFFFFF: Reserved, must not be used. 0x80000000 – 0xFFFFFFFF: Available for vendor-defined implementations of system power state, which can include additional parameters. The prototype for a vendor-defined call is beyond the scope of this specification
+        timeout             Payload      31:0        UInt32      Timeout in milliseconds that the platform imposes, counted from when the platform sends a graceful system shutdown notification to OSPM. It is how long the platform waits for OSPM to shut the system down gracefully. When the timeout expires, if the platform has not received the system shutdown request from the PSCI agent, or from OSPM on systems that do not comply with PSCI, the platform can force the system to shut down. Valid only when system_state is system shutdown (0x0) and flags Bit[0] is 1 (graceful request). If the platform imposes no timeout, this field is unused and must be zero
+               3.4.3.1.1.2   Output values
+               The SYSTEM_POWER_STATE_NOTIFIER command does not have any output values.
+               3.4.3.1.2 Failure conditions
+               The SYSTEM_POWER_STATE_NOTIFIER command does not have any failure conditions.
+               3.4.3.1.2.1   Failure condition ordering
+               The SYSTEM_POWER_STATE_NOTIFIER command does not have any failure condition orderings.
+               3.4.3.1.3 Success conditions
+  ID                          Condition
+  notify_registered           pre: IsRegisteredForSystemPowerStateNotify(agent)
+                              post: NotificationSentToAgent(agent, SYSTEM_POWER_STATE_NOTIFIER)
+  flags_reserved              post: flags[31:1] == 0
+  state_reserved              post: !(system_state >= 0x5 && system_state <= 0x7FFFFFFF)
+  timeout_unused              pre: !PlatformImposesShutdownTimeout()
+                              post: timeout == 0
+               3.4.3.1.4 Footprint
+               The SYSTEM_POWER_STATE_NOTIFIER command does not have any footprint.

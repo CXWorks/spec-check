@@ -1,0 +1,39 @@
+3.4.2.5 SYSTEM_POWER_STATE_SET command
+               Powers down or resets the system.
+               System power-up must only be available to agents other than a PSCI implementation on systems that implement the OSPM system view, as described in Section 3.4.1.
+               This command is mandatory.
+               3.4.2.5.1 Interface
+               3.4.2.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt                                  Message ID, value 0x3
+        protocol_id         Header       —           UInt                                  Protocol ID, value 0x12
+        flags               Payload[0]   31:1        UInt32                                Reserved, must be zero
+                                         0           Bool                                  Graceful request: 1 = graceful, 0 = forceful. Ignored for power-up requests
+        system_state        Payload[1]   31:0        UInt32                                Requested system power state:
+                                                                                           0x0 = System shutdown
+                                                                                           0x1 = System cold reset
+                                                                                           0x2 = System warm reset
+                                                                                           0x3 = System power-up
+                                                                                           0x4 = System suspend
+                                                                                           0x5 – 0x7FFFFFFF = Reserved, must not be used
+                                                                                           0x80000000 – 0xFFFFFFFF = Might be used for vendor-defined system power states, which can include additional parameters. The prototype for vendor-defined calls is outside the scope of this specification
+               3.4.2.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions
+               3.4.2.5.2 Failure conditions
+  ID                          Condition
+  state_valid                 pre: !IsValidSystemPowerState(system_state)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  state_supported             pre: !IsSystemPowerStateSupportedForAgent(system_state, caller)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  suspend_others_active       pre: system_state == 0x4 && OtherApplicationProcessorsRunningOrIdle(caller)
+                              post: ResultEqual(status, DENIED)
+               The status codes listed are not the only possible ones.
+               3.4.2.5.2.1   Failure condition ordering
+               The SYSTEM_POWER_STATE_SET command does not have any failure condition orderings.
+               3.4.2.5.3 Success conditions
+  ID                          Condition
+  sys_state                   post: SystemPowerState == system_state
+               3.4.2.5.4 Footprint
+    ID                        Value
+    sys_state                 SystemPowerState

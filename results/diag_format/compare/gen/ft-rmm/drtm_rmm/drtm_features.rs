@@ -1,0 +1,31 @@
+pub open spec fn drtm_features_spec(id: UInt64, result: Int64, features: Bits64, old_s: S, new_s: S) -> bool {
+  (!IsImplementedDrtmFunctionOrFeature(old_s, id) ==> ResultEqual(result, NOT_SUPPORTED))
+  && (result == 0 && id[63] == 0 ==> result == 0)
+  && (result >= 0 && id[63] == 1 ==> result >= 0)
+  && (result > 0 && id[63] == 1 ==> features holds the feature-specific capability bits for FeatureId(id))
+  && (FeatureId(id) == 0x1 ==> features[63:37] == 0)
+  && (FeatureId(id) == 0x1 ==> features[36:33] == 0b0001)
+  && (FeatureId(id) == 0x1 ==> features[32] == 0)
+  && (FeatureId(id) == 0x1 ==> features[31:16] == 0)
+  && (FeatureId(id) == 0x1 ==> features[15:0] == 0x000B)
+  && (FeatureId(id) == 0x2 ==> features[63:32] == 0)
+  && (FeatureId(id) == 0x2 ==> features[31:0] == 0)
+  && (FeatureId(id) == 0x3 ==> features[63:24] == 0)
+  && (FeatureId(id) == 0x3 ==> features[23:8] == 0)
+  && (FeatureId(id) == 0x3 ==> features[7:0] == 0b00000001)
+  && (FeatureId(id) == 0x4 ==> features[63:0] == 0)
+  && (FeatureId(id) == 0x5 ==> features[63:8] == 0)
+  && (FeatureId(id) == 0x5 ==> features[7:0] == 0)
+  && (FeatureId(id) == 0x6 ==> features[63:1] == 0)
+  && (FeatureId(id) == 0x6 ==> features[0] == 0)
+  && ((IsImplementedDrtmFunctionOrFeature(old_s, id))
+    ==> result == 0)
+  && (result < 0 && id[63] == 0
+    ==> result < 0)
+  && (result < 0 && id[63] == 1
+    ==> result < 0)
+  && (result == NOT_SUPPORTED
+    ==> result == NOT_SUPPORTED)
+  && (!(IsImplementedDrtmFunctionOrFeature(old_s, id))
+    ==> result != 0)
+}

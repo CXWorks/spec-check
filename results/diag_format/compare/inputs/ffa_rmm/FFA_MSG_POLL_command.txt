@@ -1,0 +1,32 @@
+18.4.2 FFA_MSG_POLL command
+               Polls whether a message is available in the RX buffer of the caller. If no message is available, execution returns to the caller.
+               The caller must not invoke this command while it is processing a Direct request.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                Valid conduits
+        1                   Non-secure virtual           SMC, HVC
+               18.4.2.1 Interface
+               18.4.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400006A
+        reserved            W1-W7        31:0        -                                     Reserved (MBZ)
+        reserved            X1-X7        63:0        -                                     Reserved (MBZ)
+               18.4.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                Function ID of the completing interface: FFA_MSG_SEND on success, FFA_ERROR on failure
+        error_code          W2           31:0        Int32                                 Error code, valid when result is FFA_ERROR
+               18.4.2.2 Failure conditions
+  ID                          Condition
+  msg_avail                   pre: !MessageAvailable(RxBuffer(caller))
+                              post: ResultEqual(result, RETRY)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  not_impl                    pre: !IsImplemented(FFA_MSG_POLL, ffa_instance)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               18.4.2.2.1   Failure condition ordering
+               The FFA_MSG_POLL command does not have any failure condition orderings.
+               18.4.2.3 Success conditions
+  ID                          Condition
+  msg_send                    post: ResultEqual(result, FFA_MSG_SEND)
+  msg_avail                   post: MessageAvailable(RxBuffer(caller))
+               18.4.2.4 Footprint
+               The FFA_MSG_POLL command does not specify a footprint.

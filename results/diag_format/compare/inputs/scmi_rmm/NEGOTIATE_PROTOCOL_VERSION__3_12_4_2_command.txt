@@ -1,0 +1,27 @@
+3.12.4.2 NEGOTIATE_PROTOCOL_VERSION command
+               Negotiates the protocol version that the agent intends to use, if the agent does not support the version returned by the PROTOCOL_VERSION command.
+               The agent may attempt any number of negotiations. All commands, responses and notifications must comply with the protocol version that was last negotiated successfully. If the agent uses a protocol version other than the one returned by PROTOCOL_VERSION without a successful negotiation, support is best effort only and functionality is not guaranteed.
+               This command is optional. It is strongly recommended for platforms that intend to support agents compliant with older versions of this protocol.
+               3.12.4.2.1 Interface
+               3.12.4.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           —                                     Message ID, value 0x10
+        protocol_id         Header       —           —                                     Protocol ID, value 0x1B
+        version             Payload      31:0        UInt32                                Negotiated protocol version that the agent intends to use
+               3.12.4.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status. This can be, but is not limited to, the codes listed in this section. See Section 3.1.4 for more status code definitions.
+               3.12.4.2.2 Failure conditions
+  ID                          Condition
+  version_supported           pre: !IsPlatformSupportedProtocolVersion(version)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.12.4.2.2.1   Failure condition ordering
+               The NEGOTIATE_PROTOCOL_VERSION command does not have any failure condition orderings.
+               3.12.4.2.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  negotiated_version          post: NegotiatedProtocolVersion() == version
+               After this command returns successfully, all commands, responses and notifications must comply with the negotiated version.
+               3.12.4.2.4 Footprint
+    ID                        Value
+    negotiated_version        NegotiatedProtocolVersion()

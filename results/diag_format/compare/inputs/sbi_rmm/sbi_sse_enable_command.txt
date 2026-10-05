@@ -1,0 +1,34 @@
+17.11 sbi_sse_enable command
+               Enables the software event specified by event_id.
+               17.11.1 Interface
+               17.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 4
+        event_id            a0           31:0        UInt32                                Identifier of the software event to enable
+               17.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           63:0        SbiReturnCode                         Command return status (sbiret.error)
+               17.11.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsReservedEventId(event_id) && IsValidEventId(event_id)
+                                   && !PlatformSupportsEvent(event_id)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED)
+  invalid_param               pre: !IsValidEventId(event_id)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  invalid_state               pre: IsValidEventId(event_id)
+                                   && EventState(event_id) != REGISTERED
+                              post: ResultEqual(result, SBI_ERR_INVALID_STATE)
+               17.11.2.1   Failure condition ordering
+  [invalid_param] < [not_supported]
+  [invalid_param] < [invalid_state]
+               17.11.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  state_local                 pre: IsLocalEvent(event_id)
+                              post: EventState(event_id, CallingHart()) == ENABLED
+  state_global                pre: IsGlobalEvent(event_id)
+                              post: EventState(event_id) == ENABLED for all harts
+               17.11.4 Footprint
+    ID                        Value
+    state_local               EventState(event_id, CallingHart())
+    state_global              EventState(event_id)

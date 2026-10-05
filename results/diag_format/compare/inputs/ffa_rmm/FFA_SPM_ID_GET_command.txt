@@ -1,0 +1,32 @@
+13.11 FFA_SPM_ID_GET command
+               Returns the 16-bit ID of the SPMC or the SPMD, depending on the FF-A instance where the function is invoked.
+               13.11.1 Interface
+               13.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000085
+        reserved            w1-w7        31:0        UInt32                                Reserved (SBZ)
+               13.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        id                  w2           31:16       UInt16                                Reserved (MBZ). Returned with FFA_SUCCESS
+        id                  w2           15:0        UInt16                                ID of the SPMC or SPMD. Returned with FFA_SUCCESS
+        error_code          w2           31:0        Int32                                 Error code. Returned with FFA_ERROR
+               13.11.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_SPM_ID_GET, instance)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               13.11.2.1   Failure condition ordering
+               The FFA_SPM_ID_GET command does not have any failure condition orderings.
+               13.11.3 Success conditions
+  ID                          Condition
+  success                     post: ResultEqual(result, FFA_SUCCESS)
+  id_reserved                 post: id[31:16] == 0
+  id_ns                       pre: instance == NON_SECURE_PHYSICAL || instance == NON_SECURE_VIRTUAL
+                              post: id[15:0] == SpmcId()
+  id_s_virt                   pre: instance == SECURE_VIRTUAL
+                              post: id[15:0] == SpmcId()
+  id_s_phys_sel1_sel2         pre: instance == SECURE_PHYSICAL && (SpmcEl() == S_EL1 || SpmcEl() == S_EL2)
+                              post: id[15:0] == SpmdId()
+  id_s_phys_el3               pre: instance == SECURE_PHYSICAL && SpmcEl() == EL3
+                              post: id[15:0] == SpmcId()
+               13.11.4 Footprint
+               The FFA_SPM_ID_GET command does not modify any state.

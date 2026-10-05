@@ -1,0 +1,34 @@
+3.12.6.1 TELEMETRY_UPDATE command
+               Notifies an agent that telemetry has been updated. The platform sends it to agents that requested continuous update notifications with TELEMETRY_CONFIG_SET, and to any special agents the platform nominates to receive it by default. The agent uses it as a trigger to read telemetry data for enabled DEs that are available over SHMTIs and FastChannels. The notification also carries telemetry payload lines for enabled DEs that are not available over SHMTIs or FastChannels.
+               The platform generates the notification at an average rate no faster than the configured sampling period. It may use a slower rate if the agent or the platform cannot keep up because of hardware constraints. The platform should always provide the latest DE values when it generates the notification.
+               This notification is mandatory if the platform supports continuous update notifications, as indicated by Bit[30] of the attributes_1 field of the PROTOCOL_ATTRIBUTES command.
+               3.12.6.1.1 Interface
+               3.12.6.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          —            —           UInt32                                Message ID, value 0x0
+        protocol_id         —            —           UInt32                                Protocol ID, value 0x1B
+               3.12.6.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        agent_id            —            31:0        UInt32                                The agent that caused this event. In the current version of the specification, this is set to 0 to show that the platform generates all telemetry notification events
+        status              —            31:0        Int32                                 Status code, as described in Section 3.1.4
+        num_dwords          —            31:0        UInt32                                Size of the returned array in DWORDS (1 DWORD = 4 bytes)
+        array[N]            —            —           UInt32[N]                             Telemetry payload section, without the prologue and epilogue. N is given by num_dwords
+               3.12.6.1.2 Failure conditions
+  ID                          Condition
+  de_hw_fault                 pre: SensorHasFault(DE)
+                              post: ResultEqual(status, HARDWARE_ERROR)
+  partial_collect             pre: !AllTelemetryDataCollected()
+                              post: ResultEqual(status, PARTIAL_ERROR)
+               If status is non-zero, the agent should ignore the rest of the fields in this notification and re-configure telemetry. With PARTIAL_ERROR, some data lines may still be valid and usable, as shown by Bit[0] of Line-Metadata.
+               3.12.6.1.2.1   Failure condition ordering
+               The TELEMETRY_UPDATE command does not have any failure condition orderings.
+               3.12.6.1.3 Success conditions
+  ID                          Condition
+  status                      post: status == 0
+  agent_id                    post: agent_id == 0
+  num_dwords_even             post: (num_dwords % 2) == 0
+  num_dwords_zero             post: AllEnabledDesCollectedViaShmtiOrFastChannel() ==> num_dwords == 0
+  array_size                  post: N == num_dwords
+  latest_values               post: PayloadContainsLatestDeValues(array)
+               3.12.6.1.4 Footprint
+               The section does not say what state the TELEMETRY_UPDATE notification modifies.

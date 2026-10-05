@@ -1,0 +1,16 @@
+pub open spec fn sensor_config_get__3_7_2_10_spec(sensor_id: UInt32, status: Int32, sensor_config: UInt32, old_s: S, new_s: S) -> bool {
+  (!SensorExists(old_s, sensor_id) ==> ResultEqual(status, NOT_FOUND))
+  && (result: Result<(), RmiStatusCode>, result.is_Ok() ==> ResultEqual(status, SUCCESS))
+  && (result: Result<(), RmiStatusCode>, result.is_Ok() ==> sensor_config[31:11] == SensorAt(new_s, sensor_id).update_interval)
+  && (result: Result<(), RmiStatusCode>, result.is_Ok() && !SensorSupportsUpdateInterval(old_s, sensor_id) ==> sensor_config[31:11] == 0)
+  && (result: Result<(), RmiStatusCode>, result.is_Ok() ==> sensor_config[1] == (SensorAt(new_s, sensor_id).timestamped ? 1 : 0))
+  && (result: Result<(), RmiStatusCode>, result.is_Ok() ==> sensor_config[0] == (SensorAt(new_s, sensor_id).enabled ? 1 : 0))
+  && ((SensorExists(old_s, sensor_id))
+    ==> ResultEqual(status, SUCCESS))
+  && (result: Result<(), RmiStatusCode>, result.is_Err()
+    ==> sensor_config[31:11] == SensorAt(new_s, sensor_id).update_interval)
+  && (result: Result<(), RmiStatusCode>, result.is_Err()
+    ==> sensor_config[1] == (SensorAt(new_s, sensor_id).timestamped ? 1 : 0))
+  && (result: Result<(), RmiStatusCode>, result.is_Err()
+    ==> sensor_config[0] == (SensorAt(new_s, sensor_id).enabled ? 1 : 0))
+}

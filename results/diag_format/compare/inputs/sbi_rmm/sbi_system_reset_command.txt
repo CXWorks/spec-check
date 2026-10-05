@@ -1,0 +1,52 @@
+10.1 sbi_system_reset command
+               Resets the system according to reset_type and reset_reason. This is a synchronous call. It does not return if it succeeds.
+               10.1.1 Interface
+               10.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt                                  FID, value 0
+        reset_type          —            31:0        UInt32 (SrstResetType)                Type of system reset. See Table 26
+        reset_reason        —            31:0        UInt32 (SrstResetReason)              Optional reason for the system reset. See Table 27
+               The section does not say which registers carry the arguments or the FID.
+
+               Table 26. SRST System Reset Types
+        Value                          Description
+        0x00000000                     Shutdown
+        0x00000001                     Cold reboot
+        0x00000002                     Warm reboot
+        0x00000003 - 0xEFFFFFFF        Reserved for future use
+        0xF0000000 - 0xFFFFFFFF        Vendor or platform specific reset type
+
+               Table 27. SRST System Reset Reasons
+        Value                          Description
+        0x00000000                     No reason
+        0x00000001                     System failure
+        0x00000002 - 0xDFFFFFFF        Reserved for future use
+        0xE0000000 - 0xEFFFFFFF        SBI implementation specific reset reason
+        0xF0000000 - 0xFFFFFFFF        Vendor or platform specific reset reason
+               10.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        sbiret.error        —            —           SbiErrorCode                          Error code. Returned only if the call fails
+               10.1.2 Failure conditions
+               The section says the possible error codes in sbiret.error are listed in Table 28, but it does not include Table 28. So no failure conditions can be stated here.
+               10.1.2.1   Failure condition ordering
+               The sbi_system_reset command does not have any failure condition orderings.
+               10.1.3 Success conditions
+               On success the call does not return, so it has no success return code.
+  ID                          Condition
+  shutdown                    pre: reset_type == 0x00000000
+                              post: SystemIsShutDown()
+  cold_reboot                 pre: reset_type == 0x00000001
+                              post: SystemIsColdRebooted()
+  warm_reboot                 pre: reset_type == 0x00000002
+                              post: SystemIsWarmRebooted()
+  no_return                   post: CallDoesNotReturn()
+               Native execution (machine mode firmware provides the SBI implementation):
+               - Shutdown is equivalent to a physical power down of the entire system.
+               - Cold reboot is equivalent to a physical power cycle of the entire system. For example, it power cycles a BMC.
+               - Warm reboot is equivalent to a power cycle of the main processor and parts of the system, but not the entire system. For example, it does not power cycle a BMC.
+               Virtualized execution (a hypervisor provides the SBI implementation):
+               - Shutdown, cold reboot and warm reboot behave functionally the same as in the native case.
+               - They might not cause any physical power changes.
+               10.1.4 Footprint
+    ID                        Value
+    system_reset              SystemPowerAndResetState()

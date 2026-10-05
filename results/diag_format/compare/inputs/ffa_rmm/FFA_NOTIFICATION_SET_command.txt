@@ -1,0 +1,87 @@
+16.5 FFA_NOTIFICATION_SET command
+
+Asks the partition manager to signal the notifications in the Notification bitmap to the Receiver endpoint.
+
+An endpoint at a virtual FF-A instance invokes this command through the SMC, HVC or SVC conduit.
+
+The Hypervisor invokes it at the Non-secure physical FF-A instance through the SMC conduit. In that case it asks the SPMC to signal VM notifications to the SP named by the Receiver endpoint ID, on behalf of the VM named by the Sender endpoint ID.
+
+Valid FF-A instances and conduits:
+
+  Config No.   FF-A instance          Valid conduits
+  1            Non-secure virtual     SMC, HVC
+  2            Secure virtual         SMC, HVC, SVC
+  3            Non-secure physical    SMC
+  4            Secure physical        ERET
+
+16.5.1 Interface
+
+16.5.1.1 Input values
+
+  Name                Register   Bits    Type     Description
+  fid                 w0         31:0    UInt32   Function ID, value 0x84000081
+  receiver_id         w1         15:0    UInt16   Receiver endpoint ID
+  sender_id           w1         31:16   UInt16   Sender endpoint ID
+  per_vcpu            w2         0       Bits1    Per-vCPU notification flag:
+                                                    b'1: all notifications in the bitmap are per-vCPU notifications (only if per-vCPU notifications are supported). Each notification is signaled to the vCPU in receiver_vcpu_id.
+                                                    b'0: all notifications in the bitmap are global notifications. receiver_vcpu_id MBZ.
+  delay_sri           w2         1       Bits1    Delay Schedule Receiver interrupt flag. This is a hint from the SP execution context that the SPMC does not have to assert the Schedule Receiver interrupt when the command completes. It is only used at the Secure virtual FF-A instance and MBZ at all other FF-A instances.
+  flags_reserved      w2         15:2    Bits14   Reserved (MBZ)
+  receiver_vcpu_id    w2         31:16   UInt16   Receiver vCPU ID when per_vcpu is 1
+  bitmap_lo           w3         31:0    Bits32   Bits[31:0] of the Notification bitmap. Bit value b'1: signal the notification at this bit position to the Receiver. Bit value b'0: do not signal it.
+  bitmap_hi           w4         31:0    Bits32   Bits[63:32] of the Notification bitmap, encoded the same way as bitmap_lo
+  reserved            w5-w7      31:0    Bits32   Reserved (SBZ)
+
+16.5.1.2 Output values
+
+  Name                Register   Bits    Type     Description
+  result              w0         31:0    UInt32   FFA_SUCCESS on success, otherwise FFA_ERROR
+  error_code          w2         31:0    Int32    Error code, valid when result is FFA_ERROR
+
+16.5.2 Failure conditions
+
+  ID                     Condition
+  not_supported          pre:  !IsImplementedAtInstance(FFA_NOTIFICATION_SET, instance)
+                         post: ResultEqual(result, NOT_SUPPORTED)
+  sender_id              pre:  !IsRecognizedPartitionId(sender_id)
+                         post: ResultEqual(result, INVALID_PARAMETERS)
+  receiver_id            pre:  !IsRecognizedPartitionId(receiver_id)
+                         post: ResultEqual(result, INVALID_PARAMETERS)
+  flags_valid            pre:  !AreValidFlags(flags, instance)
+                         post: ResultEqual(result, INVALID_PARAMETERS)
+  global_vcpu_id         pre:  per_vcpu == 0 && receiver_vcpu_id != 0
+                         post: ResultEqual(result, INVALID_PARAMETERS)
+  global_has_per_vcpu    pre:  per_vcpu == 0 && BitmapHasPerVcpuNotification(receiver_id, bitmap)
+                         post: ResultEqual(result, INVALID_PARAMETERS)
+  per_vcpu_has_global    pre:  per_vcpu == 1 && BitmapHasGlobalNotification(receiver_id, bitmap)
+                         post: ResultEqual(result, INVALID_PARAMETERS)
+  per_vcpu_support       pre:  per_vcpu == 1 && !PerVcpuNotificationsSupported()
+                         post: ResultEqual(result, INVALID_PARAMETERS)
+  sender_permitted       pre:  !SenderMaySignalAll(sender_id, receiver_id, bitmap)
+                         post: ResultEqual(result, DENIED)
+  receiver_support       pre:  !ReceiverSupportsNotifications(receiver_id)
+                         post: ResultEqual(result, DENIED)
+  receiver_aborted       pre:  ReceiverHasAborted(receiver_id)
+                         post: ResultEqual(result, ABORTED)
+
+where bitmap = bitmap_hi:bitmap_lo.
+
+16.5.2.1 Failure condition ordering
+
+The FFA_NOTIFICATION_SET command does not have any failure condition orderings.
+
+16.5.3 Success conditions
+
+  ID                     Condition
+  result                 post: ResultEqual(result, FFA_SUCCESS)
+  signal_global          post: per_vcpu == 0 ⇒ for each i where bitmap[i] == 1: NotificationSignaled(receiver_id, i)
+  signal_per_vcpu        post: per_vcpu == 1 ⇒ for each i where bitmap[i] == 1: NotificationSignaled(receiver_id, receiver_vcpu_id, i)
+
+Using an IMPLEMENTATION DEFINED policy, the partition manager decides when to assert the Schedule Receiver interrupt in response to this command. It can assert the interrupt either before or after the command completes.
+
+16.5.4 Footprint
+
+  ID                     Value
+  signal_global          NotificationState(receiver_id).global
+  signal_per_vcpu        NotificationState(receiver_id, receiver_vcpu_id).per_vcpu
+  schedule_receiver      ScheduleReceiverInterrupt.pending

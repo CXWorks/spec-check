@@ -1,0 +1,22 @@
+3.2.2.7 BASE_DISCOVER_IMPLEMENTATION_VERSION command
+               Returns a vendor-specific 32-bit implementation version. The version number format is vendor-specific. Version numbers must be strictly increasing, so a higher number means a more recent implementation.
+               This command is mandatory.
+               3.2.2.7.1 Interface
+               3.2.2.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          -            -           -                                     Message identifier, value 0x5
+        protocol_id         -            -           -                                     Protocol identifier, value 0x10
+               3.2.2.7.1.2   Output values
+        Name                     Register     Bits        Type                             Description
+        status                   -            -           int32                            Command return status. See Section 3.1.4 for status code definitions.
+        implementation_version   -            -           uint32                           Vendor-specific implementation version. The format is vendor-specific.
+               3.2.2.7.2 Failure conditions
+               The BASE_DISCOVER_IMPLEMENTATION_VERSION command does not have any failure conditions.
+               3.2.2.7.2.1   Failure condition ordering
+               The BASE_DISCOVER_IMPLEMENTATION_VERSION command does not have any failure condition orderings.
+               3.2.2.7.3 Success conditions
+  ID                          Condition
+  impl_version                post: implementation_version == VendorImplementationVersion()
+  impl_version_order          post: VendorImplementationVersion() is strictly greater than the version of any older implementation
+               3.2.2.7.4 Footprint
+               The BASE_DISCOVER_IMPLEMENTATION_VERSION command does not modify any state.

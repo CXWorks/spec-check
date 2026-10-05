@@ -1,0 +1,25 @@
+6.1 sbi_set_timer command
+               Schedules the next timer event for absolute time stime_value.
+               6.1.1 Interface
+               6.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 0
+        stime_value         a0           63:0        UInt64                                Absolute time of the next timer event. (uint64_t)-1 requests a timer interrupt infinitely far in the future, which clears the timer interrupt without scheduling another event
+               6.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           63:0        SbiReturnCode                         Command return status (sbiret.error)
+               6.1.2 Failure conditions
+               The sbi_set_timer command does not have any failure conditions.
+               6.1.2.1   Failure condition ordering
+               The sbi_set_timer command does not have any failure condition orderings.
+               6.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  timer_event                 post: NextTimerEventTime() == stime_value
+  timer_pend                  pre: IsTimeInFuture(stime_value)
+                              post: !TimerInterruptPending()
+               The timer_pend condition holds whether or not timer interrupts are masked. To stop receiving timer interrupts, the supervisor can also mask them by clearing the sie.STIE CSR bit.
+               6.1.4 Footprint
+    ID                        Value
+    timer_event               NextTimerEventTime()
+    timer_pend                TimerInterruptPending()

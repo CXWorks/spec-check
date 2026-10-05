@@ -1,0 +1,46 @@
+3.12.4.7 TELEMETRY_LIST_UPDATE_INTERVALS command
+               Returns the update intervals that the protocol supports. On success, the command returns an array of update interval entries and the number of update intervals that remain. If one call cannot return all the update intervals, the agent can make more calls. The size of the returned array depends on how many return values the transport can support. Instead of describing each update interval, the command can return only the lowest update interval, the highest update interval and the step size between two successive update intervals. The returned update intervals should be in numeric ascending order.
+               This command is mandatory.
+               For an example of using this kind of API, see Section 3.5.6.8.
+               3.12.4.7.1 Interface
+               3.12.4.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          header       -           UInt32                                Message ID, value 0x5
+        protocol_id         header       -           UInt32                                Protocol ID, value 0x1B
+        index               param[0]     31:0        UInt32                                Index of the first update interval value to describe in the returned interval array
+        group_identifier    param[1]     31:0        UInt32                                Event group identifier
+        flags.reserved      param[2]     31:4        UInt32                                Reserved, must be zero
+        flags.selector      param[2]     3:0         UInt32                                Selector:
+                                                                                           0: applies to all DEs that are not associated with any event group, and does not apply to any DE that is associated with an event group. The platform ignores group_identifier.
+                                                                                           1: applies to the specified event group only.
+                                                                                           2: applies to all DEs and to all event groups. The platform ignores group_identifier.
+                                                                                           All other values are reserved for future use.
+                                                                                           Must be set to 2 if Bit[18] of the attributes_1 field of the PROTOCOL_ATTRIBUTES command is set to 0. See Section 3.12.4.3.
+               3.12.4.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              ret[0]       31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        flags.remaining     ret[1]       31:16       UInt32                                Number of remaining update intervals. Should be 0 if flags.format is 1.
+        flags.reserved      ret[1]       15:13       UInt32                                Reserved, must be zero
+        flags.format        ret[1]       12          UInt32                                Return format:
+                                                                                           1: the interval array is a triplet that forms a segment, where intervals[0] is the lowest supported update interval, intervals[1] is the highest supported update interval and intervals[2] is the step size between two successive update intervals.
+                                                                                           0: each element of the interval array is a discrete sensor update interval.
+        flags.count         ret[1]       11:0        UInt32                                Number of update intervals that this call returns (N). Should be 3 if flags.format is 1.
+        intervals[N]        ret[2..N+1]  31:0        UInt32                                Interval array, where N is given by flags.count. Each entry has this format:
+                                                                                           Bits[31:21]: Reserved.
+                                                                                           Bits[20:5]: sec, the number of seconds.
+                                                                                           Bits[4:0]: exponent, a two's complement value that gives the power-of-10 multiplier applied to sec.
+                                                                                           The value is sec x 10^exponent, in seconds.
+               3.12.4.7.2 Failure conditions
+  ID                          Condition
+  index_range                 pre: !IsValidUpdateIntervalIndex(index)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+               3.12.4.7.2.1   Failure condition ordering
+               The TELEMETRY_LIST_UPDATE_INTERVALS command does not have any failure condition orderings.
+               3.12.4.7.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  ascending                   post: IsNumericAscending(intervals, flags.count)
+  segment_remaining           post: flags.format == 1 ==> flags.remaining == 0
+  segment_count               post: flags.format == 1 ==> flags.count == 3
+               3.12.4.7.4 Footprint
+               The TELEMETRY_LIST_UPDATE_INTERVALS command does not have a footprint.

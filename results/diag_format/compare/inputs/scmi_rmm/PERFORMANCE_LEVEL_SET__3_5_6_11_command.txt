@@ -1,0 +1,33 @@
+3.5.6.11 PERFORMANCE_LEVEL_SET command
+               Sets the performance level of a performance domain.
+               If Level Indexing Mode is used, the level is given as a level index instead of the matching performance level.
+               The command can return before the domain has moved to the requested performance level. The platform only has to acknowledge that it has received the command. The agent can register for performance level notifications to find out whether a performance transition has taken place. For details, see Section 3.5.8.2.
+               This command is mandatory if Bit [23] of the attributes field of the PERFORMANCE_DOMAIN_ATTRIBUTES command is set to 0 for any domain.
+               3.5.6.11.1 Interface
+               3.5.6.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message ID, value 0x7
+        protocol_id         Header       -           UInt                                  Protocol ID, value 0x13
+        domain_id           Payload      31:0        UInt32                                Identifier for the performance domain
+        performance_level   Payload      31:0        UInt32                                Requested performance level, or level index. If this field is a performance level and is set to 0, platform policy sets the performance level of this domain.
+               3.5.6.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        Int32                                 Command return status
+               3.5.6.11.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerformanceDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  level_range                 pre: !IsInAllowedPerformanceRange(domain_id, performance_level)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+  agent_permission            pre: !AgentMaySetPerformanceLevel(caller, domain_id)
+                              post: ResultEqual(status, DENIED)
+               The list of status codes is not complete. See Section 3.1.4 for more status code definitions.
+               3.5.6.11.2.1   Failure condition ordering
+               The PERFORMANCE_LEVEL_SET command does not have any failure condition orderings.
+               3.5.6.11.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  accepted                    post: PlatformHasAcceptedAndScheduled(domain_id, performance_level)
+               3.5.6.11.4 Footprint
+    ID                        Value
+    perf_level                PerformanceDomain(domain_id).performance_level

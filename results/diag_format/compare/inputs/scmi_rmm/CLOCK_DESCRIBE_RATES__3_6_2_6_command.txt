@@ -1,0 +1,46 @@
+3.6.2.6 CLOCK_DESCRIBE_RATES command
+               Returns the valid rates to which a clock can be set.
+               On success, the command returns a Rate Array that contains several rate entries. It also returns the number of rates remaining after this call. Sometimes the whole clock rate array cannot be returned in one call, so the agent can make multiple calls. The size of the returned array depends on the number of return values that the transport can support.
+               Some clocks support so many rates that describing each one is impractical. For these clocks, the command can return only the lowest rate, the highest rate and the step size between two successive physical rates that the clock device can synthesize.
+               message_id: 0x4
+               protocol_id: 0x14
+               This command is mandatory.
+               3.6.2.6.1 Interface
+               3.6.2.6.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        clock_id            Parameter word 0     31:0        UInt32                                Identifier for the clock device
+        rate_index          Parameter word 1     31:0        UInt32                                Index of the first rate value to describe in the returned Rate Array
+               3.6.2.6.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Return word 0        31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions
+        num_rates_flags     Return word 1        31:0        UInt32                                Descriptor for the rates that this clock supports:
+                                                                                                   Bits[31:16]: Number of remaining rates. Should be 0 if Bit[12] is 1.
+                                                                                                   Bits[15:13]: Reserved, must be zero.
+                                                                                                   Bit[12]: Return format. 1: the Rate Array is a segment triplet {lowest rate, highest rate, step size}. 0: each element of the Rate Array is a discrete physical rate.
+                                                                                                   Bits[11:0]: Number of rates returned by this call. Should be 3 if Bit[12] is 1.
+        rates[N]            Return words 2 onward  -         {UInt32, UInt32}[N]                   Rate Array. N is given by Bits[11:0] of num_rates_flags.
+                                                                                                   If Bit[12] of num_rates_flags is 0, each entry is two 32-bit words: the lower word holds the lower 32 bits of the physical rate in Hertz, and the upper word holds the upper 32 bits.
+                                                                                                   If Bit[12] of num_rates_flags is 1, each entry is one member of the segment {lowest rate, highest rate, step size}:
+                                                                                                   rates[0]: lowest physical rate that the clock can synthesize in the segment.
+                                                                                                   rates[1]: highest physical rate that the clock can synthesize in the segment.
+                                                                                                   rates[2]: step size between two successive physical rates that the clock can synthesize within the segment.
+               3.6.2.6.2 Failure conditions
+  ID                          Condition
+  clock_exists                pre: !ClockExists(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  rate_index_range            pre: !IsValidRateIndex(clock_id, rate_index)
+                              post: ResultEqual(status, OUT_OF_RANGE)
+               The status codes listed are not exhaustive ("one of, but not limited to"). See Section 3.1.4 for other status code definitions.
+               3.6.2.6.2.1   Failure condition ordering
+               [clock_exists] < [rate_index_range]
+               3.6.2.6.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(status, SUCCESS)
+  num_returned                post: N == num_rates_flags[11:0]
+  reserved                    post: num_rates_flags[15:13] == 0
+  segment_remaining           post: (num_rates_flags[12] == 1) ==> (num_rates_flags[31:16] == 0)
+  segment_count               post: (num_rates_flags[12] == 1) ==> (num_rates_flags[11:0] == 3)
+  rates_order                 post: rates[0..N-1] should be in numeric ascending order
+               3.6.2.6.4 Footprint
+               The section does not identify any state that the CLOCK_DESCRIBE_RATES command modifies.
+               For an example of using this kind of API, see Section 3.5.6.8.

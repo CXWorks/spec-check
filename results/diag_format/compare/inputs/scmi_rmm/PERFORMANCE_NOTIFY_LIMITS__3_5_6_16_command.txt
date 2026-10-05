@@ -1,0 +1,32 @@
+3.5.6.16 PERFORMANCE_NOTIFY_LIMITS command
+               Lets the agent ask the platform to send PERFORMANCE_LIMITS_CHANGED notifications when the allowed maximum and minimum performance levels change. Section 3.5.8.1 describes these notifications.
+               This command is optional. If no domain supports limit notifications, the command can be left out. Use the PROTOCOL_MESSAGE_ATTRIBUTES command (Section 3.5.6.5) to find out whether this command is implemented.
+               3.5.6.16.1 Interface
+               3.5.6.16.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        message_id          Message header       -           UInt32                                Message identifier, value 0x9
+        protocol_id         Message header       -           UInt32                                Protocol identifier, value 0x13
+        domain_id           Payload word 0       31:0        UInt32                                Identifier for the performance domain
+        notify_enable       Payload word 1       31:0        UInt32                                Bits[31:1]: Reserved, must be zero.
+                                                                                                   Bit[0]: Notify enable. 0: the platform does not send any PERFORMANCE_LIMITS_CHANGED messages to the agent. 1: the platform sends PERFORMANCE_LIMITS_CHANGED messages to the agent.
+               3.5.6.16.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Payload word 0       31:0        Int32                                 Command return status. Section 3.1.4 defines the status codes.
+               3.5.6.16.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerfDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  notify_supported            pre: !PerfDomainSupportsLimitsNotify(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  notify_enable_valid         pre: !IsValidNotifyEnable(notify_enable)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.5.6.16.2.1   Failure condition ordering
+               The PERFORMANCE_NOTIFY_LIMITS command does not have any failure condition orderings.
+               3.5.6.16.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_state                post: PerfLimitsNotifyEnabled(agent, domain_id) == (notify_enable[0] == 1)
+               On initial boot of an agent, these notifications are disabled by default for that agent.
+               3.5.6.16.4 Footprint
+    ID                        Value
+    notify_state              PerfLimitsNotifyEnabled(agent, domain_id)

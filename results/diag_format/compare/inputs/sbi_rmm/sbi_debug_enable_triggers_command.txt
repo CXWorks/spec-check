@@ -1,0 +1,53 @@
+19.7 sbi_debug_enable_triggers command
+
+Enables a set of debug triggers on the calling hart.
+
+The set is given by trig_idx_base and trig_idx_mask. trig_idx_base is the starting trigger index. Each bit n set in trig_idx_mask selects the trigger with index trig_idx_base + n. This allows a single call to act on several triggers at once.
+
+19.7.1 Interface
+
+19.7.1.1 Input values
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| fid | a6 | XLEN-1:0 | UInt | FID, value 6 |
+| trig_idx_base | a0 | XLEN-1:0 | unsigned long | Starting trigger index |
+| trig_idx_mask | a1 | XLEN-1:0 | unsigned long | Bitmask of triggers to enable, relative to trig_idx_base |
+
+19.7.1.2 Output values
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| result | a0 | XLEN-1:0 | sbiret.error | Command return status |
+
+19.7.2 Failure conditions
+
+In these conditions, TrigSet(trig_idx_base, trig_idx_mask) is the set of trigger indices { trig_idx_base + n : bit n of trig_idx_mask is set }.
+
+| ID | Condition |
+|---|---|
+| trig_bound | pre: Exists(trig_idx in TrigSet(trig_idx_base, trig_idx_mask) : trig_idx >= trig_max)<br>post: ResultEqual(result, SBI_ERR_INVALID_PARAM) |
+| trig_mapped | pre: Exists(trig_idx in TrigSet(trig_idx_base, trig_idx_mask) : !IsMappedToHwTrigger(trig_idx))<br>post: ResultEqual(result, SBI_ERR_INVALID_PARAM) |
+
+19.7.2.1 Failure condition ordering
+
+The sbi_debug_enable_triggers command does not have any failure condition orderings.
+
+19.7.3 Success conditions
+
+| ID | Condition |
+|---|---|
+| result | post: ResultEqual(result, SBI_SUCCESS) |
+| trig_vs | post: ForAll(trig_idx in TrigSet(trig_idx_base, trig_idx_mask) : MappedHwTrigger(trig_idx).vs == trig_state(trig_idx).saved.vs) |
+| trig_vu | post: ForAll(trig_idx in TrigSet(trig_idx_base, trig_idx_mask) : MappedHwTrigger(trig_idx).vu == trig_state(trig_idx).saved.vu) |
+| trig_s | post: ForAll(trig_idx in TrigSet(trig_idx_base, trig_idx_mask) : MappedHwTrigger(trig_idx).s == trig_state(trig_idx).saved.s) |
+| trig_u | post: ForAll(trig_idx in TrigSet(trig_idx_base, trig_idx_mask) : MappedHwTrigger(trig_idx).u == trig_state(trig_idx).saved.u) |
+
+19.7.4 Footprint
+
+| ID | Value |
+|---|---|
+| trig_vs | MappedHwTrigger(trig_idx).vs, for each trig_idx in TrigSet(trig_idx_base, trig_idx_mask) |
+| trig_vu | MappedHwTrigger(trig_idx).vu, for each trig_idx in TrigSet(trig_idx_base, trig_idx_mask) |
+| trig_s | MappedHwTrigger(trig_idx).s, for each trig_idx in TrigSet(trig_idx_base, trig_idx_mask) |
+| trig_u | MappedHwTrigger(trig_idx).u, for each trig_idx in TrigSet(trig_idx_base, trig_idx_mask) |

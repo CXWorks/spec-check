@@ -1,0 +1,46 @@
+16.11 FFA_NOTIFICATION_INFO_GET command
+               Returns lists of endpoints that have pending notifications and must be run to handle those notifications.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance              Valid conduits
+        1                   Non-secure physical        SMC
+        2                   Secure physical            ERET
+        3                   Non-secure virtual         SMC, HVC
+               16.11.1 Interface
+               16.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000083 or 0xC4000083
+        reserved            w1-w7        31:0        UInt32                                Reserved, SBZ
+                            x1-x17       63:0        UInt64
+               16.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w2           31:0        Int32                                 Error code, returned in FFA_ERROR
+        pending_flags       w2/x2        31:0/63:0   UInt32/UInt64                         Pending notification flags, returned in FFA_SUCCESS
+        id_lists            w3-w7        31:0        UInt32                                ID lists, returned in FFA_SUCCESS
+                            x3-x7        63:0        UInt64
+               16.11.2 Failure conditions
+  ID                          Condition
+  no_data                     pre: !PendingNotificationInfoAvailable()
+                              post: ResultEqual(result, NO_DATA)
+  not_supported               pre: !IsImplementedAtInstance(FFA_NOTIFICATION_INFO_GET)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               16.11.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_INFO_GET command does not have any failure condition orderings.
+               16.11.3 Success conditions
+  ID                          Condition
+  success_code                post: ReturnedFunction == FFA_SUCCESS
+  more_pending                post: pending_flags[0] == (AllIdListsRetrieved() ? '0' : '1')
+  flags_res                   post: pending_flags[6:1] == 0
+  list_count                  post: pending_flags[11:7] == NumIdListsReturned()
+  list_count_smc32            post: IsSmc32() => pending_flags[11] == 0
+  id_count                    post: for 1 <= i <= NumIdListsReturned(): IdListSize(i) == pending_flags[(2 x i) - 1 + 12 : (2 x (i - 1)) + 12] + 1
+  flags_res_smc64             post: IsSmc64() => pending_flags[63:52] == 0
+  list_size                   post: for each list L: 1 <= IdListSize(L) <= 4
+  list_global                 post: for each endpoint E with only pending global notifications: E is returned in a list of size 1
+  list_per_vcpu               post: for each endpoint E with pending per-vCPU notifications: each list for E has E as its first element, followed by the IDs of vCPUs with pending notifications, and has size > 1
+  list_packing                post: the first ID of the first list is in w3[15:0] (SMC32) or x3[15:0] (SMC64); each later list starts at the bit position that follows the IDs of the previous list, in the same or a higher numbered register
+  id_capacity                 post: TotalIdsReturned() <= (IsSmc32() ? 10 : 20)
+  scheduler_scope             post: IsNonSecureVirtualInstance() => every returned endpoint has its scheduler implemented in the calling VM
+  retrieve_once               post: no returned ID list is returned again in a later invocation
+               16.11.4 Footprint
+    ID                        Value
+    pending_info              PendingNotificationInfo (ID lists not yet retrieved by the caller)

@@ -1,0 +1,28 @@
+3.4.2.6 SYSTEM_POWER_STATE_GET command
+               Gets the power state of the system.
+               This command must only be available to agents other than a PSCI implementation on systems that implement OSPM view, as discussed in Section 3.4.1. This command is mandatory in an OSPM view implementation.
+               3.4.2.6.1 Interface
+               3.4.2.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          -            -           UInt32                                Message ID, value 0x4
+        protocol_id         -            -           UInt32                                Protocol ID, value 0x12
+               3.4.2.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              -            -           Int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        system_state        -            -           UInt32                                Power state of the system:
+                                                                                           0x0 – System shutdown.
+                                                                                           0x3 – System power-up.
+                                                                                           0x4 – System suspend.
+                                                                                           0x5 – 0x7FFFFFFF: Reserved, must not be used.
+                                                                                           0x80000000 – 0xFFFFFFFF: Available for vendor-defined states.
+               3.4.2.6.2 Failure conditions
+               The SYSTEM_POWER_STATE_GET command does not have any failure conditions specified in this section.
+               3.4.2.6.2.1   Failure condition ordering
+               The SYSTEM_POWER_STATE_GET command does not have any failure condition orderings.
+               3.4.2.6.3 Success conditions
+  ID                          Condition
+  state_valid                 post: (system_state == 0x0) || (system_state == 0x3) || (system_state == 0x4)
+                                    || (system_state >= 0x80000000 && system_state <= 0xFFFFFFFF)
+  state_reserved              post: !(system_state >= 0x5 && system_state <= 0x7FFFFFFF)
+               3.4.2.6.4 Footprint
+               The SYSTEM_POWER_STATE_GET command does not modify any state.

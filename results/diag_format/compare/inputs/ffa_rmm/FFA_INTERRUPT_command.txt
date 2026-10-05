@@ -1,0 +1,52 @@
+14.4 FFA_INTERRUPT command
+               Returns control from the caller to the callee in response to an interrupt.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                          Valid conduits
+        1                   Non-secure physical                    ERET
+        2                   Secure and Non-secure virtual          ERET
+        3                   Secure physical                        SMC, ERET
+               14.4.1 Interface
+               14.4.1.1   Input values
+        Name                Register     Bits        Type          Description
+        fid                 W0           31:0        UInt32        Function ID, value 0x84000062 or 0xC4000062 (see 11.1.2 Parameter Register Preservation)
+        endpoint_id         W1           31:16       UInt16        Endpoint ID of the caller in a valid usage scenario (see 14.4.1 Usage). MBZ otherwise
+        vcpu_id             W1           15:0        UInt16        vCPU ID of the caller in a valid usage scenario (see 14.4.1 Usage). MBZ otherwise
+        interrupt_id        W2           31:0        UInt32        Interrupt ID in a valid usage scenario (see 14.4.1 Usage). MBZ otherwise
+        reserved            W3-W7        31:0        UInt32        Reserved, SBZ
+        reserved            X3-X17       63:0        UInt64        Reserved, SBZ
+               14.4.1.2   Output values
+               The section does not define any output values for the FFA_INTERRUPT command.
+               14.4.2 Failure conditions
+               The section does not define any failure conditions for the FFA_INTERRUPT command.
+               14.4.2.1   Failure condition ordering
+               The FFA_INTERRUPT command does not have any failure condition orderings.
+               14.4.3 Success conditions
+  ID                          Condition
+  ns_preempt                  post: (conduit == SMC && Instance() == SECURE_PHYSICAL) ==>
+                                    (IsSpmc(caller) && IsSpmd(callee)
+                                     && endpoint_id == IdOfPreemptedSp()
+                                     && vcpu_id == IdOfPreemptedSpExecutionContext())
+  ns_preempt_intid            post: (conduit == SMC && Instance() == SECURE_PHYSICAL) ==>
+                                    interrupt_id == 0
+  blocked_preempt             post: (conduit == ERET && RuntimeState(callee) == BLOCKED) ==>
+                                    (endpoint_id == IdOfPreemptedPartition()
+                                     && vcpu_id == IdOfPreemptedVcpuOrExecutionContext())
+  blocked_preempt_intid       post: (conduit == ERET && RuntimeState(callee) == BLOCKED) ==>
+                                    interrupt_id == 0
+  blocked_pairs               post: (conduit == ERET && RuntimeState(callee) == BLOCKED) ==>
+                                    ((IsSpmd(caller) && IsNsEndpoint(callee) && Instance() == NONSECURE_PHYSICAL)
+                                     || (IsHypervisor(caller) && IsVm(callee) && Instance() == NONSECURE_VIRTUAL)
+                                     || (IsSpmc(caller) && IsSp(callee) && Instance() == SECURE_VIRTUAL))
+  waiting_delegate            post: (conduit == ERET && RuntimeState(callee) == WAITING
+                                     && IsPrivilegedPartition(callee)
+                                     && !(IsSpmd(caller) && IsSpmc(callee))) ==>
+                                    interrupt_id == IdOfPendingInterrupt()
+  waiting_delegate_ids        post: (conduit == ERET && RuntimeState(callee) == WAITING) ==>
+                                    (endpoint_id == 0 && vcpu_id == 0)
+  waiting_pairs               post: (conduit == ERET && RuntimeState(callee) == WAITING) ==>
+                                    ((IsSpmd(caller) && IsSel1OrSel2Spmc(callee) && Instance() == SECURE_PHYSICAL)
+                                     || (IsEl3Spmc(caller) && IsLogicalSel1Sp(callee) && Instance() == SECURE_PHYSICAL)
+                                     || (IsHypervisor(caller) && IsVm(callee) && Instance() == NONSECURE_VIRTUAL)
+                                     || (IsSpmc(caller) && IsSp(callee) && Instance() == SECURE_VIRTUAL))
+               14.4.4 Footprint
+               The section does not identify any state modified by the FFA_INTERRUPT command.

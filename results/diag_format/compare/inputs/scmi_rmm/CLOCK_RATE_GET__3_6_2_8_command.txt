@@ -1,0 +1,30 @@
+3.6.2.8 CLOCK_RATE_GET command
+               Requests the current rate of a clock. If the clock is disabled, the command returns the rate at which the clock device would run once it is re-enabled.
+               Note: If the clock rate is set asynchronously, the returned rate value might be stale by the time the command completes.
+               This command is mandatory.
+               3.6.2.8.1 Interface
+               3.6.2.8.1.1   Input values
+        Name                Register        Bits        Type                Description
+        message_id          Header          -           -                   Message identifier, value 0x6
+        protocol_id         Header          -           -                   Protocol identifier, value 0x14
+        clock_id            Parameter 0     31:0        UInt32              Identifier for the clock device
+               3.6.2.8.1.2   Output values
+        Name                Register        Bits        Type                Description
+        status              Return 0        31:0        Int32               Command return status. See Section 3.1.4 for status code definitions
+        rate[0]             Return 1        31:0        UInt32              Lower 32 bits of the physical rate in Hertz
+        rate[1]             Return 2        31:0        UInt32              Upper 32 bits of the physical rate in Hertz
+               3.6.2.8.2 Failure conditions
+  ID                          Condition
+  clock_exists                pre: !ClockExists(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.6.2.8.2.1   Failure condition ordering
+               The CLOCK_RATE_GET command does not have any failure condition orderings.
+               3.6.2.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  rate_enabled                pre: ClockIsEnabled(clock_id)
+                              post: (rate[1] << 32 | rate[0]) == ClockCurrentRate(clock_id)
+  rate_disabled               pre: !ClockIsEnabled(clock_id)
+                              post: (rate[1] << 32 | rate[0]) == ClockRateOnReenable(clock_id)
+               3.6.2.8.4 Footprint
+               The CLOCK_RATE_GET command does not modify any state.

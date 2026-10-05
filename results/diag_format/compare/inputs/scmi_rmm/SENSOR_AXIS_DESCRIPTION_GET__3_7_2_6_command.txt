@@ -1,0 +1,52 @@
+3.7.2.6 SENSOR_AXIS_DESCRIPTION_GET command
+               Returns the properties of a sensor's axes. On success, it returns an array of Sensor Axis Descriptors. Descriptors should be reported in the normative order of axes. For example, a triaxial accelerometer should return its axis descriptors in the order x, y, z.
+               This command is mandatory for sensors that provide measurements along axes only.
+               3.7.2.6.1 Interface
+               3.7.2.6.1.1   Input values
+        Name                Register             Bits        Type                                  Description
+        message_id          Message header       -           UInt                                  Message identifier, value 0x7
+        protocol_id         Message header       -           UInt                                  Protocol identifier, value 0x15
+        sensor_id           Payload word 0       31:0        UInt32                                Identifier for the sensor
+        axis_desc_index     Payload word 1       31:0        UInt32                                Index of the first sensor axis descriptor to read in the sensor axis descriptor array
+               3.7.2.6.1.2   Output values
+        Name                Register             Bits        Type                                  Description
+        status              Payload word 0       31:0        Int32                                 Command return status. See Section 3.1.4 for more status code definitions
+        num_axis_flags      Payload word 1       31:26       UInt32                                Number of remaining sensor axis descriptors
+                                                 25:6                                              Reserved, must be zero
+                                                 5:0                                               Number of sensor axis descriptors returned by this call (N)
+        desc[N]             Payload word 2 on    -           SENSOR_AXIS_DESC[N]                   Array of sensor axis descriptors. N is given by Bits[5:0] of num_axis_flags
+               3.7.2.6.1.3   SENSOR_AXIS_DESC type
+               The SENSOR_AXIS_DESC structure describes the properties of one sensor axis, such as its axis identifier, name, reading types and other characteristics.
+        Name                    Bits        Type          Description
+        axis_id                 31:0        UInt32        Identifier for the axis of the sensor
+        axis_attributes_low     31:8        UInt32        Reserved
+                                9                         Extended axis name. 1: the axis name is longer than 16 bytes, and the extended axis name is provided by the SENSOR_AXIS_NAME_GET command (Section 3.7.2.15). 0: extended axis name is not supported
+                                8                         Extended attributes support. 1: the sensor reports extended attributes for this axis after the name field. 0: the sensor does not report extended attributes for this axis, and the platform does not allocate fields after name
+                                7:0                       Reserved
+        axis_attributes_high    31:16       UInt32        Reserved
+                                15:11                     Exponent: power-of-10 multiplier, in two's-complement format, applied to the sensor unit specified by SensorType
+                                10:8                      Reserved
+                                7:0                       SensorType: the type of sensor axis and the measurement system it implements, as described in Table 19
+        name                    -           UInt8[16]     NULL-terminated UTF-8 string, up to 16 bytes, holding the sensor axis name. When Bit[9] of axis_attributes_low is 1, this field holds the lower 15 bytes of the NULL-terminated axis name. The name should end with '_' followed by the sensor axis in uppercase, for example "acc_X" or "_X"
+        axis_resolution         31:27       UInt32        Exponent: power-of-10 multiplier, in two's-complement format, applied to the Res field
+                                26:0                      Res: resolution of the sensor axis, given as [res] x 10^[exponent] in the units specified by SensorType (Bits[7:0] of axis_attributes_high). Must be 0x0 if the sensor does not report the resolution for this axis. Extended attribute: present only if Bit[8] of axis_attributes_low is 1
+        axis_min_range_low      31:0        Int32         Lower 32 bits of the minimum value this axis can measure. Must be 0x0 if not reported. Present only if Bit[8] of axis_attributes_low is 1
+        axis_min_range_high     31:0        Int32         Upper 32 bits of the minimum value this axis can measure. Must be 0x80000000 if not reported. Present only if Bit[8] of axis_attributes_low is 1
+        axis_max_range_low      31:0        Int32         Lower 32 bits of the maximum value this axis can measure. Must be 0xFFFFFFFF if not reported. Present only if Bit[8] of axis_attributes_low is 1
+        axis_max_range_high     31:0        Int32         Upper 32 bits of the maximum value this axis can measure. Must be 0x7FFFFFFF if not reported. Present only if Bit[8] of axis_attributes_low is 1
+               3.7.2.6.2 Failure conditions
+               The failure conditions listed here are not exhaustive. See Section 3.1.4 for more status codes.
+  ID                          Condition
+  sensor_valid                pre: !IsValidSensor(sensor_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  sensor_axis                 pre: !SensorReportsAxisValues(sensor_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+               3.7.2.6.2.1   Failure condition ordering
+  [sensor_valid] < [sensor_axis]
+               3.7.2.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  desc_valid                  post: desc[0 .. num_axis_flags[5:0] - 1] are valid sensor axis descriptors of sensor_id, starting at index axis_desc_index
+  desc_order                  post: desc are reported in the normative order of axes of sensor_id
+               3.7.2.6.4 Footprint
+               The SENSOR_AXIS_DESCRIPTION_GET command does not modify any state.

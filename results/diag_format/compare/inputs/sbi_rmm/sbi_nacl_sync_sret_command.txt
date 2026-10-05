@@ -1,0 +1,27 @@
+15.9 sbi_nacl_sync_sret command
+               Synchronizes CSRs and HFENCEs in the nested acceleration shared memory and emulates the SRET instruction.
+               This is an optional function. It is only available if the SBI_NACL_FEAT_SYNC_SRET feature is available.
+               Supervisor software (or an L1 hypervisor) uses this function to make a synchronize SRET request. The SBI implementation (or L0 hypervisor) MUST handle the request as described in Section 15.3.
+               15.9.1 Interface
+               C prototype: struct sbiret sbi_nacl_sync_sret(void)
+               15.9.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 4
+               15.9.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Error code. Returned only on failure (sbiret.error)
+               15.9.2 Failure conditions
+               The error codes that can be returned in sbiret.error are listed in Table 74. That table is not part of this section, so no individual failure conditions are listed here.
+               15.9.2.1   Failure condition ordering
+               The sbi_nacl_sync_sret command does not have any failure condition orderings.
+               15.9.3 Success conditions
+  ID                          Condition
+  no_return                   post: FunctionDoesNotReturn()
+  csr_sync                    post: NaclSharedMemCsrsSynchronized()
+  hfence_sync                 post: NaclSharedMemHfencesSynchronized()
+  sret_emul                   post: SretEmulated()
+               15.9.4 Footprint
+    ID                        Value
+    csr_sync                  NaclSharedMemory.csrs
+    hfence_sync               NaclSharedMemory.hfences
+    sret_emul                 HartStateAffectedBySret()

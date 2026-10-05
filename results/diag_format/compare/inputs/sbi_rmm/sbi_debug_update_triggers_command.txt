@@ -1,0 +1,32 @@
+19.5 sbi_debug_update_triggers command
+               Updates installed debug triggers using an array of trigger configurations in the calling hart's shared memory.
+               The array starts at offset 0x0 in the shared memory and has trig_count entries. The i'th trigger configuration is at offset = i * (XLEN / 2) in the shared memory. Each entry is four consecutive XLEN-bit words in little-endian format:
+                 word[0] = trig_idx
+                 word[1] = trig_tdata1
+                 word[2] = trig_tdata2
+                 word[3] = trig_tdata3
+               In the conditions below, TrigConfig(i) is the trigger configuration at array index i. InstalledTrigger(idx) is the installed debug trigger whose logical index is idx.
+               19.5.1 Interface
+               19.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                              —           —                                     FID, value 4
+        trig_count                       XLEN-1:0    unsigned long                         Number of trigger configuration entries in the shared memory, starting at offset 0x0
+               19.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result                           —           struct sbiret                         Command return status
+               19.5.2 Failure conditions
+  ID                          Condition
+  trig_idx                    pre: Exists(i, 0 <= i < trig_count, !IsInstalledTrigger(TrigConfig(i).trig_idx))
+                              post: CommandFailed(result)
+  trig_type                   pre: Exists(i, 0 <= i < trig_count, TrigConfig(i).trig_tdata1.type != InstalledTrigger(TrigConfig(i).trig_idx).tdata1.type)
+                              post: CommandFailed(result)
+  trig_chain                  pre: Exists(i, 0 <= i < trig_count, TrigConfig(i).trig_tdata1.chain != InstalledTrigger(TrigConfig(i).trig_idx).tdata1.chain)
+                              post: CommandFailed(result)
+               19.5.2.1   Failure condition ordering
+               Trigger configurations are processed in increasing array index order, starting with index 0. The failure conditions for the configuration at index i are checked before the configuration at index i + 1 is considered.
+               19.5.3 Success conditions
+  ID                          Condition
+  trig_update                 post: ForAll(i, 0 <= i < trig_count, InstalledTrigger(TrigConfig(i).trig_idx) is updated based on TrigConfig(i))
+               19.5.4 Footprint
+    ID                        Value
+    trig_update               InstalledTrigger(TrigConfig(i).trig_idx), for 0 <= i < trig_count

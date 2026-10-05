@@ -1,0 +1,38 @@
+3.10.3.12 POWERCAP_CAI_SET command
+               Sets the power capping averaging interval (CAI) for a power capping domain.
+               This command is mandatory if any domain supports configuring the CAI.
+               3.10.3.12.1 Interface
+               3.10.3.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       —           UInt                                  Message ID, value 0xF
+        protocol_id         Header       —           UInt                                  Protocol ID, value 0x18
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the power capping domain
+        flags               Payload[1]   31:0        UInt32                                Reserved, must be zero
+        cai                 Payload[2]   31:0        UInt32                                Power averaging interval to set for the domain. Must not be zero.
+        cpli                Payload[3]   31:0        UInt32                                Concurrent power limit identifier. Must be set to 0 if the domain does not support CPC.
+               3.10.3.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+               3.10.3.12.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowercapDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cpli_valid                  pre: !IsValidCpli(domain_id, cpli)
+                              post: ResultEqual(status, NOT_FOUND)
+  supported                   pre: !IsCaiSetSupported(domain_id)
+                              post: ResultEqual(status, NOT_SUPPORTED)
+  cai_supported               pre: !IsSupportedCai(domain_id, cai)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  flags_valid                 pre: !AreValidCaiSetFlags(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  permission                  pre: !AgentMaySetCai(calling_agent, domain_id)
+                              post: ResultEqual(status, DENIED)
+               3.10.3.12.2.1   Failure condition ordering
+               The POWERCAP_CAI_SET command does not have any failure condition orderings.
+               3.10.3.12.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  cai                         post: PowercapDomain(domain_id).cai == cai
+               3.10.3.12.4 Footprint
+    ID                        Value
+    cai                       PowercapDomain(domain_id).cai

@@ -1,0 +1,24 @@
+17.16 sbi_sse_hart_mask command
+               Stops receiving (masks) software events on the calling hart. After the call, the calling hart is no longer ready to receive software events from the SBI implementation.
+               17.16.1 Interface
+               17.16.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 9
+               17.16.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Command return status
+               17.16.2 Failure conditions
+  ID                          Condition
+  already_stopped             pre: HartSseMasked(CallingHart())
+                              post: ResultEqual(error, SBI_ERR_ALREADY_STOPPED)
+  failed                      pre: RequestFailedForOtherReason()
+                              post: ResultEqual(error, SBI_ERR_FAILED)
+               17.16.2.1   Failure condition ordering
+               The sbi_sse_hart_mask command does not have any failure condition orderings.
+               17.16.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  hart_masked                 post: HartSseMasked(CallingHart())
+               17.16.4 Footprint
+    ID                        Value
+    hart_masked               HartSseMaskState(CallingHart())

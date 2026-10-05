@@ -1,0 +1,3 @@
+pub open spec fn sbi_remote_hfence_vvma_asid_spec(hart_mask: unsigned long, hart_mask_base: unsigned long, start_addr: unsigned long, size: unsigned long, asid: unsigned long, result: struct sbiret, old_s: S, new_s: S) -> bool {
+  (result.ret == 0 ==> (ForAll(hart in HartsSelectedBy(old_s, hart_mask, hart_mask_base): ExecutedHfenceVvma(new_s, hart, start_addr, start_addr + size, asid, CurrentVmid()))))
+}

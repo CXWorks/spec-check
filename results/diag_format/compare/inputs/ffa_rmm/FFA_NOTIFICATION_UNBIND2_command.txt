@@ -1,0 +1,51 @@
+16.8 FFA_NOTIFICATION_UNBIND2 command
+               Asks the partition manager to unbind the notifications in the Notification bitmap from the Sender endpoint. After this, the Sender endpoint cannot signal them. The command is used by an FF-A component that supports Extended notifications.
+               An endpoint can invoke it at a virtual FF-A instance. The Hypervisor can invoke it at the Non-secure physical FF-A instance using the SMC conduit, to ask the SPMC to unbind SP notifications from the SP given in the Sender endpoint ID.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                Valid conduits
+        1                   Non-secure virtual           SMC, HVC
+        2                   Secure virtual               SMC, HVC, SVC
+        3                   Non-secure physical          SMC
+        4                   Secure physical              ERET
+               16.8.1 Interface
+               16.8.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0xC4000095
+        sender_id           w1           31:16       UInt16                                Sender endpoint ID
+        receiver_id         w1           15:0        UInt16                                Receiver endpoint ID
+        reserved            x2           63:0        UInt64                                Reserved (SBZ)
+        bitmap              x3-x8        63:0        UInt64[6]                             Notification bitmap, bits[b:0]. b is the number of supported notifications - 1, with 63 <= b <= 383. Bit i is Bit[i % 64] of x((i / 64) + 3). If bit i is b'1, the Sender endpoint can no longer signal notification i. If bit i is b'0, the bit has no effect. Bits for unimplemented notification IDs MBZ.
+        reserved            x9-x17       63:0        UInt64                                Reserved (SBZ)
+               16.8.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              —            —           FF-A function                         FFA_SUCCESS with no further parameters on success, or FFA_ERROR on failure
+        error_code          w2           31:0        Int32                                 Error code returned with FFA_ERROR
+               16.8.2 Failure conditions
+  ID                          Condition
+  part_id                     pre: !IsValidPartitionId(sender_id) || !IsValidPartitionId(receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bitmap_valid                pre: !IsValidNotificationBitmap(bitmap)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bitmap_range                pre: ExceedsSupportedNotifications(bitmap)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bitmap_empty                pre: IsEmptyBitmap(bitmap)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  not_impl                    pre: !IsImplementedAtInstance(FFA_NOTIFICATION_UNBIND2)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  bound_other                 pre: AnyBoundToOtherSender(receiver_id, sender_id, bitmap)
+                              post: ResultEqual(result, DENIED)
+  pending                     pre: AnyNotificationPending(receiver_id, bitmap)
+                              post: ResultEqual(result, DENIED)
+  caller_perm                 pre: !CallerMayInvoke(FFA_NOTIFICATION_UNBIND2)
+                              post: ResultEqual(result, DENIED)
+  sender_abort                pre: PartitionAborted(sender_id)
+                              post: ResultEqual(result, ABORTED)
+               16.8.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_UNBIND2 command does not have any failure condition orderings.
+               16.8.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  unbound                     post: for each i with BitmapBit(bitmap, i) == 1: !IsBoundToSender(receiver_id, i, sender_id)
+               16.8.4 Footprint
+    ID                        Value
+    unbound                   NotificationBinding(receiver_id, i) for each i with BitmapBit(bitmap, i) == 1

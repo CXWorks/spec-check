@@ -1,0 +1,27 @@
+12.3 sbi_debug_console_write_byte command
+               Writes a single byte to the debug console. The call blocks and returns only after the byte has been written, or with SBI_ERR_FAILED if there are I/O errors.
+               12.3.1 Interface
+               12.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 FID          —           UInt                                  FID, value 2
+        byte                arg0         7:0         uint8_t                               Byte to write to the debug console
+               12.3.1.2   Output values
+        Name                Register        Bits        Type                                  Description
+        result              sbiret.error    —           SBI error code                        Command return status
+        uvalue              sbiret.uvalue   —           unsigned long                         Set to zero
+               12.3.2 Failure conditions
+  ID                          Condition
+  write_denied                pre: !DebugConsoleWriteAllowed()
+                              post: ResultEqual(result, SBI_ERR_DENIED)
+  io_error                    pre: DebugConsoleIoError(byte)
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+               12.3.2.1   Failure condition ordering
+               The sbi_debug_console_write_byte command does not have any failure condition orderings.
+               12.3.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  uvalue                      post: uvalue == 0
+  byte_written                post: DebugConsoleByteWritten(byte)
+               12.3.4 Footprint
+    ID                        Value
+    console                   DebugConsole.output

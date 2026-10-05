@@ -1,0 +1,56 @@
+15.2 FFA_MSG_SEND_DIRECT_REQ command
+               Sends a Partition message or Framework message in parameter registers as a request to a Receiver endpoint. The command runs the endpoint and blocks until a response is available. See also 8.3 Direct messaging.
+               Valid FF-A instances and conduits:
+        Config No.    FF-A instance              Valid conduits
+        1             Non-secure physical        SMC
+        2             Secure physical            SMC, ERET
+        3             Non-secure virtual         SMC, HVC, ERET
+        4             Secure virtual             SMC, HVC, SVC, ERET
+               15.2.1 Interface
+               15.2.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400006F or 0xC400006F
+        receiver_id         W1           15:0        UInt16                                Receiver endpoint ID
+        sender_id           W1           31:16       UInt16                                Sender endpoint ID
+        msg_subtype         W2           7:0         Bits8                                 Reserved (MBZ) if msg_type == b'0. Framework message type if msg_type == b'1 (see Table 18.6 and Table 18.7 in 18.2.4 Power Management messages)
+        reserved            W2           30:8        Bits23                                Reserved (SBZ)
+        msg_type            W2           31          Bits1                                 Message type. b'0: the message in the parameter registers is a partition message. b'1: the message in the parameter registers is a framework message
+        impdef              W3-W7        31:0        IMPLEMENTATION DEFINED                IMPLEMENTATION DEFINED values
+        impdef64            X8-X17       63:0        IMPLEMENTATION DEFINED                IMPLEMENTATION DEFINED values, when using the SMC64, HVC64 or SVC64 convention
+               15.2.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              W0           31:0        UInt32                                Function ID of the interface the callee invokes: FFA_MSG_SEND_DIRECT_RESP, FFA_INTERRUPT, FFA_YIELD, FFA_SUCCESS or FFA_ERROR
+        error_code          W2           31:0        Int32                                 Error code, if result is FFA_ERROR
+               15.2.2 Failure conditions
+  ID                          Condition
+  bad_endpoint                pre: !IsValidEndpointId(sender_id) || !IsValidEndpointId(receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bad_flags                   pre: !AreValidMessageFlags(msg_type, reserved, msg_subtype)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  no_direct_req               pre: !EndpointSupportsDirectReqReceipt(receiver_id)
+                              post: ResultEqual(result, DENIED)
+  not_impl                    pre: !IsImplementedAtInstance(FFA_MSG_SEND_DIRECT_REQ)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  recv_busy                   pre: EndpointState(receiver_id) in {RUNNING, BLOCKED, PREEMPTED}
+                              post: ResultEqual(result, BUSY)
+  recv_aborted                pre: EndpointHasAborted(receiver_id)
+                              post: ResultEqual(result, ABORTED)
+  recv_not_ready              pre: !EndpointIsReady(receiver_id)
+                              post: ResultEqual(result, NOT_READY)
+               15.2.2.1   Failure condition ordering
+               The FFA_MSG_SEND_DIRECT_REQ command does not have any failure condition orderings.
+               15.2.3 Success conditions
+  ID                          Condition
+  direct_resp                 post: result == FFA_MSG_SEND_DIRECT_RESP
+                                    (the callee provides a response to the Direct request)
+  interrupted                 post: result == FFA_INTERRUPT
+                                    (the Direct request was interrupted and must be resumed through FFA_RUN)
+  yielded                     post: result == FFA_YIELD
+                                    (the Receiver endpoint has entered the blocked runtime state and must be resumed through FFA_RUN)
+  completed                   post: result == FFA_SUCCESS
+                                    (the Direct request completed without a corresponding Direct response; all other parameter registers MBZ)
+               15.2.4 Footprint
+    ID                        Value
+    recv_state                EndpointState(receiver_id)

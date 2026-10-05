@@ -1,0 +1,79 @@
+3.12.4.8 TELEMETRY_DE_CONFIGURE command
+               Enables or disables a DE or an event group, or disables all DEs and event groups.
+               message_id: 0x6
+               protocol_id: 0x1B
+               This command is mandatory.
+               3.12.4.8.1 Interface
+               3.12.4.8.1.1   Input values
+        Name                Register          Bits        Type        Description
+        identifier          Payload word 0    31:0        UInt32      Identifier for the DE or the event group
+        flags.reserved      Payload word 1    31:4        UInt32      Reserved, must be zero
+        flags.selector      Payload word 1    3           UInt32      Whether identifier refers to a DE or an event group: 0 – DE, 1 – Event group
+        flags.disable_all   Payload word 1    2           UInt32      If 1, all DEs and groups are disabled and identifier is ignored
+        flags.de_mode       Payload word 1    1:0         UInt32      0 – disable; 1 – enable without timestamps; 2 – enable with timestamps; other values reserved. Must be 0 if flags.disable_all is 1
+               3.12.4.8.1.2   Output values
+        Name                Register          Bits        Type        Description
+        status              Payload word 0    31:0        Int32       Command return status
+        SHMTI_id            Payload word 1    31:0        UInt32      SHMTI ID where the DE or event group is allocated upon enabling, or 0xFFFFFFFF
+        SHMTI_de_offset     Payload word 2    31:0        UInt32      Offset in bytes from the start of the SHMTI, including the Prologue, to the start of the DE Line-Metadata. For an event group, this is the offset of the DE in the group with the smallest offset within the SHMTI
+        blk_ts_offset       Payload word 3    31:0        UInt32      Offset in bytes from the start of the SHMTI, including the Prologue, to the start of the Block Timestamp line associated with this DE
+               3.12.4.8.2 Failure conditions
+  ID                          Condition
+  flags_rsvd                  pre: flags[31:4] != 0
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  mode_rsvd                   pre: flags[1:0] == 3
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  disable_all_mode            pre: flags[2] == 1 && flags[1:0] != 0
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  identifier                  pre: flags[2] == 0 && !IsValidDeOrGroup(identifier, flags[3])
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  group_in_use                pre: flags[2] == 0 && flags[3] == 1 && flags[1:0] != 0
+                                   && GroupHasEnabledDe(identifier)
+                              post: ResultEqual(status, IN_USE)
+  de_in_use                   pre: flags[2] == 0 && flags[3] == 0 && flags[1:0] == 0
+                                   && DeEnabledViaGroup(identifier)
+                              post: ResultEqual(status, IN_USE)
+  max_enabled                 pre: flags[2] == 0 && flags[1:0] != 0
+                                   && EnabledLimitReached()
+                              post: ResultEqual(status, OUT_OF_RANGE)
+               The group_in_use and de_in_use failure conditions are IMPLEMENTATION DEFINED: an implementation might not report IN_USE in these cases.
+               3.12.4.8.2.1   Failure condition ordering
+               The TELEMETRY_DE_CONFIGURE command does not have any failure condition orderings.
+               3.12.4.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  disable_all                 pre: flags[2] == 1
+                              post: forall de: !DeEnabled(de) && forall g: !GroupEnabled(g)
+  de_disable                  pre: flags[2] == 0 && flags[3] == 0 && flags[1:0] == 0
+                              post: !DeEnabled(identifier)
+  de_enable                   pre: flags[2] == 0 && flags[3] == 0 && flags[1:0] != 0
+                              post: DeEnabled(identifier)
+                                    && DeTimestamped(identifier) == (flags[1:0] == 2)
+  group_disable               pre: flags[2] == 0 && flags[3] == 1 && flags[1:0] == 0
+                              post: forall de in GroupDes(identifier): !DeEnabled(de)
+  group_enable                pre: flags[2] == 0 && flags[3] == 1 && flags[1:0] != 0
+                              post: forall de in GroupDes(identifier): DeEnabled(de)
+                                    && DeTimestamped(de) == (flags[1:0] == 2)
+  shmti_none                  pre: !EnablingDeOrGroup(flags) || !ShmtiSupported()
+                                   || !ShmtiUsedFor(identifier) || !ShmtiInfoReturnSupported()
+                              post: SHMTI_id == 0xFFFFFFFF
+  shmti_alloc                 pre: SHMTI_id != 0xFFFFFFFF
+                              post: SHMTI_id == ShmtiOf(identifier)
+                                    && SHMTI_de_offset == DeLineMetadataOffset(identifier)
+  blk_ts_none                 pre: SHMTI_id != 0xFFFFFFFF
+                                   && (!TimestampsEnabled(identifier) || !UsesBlockTimestamps(identifier))
+                              post: blk_ts_offset == 0
+  blk_ts                      pre: SHMTI_id != 0xFFFFFFFF
+                                   && TimestampsEnabled(identifier) && UsesBlockTimestamps(identifier)
+                              post: blk_ts_offset == BlockTimestampLineOffset(identifier)
+               For an event group, the platform applies the configuration to either all or none of the DEs in the group.
+               A request to enable an already enabled DE, or to disable an already disabled DE, returns SUCCESS with the other relevant output values.
+               When all DEs and groups are disabled, any data associated with them might be lost.
+               The agent should ignore SHMTI_de_offset and blk_ts_offset if SHMTI_id is 0xFFFFFFFF.
+               blk_ts_offset should meet the requirements for block timestamp lines in Table 28.
+               3.12.4.8.4 Footprint
+    ID                        Value
+    de_enabled                DeEnabled(de) for each DE affected
+    de_timestamped            DeTimestamped(de) for each DE affected
+    group_enabled             GroupEnabled(g) for each event group affected
+    shmti_alloc               SHMTI allocation of the DE or event group being enabled

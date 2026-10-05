@@ -1,0 +1,48 @@
+14.3 FFA_RUN command
+               Allocates CPU cycles to the target endpoint execution context given in the Target information parameter.
+               14.3.1 Interface
+               14.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0x8400006D or 0xC400006D
+        target_id           W1           31:16       UInt16                                ID of the target SP/VM
+        target_vcpu         W1           15:0        UInt16                                ID of the vCPU of the SP/VM to run
+        reserved            W2-W7        31:0        UInt32                                Reserved (SBZ)
+        reserved            X2-X17       63:0        UInt64                                Reserved (SBZ)
+               14.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        fid_out             W0           31:0        UInt32                                Function ID of the ABI that completes the invocation: FFA_ERROR, FFA_INTERRUPT, FFA_MSG_WAIT, FFA_YIELD or FFA_MSG_SEND_DIRECT_RESP
+        result              W2           31:0        Int32                                 Error code, when fid_out is FFA_ERROR
+               14.3.2 Failure conditions
+  ID                          Condition
+  target_id                   pre: !IsValidEndpointId(target_id) || !IsValidVcpuId(target_id, target_vcpu)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  target_pinned               pre: IsVcpuPinnedToOtherPe(target_id, target_vcpu)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  not_supported               pre: !IsImplementedAtInstance(FFA_RUN)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  callee_state                pre: !IsCalleeInStateToHandleRequest(target_id, target_vcpu)
+                              post: ResultEqual(result, DENIED)
+  caller_allowed              pre: !IsCallerAllowedToInvoke(FFA_RUN)
+                              post: ResultEqual(result, DENIED)
+  vcpu_busy                   pre: IsVcpuBusy(target_id, target_vcpu)
+                              post: ResultEqual(result, BUSY)
+  vcpu_aborted                pre: HasAborted(target_id, target_vcpu)
+                              post: ResultEqual(result, ABORTED)
+  receiver_ready              pre: !IsReceiverReady(target_id)
+                              post: ResultEqual(result, NOT_READY)
+               14.3.2.1   Failure condition ordering
+               The FFA_RUN command does not have any failure condition orderings.
+               14.3.3 Success conditions
+  ID                          Condition
+  target_waiting              pre: ExecContextAt(target_id, target_vcpu).state == WAITING
+                              post: ExecContextAt(target_id, target_vcpu).state == RUNNING
+  target_blocked              pre: ExecContextAt(target_id, target_vcpu).state == BLOCKED
+                              post: ExecContextAt(target_id, target_vcpu).state == RUNNING
+  target_preempted            pre: ExecContextAt(target_id, target_vcpu).state == PREEMPTED
+                              post: ExecContextAt(target_id, target_vcpu).state == RUNNING
+  caller_state                post: CallerExecContext().state == RUNNING
+  completion                  post: fid_out == FFA_INTERRUPT || fid_out == FFA_MSG_WAIT || fid_out == FFA_YIELD || fid_out == FFA_MSG_SEND_DIRECT_RESP
+               14.3.4 Footprint
+    ID                        Value
+    target_state              ExecContextAt(target_id, target_vcpu).state
+    caller_state              CallerExecContext().state

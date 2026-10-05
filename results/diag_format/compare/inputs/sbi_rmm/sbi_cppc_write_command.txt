@@ -1,0 +1,26 @@
+14.4 sbi_cppc_write command
+               Writes the value passed in the val parameter to the register specified by the cppc_reg_id parameter.
+               14.4.1 Interface
+               14.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 3
+        cppc_reg_id         a0           31:0        UInt32                                ID of the target CPPC register
+        val                 a1           63:0        UInt64                                Value to write to the CPPC register
+               14.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           63:0        sbiret.error                          Command return status
+               14.4.2 Failure conditions
+  ID                          Condition
+  reg_reserved                pre: IsReservedCppcReg(cppc_reg_id)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  reg_not_impl                pre: !IsImplementedCppcReg(cppc_reg_id)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED)
+               14.4.2.1   Failure condition ordering
+               The sbi_cppc_write command does not have any failure condition orderings.
+               14.4.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  reg_value                   post: CppcReg(cppc_reg_id) == val
+               14.4.4 Footprint
+    ID                        Value
+    reg_value                 CppcReg(cppc_reg_id)

@@ -1,0 +1,35 @@
+3.2.2.9 BASE_DISCOVER_AGENT command
+               Discovers the name of an agent, given as an ASCII string of up to 16 bytes.
+               This command is optional. To find out whether it is implemented, a caller issues PROTOCOL_MESSAGE_ATTRIBUTES and passes the message_id of this command. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES returns SUCCESS (0).
+               Agent identifiers (agent_id) describe the agents in the system that can use the SCMI protocols. An agent_id of 0 is reserved for the platform itself. Where supported, agent_id values are sequential and start from one. They are limited by the number of agents that PROTOCOL_ATTRIBUTES reports. If the command is not implemented, the caller does not interpret agent identifiers in notifications, and the platform sets agent_id to zero in notifications.
+               An agent can discover its own agent_id and name by passing an agent_id of 0xFFFFFFFF.
+               3.2.2.9.1 Interface
+               3.2.2.9.1.1   Input values
+        Name                Register            Bits        Type                                  Description
+        message_id          Message header      -           UInt32                                Message identifier, value 0x7
+        protocol_id         Message header      -           UInt32                                Protocol identifier, value 0x10
+        agent_id            Parameter word 0    31:0        UInt32                                Identifier of the agent whose identification is requested
+               3.2.2.9.1.2   Output values
+        Name                Register            Bits        Type                                  Description
+        status              Return word 0       31:0        Int32                                 Command return status
+        agent_id            Return word 1       31:0        UInt32                                ID of the agent whose identity is requested
+        name                Return words 2-5    -           UInt8[16]                             Null-terminated ASCII string of up to 16 bytes
+               3.2.2.9.2 Failure conditions
+  ID                          Condition
+  agent_invalid               pre: (agent_id != 0xFFFFFFFF) && !IsValidAgentId(agent_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.2.2.9.2.1   Failure condition ordering
+               The BASE_DISCOVER_AGENT command does not have any failure condition orderings.
+               3.2.2.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  agent_self                  pre: agent_id == 0xFFFFFFFF
+                              post: out.agent_id == CallingAgentId()
+  agent_other                 pre: agent_id != 0xFFFFFFFF
+                              post: out.agent_id == agent_id
+  name_value                  post: name == AgentName(out.agent_id)
+  name_format                 post: IsNullTerminatedAscii(name) && (StringLength(name) <= 16)
+  name_platform               pre: agent_id == 0
+                              post: StringStartsWith(name, "platform")
+               3.2.2.9.4 Footprint
+               The BASE_DISCOVER_AGENT command does not have a footprint.

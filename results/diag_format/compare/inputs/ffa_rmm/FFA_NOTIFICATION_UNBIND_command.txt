@@ -1,0 +1,53 @@
+16.4 FFA_NOTIFICATION_UNBIND command
+               Unbinds the notifications in the Notification bitmap from the Sender endpoint.
+
+               An endpoint at a virtual FF-A instance invokes it with the SMC, HVC or SVC conduit to ask the partition manager to unbind the notifications from the Sender endpoint. See also 10.4.2 Notification binding.
+
+               The Hypervisor at the Non-secure physical FF-A instance invokes it with the SMC conduit to ask the SPMC to unbind SP notifications from the SP given in the Sender endpoint ID parameter.
+
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance              Valid conduits
+        1                   Non-secure virtual         SMC, HVC
+        2                   Secure virtual             SMC, HVC, SVC
+        3                   Non-secure physical        SMC
+        4                   Secure physical            ERET
+               16.4.1 Interface
+               16.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000080
+        sender_id           w1           31:16       UInt16                                Sender endpoint ID
+        receiver_id         w1           15:0        UInt16                                Receiver endpoint ID
+        reserved            w2/x2        31:0/63:0   UInt32/UInt64                         Reserved (SBZ)
+        bitmap_lo           w3           31:0        UInt32                                Bits[31:0] of the Notification bitmap. It has one or more set bits that identify the notifications the Sender endpoint is not allowed to signal. b'1: The Sender endpoint cannot signal this notification. b'0: No effect.
+        bitmap_hi           w4           31:0        UInt32                                Bits[63:32] of the Notification bitmap. It has one or more set bits that identify the notifications the Sender endpoint is not allowed to signal. b'1: The Sender endpoint cannot signal this notification. b'0: No effect.
+        reserved            w5-w7        31:0        UInt32                                Reserved (SBZ)
+               16.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w2           31:0        Int32                                 Error code, encoded in the FFA_ERROR function. On success, FFA_SUCCESS is returned with no further parameters.
+               16.4.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtThisInstance(FFA_NOTIFICATION_UNBIND)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  sender_id                   pre: !IsRecognizedPartitionId(sender_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  receiver_id                 pre: !IsRecognizedPartitionId(receiver_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bitmap                      pre: !IsValidNotificationBitmap(bitmap_hi:bitmap_lo)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  bound_other                 pre: AnyNotificationBoundToOtherSender(receiver_id, bitmap_hi:bitmap_lo, sender_id)
+                              post: ResultEqual(result, DENIED)
+  pending                     pre: AnyNotificationPending(receiver_id, bitmap_hi:bitmap_lo)
+                              post: ResultEqual(result, DENIED)
+  caller                      pre: !CallerAllowedToInvoke(FFA_NOTIFICATION_UNBIND)
+                              post: ResultEqual(result, DENIED)
+  aborted                     pre: SenderPartitionAborted(sender_id)
+                              post: ResultEqual(result, ABORTED)
+               16.4.2.1   Failure condition ordering
+               The FFA_NOTIFICATION_UNBIND command does not have any failure condition orderings.
+               16.4.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  unbound                     post: !CanSenderSignal(receiver_id, sender_id, n) for each notification n set in bitmap_hi:bitmap_lo
+               16.4.4 Footprint
+    ID                        Value
+    binding                   NotificationBinding(receiver_id, n) for each notification n set in bitmap_hi:bitmap_lo

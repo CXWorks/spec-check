@@ -1,0 +1,39 @@
+3.5.6.6 PERFORMANCE_QOS_CAPABILITY_SUBTYPES command
+               Returns the QoS capability Subtypes supported for a specified QoS capability Type.
+               This command is mandatory if the platform supports QoS capabilities.
+               3.5.6.6.1 Interface
+               3.5.6.6.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message identifier, value 0xD
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x13
+        domain_id           Param[0]     31:0        UInt32                                Identifier for the performance domain
+        capability_type     Param[1]     31:0        UInt32                                QoS capability Type bitmap
+                            Param[1]     31:16       Reserved                              Must be zero
+                            Param[1]     15          QosCapabilityTypeRange                QoS capability Type range. 0: architected range of QoS capability Types. 1: OEM range of QoS capability Types
+                            Param[1]     14:8        Reserved                              Must be zero
+                            Param[1]     7:0         Bits8                                 QoS capability Type bitmap. Each bit indicates one capability Type. Only one bit must be set, and it indicates the target QoS capability Type. Section 3.5.4.1 and Table 13 give the architected QoS capability Types and their bit offsets
+               3.5.6.6.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status. Section 3.1.4 defines the status codes
+        capability_subtypes Return[1]    31:0        UInt32                                Bitmap of supported QoS capability Subtypes
+                            Return[1]    31:24       Reserved                              Must be zero
+                            Return[1]    23:16       Bits8                                 OEM QoS capability Subtype bitmap. Each bit indicates one QoS capability Subtype. More than one bit may be set
+                            Return[1]    15:8        Reserved                              Must be zero
+                            Return[1]    7:0         Bits8                                 Architected QoS capability Subtype bitmap. Each bit indicates one QoS capability Subtype. Table 13 and Section 3.5.4.2 give the bit offsets and Subtype descriptions. More than one bit may be set
+               3.5.6.6.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerfDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  type_multiple               pre: BitCount(capability_type[7:0]) > 1
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  type_valid                  pre: !IsValidQosCapabilityType(domain_id, capability_type)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.6.2.1   Failure condition ordering
+               [domain_valid] < [type_valid]
+               The command only checks whether capability_type points to a valid capability Type of the domain after domain_id has been found to point to a valid domain.
+               3.5.6.6.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  subtypes                    post: capability_subtypes == SupportedQosCapabilitySubtypes(domain_id, capability_type)
+               3.5.6.6.4 Footprint
+               The PERFORMANCE_QOS_CAPABILITY_SUBTYPES command does not have a footprint.

@@ -1,0 +1,16 @@
+pub open spec fn sdei_interrupt_bind_spec(result: Int64, old_s: S, new_s: S) -> bool {
+    (!SdeiIsSupported() ==> ResultEqual(result, NOT_SUPPORTED))
+    && (!IsValidInterrupt(old_s, interrupt) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (!IsInterruptAllowedForBinding(old_s, interrupt) ==> ResultEqual(result, INVALID_PARAMETERS))
+    && (InterruptState(old_s, interrupt) != INACTIVE ==> ResultEqual(result, DENIED))
+    && (!IsInterruptBound(old_s, interrupt) && !BindSlotAvailable(old_s) ==> ResultEqual(result, OUT_OF_RESOURCE))
+    && (result[63:32] == 0)
+    && (result[31:0] == BoundEventNumber(old_s, interrupt))
+    && (IsInterruptBound(new_s, interrupt))
+    && (EventPriority(result[31:0]) == NORMAL)
+    && (IsPpi(old_s, interrupt) ==> IsPrivateEvent(result[31:0]))
+    && (IsSpi(old_s, interrupt) ==> IsSharedEvent(result[31:0]))
+    && (IsInterruptBound(old_s, interrupt) ==> result[31:0] == PreviousBoundEventNumber(old_s, interrupt))
+    && (IsVendorEventNumber(result[31:0]))
+    && (IsInterruptPriorityElevated(old_s, interrupt))
+}

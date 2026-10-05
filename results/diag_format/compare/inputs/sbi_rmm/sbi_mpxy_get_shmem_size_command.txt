@@ -1,0 +1,25 @@
+20.5 sbi_mpxy_get_shmem_size command
+               Gets the size, in bytes, of the shared memory used for sending and receiving messages.
+               20.5.1 Interface
+               20.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        eid                 a7           XLEN-1:0    UInt                                  MPXY extension ID
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 0
+               20.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          Command return status (sbiret.error)
+        uvalue              a1           XLEN-1:0    UInt                                  Shared memory size in bytes (sbiret.uvalue)
+               20.5.2 Failure conditions
+               The sbi_mpxy_get_shmem_size command does not have any failure conditions.
+               20.5.2.1   Failure condition ordering
+               The sbi_mpxy_get_shmem_size command does not have any failure condition orderings.
+               20.5.3 Success conditions
+  ID                          Condition
+  success                     post: ResultEqual(error, SBI_SUCCESS)
+  size_value                  post: uvalue == MpxyShmemSize()
+  size_all_harts              post: forall hart: MpxyShmemSizeOnHart(hart) == uvalue
+  size_min                    post: uvalue >= 4096
+  size_align                  post: (uvalue % 4096) == 0
+  size_msg_max                post: forall chan in MpxyChannels(): uvalue >= MsgDataMaxLen(chan)
+               20.5.4 Footprint
+               The sbi_mpxy_get_shmem_size command does not modify any state.

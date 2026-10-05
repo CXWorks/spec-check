@@ -1,0 +1,24 @@
+15.5 sbi_nacl_probe_feature command
+               Probes a nested acceleration feature. This is a mandatory function of the SBI nested acceleration extension.
+               15.5.1 Interface
+               15.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           63:0        UInt64                                FID, value 0
+        feature_id          a0           31:0        UInt32                                ID of the nested acceleration feature to probe (see Table 64)
+               15.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           63:0        SbiReturnCode                         Command return status (sbiret.error)
+        value               a1           63:0        UInt64                                Feature availability: 0 = not available, 1 = available (sbiret.value)
+               15.5.2 Failure conditions
+               The sbi_nacl_probe_feature command does not have any failure conditions.
+               15.5.2.1   Failure condition ordering
+               The sbi_nacl_probe_feature command does not have any failure condition orderings.
+               15.5.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  feat_avail                  pre: IsNaclFeatureAvailable(feature_id)
+                              post: value == 1
+  feat_unavail                pre: !IsNaclFeatureAvailable(feature_id)
+                              post: value == 0
+               15.5.4 Footprint
+               The sbi_nacl_probe_feature command does not modify any state.

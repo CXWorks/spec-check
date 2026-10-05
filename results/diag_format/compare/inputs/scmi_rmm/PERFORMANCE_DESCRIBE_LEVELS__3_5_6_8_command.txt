@@ -1,0 +1,42 @@
+3.5.6.8 PERFORMANCE_DESCRIBE_LEVELS command
+               Describes the discrete performance levels that the platform supports for a performance domain. For each level it gives the performance level value, power cost, worst-case transition latency, indicative clock frequency and level index.
+               This command is mandatory if Bit[23] of the attributes field returned by the PERFORMANCE_DOMAIN_ATTRIBUTES command is set to 0 for any domain.
+               The power cost can be in microwatts, in milliwatts or on an abstract scale. How an abstract scale converts to actual wattage is IMPLEMENTATION DEFINED, but the conversion must be linear: a power of 2X is twice the power of X.
+               The number of levels returned depends on how many return values the transport can carry, so one call might not return every level. The agent can make several calls and use skip_index to skip the levels that earlier calls returned. To discover every level, the agent starts with skip_index = 0. After each successful call it adds num_levels[11:0] to skip_index. It repeats while num_levels[31:16] is not zero, and stops if any call returns a non-zero status.
+               3.5.6.8.1 Interface
+               3.5.6.8.1.1   Input values
+        Name                Register        Bits        Type                                  Description
+        message_id          Header          -           UInt                                  Message identifier, value 0x4
+        protocol_id         Header          -           UInt                                  Protocol identifier, value 0x13
+        domain_id           Payload[0]      31:0        UInt32                                Identifier of the performance domain
+        skip_index          Payload[1]      31:0        UInt32                                Number of performance levels to skip before the first level in the returned array, counted in ascending order of level value. This is not the level index used in Level Indexing Mode.
+               3.5.6.8.1.2   Output values
+        Name                Register        Bits        Type                                  Description
+        status              Payload[0]      31:0        Int32                                 Command return status (see Section 3.1.4)
+        num_levels          Payload[1]      31:16       UInt16                                Number of performance levels still to be returned
+                            Payload[1]      15:12       Bits4                                 Reserved, must be zero
+                            Payload[1]      11:0        UInt12                                N, the number of performance levels returned by this call
+        perf_levels[N]      Payload[2..]    -           {UInt32 x 5}[N]                       Array of performance level entries, in ascending order of level value. Each entry is five 32-bit words, listed below.
+        entry[0]            perf_levels[i]  31:0        UInt32                                Performance level value
+        entry[1]            perf_levels[i]  31:0        UInt32                                Power cost (see Section 3.5.2). Zero means the platform does not report the power cost.
+        entry[2]            perf_levels[i]  31:16       Bits16                                Reserved, must be zero
+                            perf_levels[i]  15:0        UInt16                                Worst-case transition latency, in microseconds, from any supported level to this level
+        entry[3]            perf_levels[i]  31:0        UInt32                                Indicative frequency: clock frequency of the domain at this level, in kHz. Zero means the platform does not report it.
+        entry[4]            perf_levels[i]  31:0        UInt32                                Level index of this level (see Section 3.5.6.5). The agent ignores this field if Bit[25] (Level Indexing Mode) of the PERFORMANCE_DOMAIN_ATTRIBUTES attributes field is 0.
+               3.5.6.8.2 Failure conditions
+  ID                          Condition
+  domain_id                   pre: !IsValidPerfDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.8.2.1   Failure condition ordering
+               The PERFORMANCE_DESCRIBE_LEVELS command does not have any failure condition orderings.
+               3.5.6.8.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  num_returned                post: num_levels[11:0] == NumEntries(perf_levels)
+  num_reserved                post: num_levels[15:12] == 0
+  num_remaining               post: num_levels[31:16] == NumPerfLevels(domain_id) - skip_index - num_levels[11:0]
+  first_level                 post: perf_levels[0] == PerfLevelAtAscendingPosition(domain_id, skip_index)
+  order                       post: IsAscendingByLevelValue(perf_levels)
+  entry_reserved              post: for each i: perf_levels[i].entry[2][31:16] == 0
+               3.5.6.8.4 Footprint
+               The section does not describe any state that the PERFORMANCE_DESCRIBE_LEVELS command modifies.

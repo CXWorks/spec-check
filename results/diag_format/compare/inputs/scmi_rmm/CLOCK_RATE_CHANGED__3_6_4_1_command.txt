@@ -1,0 +1,28 @@
+3.6.4.1 CLOCK_RATE_CHANGED command
+               Notifies a subscribing agent that the clock rate of a clock device has changed.
+               An agent can register to receive clock rate change notifications for the clock device identified by clock_id. If it has, the platform sends this notification to that agent whenever the clock rate changes. This includes changes made by a different agent or entity in the system, and changes made by the platform itself. For example, the platform might change the clock rate on its own to apply thermal or other constraints. The platform sends the notification after the clock rate transition has completed.
+               This command is optional.
+               3.6.4.1.1 Interface
+               3.6.4.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt                                  Message identifier, value 0x0
+        protocol_id         Header       -           UInt                                  Protocol identifier, value 0x14
+               3.6.4.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        agent_id            Payload[0]   31:0        UInt32                                Identifier of the agent that caused the clock rate change
+        clock_id            Payload[1]   31:0        UInt32                                Identifier of the clock device
+        rate[0]             Payload[2]   31:0        UInt32                                Lower 32 bits of the physical rate in Hertz that the clock has transitioned to
+        rate[1]             Payload[3]   31:0        UInt32                                Upper 32 bits of the physical rate in Hertz that the clock has transitioned to
+               3.6.4.1.2 Failure conditions
+               The CLOCK_RATE_CHANGED command does not have any failure conditions.
+               3.6.4.1.2.1   Failure condition ordering
+               The CLOCK_RATE_CHANGED command does not have any failure condition orderings.
+               3.6.4.1.3 Success conditions
+  ID                          Condition
+  notif_sub                   pre: IsRegisteredForClockRateChangeNotification(recipient_agent, clock_id)
+                              post: NotificationSentTo(recipient_agent)
+  notif_timing                post: ClockRateTransitionComplete(clock_id)
+  notif_rate                  post: ((rate[1] << 32) | rate[0]) == ClockRate(clock_id)
+  notif_agent                 post: agent_id == AgentThatCausedRateChange(clock_id)
+               3.6.4.1.4 Footprint
+               The CLOCK_RATE_CHANGED command does not modify any state.

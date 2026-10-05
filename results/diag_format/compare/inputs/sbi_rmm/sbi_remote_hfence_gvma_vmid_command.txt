@@ -1,0 +1,25 @@
+8.4 sbi_remote_hfence_gvma_vmid command
+               Instructs the remote harts to execute one or more HFENCE.GVMA instructions. The instructions cover the guest physical address range from start_addr to start_addr + size, for the given VMID only.
+               This function call is valid only for harts that implement the hypervisor extension.
+               8.4.1 Interface
+               8.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           —                                     FID, value 3
+        hart_mask           —            —           unsigned long                         Mask of the remote harts to target
+        hart_mask_base      —            —           unsigned long                         Base hart ID that hart_mask is relative to
+        start_addr          —            —           unsigned long                         Start of the guest physical address range
+        size                —            —           unsigned long                         Size of the guest physical address range
+        vmid                —            —           unsigned long                         VMID that the fence applies to
+               8.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               —            —           struct sbiret field                   Command return status (sbiret.error)
+               8.4.2 Failure conditions
+               The section lists the possible error codes in sbiret.error in Table 12, "RFENCE Remote HFENCE.GVMA with VMID Errors". The contents of that table are not included in this excerpt, so no failure conditions are defined here.
+               8.4.2.1   Failure condition ordering
+               The sbi_remote_hfence_gvma_vmid command does not have any failure condition orderings.
+               8.4.3 Success conditions
+  ID                          Condition
+  hfence_exec                 post: HfenceGvmaExecutedOnHarts(hart_mask, hart_mask_base, start_addr, size, vmid)
+               8.4.4 Footprint
+    ID                        Value
+    hfence_exec               GuestPhysTranslationState(HartsSelected(hart_mask, hart_mask_base), start_addr, size, vmid)

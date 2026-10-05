@@ -1,0 +1,34 @@
+11.11 sbi_pmu_counter_fw_read command
+
+               Reads a firmware counter and returns its current value.
+
+               11.11.1 Interface
+
+               11.11.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 5
+        counter_idx         a0           XLEN-1:0    unsigned long                         Index of the firmware counter to read
+
+               11.11.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    long                                  Command return status (sbiret.error)
+        value               a1           XLEN-1:0    unsigned long                         Current firmware counter value (sbiret.value)
+
+               11.11.2 Failure conditions
+  ID                          Condition
+  ctr_valid                   pre: !IsValidCounter(counter_idx)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+  ctr_fw                      pre: IsHardwareCounter(counter_idx)
+                              post: ResultEqual(error, SBI_ERR_INVALID_PARAM)
+
+               11.11.2.1   Failure condition ordering
+               The sbi_pmu_counter_fw_read command does not have any failure condition orderings.
+
+               11.11.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(error, SBI_SUCCESS)
+  ctr_value                   post: value == FirmwareCounterValue(counter_idx)
+  ctr_value_rv32              post: IsRV32() ==> value == FirmwareCounterValue(counter_idx)[31:0]
+
+               11.11.4 Footprint
+               The sbi_pmu_counter_fw_read command does not modify any state.

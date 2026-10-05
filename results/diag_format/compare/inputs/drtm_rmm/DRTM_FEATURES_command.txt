@@ -1,0 +1,55 @@
+3.3 DRTM_FEATURES command
+               Queries the DRTM implementation to find out which DRTM capabilities the platform supports.
+               3.3.1 Interface
+               3.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0           31:0        UInt32                                Function ID, value 0xC4000111
+        id                  X1           63:0        UInt64                                DRTM function ID or feature ID.
+                                                                                           Bit[63] = 0: Parameter is the function ID of the DRTM interface whose implementation is queried.
+                                                                                             Bits[62:32]: Reserved, must be zero.
+                                                                                             Bits[31:0]: Function ID.
+                                                                                           Bit[63] = 1: Parameter is the ID of a feature supported by the DRTM implementation.
+                                                                                             Bits[62:8]: Reserved, must be zero.
+                                                                                             Bits[7:0]: Feature ID. Supported feature IDs are listed in Table 6.
+               3.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              X0           63:0        Int64                                 Command return status
+        features            X1           63:0        Bits64                                Feature-specific capabilities when a feature ID is queried. The encoding depends on the feature ID (see Table 6).
+               3.3.2 Failure conditions
+  ID                          Condition
+  id_supported                pre: !IsImplementedDrtmFunctionOrFeature(id)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+               This function may return other error codes as defined in section 3.18.
+               3.3.2.1   Failure condition ordering
+               The DRTM_FEATURES command does not have any failure condition orderings.
+               3.3.3 Success conditions
+  ID                          Condition
+  func_impl                   pre: id[63] == 0
+                              post: result == 0
+  feat_impl                   pre: id[63] == 1
+                              post: result >= 0
+  feat_caps                   pre: id[63] == 1 && result > 0
+                              post: features holds the feature-specific capability bits for FeatureId(id), as defined in Table 6
+  tpm_features                pre: FeatureId(id) == 0x1
+                              post: features[63:37] == 0
+                              post: features[36:33] == bitmap of supported PCR usage schemas (0b0001: Default Schema, section 4.8.4; 0b0010: DLME Authorities Schema, section 4.8.5; 0b0100 and 0b1000: Reserved)
+                              post: features[32] == TPM-based hash support (0: not supported; 1: supported, and the DRTM implementation measures data by sending it to the TPM with TPM2_PCR_Event, section 2.7.2)
+                              post: features[31:16] reserved
+                              post: features[15:0] == TPM_ALG_ID of the single hash algorithm used for firmware-based measurements, section 2.7.1 (for example 0x000B: SHA-256, 0x000C: SHA-384, 0x000D: SHA-512)
+  min_mem_req                 pre: FeatureId(id) == 0x2
+                              post: features[63:32] == minimum size of the Normal World DCE region in 4KB pages, or 0 if the system does not use a Normal World DCE
+                              post: features[31:0] == minimum size of the DLME data in 4KB pages
+  dma_prot                    pre: FeatureId(id) == 0x3
+                              post: features[63:24] == 0
+                              post: features[23:8] == maximum number of memory regions that can be protected through DRTM_PARAMETERS (up to 64K). Non-zero, and valid only if region-based DMA protection is supported
+                              post: features[7:0] == bitmap of supported DMA protection types (0b00000001: Complete DMA protection; 0b00000010: Region-based DMA protection), section 5.8
+  boot_pe_id                  pre: FeatureId(id) == 0x4
+                              post: features[63:0] == ID of the boot PE, encoded the same way as the target_cpu parameter of PSCI CPU_ON (based on the MPIDR affinity fields)
+  tcb_hash                    pre: FeatureId(id) == 0x5
+                              post: features[63:8] == 0
+                              post: features[7:0] == maximum number of TCB hashes that can be recorded with DRTM_SET_TCB_HASH (section 3.9). 0 means hashes cannot be recorded
+  dlme_auth                   pre: FeatureId(id) == 0x6
+                              post: features[63:1] == 0
+                              post: features[0] == DLME image authentication support (0: not supported; 1: supported)
+               3.3.4 Footprint
+               The section does not identify any state that DRTM_FEATURES modifies.

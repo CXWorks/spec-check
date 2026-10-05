@@ -1,0 +1,72 @@
+13.8 FFA_PARTITION_INFO_GET command
+
+Returns information about FF-A components implemented in the system. Depending on the Return information type flag, it returns either partition information descriptors in the caller's RX buffer or a count of partitions.
+
+Valid FF-A instances and conduits:
+
+| Config No. | FF-A instance | Valid conduits |
+|---|---|---|
+| 1 | Non-secure physical | SMC |
+| 2 | Secure physical | SMC, ERET |
+| 3 | Non-secure virtual | SMC, HVC |
+| 4 | Secure virtual | SMC, HVC, SVC |
+
+13.8.1 Interface
+
+13.8.1.1 Input values
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| fid | w0 | 31:0 | UInt32 | Function ID, value 0x84000068 |
+| uuid | w1-w4 | 127:0 | UInt128 | UUID, specified as described in Section 5.3 of [5] |
+| flags | w5 | 31:0 | UInt32 | Bit[0]: Return information type flag. b'1: return the count of partitions deployed in the system corresponding to the specified UUID. b'0: return partition information descriptors (see Table 6.1) corresponding to the specified UUID in the RX buffer of the caller. Bits[31:1]: Reserved (SBZ) |
+| reserved | w6-w7 | 31:0 | – | Reserved (SBZ) |
+
+13.8.1.2 Output values
+
+On FFA_SUCCESS:
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| count | w2 | 31:0 | UInt32 | If flags[0] == b'0: count of partition information descriptors corresponding to the UUID, populated in the RX buffer of the caller. If flags[0] == b'1: count of partitions deployed in the system corresponding to the UUID |
+| size | w3 | 31:0 | UInt32 | If flags[0] == b'0: size of each partition information descriptor in the RX buffer of the caller. If flags[0] == b'1: MBZ |
+| reserved | w4-w7 | 31:0 | – | Reserved (SBZ) |
+
+On FFA_ERROR:
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| result | w2 | 31:0 | Int32 | Error code |
+
+13.8.2 Failure conditions
+
+| ID | Condition |
+|---|---|
+| rx_busy | pre: flags[0] == b'0 && (!RxBufferIsFree(caller) \|\| !RxBufferIsMapped(caller))<br>post: ResultEqual(result, BUSY) |
+| uuid_invalid | pre: !IsValidUuid(uuid)<br>post: ResultEqual(result, INVALID_PARAMETERS) |
+| rx_size | pre: flags[0] == b'0 && !ResultsFitInRxBuffer(caller, uuid)<br>post: ResultEqual(result, NO_MEMORY) |
+| callee_state | pre: !CalleeCanHandleRequest()<br>post: ResultEqual(result, DENIED) |
+| not_impl | pre: !IsImplementedAtInstance(FFA_PARTITION_INFO_GET)<br>post: ResultEqual(result, NOT_SUPPORTED) |
+| callee_ready | pre: !CalleeIsReady()<br>post: ResultEqual(result, NOT_READY) |
+
+13.8.2.1 Failure condition ordering
+
+The FFA_PARTITION_INFO_GET command does not have any failure condition orderings.
+
+13.8.3 Success conditions
+
+| ID | Condition |
+|---|---|
+| success | post: ReturnedFunction == FFA_SUCCESS |
+| count_min | post: count >= 1 |
+| info_desc | post: flags[0] == b'0 ⇒ RxBuffer(caller) contains count partition information descriptors corresponding to uuid, each of size size |
+| info_count | post: flags[0] == b'1 ⇒ count == PartitionCount(uuid) |
+| size_mbz | post: flags[0] == b'1 ⇒ size == 0 |
+
+If the command is invoked with flags[0] == b'0, the caller transfers ownership of the RX buffer back to the producer through the mechanism described in 4.10 RX/TX buffers.
+
+13.8.4 Footprint
+
+| ID | Value |
+|---|---|
+| rx_buffer | RxBuffer(caller) (only when flags[0] == b'0) |

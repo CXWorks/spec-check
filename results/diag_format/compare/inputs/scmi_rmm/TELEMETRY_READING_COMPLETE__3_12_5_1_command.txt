@@ -1,0 +1,30 @@
+3.12.5.1 TELEMETRY_READING_COMPLETE command
+               Delayed response to a TELEMETRY_CONFIG_SET command, issued by an agent, that requests a single-sample asynchronous read. The agent uses this delayed response as a trigger to read telemetry data for DEs that are enabled and available over SHMTIs and FastChannels. The response also carries telemetry payload lines for DEs that are enabled but not available over SHMTI or FastChannels.
+               This command is mandatory if the single-sample asynchronous read mode is supported, as specified by Bit[31] of the attributes_1 field of the PROTOCOL_ATTRIBUTES command.
+               3.12.5.1.1 Interface
+               3.12.5.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          -            -           UInt                                  Message identifier, value 0x8
+        protocol_id         -            -           UInt                                  Protocol identifier, value 0x1B
+               3.12.5.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              -            31:0        int32                                 Status code, as described in Section 3.1.4. On PARTIAL_ERROR, some data-lines might still be valid and usable, as indicated by Bit[0] of Line-Metadata
+        num_dwords          -            31:0        uint32                                Size of the returned array in DWORDS, where one DWORD is 4 bytes. Must not be an odd number. Set to 0 if all enabled DEs are collected using SHMTI or FastChannels
+        array[N]            -            -           uint32[N]                             Telemetry payload section, without prologue or epilogue. N is given by num_dwords
+               3.12.5.1.2 Failure conditions
+  ID                          Condition
+  de_hw_fault                 pre: DeHardwareFaultDetected()
+                              post: ResultEqual(status, HARDWARE_ERROR)
+  partial_collect             pre: !AllTelemetryDataCollected()
+                              post: ResultEqual(status, PARTIAL_ERROR)
+               3.12.5.1.2.1   Failure condition ordering
+               The TELEMETRY_READING_COMPLETE command does not have any failure condition orderings.
+               3.12.5.1.3 Success conditions
+  ID                          Condition
+  num_dwords_even             post: num_dwords % 2 == 0
+  num_dwords_zero             post: AllEnabledDesOnShmtiOrFastChannel() ==> num_dwords == 0
+  array_size                  post: N == num_dwords
+  array_content               post: array contains telemetry payload lines for each DE that is enabled and not available over SHMTI or FastChannels
+  array_no_frame              post: array contains no prologue and no epilogue
+               3.12.5.1.4 Footprint
+               This section does not say what state the TELEMETRY_READING_COMPLETE command modifies.

@@ -1,0 +1,27 @@
+3.3.2.9 POWER_STATE_CHANGE_REQUESTED_NOTIFY command
+               Enables or disables POWER_STATE_CHANGE_REQUESTED notifications (Section 3.3.3.2) to the calling agent. When enabled, the platform sends a notification when another agent requests a change in the state of the power domain.
+               This command is optional. Use PROTOCOL_MESSAGE_ATTRIBUTES to discover whether it is implemented. These notifications must be disabled by default during initial boot of the platform.
+               3.3.2.9.1 Interface
+               3.3.2.9.1.1   Input values
+        Name                Register        Bits        Type                Description
+        message_id          Header          -           UInt                Message ID, value 0x7
+        protocol_id         Header          -           UInt                Protocol ID, value 0x11
+        domain_id           Payload[0]      31:0        UInt32              Identifier for the power domain
+        notify_enable       Payload[1]      31:1        UInt32              Reserved, must be zero
+        notify_enable       Payload[1]      0           Bits1               Notify enable: 0 = platform does not send POWER_STATE_CHANGE_REQUESTED messages to the calling agent; 1 = platform sends POWER_STATE_CHANGE_REQUESTED messages to the calling agent when another agent requests a change in the state of the power domain
+               3.3.2.9.1.2   Output values
+        Name                Register        Bits        Type                Description
+        status              Payload[0]      31:0        Int32               Command return status (see Section 3.1.4)
+               3.3.2.9.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPowerDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.3.2.9.2.1   Failure condition ordering
+               The POWER_STATE_CHANGE_REQUESTED_NOTIFY command does not have any failure condition orderings.
+               3.3.2.9.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  notify_state                post: PowerStateChangeRequestedNotifyEnabled(caller, domain_id) == notify_enable[0]
+               3.3.2.9.4 Footprint
+    ID                        Value
+    notify_state              PowerStateChangeRequestedNotifyEnabled(caller, domain_id)

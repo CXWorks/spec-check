@@ -1,0 +1,17 @@
+pub open spec fn sensor_trip_point_event__3_7_4_1_spec(agent_id: uint32, sensor_id: uint32, trip_point_desc: [uint32; 2], result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+  (TripPointEventRequested(old_s, sensor_id, trip_point_desc[1]) ==> result.is_Ok())
+  && (SensorCrossedOrReachedTripPoint(old_s, sensor_id, trip_point_desc[1]) ==> result.is_Ok())
+  && (result.is_Ok() ==> agent_id == 0)
+  && (result.is_Ok() ==> (trip_point_desc[16] == 1) == TripPointCrossedPositive(new_s, sensor_id, trip_point_desc[1]))
+  && (result.is_Ok() ==> (trip_point_desc[16] == 0) == TripPointCrossedNegative(new_s, sensor_id, trip_point_desc[1]))
+  && ((!(TripPointEventRequested(old_s, sensor_id, trip_point_desc[1])))
+    ==> result.is_Ok())
+  && (!(SensorCrossedOrReachedTripPoint(old_s, sensor_id, trip_point_desc[1]))
+    ==> result.is_Ok())
+  && (result.is_Err()
+    ==> agent_id == 0)
+  && (result.is_Err()
+    ==> (trip_point_desc[16] == 1) == TripPointCrossedPositive(new_s, sensor_id, trip_point_desc[1]))
+  && (result.is_Err()
+    ==> (trip_point_desc[16] == 0) == TripPointCrossedNegative(new_s, sensor_id, trip_point_desc[1]))
+}

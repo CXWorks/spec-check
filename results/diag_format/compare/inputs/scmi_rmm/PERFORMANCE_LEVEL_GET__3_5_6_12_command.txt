@@ -1,0 +1,26 @@
+3.5.6.12 PERFORMANCE_LEVEL_GET command
+               Returns the current performance level of a performance domain. If the platform uses Level Indexing Mode, it returns the level index instead.
+               The returned value might already be out of date when the command completes, because another performance change might have started in the meantime.
+               This command is mandatory if Bit [23] of the attributes field returned by PERFORMANCE_DOMAIN_ATTRIBUTES is 0 for any domain.
+               3.5.6.12.1 Interface
+               3.5.6.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          —            —           —                                     Message identifier, value 0x8
+        protocol_id         —            —           —                                     Protocol identifier, value 0x13
+        domain_id           —            31:0        uint32                                Identifier for the performance domain
+               3.5.6.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              —            31:0        int32                                 Command return status
+        performance_level   —            31:0        uint32                                Current performance level, or level index, of the domain
+               3.5.6.12.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerformanceDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.5.6.12.2.1   Failure condition ordering
+               The PERFORMANCE_LEVEL_GET command does not have any failure condition orderings.
+               3.5.6.12.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  perf_level                  post: performance_level == CurrentPerformanceLevel(domain_id)
+               3.5.6.12.4 Footprint
+               The PERFORMANCE_LEVEL_GET command does not have a footprint.

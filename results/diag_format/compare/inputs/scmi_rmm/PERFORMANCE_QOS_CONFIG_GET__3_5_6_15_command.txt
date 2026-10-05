@@ -1,0 +1,33 @@
+3.5.6.15 PERFORMANCE_QOS_CONFIG_GET command
+               Gets the current QoS configuration of a performance domain for one of the domain's supported QoS capabilities.
+               This command is mandatory if the platform supports QoS capabilities.
+               The returned qos_value can be stale by the time the command completes. Another QoS value change request could have been initiated and completed in the meantime.
+               3.5.6.15.1 Interface
+               3.5.6.15.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       -           UInt32                                Protocol identifier, value 0x13
+        message_id          Header       -           UInt32                                Message identifier, value 0x21
+        domain_id           Payload[0]   31:0        UInt32                                Identifier for the performance domain
+        capability          Payload[1]   31:0        UInt32                                QoS capability, as described by Table 14. Only one QoS capability Type bit can be set. At most one QoS capability Subtype bit can be set.
+               3.5.6.15.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        qos_value           Payload[1]   31:0        UInt32                                QoS configuration of the performance domain for the given QoS capability
+               3.5.6.15.2 Failure conditions
+  ID                          Condition
+  domain_valid                pre: !IsValidPerformanceDomain(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  cap_valid                   pre: !IsValidQosCapability(domain_id, capability)
+                              post: ResultEqual(status, NOT_FOUND)
+  cap_type_bits               pre: QosCapabilityTypeBitCount(capability) > 1
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+  cap_subtype_bits            pre: QosCapabilitySubtypeBitCount(capability) > 1
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.5.6.15.2.1   Failure condition ordering
+               [domain_valid] < [cap_valid]
+               3.5.6.15.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  qos_value                   post: qos_value == QosConfiguration(domain_id, capability)
+               3.5.6.15.4 Footprint
+               The PERFORMANCE_QOS_CONFIG_GET command does not modify any state.

@@ -1,0 +1,52 @@
+15.3 FFA_MSG_SEND_DIRECT_RESP command
+               Sends a Partition or Framework message in parameter registers as a response to a target endpoint. It then runs that endpoint and waits until a new message is available. Also see 8.3 Direct messaging.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance              Valid conduits
+        1                   Non-secure physical        ERET
+        2                   Secure physical            SMC, ERET
+        3                   Non-secure virtual         SMC, HVC, ERET
+        4                   Secure virtual             SMC, HVC, SVC, ERET
+               15.3.1 Interface
+               15.3.1.1   Input values
+        Name                Register     Bits        Type        Description
+        fid                 w0           31:0        UInt32      FID, value 0x84000070 or 0xC4000070. 0x84000070 can complete the SMC32 or SMC64 variant of FFA_MSG_SEND_DIRECT_REQ. 0xC4000070 can complete the SMC64 variant of FFA_MSG_SEND_DIRECT_REQ.
+        source_id           w1           31:16       UInt16      Source endpoint ID
+        dest_id             w1           15:0        UInt16      Destination endpoint ID
+        msg_type            w2           31          Bits1       Message type. b'0: the message in parameter registers is a partition message. b'1: the message in parameter registers is a framework message.
+        flags_rsvd          w2           30:8        Bits23      Reserved (SBZ)
+        fwk_msg_type        w2           7:0         Bits8       Reserved (MBZ) if msg_type == b'0. Framework message type if msg_type == b'1 (see Table 18.8 in 18.2.4 Power Management messages).
+        impdef_args         w3-w7 / x3-x7            -           IMPLEMENTATION DEFINED values
+        impdef_args_ext     x8-x17       63:0        -           IMPLEMENTATION DEFINED values. Used only with the SMC64, HVC64 or SVC64 convention.
+               15.3.1.2   Output values
+        Name                Register     Bits        Type        Description
+        result              w0           31:0        UInt32      On failure: FFA_ERROR. On success: reported the same way as FFA_MSG_WAIT (see 14.1 FFA_MSG_WAIT).
+        error_code          w2           31:0        Int32       Error code. Valid only when result is FFA_ERROR.
+               15.3.2 Failure conditions
+  ID                          Condition
+  endpoint_id                 pre: !IsValidEndpointId(source_id) || !IsValidEndpointId(dest_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  msg_flags                   pre: !AreValidMessageFlags(msg_type, flags_rsvd, fwk_msg_type)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  callee_state                pre: !CalleeCanHandleRequest()
+                              post: ResultEqual(result, DENIED)
+  caller_perm                 pre: !CallerMayInvokeAbi(FFA_MSG_SEND_DIRECT_RESP)
+                              post: ResultEqual(result, DENIED)
+  recv_support                pre: !EndpointSupportsDirectRespReceipt(dest_id)
+                              post: ResultEqual(result, DENIED)
+  not_impl                    pre: !IsImplementedAtInstance(FFA_MSG_SEND_DIRECT_RESP)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  recv_abort                  pre: EndpointAborted(dest_id)
+                              post: ResultEqual(result, ABORTED)
+               15.3.2.1   Failure condition ordering
+               The FFA_MSG_SEND_DIRECT_RESP command does not have any failure condition orderings.
+               15.3.3 Success conditions
+  ID                          Condition
+  resp_sent                   post: DirectRespDelivered(source_id, dest_id, msg_type, fwk_msg_type, impdef_args)
+  dest_run                    post: EndpointRan(dest_id)
+  caller_wait                 post: NewMessageAvailableFor(source_id)
+  result                      post: SuccessReportedAsMsgWait(result)
+               15.3.4 Footprint
+    ID                        Value
+    resp_sent                 Endpoint(dest_id).message
+    dest_run                  Endpoint(dest_id).run_state
+    caller_wait               Endpoint(source_id).run_state

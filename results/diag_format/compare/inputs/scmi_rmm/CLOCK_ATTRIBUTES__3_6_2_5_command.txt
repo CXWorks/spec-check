@@ -1,0 +1,60 @@
+3.6.2.5 CLOCK_ATTRIBUTES command
+
+Returns the attributes of a specific clock. An agent might be allowed to access only some of the clocks in the system, so the platform must make sure that clocks the agent cannot access are not visible to it.
+
+Note: This command can report that a clock is enabled. An agent that needs the clock to stay enabled must still request it with the CLOCK_CONFIG_SET command (Section 3.6.2.9). If the agent does not call CLOCK_CONFIG_SET, the platform can disable the clock at any time, for example to save power. This rule does not apply if the agent cannot control the clock state. The CLOCK_GET_PERMISSIONS command (Section 3.6.2.17) can be used to find out whether the agent can control the clock state.
+
+message_id: 0x3
+protocol_id: 0x14
+This command is mandatory.
+
+3.6.2.5.1 Interface
+
+3.6.2.5.1.1 Input values
+
+        Name                Register          Bits        Type                Description
+        message_id          Message header    -           UInt                Message identifier, value 0x3
+        protocol_id         Message header    -           UInt                Protocol identifier, value 0x14
+        clock_id            Payload word 0    31:0        UInt32              Identifier for the clock device
+
+3.6.2.5.1.2 Output values
+
+        Name                Register          Bits        Type                Description
+        status              Payload word 0    31:0        Int32               Command return status (see Section 3.1.4)
+        attributes          Payload word 1    31:0        UInt32              Clock attributes (see Success conditions)
+        clock_name          Payload words 2-5 -           UInt8[16]           NULL terminated ASCII clock name, up to 16 bytes
+        clock_enable_delay  Payload word 6    31:0        UInt32              Worst-case delay for the platform to enable the clock after an agent's enable request, in microseconds. 0 means this field is not supported.
+
+3.6.2.5.2 Failure conditions
+
+  ID                          Condition
+  clock_id                    pre: !IsValidClockId(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+
+3.6.2.5.2.1 Failure condition ordering
+
+The CLOCK_ATTRIBUTES command does not have any failure condition orderings.
+
+3.6.2.5.3 Success conditions
+
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  rate_notify                 post: attributes[31] == (ClockSupportsRateChangeNotifications(clock_id) ? 1 : 0)
+  rate_req_notify             post: attributes[30] == (ClockSupportsRateChangeRequestedNotifications(clock_id) ? 1 : 0)
+  ext_name                    post: attributes[29] == (ClockNameLength(clock_id) > 16 ? 1 : 0)
+                              (When set, the extended clock name is returned by the CLOCK_NAME_GET command, Section 3.6.2.10. When clear, the extended clock name is not supported.)
+  parent_id                   post: attributes[28] == (ClockAdvertisesParentIds(clock_id) ? 1 : 0)
+  ext_config                  post: attributes[27] == (ClockSupportsExtendedConfig(clock_id) ? 1 : 0)
+                              (Extended configurations are accessed with CLOCK_CONFIG_SET and CLOCK_CONFIG_GET, Sections 3.6.2.9 and 3.6.2.10.)
+  reserved                    post: attributes[26:2] == 0
+  restricted                  post: attributes[1] == (ClockHasRestrictions(clock_id) && IsClockGetPermissionsImplemented() ? 1 : 0)
+                              (Attempts to change a restricted clock's configuration or setting return DENIED.)
+  enabled                     post: attributes[0] == (ClockIsEnabled(clock_id) ? 1 : 0)
+  name                        post: clock_name == ClockNameString(clock_id)
+                              (When attributes[29] == 1, clock_name holds the lower 15 bytes of the NULL terminated clock name.)
+  enable_delay                post: clock_enable_delay == ClockWorstCaseEnableDelayUs(clock_id)
+                              (0 means this field is not supported by the platform.)
+
+3.6.2.5.4 Footprint
+
+The section does not say that the CLOCK_ATTRIBUTES command modifies any state.

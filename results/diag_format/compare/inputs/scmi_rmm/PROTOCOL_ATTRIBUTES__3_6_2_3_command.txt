@@ -1,0 +1,25 @@
+3.6.2.3 PROTOCOL_ATTRIBUTES command
+               Returns the implementation details associated with this protocol.
+               This command is mandatory.
+               3.6.2.3.1 Interface
+               3.6.2.3.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          —            —           —                                     Message ID, value 0x1
+        protocol_id         —            —           —                                     Protocol ID, value 0x14
+               3.6.2.3.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              —            —           int32                                 Command return status. See Section 3.1.4 for status code definitions.
+        attributes          —            31:24       uint32                                Reserved, must be zero
+        attributes          —            23:16       uint32                                Maximum number of pending asynchronous clock rate changes supported by the platform
+        attributes          —            15:0        uint32                                Number of clocks
+               3.6.2.3.2 Failure conditions
+               The PROTOCOL_ATTRIBUTES command does not have any failure conditions.
+               3.6.2.3.2.1   Failure condition ordering
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+               3.6.2.3.3 Success conditions
+  ID                          Condition
+  attr_rsvd                   post: attributes[31:24] == 0
+  attr_pending                post: attributes[23:16] == MaxPendingAsyncClockRateChanges()
+  attr_clocks                 post: attributes[15:0] == NumClocks()
+               3.6.2.3.4 Footprint
+               The PROTOCOL_ATTRIBUTES command does not have any footprint.

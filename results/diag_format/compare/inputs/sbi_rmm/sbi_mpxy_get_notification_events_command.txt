@@ -1,0 +1,27 @@
+20.12 sbi_mpxy_get_notification_events command
+               Gets the message protocol specific notification events on the MPXY channel specified by channel_id.
+               20.12.1 Interface
+               20.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt64                                FID, value 7
+        channel_id          —            31:0        UInt32                                ID of the MPXY channel
+               20.12.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        ret                 —            —           struct sbiret                         Command return status
+               20.12.2 Failure conditions
+               The sbi_mpxy_get_notification_events command does not have any failure conditions.
+               20.12.2.1   Failure condition ordering
+               The sbi_mpxy_get_notification_events command does not have any failure condition orderings.
+               20.12.3 Success conditions
+  ID                          Condition
+  evt_remaining               pre: ChannelSupportsEventsState(channel_id) && EventsStateEnabled(channel_id)
+                              post: ShmemWord32(channel_id, 0x0) == EventsRemaining(channel_id)
+  evt_returned                pre: ChannelSupportsEventsState(channel_id) && EventsStateEnabled(channel_id)
+                              post: ShmemWord32(channel_id, 0x4) == EventsReturned(channel_id)
+  evt_lost                    pre: ChannelSupportsEventsState(channel_id) && EventsStateEnabled(channel_id)
+                              post: ShmemWord32(channel_id, 0x8) == EventsLost(channel_id)
+  evt_data                    pre: ChannelSupportsEventsState(channel_id) && EventsStateEnabled(channel_id)
+                              post: ShmemNotificationData(channel_id, 0x10) == ProtocolNotificationEvents(channel_id)
+               20.12.4 Footprint
+    ID                        Value
+    shmem                     SharedMemory(channel_id)

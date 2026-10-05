@@ -1,0 +1,46 @@
+13.12 FFA_CONSOLE_LOG command
+               Allows an entity to provide debug logging to the console.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance          Valid conduits
+        1                   Secure physical        SMC
+        2                   Secure virtual         SMC, HVC, SVC
+               13.12.1 Interface
+               13.12.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 W0/X0        31:0        UInt32                                Function ID, value 0x8400008A (SMC32) or 0xC400008A (SMC64)
+        char_count          W1/X1        7:0         UInt8                                 Count of characters i provided in the character list
+                                                                                           1 <= i <= 24 if the SMC32 convention is used
+                                                                                           i <= 128 if the SMC64 convention is used
+        reserved            W1/X1        31:8        Reserved                              Reserved, SBZ
+        char_list           W2-W7        31:0        UInt32                                SMC32: tightly packed list of characters
+                                                                                           Character i = Bits[M:N], M = ((8 x i) - 1), N = (8 x (i - 1))
+        char_list           X2-X17       63:0        UInt64                                SMC64: tightly packed list of characters
+                                                                                           Character i = Bits[M:N], M = ((8 x i) - 1), N = (8 x (i - 1))
+               13.12.1.2   Output values
+               On success, the function returns FFA_SUCCESS with no further parameters. On failure, the function returns FFA_ERROR with these values:
+        Name                Register     Bits        Type                                  Description
+        error_code          W2           31:0        Int32                                 Error code
+        logged_count        W3           31:0        UInt32                                Number of characters that were logged successfully, counting from the first character
+                                                                                           Valid only with RETRY. MBZ otherwise.
+               13.12.2 Failure conditions
+  ID                          Condition
+  count_zero                  pre: CharCount(char_count) == 0
+                              post: ResultEqual(error_code, INVALID_PARAMETERS)
+  count_smc32                 pre: IsSmc32Convention(fid) && CharCount(char_count) > 24
+                              post: ResultEqual(error_code, INVALID_PARAMETERS)
+  count_smc64                 pre: IsSmc64Convention(fid) && CharCount(char_count) > 128
+                              post: ResultEqual(error_code, INVALID_PARAMETERS)
+  not_supported               pre: !IsImplementedAtInstance(FFA_CONSOLE_LOG)
+                              post: ResultEqual(error_code, NOT_SUPPORTED)
+  retry                       pre: !AllCharactersLogged(char_list, char_count)
+                              post: ResultEqual(error_code, RETRY)
+                                    && logged_count == NumCharactersLogged(char_list, char_count)
+               13.12.2.1   Failure condition ordering
+               The FFA_CONSOLE_LOG command does not have any failure condition orderings.
+               13.12.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  console_log                 post: CharactersLoggedToConsole(char_list, char_count) within finite time
+               13.12.4 Footprint
+    ID                        Value
+    console_log               Console

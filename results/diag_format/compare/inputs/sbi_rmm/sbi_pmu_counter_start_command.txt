@@ -1,0 +1,58 @@
+11.9 sbi_pmu_counter_start command
+
+Starts or enables a set of counters on the calling hart with the specified initial value.
+
+11.9.1 Interface
+
+11.9.1.1 Input values
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| fid | a6 | XLEN-1:0 | UInt | FID, value 3 |
+| counter_idx_base | a0 | XLEN-1:0 | unsigned long | Base index of the set of counters. Used together with counter_idx_mask |
+| counter_idx_mask | a1 | XLEN-1:0 | unsigned long | Mask of counters relative to counter_idx_base. Used together with counter_idx_base |
+| start_flags | a2 | XLEN-1:0 | unsigned long | Start flags, see Table 39 |
+| initial_value | a3 | 63:0 | uint64_t | Initial value of the counter |
+
+Table 39. PMU Counter Start Flags
+
+| Flag Name | Bits | Description |
+|---|---|---|
+| SBI_PMU_START_SET_INIT_VALUE | 0:0 | Sets the value of the counters from the initial_value parameter |
+| SBI_PMU_START_FLAG_INIT_SNAPSHOT | 1:1 | Initializes the given counters from shared memory if available |
+| RESERVED | 2:(XLEN-1) | Reserved for future use. Must be zero |
+
+11.9.1.2 Output values
+
+| Name | Register | Bits | Type | Description |
+|---|---|---|---|---|
+| error | a0 | XLEN-1:0 | sbiret.error | Command return status, see Table 40 |
+
+11.9.2 Failure conditions
+
+This excerpt does not reproduce the error codes in Table 40 (PMU Counter Start Errors), so no failure conditions are listed here.
+
+The section does state these usage requirements, but it does not say which error code each one returns:
+- The bits of start_flags marked RESERVED must be zero.
+- SBI_PMU_START_SET_INIT_VALUE and SBI_PMU_START_FLAG_INIT_SNAPSHOT are mutually exclusive, because SBI_PMU_START_SET_INIT_VALUE is only valid for a single counter.
+- The shared memory address must be set during boot through sbi_pmu_snapshot_set_shmem before SBI_PMU_START_FLAG_INIT_SNAPSHOT can be used.
+
+11.9.2.1 Failure condition ordering
+
+The sbi_pmu_counter_start command does not have any failure condition orderings.
+
+11.9.3 Success conditions
+
+| ID | Condition |
+|---|---|
+| ctr_started | post: forall idx in CounterSet(counter_idx_base, counter_idx_mask): CounterIsStarted(idx) |
+| ctr_init_value | pre: (start_flags & SBI_PMU_START_SET_INIT_VALUE) != 0<br>post: forall idx in CounterSet(counter_idx_base, counter_idx_mask): CounterValue(idx) == initial_value |
+| ctr_init_snapshot | pre: (start_flags & SBI_PMU_START_FLAG_INIT_SNAPSHOT) != 0<br>post: forall idx in ValidCounters(CounterSet(counter_idx_base, counter_idx_mask)): CounterValue(idx) == SnapshotShmemCounterValue(idx) |
+| ctr_unmodified | pre: (start_flags & SBI_PMU_START_SET_INIT_VALUE) == 0 && (start_flags & SBI_PMU_START_FLAG_INIT_SNAPSHOT) == 0<br>post: forall idx in CounterSet(counter_idx_base, counter_idx_mask): CounterValue(idx) == old(CounterValue(idx)) |
+
+11.9.4 Footprint
+
+| ID | Value |
+|---|---|
+| ctr_started | CounterIsStarted(idx) for each idx in CounterSet(counter_idx_base, counter_idx_mask) |
+| ctr_value | CounterValue(idx) for each idx in CounterSet(counter_idx_base, counter_idx_mask) |

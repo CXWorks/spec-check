@@ -1,0 +1,25 @@
+15.7 sbi_nacl_sync_csr command
+               Synchronizes CSRs in the nested acceleration shared memory. This function is optional. It is available only if the SBI_NACL_FEAT_SYNC_CSR feature is available.
+               15.7.1 Interface
+               15.7.1.1   Input values
+        Name                Register          Bits        Type                                  Description
+        fid                 Not specified     —           UInt                                  FID, value 2
+        csr_num             Not specified     —           unsigned long                         Selects the set of RISC-V H-extension CSRs to synchronize
+               15.7.1.2   Output values
+        Name                Register          Bits        Type                                  Description
+        error               Not specified     —           long (sbiret.error)                   Command return status
+               15.7.2 Failure conditions
+               This section does not list the error codes. It says only that the possible error codes returned in sbiret.error are in Table 72 (NACL Synchronize CSR Errors), and the contents of that table are not included. For that reason no failure condition rows are given here.
+               15.7.2.1   Failure condition ordering
+               The sbi_nacl_sync_csr command does not have any failure condition orderings.
+               15.7.3 Success conditions
+  ID                          Condition
+  sync_all                    pre: csr_num == ~0UL
+                              post: AllImplementedHCsrsSynchronized()
+  sync_single                 pre: ((csr_num & 0x300) == 0x200) && (csr_num < 0x1000)
+                              post: HCsrSynchronized(csr_num)
+               Synchronization is performed as described in Section 15.1.
+               15.7.4 Footprint
+    ID                        Value
+    sync_all                  NaclSharedMemory.csrs (all RISC-V H-extension CSRs implemented by the SBI implementation or L0 hypervisor)
+    sync_single               NaclSharedMemory.csrs[csr_num]

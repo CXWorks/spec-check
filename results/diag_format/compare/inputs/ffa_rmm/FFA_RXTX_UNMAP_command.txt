@@ -1,0 +1,38 @@
+13.7 FFA_RXTX_UNMAP command
+               Unmaps the RX/TX buffer pair of an endpoint or Hypervisor from the translation regime of the callee.
+               - An SP invokes this command to unmap its buffer pair from the translation regime of the SPM.
+               - A VM invokes this command to unmap its buffer pair from the translation regime of the Hypervisor.
+               - The Hypervisor or an OS Kernel invokes this command to unmap its buffer pair from the translation regime of the SPM.
+               - The Hypervisor forwards a VM's invocation of this command to the SPM. In that case, w1 gives the VM's ID.
+               Valid FF-A instances and conduits:
+        Config No.          FF-A instance                Valid conduits
+        1                   Non-secure physical          SMC
+        2                   Secure physical              ERET
+        3                   Virtual                      SMC, HVC, SVC
+               13.7.1 Interface
+               13.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0/x0        31:0        UInt32                                Function ID, value 0x84000067
+        id                  w1           31:16       UInt16                                ID of the VM that allocated the RX/TX buffer. Valid only at the Non-secure physical FF-A instance. MBZ otherwise.
+        reserved            w1           15:0        Bits16                                Reserved (SBZ)
+        reserved            w2-w7        31:0        Bits32                                Reserved (SBZ)
+               13.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                FFA_SUCCESS on success, or FFA_ERROR on failure
+        error_code          w2           31:0        Int32                                 Error code. Valid only when result is FFA_ERROR.
+               13.7.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_RXTX_UNMAP)
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  no_buffer_pair              pre: !IsRxTxBufferPairRegistered(BufferOwner(id))
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+               BufferOwner(id) means the VM identified by id at the Non-secure physical FF-A instance. At any other instance, it means the caller.
+               13.7.2.1   Failure condition ordering
+               The FFA_RXTX_UNMAP command does not have any failure condition orderings.
+               13.7.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  buffer_unmapped             post: !IsRxTxBufferPairMappedInCalleeRegime(BufferOwner(id))
+               13.7.4 Footprint
+    ID                        Value
+    buffer_unmapped           RxTxBufferPairMapping(BufferOwner(id))

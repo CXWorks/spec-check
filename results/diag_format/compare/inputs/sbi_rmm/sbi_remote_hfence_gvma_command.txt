@@ -1,0 +1,38 @@
+8.5 sbi_remote_hfence_gvma command
+               Tells the remote harts to execute one or more HFENCE.GVMA instructions. The fence covers the guest physical addresses between start_addr and start_addr + size for all guests. This function call is only valid for harts that implement the hypervisor extension.
+               8.5.1 Interface
+               8.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                                          UInt                                  FID, value 4
+        hart_mask                                    unsigned long                         Hart mask. hartids are built from hart_mask_base and this value.
+        hart_mask_base                               unsigned long                         Base hartid for hart_mask
+        start_addr                                   unsigned long                         Start of the guest physical address range
+        size                                         unsigned long                         Size of the guest physical address range
+               8.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result                                       SbiErrorCode                          Command return status (sbiret.error)
+               8.5.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsFunctionImplemented(SBI_REMOTE_HFENCE_GVMA)
+                                   || AnyTargetHartLacksHypervisorExtension(hart_mask, hart_mask_base)
+                              post: ResultEqual(result, SBI_ERR_NOT_SUPPORTED)
+  invalid_address             pre: !IsValidAddressRange(start_addr, size)
+                              post: ResultEqual(result, SBI_ERR_INVALID_ADDRESS)
+  invalid_hartid              pre: AnyTargetHartIdInvalid(hart_mask, hart_mask_base)
+                                   (a hartid is invalid if the platform has not enabled it,
+                                    or if it is not available to the supervisor)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  failed                      pre: RequestFailedForUnspecifiedReason()
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+               8.5.2.1   Failure condition ordering
+               The sbi_remote_hfence_gvma command does not have any failure condition orderings.
+               8.5.3 Success conditions
+  ID                          Condition
+  result_success              post: ResultEqual(result, SBI_SUCCESS)
+  ipi_sent                    post: IpiSentToAllTargetHarts(hart_mask, hart_mask_base)
+  hfence_gvma                 post: TargetHartsInstructedToExecuteHfenceGvma(hart_mask, hart_mask_base,
+                                        start_addr, start_addr + size, ALL_GUESTS)
+               8.5.4 Footprint
+    ID                        Value
+    hfence_gvma               GuestPhysicalTranslations(TargetHarts(hart_mask, hart_mask_base),
+                                  start_addr, start_addr + size, ALL_GUESTS)

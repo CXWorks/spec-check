@@ -1,0 +1,18 @@
+pub open spec fn ffa_notification_bind_spec(result: Result<(), FfaErrorCode>, sender_receiver_ids: UInt32, flags: UInt32, notification_bitmap_lo: UInt32, notification_bitmap_hi: UInt32, old_s: S, new_s: S) -> bool {
+    ((!IsFfaNotificationBindImplemented(old_s)) ==> (ResultEqual(result, NOT_SUPPORTED) && new_s == old_s))
+    && ((!IsValidFfaEndpointId(old_s, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int)) ==> (ResultEqual(result, INVALID_PARAMETERS) && new_s == old_s))
+    && ((!IsValidFfaEndpointId(old_s, (sender_receiver_ids & 0xFFFFu32) as int)) ==> (ResultEqual(result, INVALID_PARAMETERS) && new_s == old_s))
+    && ((((flags & 1u32) == 1u32) && !IsPerVcpuNotificationSupported(old_s)) ==> (ResultEqual(result, INVALID_PARAMETERS) && new_s == old_s))
+    && (IsAnyNotificationBoundToOtherSenderOrPending(old_s, (sender_receiver_ids & 0xFFFFu32) as int, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int, (((notification_bitmap_hi as u64) << 32u64) | (notification_bitmap_lo as u64)) as int) ==> (ResultEqual(result, DENIED) && new_s == old_s))
+    && ((!IsCallerAllowedNotificationBind(old_s, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int)) ==> (ResultEqual(result, DENIED) && new_s == old_s))
+    && (IsFfaPartitionAborted(old_s, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int) ==> (ResultEqual(result, ABORTED) && new_s == old_s))
+    && ((IsFfaNotificationBindImplemented(old_s)
+        && IsValidFfaEndpointId(old_s, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int)
+        && IsValidFfaEndpointId(old_s, (sender_receiver_ids & 0xFFFFu32) as int)
+        && !(((flags & 1u32) == 1u32) && !IsPerVcpuNotificationSupported(old_s))
+        && !IsAnyNotificationBoundToOtherSenderOrPending(old_s, (sender_receiver_ids & 0xFFFFu32) as int, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int, (((notification_bitmap_hi as u64) << 32u64) | (notification_bitmap_lo as u64)) as int)
+        && IsCallerAllowedNotificationBind(old_s, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int)
+        && !IsFfaPartitionAborted(old_s, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int))
+        ==> (result.is_Ok()
+            && NotificationsBoundToSender(new_s, (sender_receiver_ids & 0xFFFFu32) as int, ((sender_receiver_ids >> 16u32) & 0xFFFFu32) as int, (((notification_bitmap_hi as u64) << 32u64) | (notification_bitmap_lo as u64)) as int, (flags & 1u32) == 1u32)))
+}

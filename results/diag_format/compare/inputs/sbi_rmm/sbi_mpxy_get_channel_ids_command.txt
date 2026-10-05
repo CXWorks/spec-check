@@ -1,0 +1,53 @@
+20.7 sbi_mpxy_get_channel_ids command
+
+               Gets the channel IDs of the message channels that the supervisor software can access, and writes them to the shared memory of the calling hart. The IDs form an array of 32-bit unsigned integers, and start_index is the array index of the first channel ID returned.
+
+               20.7.1 Interface
+
+               20.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 2
+        start_index         a0           31:0        UInt32                                Array index of the first channel ID to return in the shared memory
+
+               20.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              a0           XLEN-1:0    sbiret.error                          Command return status
+        uvalue              a1           XLEN-1:0    sbiret.uvalue                         Always zero
+
+               20.7.1.3   Shared memory layout (MPXY Channel IDs)
+        Offset               Field                                  Description
+        0x0                  REMAINING                              Remaining number of channel IDs
+        0x4                  RETURNED                               Number of channel IDs (N) returned in the shared memory
+        0x8                  CHANNEL_ID [start_index + 0]           Channel ID
+        0xC                  CHANNEL_ID [start_index + 1]           Channel ID
+        0x8 + ((N-1) * 4)    CHANNEL_ID [start_index + N - 1]       Channel ID
+
+               20.7.2 Failure conditions
+  ID                          Condition
+  start_index                 pre: !IsValidChannelIdStartIndex(start_index)
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  shmem                       pre: !IsMpxyShmemSetUp(calling_hart) || IsMpxyShmemDisabled(calling_hart)
+                              post: ResultEqual(result, SBI_ERR_NO_SHMEM)
+  denied                      pre: !IsGetChannelIdsAllowed(calling_hart)
+                              post: ResultEqual(result, SBI_ERR_DENIED)
+  failed                      pre: OtherUnspecifiedError()
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+
+               20.7.2.1   Failure condition ordering
+               The section does not specify an order for the sbi_mpxy_get_channel_ids failure conditions.
+
+               20.7.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  uvalue                      post: uvalue == 0
+  returned                    post: MpxyShmemWord(calling_hart, 0x4) == N, where N is the number of channel IDs returned in the shared memory
+  remaining                   post: MpxyShmemWord(calling_hart, 0x0) == RemainingChannelIdCount(start_index, N)
+  channel_ids                 post: for each i in [0, N-1]: MpxyShmemWord(calling_hart, 0x8 + (i * 4)) == AccessibleChannelIds()[start_index + i]
+
+               If REMAINING is not 0, the supervisor software can call this function again, setting start_index to fetch the remaining channel IDs. The full list may take several SBI calls, depending on the RETURNED and REMAINING fields.
+
+               20.7.4 Footprint
+    ID                        Value
+    remaining                 MpxyShmemWord(calling_hart, 0x0)
+    returned                  MpxyShmemWord(calling_hart, 0x4)
+    channel_ids               MpxyShmem(calling_hart)[0x8 .. 0x8 + ((N-1) * 4) + 3]

@@ -1,0 +1,38 @@
+3.8.2.5 RESET_DOMAIN_ATTRIBUTES command
+               Returns the attributes of the specified reset domain.
+               This command is mandatory.
+               3.8.2.5.1 Interface
+               3.8.2.5.1.1   Input values
+        Name                Register        Bits        Type        Description
+        message_id          Header          7:0         UInt8       Message ID, value 0x3
+        protocol_id         Header          17:10       UInt8       Protocol ID, value 0x16
+        domain_id           Payload[0]      31:0        UInt32      Identifier for the reset domain
+               3.8.2.5.1.2   Output values
+        Name                Register        Bits        Type        Description
+        status              Payload[0]      31:0        Int32       Command return status. See Section 3.1.4 for status code definitions
+        attributes          Payload[1]      31:0        UInt32      Reset domain attributes:
+                                                                    Bit[31]: Asynchronous reset support. 1 if this domain can be reset asynchronously; 0 if this domain can only be reset synchronously.
+                                                                    Bit[30]: Reset notifications support. 1 if reset notifications are supported for this domain; 0 if they are not.
+                                                                    Bit[29]: Extended reset domain name. 1 if the reset domain name is longer than 16 bytes, in which case the extended name is returned by the RESET_DOMAIN_NAME_GET command (Section 3.8.2.8); 0 if an extended reset domain name is not supported.
+                                                                    Bits[28:0]: Reserved, must be zero.
+        latency             Payload[2]      31:0        UInt32      Maximum time, in microseconds, required for the reset to take effect on the given domain. 0xFFFFFFFF indicates that the platform does not support this field
+        name                Payload[3:6]    8 x 8       UInt8[16]   Null-terminated ASCII string of up to 16 bytes describing the reset domain name. When attributes Bit[29] is 1, this field contains the lower 15 bytes of the null-terminated reset domain name
+               3.8.2.5.2 Failure conditions
+  ID                          Condition
+  domain_exists               pre: !ResetDomainExists(domain_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.8.2.5.2.1   Failure condition ordering
+               The RESET_DOMAIN_ATTRIBUTES command does not have any failure condition orderings.
+               3.8.2.5.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  attr_reserved               post: attributes[28:0] == 0
+  async_reset                 post: attributes[31] == (ResetDomain(domain_id).supports_async_reset ? 1 : 0)
+  reset_notify                post: attributes[30] == (ResetDomain(domain_id).supports_reset_notifications ? 1 : 0)
+  ext_name                    post: attributes[29] == (ResetDomain(domain_id).name_longer_than_16_bytes ? 1 : 0)
+  latency                     post: latency == ResetDomain(domain_id).max_reset_latency_us
+                                    || latency == 0xFFFFFFFF
+  name                        post: attributes[29] == 0 ? name == ResetDomain(domain_id).name
+                                    : name == LowerBytes(ResetDomain(domain_id).name, 15)
+               3.8.2.5.4 Footprint
+               The RESET_DOMAIN_ATTRIBUTES command does not modify any state.

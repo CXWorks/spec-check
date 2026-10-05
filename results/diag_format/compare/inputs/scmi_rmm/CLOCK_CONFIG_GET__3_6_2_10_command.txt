@@ -1,0 +1,32 @@
+3.6.2.10 CLOCK_CONFIG_GET command
+               Gets the configuration of a clock device.
+               3.6.2.10.1 Interface
+               3.6.2.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           UInt32                                Message ID, value 0xB
+        protocol_id         Header       -           UInt32                                Protocol ID, value 0x14
+        clock_id            Payload[0]   31:0        UInt32                                Identifier for the clock device
+        flags               Payload[1]   31:0        UInt32                                Bits[31:8]: Reserved, must be zero
+                                                                                           Bits[7:0]: Extended config type, as specified in Table 18. A value of 0 indicates that this field is unused
+               3.6.2.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload[0]   31:0        Int32                                 Command return status
+        attributes          Payload[1]   31:0        UInt32                                Reserved, must be zero
+        config              Payload[2]   31:0        UInt32                                Bits[31:1]: Reserved, must be zero
+                                                                                           Bit[0]: Enable/Disable. 1: the clock device is enabled. 0: the clock device is disabled
+        extended_config_val Payload[3]   31:0        UInt32                                Configuration value for the extended config type given in Bits[7:0] of the command's flags field. Ignored if that extended config type is 0
+               3.6.2.10.2 Failure conditions
+  ID                          Condition
+  clock_exists                pre: !ClockExists(clock_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  config_valid                pre: !IsSupportedConfig(flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.6.2.10.2.1   Failure condition ordering
+               The CLOCK_CONFIG_GET command does not have any failure condition orderings.
+               3.6.2.10.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  clock_enable                post: config[0] == (Clock(clock_id).enabled ? 1 : 0)
+  ext_config                  post: (flags[7:0] != 0) ==> extended_config_val == ExtendedConfigValue(clock_id, flags[7:0])
+               3.6.2.10.4 Footprint
+               The CLOCK_CONFIG_GET command does not modify any state.

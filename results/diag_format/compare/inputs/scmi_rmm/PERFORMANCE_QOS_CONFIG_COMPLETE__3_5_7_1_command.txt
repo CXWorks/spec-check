@@ -1,0 +1,41 @@
+3.5.7.1 PERFORMANCE_QOS_CONFIG_COMPLETE command
+               Delayed response sent by the platform to an agent when a QoS configuration request for a QoS capability of a performance domain, previously made asynchronously through PERFORMANCE_QOS_CONFIG_SET, has been completed. This command is optional.
+               3.5.7.1.1 Interface
+               3.5.7.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          Header       -           -                                     Message identifier, value 0x20
+        protocol_id         Header       -           -                                     Protocol identifier, value 0x13
+               3.5.7.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Payload      31:0        int32                                 Command return status. See Section 3.1.4 for status code definitions
+        domain_id           Payload      31:0        uint32                                Identifier of the performance domain whose QoS configuration was set or reset. 0xFFFFFFFF if flags[4] == 1
+        capability          Payload      31:0        uint32                                QoS capability, as described by Table 14
+        flags               Payload      31:5        uint32                                Reserved, must be zero
+        flags               Payload      4           uint32                                Platform QoS configuration reset: 1 if all QoS values for the specified QoS capability for all domains have been reset to the platform default
+        flags               Payload      3           uint32                                Sibling domains QoS configuration reset: 1 if all QoS values for the specified QoS capability for this domain and its sibling domains (domains with the same parent) have been reset to the platform default
+        flags               Payload      2           uint32                                Domain QoS configuration reset: 1 if the QoS value of the specified QoS capability of this domain has been reset to the platform default
+        flags               Payload      1:0         uint32                                Reserved, must be zero
+        qos_value           Payload      31:0        uint32                                QoS configuration that the domain has been set to for the given QoS capability. Ignored by the agent if flags[2], flags[3] or flags[4] == 1
+               3.5.7.1.2 Failure conditions
+               The PERFORMANCE_QOS_CONFIG_COMPLETE command does not have any failure conditions defined in this section. Other status codes may be returned; see Section 3.1.4.
+               3.5.7.1.2.1   Failure condition ordering
+               The PERFORMANCE_QOS_CONFIG_COMPLETE command does not have any failure condition orderings.
+               3.5.7.1.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  flags_rsvd                  post: flags[31:5] == 0 && flags[1:0] == 0
+  platform_reset              pre: flags[4] == 1
+                              post: domain_id == 0xFFFFFFFF
+                                    && AllDomainsQosAtPlatformDefault(capability)
+  sibling_reset               pre: flags[3] == 1
+                              post: DomainAndSiblingsQosAtPlatformDefault(domain_id, capability)
+  domain_reset                pre: flags[2] == 1
+                              post: QosAtPlatformDefault(domain_id, capability)
+  qos_set                     pre: flags[4] == 0 && flags[3] == 0 && flags[2] == 0
+                              post: QosValue(domain_id, capability) == qos_value
+               3.5.7.1.4 Footprint
+               This delayed response does not itself modify state. It reports completion of a change to the following state, which was requested through PERFORMANCE_QOS_CONFIG_SET:
+    ID                        Value
+    qos_value                 QosValue(domain_id, capability)
+    qos_sibling               QosValue(d, capability) for domain_id and its sibling domains d
+    qos_all                   QosValue(d, capability) for all domains d

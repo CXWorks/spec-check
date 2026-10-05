@@ -1,0 +1,37 @@
+13.1 sbi_system_suspend command
+               Suspends the system. The hart that initiated the suspend resumes from the STOPPED state after a successful suspend and wake up.
+               13.1.1 Interface
+               13.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 a6           XLEN-1:0    UInt                                  FID, value 0
+        sleep_type          a0           31:0        UInt32                                Sleep type
+        resume_addr         a1           XLEN-1:0    Address (unsigned long)               Address where the hart resumes execution in supervisor-mode
+        opaque              a2           XLEN-1:0    UInt (unsigned long)                  Value passed to the resumed hart in a1
+               13.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               a0           XLEN-1:0    SbiErrorCode                          sbiret.error: an error code from Table 56. It is returned only on failure.
+               13.1.2 Failure conditions
+               The section does not list individual failure cases. If sbi_system_suspend() returns, an error has occurred, and sbiret.error holds an error code from Table 56. Table 56 is not part of this excerpt.
+               13.1.2.1   Failure condition ordering
+               The sbi_system_suspend command does not have any failure condition orderings.
+               13.1.3 Success conditions
+               On success the call does not return. The initiating hart resumes as follows:
+  ID                          Condition
+  hart_state                  post: HartResumedFrom(STOPPED)
+  hart_mode                   post: CurrentPrivilegeMode() == SUPERVISOR
+  hart_pc                     post: pc == resume_addr
+  reg_satp                    post: satp == 0
+  reg_sie                     post: sstatus.SIE == 0
+  reg_a0                      post: a0 == hartid
+  reg_a1                      post: a1 == opaque
+  reg_other                   post: All other registers are in an undefined state
+               13.1.4 Footprint
+    ID                        Value
+    hart_state                HartState(hartid)
+    hart_mode                 CurrentPrivilegeMode()
+    hart_pc                   pc
+    reg_satp                  satp
+    reg_sie                   sstatus.SIE
+    reg_a0                    a0
+    reg_a1                    a1
+    reg_other                 All other hart registers

@@ -1,0 +1,28 @@
+3.12.4.4 PROTOCOL_MESSAGE_ATTRIBUTES command
+               Returns the implementation details for a specific message in this protocol.
+               Callers can use this command to check whether optional commands are supported by passing their message identifiers. A SUCCESS return means the platform supports the commands. A NOT_FOUND return means the commands are not implemented or are not available to the calling agent.
+               message_id: 0x2
+               protocol_id: 0x1B
+               This command is mandatory.
+               3.12.4.4.1 Interface
+               3.12.4.4.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        message_id          -            31:0        UInt32                                message_id of the message being queried
+               3.12.4.4.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              -            31:0        Int32                                 Command return status. See Section 3.1.4 for status code definitions
+        attributes          -            31:0        UInt32                                Flags associated with the queried command. In the current version of the specification, this value is always 0
+               3.12.4.4.2 Failure conditions
+  ID                          Condition
+  msg_invalid                 pre: !IsValidMessageId(message_id) || !IsMessageImplemented(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+  msg_avail                   pre: !IsMessageAvailableToAgent(message_id)
+                              post: ResultEqual(status, NOT_FOUND)
+               3.12.4.4.2.1   Failure condition ordering
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not have any failure condition orderings.
+               3.12.4.4.3 Success conditions
+  ID                          Condition
+  status                      post: ResultEqual(status, SUCCESS)
+  attributes                  post: attributes == 0
+               3.12.4.4.4 Footprint
+               The PROTOCOL_MESSAGE_ATTRIBUTES command does not have any footprint.

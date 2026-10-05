@@ -1,0 +1,31 @@
+13.5 FFA_RX_RELEASE command
+               Relinquishes ownership of an RX buffer after reading a message from it (see 4.10 RX/TX buffers).
+               Valid FF-A instances and conduits: Non-secure physical (SMC), Secure physical (ERET), Secure virtual (SMC, HVC, SVC), Non-secure virtual (SMC, HVC, SVC, ERET).
+               13.5.1 Interface
+               13.5.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 w0           31:0        UInt32                                Function ID, value 0x84000065
+        vm_id               w1           15:0        UInt16                                ID of the VM whose RX buffer ownership should be released. Only valid at the Non-secure physical FF-A instance. MBZ otherwise.
+        reserved            w1           31:16       UInt16                                Reserved (SBZ)
+        reserved            w2-w7        31:0        UInt32                                Reserved (SBZ)
+               13.5.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              w0           31:0        UInt32                                Command return status: FFA_SUCCESS with no further parameters, or FFA_ERROR
+        error_code          w2           31:0        Int32                                 Error code, valid only when result is FFA_ERROR
+               13.5.2 Failure conditions
+  ID                          Condition
+  not_supported               pre: !IsImplementedAtInstance(FFA_RX_RELEASE, CurrentFfaInstance())
+                              post: ResultEqual(result, NOT_SUPPORTED)
+  no_buffer_pair              pre: !IsRxTxPairRegisteredByHypervisor(vm_id)
+                              post: ResultEqual(result, INVALID_PARAMETERS)
+  not_owner                   pre: !CallerOwnsRxBuffer(TargetRxBuffer(vm_id))
+                              post: ResultEqual(result, DENIED)
+               13.5.2.1   Failure condition ordering
+               The FFA_RX_RELEASE command does not have any failure condition orderings.
+               13.5.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, FFA_SUCCESS)
+  rx_owner                    post: !CallerOwnsRxBuffer(TargetRxBuffer(vm_id))
+               13.5.4 Footprint
+    ID                        Value
+    rx_owner                  TargetRxBuffer(vm_id).owner

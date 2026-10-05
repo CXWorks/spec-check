@@ -1,0 +1,28 @@
+3.11.2.10 PINCTRL_RELEASE command
+               An agent sends this command to release exclusive control of a pin or group. The command is optional. To find out whether it is implemented, a caller issues PROTOCOL_MESSAGE_ATTRIBUTES with this command's message_id. If the command is implemented, PROTOCOL_MESSAGE_ATTRIBUTES returns SUCCESS.
+               3.11.2.10.1 Interface
+               3.11.2.10.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        protocol_id         Header       —           UInt32                                Protocol identifier, value 0x19
+        message_id          Header       —           UInt32                                Message identifier, value 0x8
+        identifier          Param[0]     31:0        UInt32                                Identifier for the pin or group
+        flags.reserved      Param[1]     31:2        UInt32                                Reserved, must be zero
+        flags.selector      Param[1]     1:0         UInt32                                Selects whether identifier refers to a pin or a group: 0 = Pin, 1 = Group. All other values are reserved for future use
+               3.11.2.10.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        status              Return[0]    31:0        Int32                                 Command return status (see Section 3.1.4)
+               3.11.2.10.2 Failure conditions
+  ID                          Condition
+  ident_valid                 pre: !IsValidPinOrGroup(identifier, flags.selector)
+                              post: ResultEqual(status, NOT_FOUND)
+  params_valid                pre: !AreValidParameters(identifier, flags)
+                              post: ResultEqual(status, INVALID_PARAMETERS)
+               3.11.2.10.2.1   Failure condition ordering
+               The PINCTRL_RELEASE command does not have any failure condition orderings.
+               3.11.2.10.3 Success conditions
+  ID                          Condition
+  released                    post: !HasExclusiveControl(caller, identifier, flags.selector)
+  status                      post: ResultEqual(status, SUCCESS)
+               3.11.2.10.4 Footprint
+    ID                        Value
+    released                  ExclusiveControl(identifier, flags.selector)

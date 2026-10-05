@@ -1,0 +1,31 @@
+11.7 sbi_pmu_counter_get_info command
+               Gets details of the specified counter, such as the underlying CSR number, the width of the counter, and whether the counter is a hardware or firmware counter.
+               11.7.1 Interface
+               11.7.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           UInt                                  FID, value 1
+        counter_idx         —            XLEN-1:0    unsigned long                         Index of the target counter
+               11.7.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        error               —            XLEN-1:0    long                                  Command return status (sbiret.error)
+        value               —            XLEN-1:0    unsigned long                         counter_info (sbiret.value)
+               11.7.1.2.1   counter_info encoding
+        Name                Bits         Description
+        csr                 11:0         12-bit CSR number
+        width               17:12        One less than the number of bits in the CSR
+        —                   XLEN-2:18    Reserved for future use
+        type                XLEN-1       Counter type: 0 = hardware, 1 = firmware
+               11.7.2 Failure conditions
+               This excerpt does not include the failure conditions. The possible error codes in sbiret.error are listed in Table 36 (PMU Counter Get Info Errors), and that table is not part of this excerpt.
+               11.7.2.1   Failure condition ordering
+               The sbi_pmu_counter_get_info command does not have any failure condition orderings.
+               11.7.3 Success conditions
+  ID                          Condition
+  ctr_type                    post: value[XLEN-1] == (IsFirmwareCounter(counter_idx) ? 1 : 0)
+  ctr_csr                     pre: !IsFirmwareCounter(counter_idx)
+                              post: value[11:0] == CounterCsrNumber(counter_idx)
+  ctr_width                   pre: !IsFirmwareCounter(counter_idx)
+                              post: value[17:12] == CounterBitWidth(counter_idx) - 1
+               If value[XLEN-1] == 1 (firmware counter), the caller should ignore counter_info.csr and counter_info.width.
+               11.7.4 Footprint
+               The sbi_pmu_counter_get_info command does not modify any state.

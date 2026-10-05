@@ -1,0 +1,28 @@
+8.1 sbi_remote_fence_i command
+               Instructs remote harts to execute the FENCE.I instruction.
+               8.1.1 Interface
+               8.1.1.1   Input values
+        Name                Register     Bits        Type                                  Description
+        fid                 —            —           —                                     FID, value 0
+        hart_mask           —            —           unsigned long                         Mask of target harts, relative to hart_mask_base
+        hart_mask_base      —            —           unsigned long                         Base hartid from which hart_mask is applied
+               8.1.1.2   Output values
+        Name                Register     Bits        Type                                  Description
+        result              —            —           sbiret.error                          Command return status
+               8.1.2 Failure conditions
+  ID                          Condition
+  hart_valid                  pre: Exists(hartid in HartsFromMask(hart_mask, hart_mask_base) :
+                                     !IsHartEnabledByPlatform(hartid) || !IsHartAvailableToSupervisor(hartid))
+                              post: ResultEqual(result, SBI_ERR_INVALID_PARAM)
+  failed                      pre: RequestFailedForUnspecifiedReason()
+                              post: ResultEqual(result, SBI_ERR_FAILED)
+               8.1.2.1   Failure condition ordering
+               The sbi_remote_fence_i command does not have any failure condition orderings.
+               8.1.3 Success conditions
+  ID                          Condition
+  result                      post: ResultEqual(result, SBI_SUCCESS)
+  ipi_sent                    post: ForAll(hartid in HartsFromMask(hart_mask, hart_mask_base) :
+                                     IpiSentTo(hartid))
+               8.1.4 Footprint
+    ID                        Value
+    ipi_sent                  IpiSentTo(hartid) for each hartid in HartsFromMask(hart_mask, hart_mask_base)

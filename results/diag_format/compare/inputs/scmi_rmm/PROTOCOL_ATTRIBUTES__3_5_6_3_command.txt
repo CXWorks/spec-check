@@ -1,0 +1,36 @@
+3.5.6.3 PROTOCOL_ATTRIBUTES command
+               Returns the attributes associated with this protocol.
+               This command is mandatory.
+               3.5.6.3.1 Interface
+               3.5.6.3.1.1   Input values
+        Name                       Register     Bits        Type        Description
+        message_id                 —            —           UInt        Message identifier, value 0x1
+        protocol_id                —            —           UInt        Protocol identifier, value 0x13
+               3.5.6.3.1.2   Output values
+        Name                       Register     Bits        Type        Description
+        status                     —            31:0        int32       Command return status. See Section 3.1.4 for status code definitions.
+        attributes                 —            31:0        uint32      Bits[31:18]: Reserved, must be zero.
+                                                                        Bits[17:16]: Power Unit:
+                                                                          2: power consumption of performance levels is expressed in uW.
+                                                                          1: power consumption of performance levels is expressed in mW.
+                                                                          0: power consumption of performance levels is expressed in an abstract linear scale.
+                                                                          All other values are reserved and must not be used.
+                                                                        Bits[15:0]: Number of performance domains.
+        statistics_address_low     —            31:0        uint32      Lower 32 bits of the physical address of the statistics shared memory region. Should be 64-bit aligned. Must be in the memory map of the calling agent. Invalid and must be ignored if statistics_len is 0. The region is described in Section 3.5.9.
+        statistics_address_high    —            31:0        uint32      Upper 32 bits of the physical address of the statistics shared memory region. Must be in the memory map of the calling agent. Invalid and must be ignored if statistics_len is 0. The region is described in Section 3.5.9.
+        statistics_len             —            31:0        uint32      Length in bytes of the statistics shared memory region. 0 indicates that the platform does not support the statistics shared memory region.
+               3.5.6.3.2 Failure conditions
+               The PROTOCOL_ATTRIBUTES command does not have any failure conditions.
+               3.5.6.3.2.1   Failure condition ordering
+               The PROTOCOL_ATTRIBUTES command does not have any failure condition orderings.
+               3.5.6.3.3 Success conditions
+  ID                          Condition
+  attr_rsvd                   post: attributes[31:18] == 0
+  power_unit                  post: attributes[17:16] == 0 || attributes[17:16] == 1 || attributes[17:16] == 2
+  num_domains                 post: attributes[15:0] == NumPerformanceDomains()
+  stats_addr                  post: statistics_len != 0 ==> (IsInCallerMemoryMap(statistics_address_high:statistics_address_low)
+                                    && IsAligned64(statistics_address_high:statistics_address_low))
+  stats_unsupported           post: statistics_len == 0 ==> !PlatformSupportsStatisticsRegion()
+               3.5.6.3.4 Footprint
+               The PROTOCOL_ATTRIBUTES command does not modify any state.
+               Note: Statistics capability has been marked for deprecation and is being replaced by system telemetry.
