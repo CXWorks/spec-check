@@ -37,11 +37,15 @@ def main():
     ap.add_argument("--effort", default="high")
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--system-file", default=None, help="as in gen_specs.py")
+    ap.add_argument("--preamble", default=None,
+                    help="preamble file shown before the section, as gen_specs.py "
+                         "--with-preamble --preamble-mode full does")
     args = ap.parse_args()
 
     v3 = get_v3_prompt("v3.1")
     if args.system_file:
         v3 = type(v3)(v3.name, Path(args.system_file).read_text(), v3.user_template)
+    pre = Path(args.preamble).read_text().strip() if args.preamble else None
     jobs = []
     for v in args.versions:
         for f in sorted((Path(args.sections) / v).glob("*_command.txt")):
@@ -54,7 +58,7 @@ def main():
         dst = Path(args.out) / v / f"{s.command.lower()}.rs"
         if dst.exists():
             return v, s.command, "cached"
-        sys_msg, user_msg = (m["content"] for m in build_prompt(s, v3))
+        sys_msg, user_msg = (m["content"] for m in build_prompt(s, v3, pre))
         for _ in range(2):
             try:
                 text = strip_output(call_claude(sys_msg, user_msg, args.model, args.effort))

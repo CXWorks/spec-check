@@ -28,6 +28,7 @@ ap.add_argument("--tag", required=True)
 ap.add_argument("--chunk", type=int, default=12)
 ap.add_argument("--out", default=str(HOME / "diag" / "gen3"))
 ap.add_argument("--system-file", default=None)
+ap.add_argument("--gen-args", default="", help="extra gen_specs.py arguments, one string")
 a = ap.parse_args()
 
 out = Path(a.out) / a.tag
@@ -54,7 +55,7 @@ env = dict(os.environ, HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1")
 model = (["--adapter", str(AD), "--subfolder", "sft3-2/final"] if a.model == "ft" else [])
 cmd0 = [str(REPO / ".venv/bin/python"), "scripts/gen_specs.py", "--base", "Qwen/Qwen3.5-9B",
         *model, "--prompt-variant", "v3.1", "--no-gold", "--out-dir", str(out / "_chunks"),
-        *(["--system-file", a.system_file] if a.system_file else [])]
+        *(["--system-file", a.system_file] if a.system_file else []), *a.gen_args.split()]
 
 todo = [(c, n, p, 0) for c, n, p in chunks]
 running = {}                                   # gpu -> (proc, chunk, n, parent, attempt)
