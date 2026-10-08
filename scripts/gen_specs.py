@@ -107,6 +107,21 @@ def preamble_decls(err, preamble):
     return "\n".join(out + hints[:6])
 
 
+def with_gold_signature(msgs, version, command):
+    """Replace `<cmd>_spec(...)` in the user message with gold's parameter list."""
+    from verify_generated_verus import extract_fn_block
+    p = ROOT / "training-dataset" / "specs" / version / f"{command.lower()}_spec.rs"
+    if not p.exists():
+        return msgs
+    _, params, _ = extract_fn_block(p.read_text(encoding="utf-8", errors="replace"))
+    if not params:
+        return msgs
+    stub = f"{command.lower()}_spec(...)"
+    user = msgs[1]["content"]
+    assert stub in user, "Signature line not found in the prompt"
+    return [msgs[0], dict(msgs[1], content=user.replace(stub, f"{command.lower()}_spec{params}", 1))]
+
+
 def n_implications(src):
     """`==>` count. The benchmark's own repair pass verifies a repair by holding
     this constant, so use the same measure: a drop means the model bought
@@ -159,6 +174,12 @@ def main():
                          "parity) in BENCHMARK_VERUS_RMM.md. 0 keeps the raw "
                          "generation, which stays the comparable configuration.")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--gold-signature", action="store_true",
+                    help="Put gold's parameter list in the prompt's Signature line "
+                         "instead of `(...)`, as confab_probe.py's `sig` arms do. "
+                         "Parameter order and naming carry no meaning and cannot be "
+                         "read off the document, and a spec whose signature differs "
+                         "from gold's cannot be compared with it at all.")
     ap.add_argument("--system-file", default=None,
                     help="Replace the prompt variant's system prompt with this file's "
                          "text, keeping its user template. For prompt ablations only; "
@@ -251,6 +272,8 @@ def main():
                 from dataset_loader import load_preamble
                 pre = load_preamble(version, section_text=s.section_text)
             msgs = build_prompt(s, prompt, pre)
+            if args.gold_signature:
+                msgs = with_gold_signature(msgs, version, s.command)
             text = render_generation_prompt(tok, msgs)
             raw = tok(text, return_tensors="pt", add_special_tokens=False)
             ids = (raw["input_ids"] if hasattr(raw, "keys") else raw).to(model.device)

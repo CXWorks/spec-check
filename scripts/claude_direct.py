@@ -37,6 +37,9 @@ def main():
     ap.add_argument("--effort", default="high")
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--system-file", default=None, help="as in gen_specs.py")
+    ap.add_argument("--gold-signature", default=None,
+                    help="specs dir holding gold <cmd>_spec.rs; puts gold's parameter "
+                         "list in the Signature line, as gen_specs.py --gold-signature")
     ap.add_argument("--preamble", default=None,
                     help="preamble file shown before the section, as gen_specs.py "
                          "--with-preamble --preamble-mode full does")
@@ -58,7 +61,15 @@ def main():
         dst = Path(args.out) / v / f"{s.command.lower()}.rs"
         if dst.exists():
             return v, s.command, "cached"
-        sys_msg, user_msg = (m["content"] for m in build_prompt(s, v3, pre))
+        msgs = build_prompt(s, v3, pre)
+        if args.gold_signature:
+            from verify_generated_verus import extract_fn_block
+            g = Path(args.gold_signature) / f"{s.command.lower()}_spec.rs"
+            _, params, _ = extract_fn_block(g.read_text(errors="replace"))
+            stub = f"{s.command.lower()}_spec(...)"
+            assert stub in msgs[1]["content"] and params
+            msgs[1] = dict(msgs[1], content=msgs[1]["content"].replace(stub, f"{s.command.lower()}_spec{params}", 1))
+        sys_msg, user_msg = (m["content"] for m in msgs)
         for _ in range(2):
             try:
                 text = strip_output(call_claude(sys_msg, user_msg, args.model, args.effort))
