@@ -111,7 +111,7 @@ def with_gold_signature(msgs, version, command):
     """Replace `<cmd>_spec(...)` in the user message with gold's parameter list."""
     from verify_generated_verus import extract_fn_block
     p = ROOT / "training-dataset" / "specs" / version / f"{command.lower()}_spec.rs"
-    # Fail rather than fall back to : a silent fallback made a whole
+    # Fail rather than fall back to `(...)`: a silent fallback made a whole
     # --gold-signature run byte-identical to the run without it, because the
     # queue's chunk directories held the preamble but no gold files.
     if not p.exists():
