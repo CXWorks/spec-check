@@ -48,6 +48,9 @@ for v in a.versions:
         shutil.copy(DATA / "specs" / v / "preamble.rs", pd / "preamble.rs")
         for n in names[i:i + a.chunk]:
             shutil.copy(DATA / "sections" / v / n, sd / n)
+            g = DATA / "specs" / v / (n[: -len("_command.txt")].lower() + "_spec.rs")
+            if g.exists():        # gold, for --gold-signature (and nothing else reads it)
+                shutil.copy(g, pd / g.name)
         chunks.append((cv, len(names[i:i + a.chunk]), v))
 print(f"[queue] {a.tag}: {len(chunks)} chunks over gpus {a.gpus}", flush=True)
 
