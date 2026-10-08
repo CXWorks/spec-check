@@ -1,0 +1,17 @@
+pub open spec fn rmi_vdev_destroy_spec(rd: Address, pdev_ptr: Address, vdev_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+    (ImplFeatures(old_s).feat_da != RmmFeature::FEATURE_TRUE ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))
+    && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rd).state != RmmGranuleState::RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, pdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, pdev_ptr).state != RmmGranuleState::PDEV ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, vdev_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, vdev_ptr).state != RmmGranuleState::VDEV ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (VdevAt(old_s, vdev_ptr).realm != RealmAt(old_s, rd) ==> ResultEqual(result, RMI_ERROR_DEVICE))
+    && (VdevAt(old_s, vdev_ptr).pdev != pdev_ptr ==> ResultEqual(result, RMI_ERROR_DEVICE))
+    && (VdevAt(old_s, vdev_ptr).vdev_state != RmmVdevState::VDEV_NEW && VdevAt(old_s, vdev_ptr).vdev_state != RmmVdevState::VDEV_UNLOCKED && VdevAt(old_s, vdev_ptr).vdev_state != RmmVdevState::VDEV_ERROR ==> ResultEqual(result, RMI_ERROR_DEVICE))
+    && (VdevAt(old_s, vdev_ptr).num_map != 0 ==> ResultEqual(result, RMI_ERROR_DEVICE))
+    && (result.is_Ok() ==> (GranuleAt(new_s, vdev_ptr).state == RmmGranuleState::DELEGATED && AuxStateEqual32(old_s, VdevAt(old_s, vdev_ptr).aux, VdevAt(old_s, vdev_ptr).num_aux, RmmGranuleState::DELEGATED) && VdevIdIsFree(RealmAt(old_s, rd), VdevAt(old_s, vdev_ptr).vdev_id) && TdiIdIsFree(VdevAt(old_s, vdev_ptr).tdi_id, PdevAt(old_s, pdev_ptr).segment_id) && RealmAt(old_s, rd).num_vdevs == RealmAt(old_s, rd).num_vdevs - 1 && PdevAt(old_s, pdev_ptr).num_vdevs == PdevAt(old_s, pdev_ptr).num_vdevs - 1 && (VdevAt(old_s, vdev_ptr).vsmmu == RmmFeature::FEATURE_TRUE ==> VsidIsFree(VsmmuAt(old_s, VdevAt(old_s, vdev_ptr).vsmmu_addr), VdevAt(old_s, vdev_ptr).vsid))))
+}

@@ -1,0 +1,53 @@
+B4.3.37 RMI_RTT_AUX_UNMAP_UNPROTECTED command
+                Removes a valid or table descriptor at an Unprotected IPA from the starting level of an auxiliary RTT.
+                B4.3.37.1 Interface
+                B4.3.37.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000184
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               IPA in the target Realm
+        index                 X3          63:0        UInt64                                RTT tree index
+                B4.3.37.1.2   Context
+                The RMI_RTT_AUX_UNMAP_UNPROTECTED command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(realm, ipa, realm.rtt_level_start, index)
+                                                                        false    Auxiliary RTT walk
+        entry_idx             UInt64                     RttEntryIndex(ipa, walk.level)
+                                                                        false    RTTE index
+        walk_top              Address                    RttSkipNonLiveEntries(RttAt(walk.rtt_addr), walk.level, ipa)
+                                                                        false    Top IPA of non-live RTT entries, from entry at which the RTT walk terminated
+                B4.3.37.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        top                   X1          63:0        Address                               Top IPA of non-live RTT entries, from starting level RTT
+                B4.3.37.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                    pre: !AddrIsAligned(ipa, pow2(realm.ipa_width))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_range                    pre: ipa >= pow2(realm.ipa_width) || AddrIsProtected(ipa, realm)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_tree_per_plane           pre: realm.rtt_tree_per_plane == FEATURE_FALSE
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  index_primary                pre: index == RMM_RTT_TREE_PRIMARY
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  index_count                  pre: index > realm.num_aux_planes
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+                B4.3.37.2.1   Failure condition ordering
+                [rd_align, rd_delegable, rd_state, ipa_align, ipa_range, rtt_tree_per_plane, index_primary, index_count]
+                rd_align                     rd_delegable                     rd_state                        ipa_align                     ipa_range                     rtt_tree_per_plane                     index_primary                     index_count
+                                                                                           RMI_ERROR_INPUT
+                                                                                           realm_state
+                B4.3.37.3 Success conditions
+  ID                           Condition
+  entry_state                  post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).state == UNASSIGNED_NS
+  top                          post: top == walk_top
+                B4.3.37.4 Footprint
+    ID                          Value
+    rtte                       RttEntry(walk.rtt_addr, entry_idx)

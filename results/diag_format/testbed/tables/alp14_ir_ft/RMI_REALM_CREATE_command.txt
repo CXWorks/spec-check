@@ -1,0 +1,102 @@
+B4.3.25 RMI_REALM_CREATE command
+              Creates a Realm.
+              B4.3.25.1 Interface
+              B4.3.25.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000158
+        rd                    X1          63:0        Address                               PA of the RD
+        params_ptr            X2          63:0        Address                               PA of Realm parameters
+                B4.3.25.1.2   Context
+                The RMI_REALM_CREATE command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        params                RmiRealmParams             RmiRealmParamsAt(                          false    Realm parameters
+                                                           params_ptr)
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        mec_members_pre       UInt64                         MecMembers(params.mecid)                   true     Number of Realms
+                                                                                                           which are members of
+                                                                                                           the Realm's MEC
+        mec_state_pre         RmmMecState                MecState(params.mecid)                     true     MECID state
+                B4.3.25.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+                B4.3.25.2 Failure conditions
+  ID                           Condition
+  params_ptr_align            pre: !AddrIsGranuleAligned(params_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_ptr_access           pre: !AddrIsProtected(params_ptr, CurrentRealm())
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_ptr_valid            pre: !RmiRealmParamsIsValid(params_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  params_supported            pre: !RealmParamsSupported(RmiRealmParamsAt(params_ptr))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_rtt_base                 pre: AddrInRange(rd, RmiRealmParamsAt(params_ptr).rtt_base, RmiRealmParamsAt(params_ptr).rtt_num_start - 1)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_align                    pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                    pre: GranuleAt(rd).state != DELEGATED
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_base_align              pre: !AddrIsGranuleAligned(RmiRealmParamsAt(params_ptr).rtt_base)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_config                  pre: !(RmiRealmParamsAt(params_ptr).s2sz && RmiRealmParamsAt(params_ptr).rtt_level_start && RmiRealmParamsAt(params_ptr).rtt_num_start)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_state                   pre: !GranulesAllState(RmiRealmParamsAt(params_ptr).rtt_base, RmiRealmParamsAt(params_ptr).rtt_num_start - 1, DELEGATED)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vmid_valid                  pre: !VmidsAreValid(RmiRealmParamsAt(params_ptr).vmid, RmiRealmParamsAt(params_ptr).aux_vmid)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  mecid_max                   pre: params.mecid > 0
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  mec_state                   pre: MecState(params.mecid) == MEC_STATE_PRIVATE_ASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+                B4.3.25.2.1   Failure condition ordering
+                [None]
+                B4.3.25.3 Success conditions
+  rd_state                    post: GranuleAt(rd).state == RD
+  realm_state                 post: RealmAt(rd).state == REALM_NEW
+  realm_rec_index             post: RealmAt(rd).rec_index == 0
+  realm_rtt_base              post: RealmAt(rd).rtt_base[0] == RmiRealmParamsAt(params_ptr).rtt_base
+  realm_rtt_base_aux          post: RealmAt(rd).rtt_base[1] == RmiRealmParamsAt(params_ptr).aux_rtt_base[0]
+  realm_rtt_base_aux2         post: RealmAt(rd).rtt_base[2] == RmiRealmParamsAt(params_ptr).aux_rtt_base[1]
+  realm_rtt_base_aux3         post: RealmAt(rd).rtt_base[3] == RmiRealmParamsAt(params_ptr).aux_rtt_base[2]
+  realm_rtt_state             post: RttsGranuleState( RealmAt(rd).rtt_base[0], RealmAt(rd).rtt_num_start)
+  realm_rtt_unassigned        post: RttsAllProtectedEntriesState( RealmAt(rd).rtt_base[0], RealmAt(rd).rtt_num_start, UNASSIGNED)
+  realm_rtt_unassigned_ns     post: RttsAllUnprotectedEntriesState( RealmAt(rd).rtt_base[0], RealmAt(rd).rtt_num_start, UNASSIGNED_NS)
+  realm_rtt_ripas             post: RttsAllProtectedEntriesRipas( RealmAt(rd).rtt_base[0], RealmAt(rd).rtt_num_start, EMPTY)
+  realm_lpa2                  post: RealmAt(rd).feat_lpa2 == RmiRealmParamsAt(params_ptr).flags0.lpa2
+  realm_s2sz                  post: RealmAt(rd).ipa_width == RmiRealmParamsAt(params_ptr).s2sz
+  realm_hash_algo             post: RealmAt(rd).hash_algo == RmiRealmParamsAt(params_ptr).hash_algo
+  realm_rtt_level_start       post: RealmAt(rd).rtt_level_start == RmiRealmParamsAt(params_ptr).rtt_level_start
+  realm_rtt_num_start         post: RealmAt(rd).rtt_num_start == RmiRealmParamsAt(params_ptr).rtt_num_start
+  realm_vmid                  post: RealmAt(rd).vmid[0] == RmiRealmParamsAt(params_ptr).vmid
+  realm_vmid_aux              post: RealmAt(rd).vmid[1] == RmiRealmParamsAt(params_ptr).aux_vmid[0]
+  realm_vmid_aux2             post: RealmAt(rd).vmid[2] == RmiRealmParamsAt(params_ptr).aux_vmid[1]
+  realm_vmid_aux3             post: RealmAt(rd).vmid[3] == RmiRealmParamsAt(params_ptr).aux_vmid[2]
+  realm_rpv                   post: RealmAt(rd).rpv[0] == RmiRealmParamsAt(params_ptr).rpv[0]
+  realm_rpv1                  post: RealmAt(rd).rpv[1] == RmiRealmParamsAt(params_ptr).rpv[1]
+  realm_rpv2                  post: RealmAt(rd).rpv[2] == RmiRealmParamsAt(params_ptr).rpv[2]
+  realm_rpv3                  post: RealmAt(rd).rpv[3] == RmiRealmParamsAt(params_ptr).rpv[3]
+  realm_rpv4                  post: RealmAt(rd).rpv[4] == RmiRealmParamsAt(params_ptr).rpv[4]
+  realm_rpv5                  post: RealmAt(rd).rpv[5] == RmiRealmParamsAt(params_ptr).rpv[5]
+  realm_rpv6                  post: RealmAt(rd).rpv[6] == RmiRealmParamsAt(params_ptr).rpv[6]
+  realm_rpv7                  post: RealmAt(rd).rpv[7] == RmiRealmParamsAt(params_ptr).rpv[7]
+  realm_da                    post: RealmAt(rd).feat_da == RmiRealmParamsAt(params_ptr).flags0.da
+  realm_ats                   post: RealmAt(rd).feat_ats == RmiRealmParamsAt(params_ptr).flags1.ats
+  realm_ats_plane             post: RealmAt(rd).ats_plane == RmiRealmParamsAt(params_ptr).ats_plane
+  realm_rtt_tree_per_plane    post: RealmAt(rd).rtt_tree_per_plane == RmiRealmParamsAt(params_ptr).flags1.rtt_tree_per_plane
+  realm_num_aux_planes        post: RealmAt(rd).num_aux_planes == RmiRealmParamsAt(params_ptr).num_aux_planes
+  realm_rtt_s2ap_encoding     post: RealmAt(rd).rtt_s2ap_encoding == RmiRealmParamsAt(params_ptr).flags1.rtt_s2ap_encoding
+  realm_lfa_policy            post: RealmAt(rd).lfa_policy == RmiRealmParamsAt(params_ptr).flags0.lfa_policy
+  realm_mecid                 post: RealmAt(rd).mecid == RmiRealmParamsAt(params_ptr).mecid
+  realm_mec_policy            post: RealmAt(rd).mec_policy == MecState(RmiRealmParamsAt(params_ptr).mecid)
+  realm_mec_state             post: MecState(RmiRealmParamsAt(params_ptr).mecid) == MEC_STATE_PRIVATE_ASSIGNED
+  realm_num_recs              post: RealmAt(rd).num_recs == 0
+  realm_num_vdevs             post: RealmAt(rd).num_vdevs == 0
+  realm_num_vsmmus            post: RealmAt(rd).num_vsmmus == 0
+                B4.3.25.4 Footprint
+    ID                            Value
+    rd_state                      GranuleAt(rd).state
+    rtt_state                     RttsGranuleState( RealmAt(rd).rtt_base[0], RealmAt(rd).rtt_num_start)
+    mec_state                     MecState(RmiRealmParamsAt(params_ptr).mecid)
+    mec_members                   MecMembers(RmiRealmParamsAt(params_ptr).mecid)
+----- end of example -----

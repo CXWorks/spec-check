@@ -1,0 +1,15 @@
+pub open spec fn rmi_rtt_init_ripas_spec(rd: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S) -> bool {
+    (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (RealmAt(old_s, rd).state != REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM))
+    && (top <= base ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsProtected(old_s, RttAt(old_s, RttWalk_(old_s, rd, base, RMM_RTT_PAGE_LEVEL as int).rtt_addr, (top - RttLevelSize(RMM_RTT_PAGE_LEVEL as int)) as int), RealmAt(old_s, rd))) ==> ResultEqual(result, RMI_ERROR_INPUT)
+    && (!AddrIsRttLevelAligned(old_s, base, RMM_RTT_PAGE_LEVEL as int) ==> ResultEqual(result, RMI_ERROR_RTT(RMM_RTT_PAGE_LEVEL as int)))
+    && (RttEntryAt(RttAt(old_s, RttWalk_(old_s, rd, base, RMM_RTT_PAGE_LEVEL as int).rtt_addr), RttEntryIndex(RttAt(old_s, RttWalk_(old_s, rd, base, RMM_RTT_PAGE_LEVEL as int).rtt_addr), base, RMM_RTT_PAGE_LEVEL as int)).state != UNASSIGNED ==> ResultEqual(result, RMI_ERROR_RTT(RMM_RTT_PAGE_LEVEL as int)))
+    && (!AddrIsGranuleAligned(old_s, top) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (base == RttSkipEntriesUnlessState(RttAt(old_s, RttWalk_(old_s, rd, base, RMM_RTT_PAGE_LEVEL as int).rtt_addr), RMM_RTT_PAGE_LEVEL as int, base, top, UNASSIGNED) ==> ResultEqual(result, RMI_ERROR_RTT(RMM_RTT_PAGE_LEVEL as int)))
+    && (result.is_Ok() ==> (forall rtte: RttAt(old_s, RttWalk_(old_s, rd, base, RMM_RTT_PAGE_LEVEL as int).rtt_addr) | RttEntryStateToRmi(rtte.state) == RAM ==> rtte.state == RAM))
+    && (result.is_Ok() ==> RimExtend(old_s, RealmAt(old_s, rd), RttSkipEntriesIfNotState(RttAt(old_s, RttWalk_(old_s, rd, base, RMM_RTT_PAGE_LEVEL as int).rtt_addr), RMM_RTT_PAGE_LEVEL as int, base, top, UNASSIGNED), RMM_RTT_PAGE_LEVEL as int) == RealmAt(old_s, rd).measurements[0])
+    && (result.is_Ok() ==> out_top == RttSkipEntriesIfNotState(RttAt(old_s, RttWalk_(old_s, rd, base, RMM_RTT_PAGE_LEVEL as int).rtt_addr), RMM_RTT_PAGE_LEVEL as int, base, top, UNASSIGNED))
+}

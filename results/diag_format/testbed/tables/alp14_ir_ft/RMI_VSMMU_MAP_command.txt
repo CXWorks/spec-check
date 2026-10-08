@@ -1,0 +1,90 @@
+B4.3.67 RMI_VSMMU_MAP command
+                Create a VSMMU mapping.
+                B4.3.67.1 Interface
+                B4.3.67.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400016C
+        rd                    X1          63:0        Address                               PA of the RD
+        vsmmu_ptr             X2          63:0        Address                               PA of the VSMMU
+        ipa                   X3          63:0        Address                               IPA at which to create the mapping
+        level                 X4          63:0        Int64                                 RTT level
+                B4.3.67.1.2   Context
+                The RMI_VSMMU_MAP command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        vsmmu                 RmmVsmmu                   VsmmuAt(vsmmu_ptr)                         false    VSMMU
+        walk                  RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                                             realm, ipa, level,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+                B4.3.67.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+                B4.3.67.2 Failure conditions
+  ID                           Condition
+  da_feature                 pre: !ImplFeatures(s).feat_da
+                               post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  rd_align                   pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable               pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                   pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_valid                pre: !(RttLevelIsValid(RealmAt(rd), level) && level >= 2)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  realm_state                pre: RealmAt(rd).state != REALM_NEW
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_ptr_align            pre: !AddrIsGranuleAligned(vsmmu_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_ptr_delegable        pre: !PaIsDelegable(vsmmu_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vsmmu_ptr_state            pre: GranuleAt(vsmmu_ptr).state != VSMMU
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                  pre: !AddrIsAligned(ipa, pow2(level))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_below_vsmmu_base       pre: ipa < VsmmuAt(vsmmu_ptr).reg_base
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  walk_level                 pre: walk.level < level
+                               post: ResultEqual(result, RMI_ERROR_RTT(walk.level))
+  walk_entry_state           pre: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).state != UNASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_RTT(walk.level))
+  walk_entry_ripas           pre: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).ripas != EMPTY
+                               post: ResultEqual(result, RMI_ERROR_RTT(walk.level))
+  walk_range_top             pre: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).addr + pow2(walk.level) >= VsmmuAt(vsmmu_ptr).reg_top
+                               post: ResultEqual(result, RMI_ERROR_RTT(walk.level))
+                B4.3.67.2.1   Failure condition ordering
+  rd_delegable               rd_state
+  rd_delegable               realm_state
+  rd_delegable               walk_level
+  rd_delegable               walk_entry_state
+  rd_delegable               walk_entry_ripas
+  rd_delegable               walk_range_top
+  rd_state                   realm_state
+  rd_state                   walk_level
+  rd_state                   walk_entry_state
+  rd_state                   walk_entry_ripas
+  rd_state                   walk_range_top
+  realm_state                walk_level
+  realm_state                walk_entry_state
+  realm_state                walk_entry_ripas
+  realm_state                walk_range_top
+  vsmmu_ptr_align            vsmmu_ptr_delegable
+  vsmmu_ptr_align            vsmmu_ptr_state
+  vsmmu_ptr_delegable        vsmmu_ptr_state
+  vsmmu_ptr_state            walk_level
+  vsmmu_ptr_state            walk_entry_state
+  vsmmu_ptr_state            walk_entry_ripas
+  vsmmu_ptr_state            walk_range_top
+  walk_level                 walk_entry_state
+  walk_level                 walk_entry_ripas
+  walk_level                 walk_range_top
+  walk_entry_state           walk_entry_ripas
+  walk_entry_state           walk_range_top
+  walk_entry_ripas           walk_range_top
+                B4.3.67.3 Success conditions
+  walk_entry_state           post: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).state == ASSIGNED_VSMMU
+  walk_entry_addr            post: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).addr == vsmmu_ptr
+                B4.3.67.4 Footprint
+    ID                        Value
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level))

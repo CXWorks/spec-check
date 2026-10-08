@@ -1,0 +1,83 @@
+B4.3.45 RMI_RTT_SET_S2AP command
+                Completes a request made by the Realm to change the S2AP of a target IPA range.
+                B4.3.45.1 Interface
+                B4.3.45.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400018B
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        rec_ptr               X2          63:0        Address                               PA of the target REC
+        base                  X3          63:0        Address                               Base of target IPA region
+        top                   X4          63:0        Address                               Top of target IPA region
+                B4.3.45.1.2   Context
+                The RMI_RTT_SET_S2AP command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        realm_pre             RmmRealm                   RealmAt(rd)                                true     Realm
+        rec                   RmmRec                      RecAt(rec_ptr)                             false    REC
+        not_aligned           RmmRttWalkNotAligned       RttWalkAnyNotAligned(                       false    RTT walk result
+                                              RealmAt(rd), base, top,                    which is not aligned
+                                              RMM_RTT_PAGE_LEVEL)                       to page level
+                B4.3.45.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        out_top               X1          63:0        Address                               Top IPA of range whose S2AP was
+                                                                               modified
+        rtt_tree              X2          63:0        UInt64                                Index of RTT tree in which base
+                                                                               alignment check failed
+                If result is RMI_ERROR_RTT or RMI_ERROR_RTT_AUX then the following are true:
+                  • out_top is the IPA of the RTTE at which the base alignment check failed.
+                  • rtt_tree is the index of the RTT in which the base alignment check failed.
+                B4.3.45.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_ptr_align                pre: !AddrIsGranuleAligned(rec_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_ptr_delegable            pre: !PaIsDelegable(rec_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_ptr_state                pre: GranuleAt(rec_ptr).state != REC
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rec_state                    pre: RecAt(rec_ptr).state == REC_RUNNING
+                               post: ResultEqual(result, RMI_ERROR_REC)
+  rec_owner                    pre: RecAt(rec_ptr).owner != rd
+                               post: ResultEqual(result, RMI_ERROR_REC)
+  top_le_base                  pre: top <= base
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  base_s2ap_addr               pre: base != RecAt(rec_ptr).s2ap_addr
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_gt_s2ap_top              pre: top > RecAt(rec_ptr).s2ap_top
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_align                    pre: !AddrIsGranuleAligned(top)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  not_aligned_valid            pre: not_aligned.valid == RMM_TRUE
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+  not_aligned_range            pre: !(AddrIsWithin(RealmAt(rd), base, top, not_aligned.addr, RttWalkAnyNotAligned(RealmAt(rd), base, top,RMM_RTT_PAGE_LEVEL).addr))
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+  not_aligned_primary          pre: RttWalkAnyNotAligned(RealmAt(rd), base, top,RMM_RTT_PAGE_LEVEL).rtte.state == ASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+  not_aligned_overlay          pre: RttWalkAnyNotAligned(RealmAt(rd), base, top,RMM_RTT_PAGE_LEVEL).rtte.s2ap_indirect.overlay_index != RecAt(rec_ptr).s2ap_overlay_index
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+  not_aligned_valid_aux        pre: not_aligned.valid == RMM_TRUE
+                               post: ResultEqual(result, RMI_ERROR_RTT_AUX)
+  not_aligned_range_aux        pre: !(AddrIsWithin(RealmAt(rd), base, top, not_aligned.addr, RttWalkAnyNotAligned(RealmAt(rd), base, top,RMM_RTT_PAGE_LEVEL).addr))
+                               post: ResultEqual(result, RMI_ERROR_RTT_AUX)
+  not_aligned_primary_aux      pre: RttWalkAnyNotAligned(RealmAt(rd), base, top,RMM_RTT_PAGE_LEVEL).rtte.state == ASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_RTT_AUX)
+  not_aligned_overlay_aux      pre: RttWalkAnyNotAligned(RealmAt(rd), base, top,RMM_RTT_PAGE_LEVEL).rtte.s2ap_indirect.overlay_index != RecAt(rec_ptr).s2ap_overlay_index
+                               post: ResultEqual(result, RMI_ERROR_RTT_AUX)
+                B4.3.45.2.1   Failure condition ordering
+                [rd_align, rd_delegable, rd_state, rec_ptr_align, rec_ptr_delegable, rec_ptr_state, rec_owner, top_le_base, base_s2ap_addr, top_gt_s2ap_top, top_align] < [not_aligned_valid, not_aligned_range, not_aligned_primary, not_aligned_overlay]
+                                                                                           not_aligned_valid            not_aligned_range            not_aligned_primary            not_aligned_overlay
+                                                                                                                           RMI_ERROR_RTT
+                                                                                                                           not_aligned_valid_aux          not_aligned_range_aux         not_aligned_primary_aux        not_aligned_overlay_aux
+                                                                                                                           RMI_ERROR_RTT_AUX
+                B4.3.45.3 Success conditions
+  ID                           Condition
+  rec_s2ap_addr                post: RecAt(rec_ptr).s2ap_addr == top
+                B4.3.45.4 Footprint
+    ID                         Value
+    rec_s2ap_addr              RecAt(rec_ptr).s2ap_addr

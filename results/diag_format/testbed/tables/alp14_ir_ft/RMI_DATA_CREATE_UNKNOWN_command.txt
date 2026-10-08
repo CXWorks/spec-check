@@ -1,0 +1,99 @@
+B4.3.2 RMI_DATA_CREATE_UNKNOWN command
+                Creates a Data Granule with unknown contents.
+                B4.3.2.1 Interface
+                B4.3.2.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000154
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        data                  X2          63:0        Address                               PA of the target Data
+        ipa                   X3          63:0        Address                               IPA at which the Granule will be mapped in the target Realm
+                B4.3.2.1.2   Context
+                The RMI_DATA_CREATE_UNKNOWN command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                              realm, ipa,
+                                              RMM_RTT_PAGE_LEVEL,
+                                              RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                              ipa, walk.level)
+                B4.3.2.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+                B4.3.2.2 Failure conditions
+  ID                           Condition
+  data_align                   pre: !AddrIsGranuleAligned(data)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  data_delegable               pre: !PaIsDelegable(data)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  data_state                   pre: GranuleAt(data).state != DELEGATED
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  realm_lpa2                   pre: RealmAt(rd).feat_lpa2 == FEATURE_FALSE && data >= 2^48
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                    pre: !AddrIsGranuleAligned(ipa)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_protected                pre: !AddrIsProtected(RealmAt(rd), ipa)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_walk_page                pre: RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level > RMM_RTT_PAGE_LEVEL
+                               post: ResultEqual(result, RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level))
+  rtt_entry_unassigned         pre: RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).state != UNASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level))
+                B4.3.2.2.1   Failure condition ordering
+  ID                           Condition
+  rd_delegable                 rd_state
+  ipa_protected                rtt_walk_page
+  rtt_walk_page                rtt_entry_unassigned
+  rtt_entry_unassigned
+                B4.3.2.3 Success conditions
+  data_state                   post: GranuleAt(data).state == DATA
+  rtte_state                   post: RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).state == ASSIGNED
+  rtte_output                  post: RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).output == data
+  rtte_memattr                 post: RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).attr_prot == MEMATTR_CACHEABLE
+  rtte_sh                      post: RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).sh == SHAREABILITY_INNER
+                B4.3.2.4 Footprint
+    ID                        Value
+    data_state                GranuleAt(data).state
+    rtte                      RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level))
+    rtte_attr_prot            RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).attr_prot
+    rtte_sh                   RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).sh
+    rtte_output               RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).output
+    rtte_state                RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).state
+    GranuleAt(data).state     GranuleAt(data).state
+    GranuleAt(rd).state       GranuleAt(rd).state
+    RealmAt(rd).feat_lpa2     RealmAt(rd).feat_lpa2
+    RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level
+    RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr
+    RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level) RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)
+    RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr) RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr)
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).attr_prot RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).attr_prot
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).sh RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).sh
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).output RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).output
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).state RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).state
+    GranuleAt(data).state     GranuleAt(data).state
+    GranuleAt(rd).state       GranuleAt(rd).state
+    RealmAt(rd).feat_lpa2     RealmAt(rd).feat_lpa2
+    RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level
+    RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr
+    RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level) RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)
+    RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr) RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr)
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).attr_prot RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).attr_prot
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).sh RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).sh
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).output RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).output
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).state RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).state
+    GranuleAt(data).state     GranuleAt(data).state
+    GranuleAt(rd).state       GranuleAt(rd).state
+    RealmAt(rd).feat_lpa2     RealmAt(rd).feat_lpa2
+    RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level
+    RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr
+    RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level) RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)
+    RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr) RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr)
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).attr_prot RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).attr_prot
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).sh RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).sh
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).output RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).output
+    RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).level)).state RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa,RMM_RTT_PAGE_LEVEL,RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ip

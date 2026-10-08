@@ -1,0 +1,65 @@
+B4.3.40 RMI_RTT_FOLD command
+                Destroys a homogeneous primary RTT.
+                B4.3.40.1 Interface
+                B4.3.40.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000166
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               Base of the IPA range described by the
+                                                                                            RTT
+        level                 X3          63:0        Int64                                 RTT level
+                B4.3.40.1.2   Context
+                The RMI_RTT_FOLD command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                                             realm, ipa,
+                                                             level - 1,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+        fold_pre              RmmRttEntry                RttFold(                                   true     Result of folding RTT
+                                                             RttAt(walk.rtte.addr))
+                B4.3.40.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        rtt                   X1          63:0        Address                               PA of the RTT which was destroyed
+                The rtt output value is valid only when the command result is RMI_SUCCESS.
+                B4.3.40.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_valid                  pre: !(RttLevelIsValid(RealmAt(rd), level) && !(RttLevelIsStarting(RealmAt(rd), level)))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_aligned                  pre: !AddrIsRttLevelAligned(ipa, level - 1)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_in_range                 pre: !(ipa < pow2(RealmAt(rd).ipa_width))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  walk_reaches                 pre: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level != level - 1
+                               post: ResultEqual(result, RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level))
+  walk_table                   pre: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.state != TABLE
+                               post: ResultEqual(result, RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level))
+  walk_homogeneous             pre: !RttIsHomogeneous(RttAt(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.addr))
+                               post: ResultEqual(result, RMI_ERROR_RTT(level))
+  walk_aux                     pre: AddrIsAuxRef(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.addr, RealmAt(rd))
+                               post: ResultEqual(result, RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level))
+                B4.3.40.2.1   Failure condition ordering
+                [rd_delegable, rd_state] < [level_valid, ipa_in_range] < [walk_reaches, walk_table, walk_homogeneous, walk_aux]
+                                 rd_delegable                     rd_state                        level_valid                     ipa_in_range
+                                                                                           walk_reaches                     walk_table                        walk_homogeneous                     walk_aux
+                                                                                           RMI_ERROR_INPUT
+                                                                                           RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level)
+                                                                                           RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level)
+                                                                                           RMI_ERROR_RTT(level)
+                                                                                           RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level)
+                B4.3.40.3 Success conditions
+  rtt_state                    post: GranuleAt(walk.rtte.addr).state == DELEGATED
+  rtt_addr                     post: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level)).addr == rtt
+                B4.3.40.4 Footprint
+    ID                           Value
+    rtt_state                    GranuleAt(walk.rtte.addr).state
+    rtte                         RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

@@ -1,0 +1,60 @@
+B4.3.2 RMI_DATA_CREATE_UNKNOWN command
+                Creates a Data Granule with unknown contents.
+                B4.3.2.1 Interface
+                B4.3.2.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000154
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        data                  X2          63:0        Address                               PA of the target Data
+        ipa                   X3          63:0        Address                               IPA at which the Granule will be mapped in the target Realm
+                B4.3.2.1.2   Context
+                The RMI_DATA_CREATE_UNKNOWN command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(realm, ipa, RMM_RTT_PAGE_LEVEL, RMM_RTT_TREE_PRIMARY)  false    RTT walk result
+        entry_idx             UInt64                     RttEntryIndex(ipa, walk.level)             false    RTTE index
+                B4.3.2.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+                B4.3.2.2 Failure conditions
+  ID                           Condition
+  data_align                   pre: !AddrIsGranuleAligned(data)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  data_delegable               pre: !PaIsDelegableDevMem(data)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  data_state                   pre: GranuleAt(data).state != DATA
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  realm_lpa2                   pre: realm.feat_lpa2 == FEATURE_FALSE && data >= pow2(48)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                    pre: !AddrIsGranuleAligned(ipa)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_protected                pre: !AddrIsProtected(realm, ipa)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_level                    pre: walk.level > RMM_RTT_PAGE_LEVEL
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+  rtt_entry_state              pre: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).state != UNASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+                B4.3.2.2.1   Failure condition ordering
+                [rd_delegable, rd_state] < [ipa_protected, rtt_level, rtt_entry_state]
+                [data_align, data_delegable, data_state, realm_lpa2] < [rd_delegable, rd_state]
+                ipa_protected                     rtt_level                     rtt_entry_state
+                                                                                           RMI_ERROR_INPUT
+                                                                                           RMI_ERROR_RTT
+                                                                                           RMI_ERROR_RTT
+                B4.3.2.3 Success conditions
+  ID                           Condition
+  data_state                   post: GranuleAt(data).state == DATA
+  rtte_state                   post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).state == ASSIGNED
+  rtte_output                  post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).addr == data
+  rtte_memattr                 post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).attr_unprot == MEMATTR_CACHEABLE
+  rtte_sh                      post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).sh == SHAREABILITY_INNER
+                B4.3.2.4 Footprint
+    ID                        Value
+    data_state                GranuleAt(data).state
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

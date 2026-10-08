@@ -1,0 +1,83 @@
+{
+ "RMI_DATA_CREATE": {
+  "attempts": 1,
+  "problems": [
+   "missing heading: Success conditions",
+   "return codes lost: ['RMI_MEASURE_CONTENT']"
+  ],
+  "written": true,
+  "prompt_tokens": 17378
+ },
+ "RMI_MEC_SET_SHARED": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16241
+ },
+ "RMI_PSMMU_MSI_CONFIG": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16577
+ },
+ "RMI_REC_ENTER": {
+  "attempts": 1,
+  "problems": [
+   "prose: 'exit contains' in 'run.exit contains Realm exit syndrome information'",
+   "prose: 'emulatable_abort is' in 'rec.emulatable_abort is updated'",
+   "return codes lost: ['RMI_FEATURES']"
+  ],
+  "written": true,
+  "prompt_tokens": 16922
+ },
+ "RMI_RTT_CREATE": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17119
+ },
+ "RMI_RTT_MAP_UNPROTECTED": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17090
+ },
+ "RMI_VDEV_AUX_COUNT": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16267
+ },
+ "RMI_VDEV_LOCK": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16684
+ },
+ "RMI_VDEV_VALIDATE_MAPPING": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17866
+ },
+ "RSI_ATTESTATION_TOKEN_CONTINUE": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16622
+ },
+ "RSI_MEM_SET_PERM_INDEX": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16642
+ },
+ "RSI_VERSION": {
+  "attempts": 1,
+  "problems": [
+   "return codes lost: ['RSI_SUCCESS']"
+  ],
+  "written": true,
+  "prompt_tokens": 16666
+ }
+}

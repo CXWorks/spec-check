@@ -1,0 +1,60 @@
+B5.3.8 RSI_MEASUREMENT_READ command
+               Read measurement for the current Realm.
+               B5.3.8.1 Interface
+               B5.3.8.1.1   Input values
+         Name               Register     Bits        Type                                  Description
+         fid                X0           63:0        UInt64                                FID, value 0xC4000192
+         index              X1           63:0        UInt64                                Measurement index
+               index 0 selects the RIM. An index of 1 or greater selects the corresponding REM.
+               B5.3.8.1.2   Context
+               The RSI_MEASUREMENT_READ command operates on the following context.
+         Name               Type                        Value                                      Before   Description
+         realm              RmmRealm                    CurrentRealm()                             false    Current Realm
+         meas               RmmRealmMeasurement         realm.measurements[[index]]                false    Measurement
+               B5.3.8.1.3   Output values
+         Name               Register     Bits        Type                                  Description
+         result             X0           63:0        RsiCommandReturnCode                  Command return status
+         value_0            X1           63:0        Bits64                                Doubleword 0 of the Realm
+                                                                                           measurement identified by “index”
+         value_1            X2           63:0        Bits64                                Doubleword 1 of the Realm
+                                                                                           measurement identified by “index”
+         value_2            X3           63:0        Bits64                                Doubleword 2 of the Realm
+                                                                                           measurement identified by “index”
+         value_3            X4           63:0        Bits64                                Doubleword 3 of the Realm
+                                                                                           measurement identified by “index”
+         value_4            X5           63:0        Bits64                                Doubleword 4 of the Realm
+                                                                                           measurement identified by “index”
+         value_5            X6           63:0        Bits64                                Doubleword 5 of the Realm
+                                                                                           measurement identified by “index”
+         value_6            X7           63:0        Bits64                                Doubleword 6 of the Realm
+                                                                                           measurement identified by “index”
+         value_7            X8           63:0        Bits64                                Doubleword 7 of the Realm
+                                                                                           measurement identified by “index”
+               If the size of the measurement value is smaller than 512 bits, the output values are padded with zeroes.
+               B5.3.8.2 Failure conditions
+  ID                           Condition
+  index_bound                  pre: index > 4
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+               B5.3.8.2.1   Failure condition ordering
+               The RSI_MEASUREMENT_READ command has no failure condition ordering.
+               B5.3.8.3 Success conditions
+  ID                           Condition
+  result                       post: result == RSI_SUCCESS
+  sha256_value_0               post: realm.hash_algo == HASH_SHA_256 ==> value_0 == Element(RealmMeasurementEncode(meas), 0)
+  sha256_value_1               post: realm.hash_algo == HASH_SHA_256 ==> value_1 == Element(RealmMeasurementEncode(meas), 1)
+  sha256_value_2               post: realm.hash_algo == HASH_SHA_256 ==> value_2 == Element(RealmMeasurementEncode(meas), 2)
+  sha256_value_3               post: realm.hash_algo == HASH_SHA_256 ==> value_3 == Element(RealmMeasurementEncode(meas), 3)
+  sha256_value_4               post: realm.hash_algo == HASH_SHA_256 ==> value_4 == 0
+  sha256_value_5               post: realm.hash_algo == HASH_SHA_256 ==> value_5 == 0
+  sha256_value_6               post: realm.hash_algo == HASH_SHA_256 ==> value_6 == 0
+  sha256_value_7               post: realm.hash_algo == HASH_SHA_256 ==> value_7 == 0
+  sha512_value_0               post: realm.hash_algo == HASH_SHA_512 ==> value_0 == Element(RealmMeasurementEncode(meas), 0)
+  sha512_value_1               post: realm.hash_algo == HASH_SHA_512 ==> value_1 == Element(RealmMeasurementEncode(meas), 1)
+  sha512_value_2               post: realm.hash_algo == HASH_SHA_512 ==> value_2 == Element(RealmMeasurementEncode(meas), 2)
+  sha512_value_3               post: realm.hash_algo == HASH_SHA_512 ==> value_3 == Element(RealmMeasurementEncode(meas), 3)
+  sha512_value_4               post: realm.hash_algo == HASH_SHA_512 ==> value_4 == Element(RealmMeasurementEncode(meas), 4)
+  sha512_value_5               post: realm.hash_algo == HASH_SHA_512 ==> value_5 == Element(RealmMeasurementEncode(meas), 5)
+  sha512_value_6               post: realm.hash_algo == HASH_SHA_512 ==> value_6 == Element(RealmMeasurementEncode(meas), 6)
+  sha512_value_7               post: realm.hash_algo == HASH_SHA_512 ==> value_7 == Element(RealmMeasurementEncode(meas), 7)
+               B5.3.8.4 Footprint
+               The RSI_MEASUREMENT_READ command does not have any footprint.

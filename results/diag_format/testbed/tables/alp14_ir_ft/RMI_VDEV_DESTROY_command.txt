@@ -1,0 +1,213 @@
+B4.3.52 RMI_VDEV_DESTROY command
+                Destroy a VDEV.
+                B4.3.52.1 Interface
+                B4.3.52.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000188
+        rd                    X1          63:0        Address                               PA of the RD
+        pdev_ptr              X2          63:0        Address                               PA of the PDEV
+        vdev_ptr              X3          63:0        Address                               PA of the VDEV
+                B4.3.52.1.2   Context
+                The RMI_VDEV_DESTROY command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm_pre             RmmRealm                   RealmAt(rd)                                true     Realm
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        vdev_pre              RmmVdev                    VdevAt(vdev_ptr)                           true     VDEV
+        pdev_pre              RmmPdev                                                               true     PDEV
+                                                                        PdevAt(pdev_ptr)
+        pdev                  RmmPdev                    PdevAt(pdev_ptr)                           false    PDEV
+                B4.3.52.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+                B4.3.52.2 Failure conditions
+  ID                           Condition
+  feature_support             pre: false
+                               post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  rd_align                    pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                    pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_ptr_align              pre: !AddrIsGranuleAligned(pdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_ptr_delegable          pre: !PaIsDelegable(pdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  pdev_ptr_state              pre: GranuleAt(pdev_ptr).state != PDEV
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_ptr_align              pre: !AddrIsGranuleAligned(vdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_ptr_delegable          pre: !PaIsDelegable(vdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_ptr_state              pre: GranuleAt(vdev_ptr).state != VDEV
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_owner                  pre: VdevAt(vdev_ptr).realm != RealmAt(rd)
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+  vdev_pdev                   pre: VdevAt(vdev_ptr).pdev != PdevAt(pdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+  vdev_state                  pre: VdevAt(vdev_ptr).vdev_state != VDEV_NEW && VdevAt(vdev_ptr).vdev_state != VDEV_UNLOCKED && VdevAt(vdev_ptr).vdev_state != VDEV_ERROR
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+  vdev_mappings               pre: VdevAt(vdev_ptr).num_map != 0
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+                B4.3.52.2.1   Failure condition ordering
+                [feature_support, rd_align, rd_delegable, rd_state, pdev_ptr_align, pdev_ptr_delegable, pdev_ptr_state, vdev_ptr_align, vdev_ptr_delegable, vdev_ptr_state] < [vdev_owner, vdev_pdev, vdev_state, vdev_mappings]
+                                                                                           feature_support
+                                                                                           rd_align                     rd_delegable                        rd_state
+                                                                                           pdev_ptr_align                     pdev_ptr_delegable                        pdev_ptr_state
+                                                                                           vdev_ptr_align                     vdev_ptr_delegable                        vdev_ptr_state
+                                                                                           RMI_ERROR_INPUT
+                                                                                           vdev_owner                     vdev_pdev                        vdev_state
+                                                                                           vdev_mappings
+                                                                                           RMI_ERROR_DEVICE
+                B4.3.52.3 Success conditions
+  vdev_ptr_state              post: GranuleAt(vdev_ptr).state == DELEGATED
+  aux_states                  post: AuxStates(VdevAt(vdev_ptr).aux, VdevAt(vdev_ptr).num_aux)
+  realm_num_vdevs             post: realm.num_vdevs == realm.num_vdevs - 1
+  pdev_num_vdevs              post: pdev.num_vdevs == pdev.num_vdevs - 1
+  vdev_vsid                   post: VdevAt(vdev_ptr).vsid == 0
+                B4.3.52.4 Footprint
+    ID                        Value
+    state                     GranuleAt(vdev_ptr).state
+    aux_state                 AuxStates(vdev_pre.aux, vdev_pre.num_aux)
+    realm_num_vdevs           realm.num_vdevs
+    pdev_num_vdevs            pdev.num_vdevs
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_vsmmu_addr           VdevAt(vdev_ptr).vsmmu_addr
+    vdev_vsmmu_state          VsmmuAt(VdevAt(vdev_ptr).vsmmu_addr).state
+    vdev_vsid                 VdevAt(vdev_ptr).vsid
+    vdev_v

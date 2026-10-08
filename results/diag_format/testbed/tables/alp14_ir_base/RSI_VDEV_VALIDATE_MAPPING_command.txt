@@ -1,0 +1,54 @@
+B5.3.19 RSI_VDEV_VALIDATE_MAPPING command
+                Validates Realm device memory mappings.
+                B5.3.19.1 Interface
+                B5.3.19.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400019F
+        vdev_id               X1          63:0        Bits64                                Realm device identifier
+        ipa_base              X2          63:0        Address                               Base of target IPA region
+        ipa_top               X3          63:0        Address                               Top of target IPA region
+        pa_base               X4          63:0        Address                               Base of target PA region
+        flags                 X5          63:0        RsiDevMemFlags                        Flags
+        lock_nonce            X6          63:0        UInt64                                Nonce generated on most recent transition to LOCKED state
+        meas_nonce            X7          63:0        UInt64                                GET_MEASUREMENT request sequence number
+        report_nonce          X8          63:0        UInt64                                GET_INTERFACE_REPORT request sequence number
+                B5.3.19.1.2   Context
+                The RSI_VDEV_VALIDATE_MAPPING command operates on the following context.
+        Name                  Type                       Value                                      Before    Description
+        realm                 RmmRealm                   CurrentRealm()                             false     Current Realm
+        rec                   RmmRec                     CurrentRec()                               false     Current REC
+        vdev                  RmmVdev                    VdevFromVdevId(realm, vdev_id)             false     Realm device
+                B5.3.19.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RsiCommandReturnCode                  Command return status
+        new_ipa_base          X1          63:0        Address                               Base of IPA region which was not modified by the command
+        response              X2          0:0         RsiResponse                           Whether the Host accepted or rejected the request
+                B5.3.19.2 Failure conditions
+  ID                           Condition
+  feature_enabled             pre: !ImplFeatures(CurrentRealm()).feat_da
+                               post: ResultEqual(result, RSI_ERROR_STATE)
+  vdev_in_use                 pre: !VdevAt(CurrentRealm(), vdev_id).vdev_state == VDEV_LOCKED || !VdevAt(CurrentRealm(), vdev_id).vdev_state == VDEV_STARTED
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  ipa_base_aligned            pre: !AddrIsGranuleAligned(CurrentRealm(), ipa_base)
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  ipa_top_aligned             pre: !AddrIsGranuleAligned(CurrentRealm(), ipa_top)
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  pa_base_aligned             pre: !AddrIsGranuleAligned(CurrentRealm(), pa_base)
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  ipa_range_valid             pre: ipa_top <= ipa_base
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  ipa_range_protected         pre: !AddrRangeIsProtected(CurrentRealm(), ipa_base, ipa_top, CurrentRealm())
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  nonces_match                pre: !VdevAt(CurrentRealm(), vdev_id).attest_info.lock_nonce == lock_nonce || !VdevAt(CurrentRealm(), vdev_id).attest_info.meas_nonce == meas_nonce || !VdevAt(CurrentRealm(), vdev_id).attest_info.report_nonce == report_nonce
+                               post: ResultEqual(result, RSI_ERROR_DEVICE)
+                B5.3.19.2.1   Failure condition ordering
+                [feature_enabled] < [vdev_in_use]
+                                 feature_enabled                     vdev_in_use
+                                                                                           RSI_ERROR_STATE
+                                                                                           RSI_ERROR_INPUT
+                B5.3.19.3 Success conditions
+  new_ipa_base                post: new_ipa_base == rec.dev_mem_addr
+  response                    post: response == RecDevMemResponseToRsi(CurrentRec())
+                B5.3.19.4 Footprint
+    ID                           Value
+    None                         None

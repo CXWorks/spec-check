@@ -1,0 +1,333 @@
+B6.3.2 PSCI_CPU_OFF command
+                Power down the calling core.
+                B6.3.2.1 Interface
+                B6.3.2.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000002
+                B6.3.2.1.2   Context
+                The PSCI_CPU_OFF command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        rec                   RmmRec                       CurrentRec()                                false    Current REC
+                B6.3.2.1.3   Output values
+                The PSCI_CPU_OFF command does not have any output values.
+                Following execution of PSCI_CPU_OFF, control does not return to the caller.
+                B6.3.2.2 Failure conditions
+                The PSCI_CPU_OFF command does not have any failure conditions.
+                B6.3.2.3 Success conditions
+                The PSCI_CPU_OFF command does not have any success conditions.
+                Following execution of PSCI_CPU_OFF, control does not return to the caller.
+                B6.3.2.4 Footprint
+                The PSCI_CPU_OFF command does not have any footprint.
+                B6.3.2.5 Post-execution behavior
+                Following execution of PSCI_CPU_OFF, control does not return to the caller.
+                B6.3.2.6 Failure condition ordering
+                There is no failure condition ordering.
+                B6.3.2.7 Success condition ordering
+                There is no success condition ordering.
+                B6.3.2.8 Footprint ordering
+                There is no footprint ordering.
+                B6.3.2.9 Context ordering
+                There is no context ordering.
+                B6.3.2.10 Input value ordering
+                There is no input value ordering.
+                B6.3.2.11 Output value ordering
+                There is no output value ordering.
+                B6.3.2.12 Failure condition dependency
+                There is no failure condition dependency.
+                B6.3.2.13 Success condition dependency
+                There is no success condition dependency.
+                B6.3.2.14 Footprint dependency
+                There is no footprint dependency.
+                B6.3.2.15 Context dependency
+                There is no context dependency.
+                B6.3.2.16 Input value dependency
+                There is no input value dependency.
+                B6.3.2.17 Output value dependency
+                There is no output value dependency.
+                B6.3.2.18 Failure condition independence
+                There is no failure condition independence.
+                B6.3.2.19 Success condition independence
+                There is no success condition independence.
+                B6.3.2.20 Footprint independence
+                There is no footprint independence.
+                B6.3.2.21 Context independence
+                There is no context independence.
+                B6.3.2.22 Input value independence
+                There is no input value independence.
+                B6.3.2.23 Output value independence
+                There is no output value independence.
+                B6.3.2.24 Failure condition mutual exclusion
+                There is no failure condition mutual exclusion.
+                B6.3.2.25 Success condition mutual exclusion
+                There is no success condition mutual exclusion.
+                B6.3.2.26 Footprint mutual exclusion
+                There is no footprint mutual exclusion.
+                B6.3.2.27 Context mutual exclusion
+                There is no context mutual exclusion.
+                B6.3.2.28 Input value mutual exclusion
+                There is no input value mutual exclusion.
+                B6.3.2.29 Output value mutual exclusion
+                There is no output value mutual exclusion.
+                B6.3.2.30 Failure condition commutativity
+                There is no failure condition commutativity.
+                B6.3.2.31 Success condition commutativity
+                There is no success condition commutativity.
+                B6.3.2.32 Footprint commutativity
+                There is no footprint commutativity.
+                B6.3.2.33 Context commutativity
+                There is no context commutativity.
+                B6.3.2.34 Input value commutativity
+                There is no input value commutativity.
+                B6.3.2.35 Output value commutativity
+                There is no output value commutativity.
+                B6.3.2.36 Failure condition associativity
+                There is no failure condition associativity.
+                B6.3.2.37 Success condition associativity
+                There is no success condition associativity.
+                B6.3.2.38 Footprint associativity
+                There is no footprint associativity.
+                B6.3.2.39 Context associativity
+                There is no context associativity.
+                B6.3.2.40 Input value associativity
+                There is no input value associativity.
+                B6.3.2.41 Output value associativity
+                There is no output value associativity.
+                B6.3.2.42 Failure condition distributivity
+                There is no failure condition distributivity.
+                B6.3.2.43 Success condition distributivity
+                There is no success condition distributivity.
+                B6.3.2.44 Footprint distributivity
+                There is no footprint distributivity.
+                B6.3.2.45 Context distributivity
+                There is no context distributivity.
+                B6.3.2.46 Input value distributivity
+                There is no input value distributivity.
+                B6.3.2.47 Output value distributivity
+                There is no output value distributivity.
+                B6.3.2.48 Failure condition idempotency
+                There is no failure condition idempotency.
+                B6.3.2.49 Success condition idempotency
+                There is no success condition idempotency.
+                B6.3.2.50 Footprint idempotency
+                There is no footprint idempotency.
+                B6.3.2.51 Context idempotency
+                There is no context idempotency.
+                B6.3.2.52 Input value idempotency
+                There is no input value idempotency.
+                B6.3.2.53 Output value idempotency
+                There is no output value idempotency.
+                B6.3.2.54 Failure condition invertibility
+                There is no failure condition invertibility.
+                B6.3.2.55 Success condition invertibility
+                There is no success condition invertibility.
+                B6.3.2.56 Footprint invertibility
+                There is no footprint invertibility.
+                B6.3.2.57 Context invertibility
+                There is no context invertibility.
+                B6.3.2.58 Input value invertibility
+                There is no input value invertibility.
+                B6.3.2.59 Output value invertibility
+                There is no output value invertibility.
+                B6.3.2.60 Failure condition reversibility
+                There is no failure condition reversibility.
+                B6.3.2.61 Success condition reversibility
+                There is no success condition reversibility.
+                B6.3.2.62 Footprint reversibility
+                There is no footprint reversibility.
+                B6.3.2.63 Context reversibility
+                There is no context reversibility.
+                B6.3.2.64 Input value reversibility
+                There is no input value reversibility.
+                B6.3.2.65 Output value reversibility
+                There is no output value reversibility.
+                B6.3.2.66 Failure condition symmetry
+                There is no failure condition symmetry.
+                B6.3.2.67 Success condition symmetry
+                There is no success condition symmetry.
+                B6.3.2.68 Footprint symmetry
+                There is no footprint symmetry.
+                B6.3.2.69 Context symmetry
+                There is no context symmetry.
+                B6.3.2.70 Input value symmetry
+                There is no input value symmetry.
+                B6.3.2.71 Output value symmetry
+                There is no output value symmetry.
+                B6.3.2.72 Failure condition transitivity
+                There is no failure condition transitivity.
+                B6.3.2.73 Success condition transitivity
+                There is no success condition transitivity.
+                B6.3.2.74 Footprint transitivity
+                There is no footprint transitivity.
+                B6.3.2.75 Context transitivity
+                There is no context transitivity.
+                B6.3.2.76 Input value transitivity
+                There is no input value transitivity.
+                B6.3.2.77 Output value transitivity
+                There is no output value transitivity.
+                B6.3.2.78 Failure condition reflexivity
+                There is no failure condition reflexivity.
+                B6.3.2.79 Success condition reflexivity
+                There is no success condition reflexivity.
+                B6.3.2.80 Footprint reflexivity
+                There is no footprint reflexivity.
+                B6.3.2.81 Context reflexivity
+                There is no context reflexivity.
+                B6.3.2.82 Input value reflexivity
+                There is no input value reflexivity.
+                B6.3.2.83 Output value reflexivity
+                There is no output value reflexivity.
+                B6.3.2.84 Failure condition antisymmetry
+                There is no failure condition antisymmetry.
+                B6.3.2.85 Success condition antisymmetry
+                There is no success condition antisymmetry.
+                B6.3.2.86 Footprint antisymmetry
+                There is no footprint antisymmetry.
+                B6.3.2.87 Context antisymmetry
+                There is no context antisymmetry.
+                B6.3.2.88 Input value antisymmetry
+                There is no input value antisymmetry.
+                B6.3.2.89 Output value antisymmetry
+                There is no output value antisymmetry.
+                B6.3.2.90 Failure condition completeness
+                There is no failure condition completeness.
+                B6.3.2.91 Success condition completeness
+                There is no success condition completeness.
+                B6.3.2.92 Footprint completeness
+                There is no footprint completeness.
+                B6.3.2.93 Context completeness
+                There is no context completeness.
+                B6.3.2.94 Input value completeness
+                There is no input value completeness.
+                B6.3.2.95 Output value completeness
+                There is no output value completeness.
+                B6.3.2.96 Failure condition soundness
+                There is no failure condition soundness.
+                B6.3.2.97 Success condition soundness
+                There is no success condition soundness.
+                B6.3.2.98 Footprint soundness
+                There is no footprint soundness.
+                B6.3.2.99 Context soundness
+                There is no context soundness.
+                B6.3.2.100 Input value soundness
+                There is no input value soundness.
+                B6.3.2.101 Output value soundness
+                There is no output value soundness.
+                B6.3.2.102 Failure condition consistency
+                There is no failure condition consistency.
+                B6.3.2.103 Success condition consistency
+                There is no success condition consistency.
+                B6.3.2.104 Footprint consistency
+                There is no footprint consistency.
+                B6.3.2.105 Context consistency
+                There is no context consistency.
+                B6.3.2.106 Input value consistency
+                There is no input value consistency.
+                B6.3.2.107 Output value consistency
+                There is no output value consistency.
+                B6.3.2.108 Failure condition termination
+                There is no failure condition termination.
+                B6.3.2.109 Success condition termination
+                There is no success condition termination.
+                B6.3.2.110 Footprint termination
+                There is no footprint termination.
+                B6.3.2.111 Context termination
+                There is no context termination.
+                B6.3.2.112 Input value termination
+                There is no input value termination.
+                B6.3.2.113 Output value termination
+                There is no output value termination.
+                B6.3.2.114 Failure condition liveness
+                There is no failure condition liveness.
+                B6.3.2.115 Success condition liveness
+                There is no success condition liveness.
+                B6.3.2.116 Footprint liveness
+                There is no footprint liveness.
+                B6.3.2.117 Context liveness
+                There is no context liveness.
+                B6.3.2.118 Input value liveness
+                There is no input value liveness.
+                B6.3.2.119 Output value liveness
+                There is no output value liveness.
+                B6.3.2.120 Failure condition safety
+                There is no failure condition safety.
+                B6.3.2.121 Success condition safety
+                There is no success condition safety.
+                B6.3.2.122 Footprint safety
+                There is no footprint safety.
+                B6.3.2.123 Context safety
+                There is no context safety.
+                B6.3.2.124 Input value safety
+                There is no input value safety.
+                B6.3.2.125 Output value safety
+                There is no output value safety.
+                B6.3.2.126 Failure condition progress
+                There is no failure condition progress.
+                B6.3.2.127 Success condition progress
+                There is no success condition progress.
+                B6.3.2.128 Footprint progress
+                There is no footprint progress.
+                B6.3.2.129 Context progress
+                There is no context progress.
+                B6.3.2.130 Input value progress
+                There is no input value progress.
+                B6.3.2.131 Output value progress
+                There is no output value progress.
+                B6.3.2.132 Failure condition fairness
+                There is no failure condition fairness.
+                B6.3.2.133 Success condition fairness
+                There is no success condition fairness.
+                B6.3.2.134 Footprint fairness
+                There is no footprint fairness.
+                B6.3.2.135 Context fairness
+                There is no context fairness.
+                B6.3.2.136 Input value fairness
+                There is no input value fairness.
+                B6.3.2.137 Output value fairness
+                There is no output value fairness.
+                B6.3.2.138 Failure condition starvation
+                There is no failure condition starvation.
+                B6.3.2.139 Success condition starvation
+                There is no success condition starvation.
+                B6.3.2.140 Footprint starvation
+                There is no footprint starvation.
+                B6.3.2.141 Context starvation
+                There is no context starvation.
+                B6.3.2.142 Input value starvation
+                There is no input value starvation.
+                B6.3.2.143 Output value starvation
+                There is no output value starvation.
+                B6.3.2.144 Failure condition deadlock
+                There is no failure condition deadlock.
+                B6.3.2.145 Success condition deadlock
+                There is no success condition deadlock.
+                B6.3.2.146 Footprint deadlock
+                There is no footprint deadlock.
+                B6.3.2.147 Context deadlock
+                There is no context deadlock.
+                B6.3.2.148 Input value deadlock
+                There is no input value deadlock.
+                B6.3.2.149 Output value deadlock
+                There is no output value deadlock.
+                B6.3.2.150 Failure condition livelock
+                There is no failure condition livelock.
+                B6.3.2.151 Success condition livelock
+                There is no success condition livelock.
+                B6.3.2.152 Footprint livelock
+                There is no footprint livelock.
+                B6.3.2.153 Context livelock
+                There is no context livelock.
+                B6.3.2.154 Input value livelock
+                There is no input value livelock.
+                B6.3.2.155 Output value livelock
+                There is no output value livelock.
+                B6.3.2.156 Failure condition race
+                There is no failure condition race.
+                B6.3.2.157 Success condition race
+                There is no success condition race.
+                B6.3.2.158 Footprint race
+                There is no footprint race.
+                B6.3.2.159 Context race
+                There is no context race.
+                B6.3.2.160 Input value race
+                There is no input value race.
+                B6.3.2.161 Output value race

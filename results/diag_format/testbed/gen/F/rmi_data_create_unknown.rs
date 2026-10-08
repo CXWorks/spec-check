@@ -1,0 +1,18 @@
+pub open spec fn rmi_data_create_unknown_spec(rd: Address, data: Address, ipa: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+    (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, data) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegableDevMem(old_s, data) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!GranuleAt(old_s, data).state == DATA ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!GranuleAt(old_s, rd).state == RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsProtected(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!RmmRttLevelIsStarting(old_s, RealmAt(old_s, rd), RMM_RTT_PAGE_LEVEL) ==> ResultEqual(result, RMI_ERROR_RTT(RMM_RTT_PAGE_LEVEL)))
+    && (!RmmRttEntryState(old_s, RmmRttAt(old_s, RttWalk_(old_s, rd, ipa, RMM_RTT_PAGE_LEVEL as int).rtt_addr, RMM_RTT_TREE_PRIMARY as int, RMM_RTT_PAGE_LEVEL as int), RttEntryIndex(old_s, ipa, RMM_RTT_PAGE_LEVEL as int)) == UNASSIGNED ==> ResultEqual(result, RMI_ERROR_RTT(RMM_RTT_PAGE_LEVEL)))
+    && (result.is_Ok() ==> GranuleAt(new_s, data).state == DATA)
+    && (result.is_Ok() ==> GranuleAt(new_s, data).state == DATA)
+    && (result.is_Ok() ==> RmmRttEntryState(new_s, RmmRttAt(new_s, RttWalk_(old_s, rd, ipa, RMM_RTT_PAGE_LEVEL as int).rtt_addr, RMM_RTT_TREE_PRIMARY as int, RMM_RTT_PAGE_LEVEL as int), RttEntryIndex(old_s, ipa, RMM_RTT_PAGE_LEVEL as int)) == ASSIGNED)
+    && (result.is_Ok() ==> RmmRttEntry(new_s, RmmRttAt(new_s, RttWalk_(old_s, rd, ipa, RMM_RTT_PAGE_LEVEL as int).rtt_addr, RMM_RTT_TREE_PRIMARY as int, RMM_RTT_PAGE_LEVEL as int), RttEntryIndex(old_s, ipa, RMM_RTT_PAGE_LEVEL as int)).addr == data)
+    && (result.is_Ok() ==> RmmRttEntry(new_s, RmmRttAt(new_s, RttWalk_(old_s, rd, ipa, RMM_RTT_PAGE_LEVEL as int).rtt_addr, RMM_RTT_TREE_PRIMARY as int, RMM_RTT_PAGE_LEVEL as int), RttEntryIndex(old_s, ipa, RMM_RTT_PAGE_LEVEL as int)).attr_prot == MEMATTR_CACHEABLE)
+    && (result.is_Ok() ==> RmmRttEntry(new_s, RmmRttAt(new_s, RttWalk_(old_s, rd, ipa, RMM_RTT_PAGE_LEVEL as int).rtt_addr, RMM_RTT_TREE_PRIMARY as int, RMM_RTT_PAGE_LEVEL as int), RttEntryIndex(old_s, ipa, RMM_RTT_PAGE_LEVEL as int)).sh == SHAREABILITY_INNER)
+}

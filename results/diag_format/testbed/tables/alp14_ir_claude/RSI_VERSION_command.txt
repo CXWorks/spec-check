@@ -1,0 +1,27 @@
+B5.3.20 RSI_VERSION command
+                Returns RSI version.
+                B5.3.20.1 Interface
+                B5.3.20.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000190
+        req                   X1          63:0        RsiInterfaceVersion                   Requested interface revision
+                B5.3.20.1.2   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RsiCommandReturnCode                  Command return status
+        lower                 X1          63:0        RsiInterfaceVersion                   Lower supported interface revision
+        higher                X2          63:0        RsiInterfaceVersion                   Higher supported interface revision
+                B5.3.20.2 Failure conditions
+  ID                           Condition
+  incompat_lower               pre: !RsiVersionIsSupported(req) && RsiVersionLowerIsSupported(req)
+                               post: ResultEqual(result, RSI_ERROR_INPUT) && VersionEqualRsi(lower, RsiVersionHighestBelow(req)) && VersionEqualRsi(higher, RsiVersionHighest())
+  incompat_higher              pre: !RsiVersionIsSupported(req) && !RsiVersionLowerIsSupported(req) && RsiVersionHigherIsSupported(req)
+                               post: ResultEqual(result, RSI_ERROR_INPUT) && VersionEqualRsi(lower, higher) && VersionEqualRsi(higher, RsiVersionHighest())
+                B5.3.20.2.1   Failure condition ordering
+                The RSI_VERSION command does not have any failure condition orderings.
+                B5.3.20.3 Success conditions
+  ID                           Condition
+  result                       post: result == RSI_SUCCESS
+  lower                        post: VersionEqualRsi(lower, req)
+  higher                       post: VersionEqualRsi(higher, RsiVersionHighest())
+                B5.3.20.4 Footprint
+                The RSI_VERSION command does not have any footprint.

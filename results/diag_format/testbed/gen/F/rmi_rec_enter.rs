@@ -1,0 +1,17 @@
+pub open spec fn rmi_rec_enter_spec(rec_ptr: Address, run_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+    (!((rec_ptr as int) % RMM_GRANULE_SIZE != 0) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!GranuleAccessPermitted(old_s, rec_ptr, PAS_NS) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!((run_ptr as int) % RMM_GRANULE_SIZE != 0) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, rec_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!GranuleAt(old_s, rec_ptr).state == REC ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rec_ptr).state == REC_RUNNING ==> ResultEqual(result, RMI_ERROR_REC))
+    && (RecAt(old_s, rec_ptr).flags.runable == NOT_RUNNABLE ==> ResultEqual(result, RMI_ERROR_REC))
+    && (RecAt(old_s, rec_ptr).pending != REC_PENDING_NONE ==> ResultEqual(result, RMI_ERROR_REC))
+    && (RecAt(old_s, rec_ptr).emulatable_abort == NOT_EMULATABLE_ABORT ==> ResultEqual(result, RMI_ERROR_REC))
+    && (RmiRecRunAt(old_s, run_ptr).enter.flags.emul_mmio == RMI_EMULATED_MMIO ==> ResultEqual(result, RMI_ERROR_REC))
+    && (RealmAt(old_s, RecAt(old_s, rec_ptr).owner).state == REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM(0)))
+    && (RealmAt(old_s, RecAt(old_s, rec_ptr).owner).state == REALM_SYSTEM_OFF ==> ResultEqual(result, RMI_ERROR_REALM(1)))
+    && (!Gicv3ConfigIsValid(old_s, RmiRecRunAt(old_s, run_ptr).enter.gicv3_hcr, RmiRecRunAt(old_s, run_ptr).enter.gicv3_lrs) ==> ResultEqual(result, RMI_ERROR_REC))
+    && (result.is_Ok() ==> (new_s.mem == old_s.mem))
+    && (result.is_Ok() ==> (RecAt(new_s, rec_ptr).emulatable_abort == RmiRecRunAt(old_s, run_ptr).exit.emulatable_abort))
+}

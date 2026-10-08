@@ -1,0 +1,40 @@
+B5.3.5 RSI_IPA_STATE_GET command
+                Gets RIPAS of a target IPA range.
+                B5.3.5.1 Interface
+                B5.3.5.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000198
+        base                  X1          63:0        Address                               Base of target IPA region
+        top                   X2          63:0        Address                               End of target IPA region
+                B5.3.5.1.2   Context
+                The RSI_IPA_STATE_GET command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                    CurrentRealm()                             false     Current Realm
+                B5.3.5.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RsiCommandReturnCode                  Command return status
+        out_top               X1          63:0        Address                               Top of IPA region which has the reported RIPAS value
+        ripas                 X2          7:0         RsiRipas                              RIPAS value
+                B5.3.5.2 Failure conditions
+  ID                           Condition
+  base_align                  pre: !AddrIsGranuleAligned(realm, base)
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  top_align                   pre: !AddrIsGranuleAligned(realm, top)
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  range_valid                 pre: top <= base
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  range_in_realm              pre: !AddrRangeIsProtected(realm, base, top)
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+                B5.3.5.2.1   Failure condition ordering
+                [base_align, top_align, range_valid] < [range_in_realm]
+                                 base_align                     top_align                        range_valid
+                                                                                           RSI_ERROR_INPUT
+                                                                                           range_in_realm
+                B5.3.5.3 Success conditions
+  ID                           Condition
+  out_top                     post: out_top > base
+  out_top_bound               post: out_top <= top
+  ripas_consistent            post: forall|addr: Address| AddrInRange(realm, addr, base, out_top - base) ==> RipasAt(realm, addr) == ripas
+                B5.3.5.4 Footprint
+    ID                           Value
+    None                         None

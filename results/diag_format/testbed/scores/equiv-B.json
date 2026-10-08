@@ -1,0 +1,394 @@
+[
+  {
+    "cand_implies_gold": "proved",
+    "gold_implies_cand": "proved",
+    "verdict": "equivalent",
+    "gold_vacuous": true,
+    "run": "eval-tbs2_B",
+    "command": "PSCI_CPU_OFF"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: mismatched types; types must be compatible to use == or !=",
+    "run": "eval-tbs2_B",
+    "command": "PSCI_VERSION"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `GranuleContentsCopied` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_DATA_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `GranuleContentsWiped` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_DATA_CREATE_UNKNOWN"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: expected one of: `for`, parentheses, `fn`, `unsafe`, `extern`, `FnSpec`, `spec_fn`, `proof_fn`, identifier, `::`, `<`, `dyn`, square brackets, `*`, `&`, ",
+    "run": "eval-tbs2_B",
+    "command": "RMI_DATA_DESTROY"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "proved",
+    "verdict": "weaker",
+    "gold_vacuous": false,
+    "run": "eval-tbs2_B",
+    "command": "RMI_GRANULE_DELEGATE"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "proved",
+    "verdict": "weaker",
+    "gold_vacuous": false,
+    "run": "eval-tbs2_B",
+    "command": "RMI_MEC_SET_SHARED"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "proved",
+    "verdict": "weaker",
+    "gold_vacuous": false,
+    "run": "eval-tbs2_B",
+    "command": "RMI_PDEV_IDE_RESET"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `PublicKeyIsValid` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_PDEV_SET_PUBKEY"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "proved",
+    "verdict": "weaker",
+    "gold_vacuous": false,
+    "run": "eval-tbs2_B",
+    "command": "RMI_PDEV_STOP"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: expected `,`",
+    "run": "eval-tbs2_B",
+    "command": "RMI_PSMMU_MSI_CONFIG"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `PrimaryRttBase` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_REALM_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RealmRttBase` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_REALM_DESTROY"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "proved",
+    "verdict": "weaker",
+    "gold_vacuous": false,
+    "run": "eval-tbs2_B",
+    "command": "RMI_REC_DESTROY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `RecExitSyndromeWritten` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_REC_ENTER"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `RMM_FEATURE_FALSE` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_AUX_MAP_PROTECTED"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_AUX_MAP_UNPROTECTED"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_AUX_UNMAP_UNPROTECTED"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0061]: this function takes 3 arguments but 2 arguments were supplied",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_DESTROY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `RMI_SUCCESS` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_FOLD"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `RMI_SUCCESS` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_INIT_RIPAS"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `rtte_addr` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_MAP_UNPROTECTED"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_READ_ENTRY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `RMM_RIPAS_RAM` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_SET_RIPAS"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "eval-tbs2_B",
+    "command": "RMI_RTT_SET_S2AP"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0599]: no variant or associated item named `RMI_SUCCESS` found for enum `RmiStatusCode` in the current scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_AUX_COUNT"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: mismatched types",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_DESTROY"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: mismatched types; types must be compatible to use == or !=",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_GET_INTERFACE_REPORT"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `RMI_SUCCESS` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_GET_STATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: mismatched types; types must be compatible to use == or !=",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_LOCK"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0599]: no method named `RecAt` found for struct `S` in the current scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_P2P_BIND"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: mismatched types; types must be compatible to use == or !=",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_START"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: mismatched types; types must be compatible to use == or !=",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_UNLOCK"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: unexpected token, expected `;`",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VDEV_VALIDATE_MAPPING"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `RMI_SUCCESS` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VERSION"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `VsmmuIdrEqual` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VSMMU_CREATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: expected `;`",
+    "run": "eval-tbs2_B",
+    "command": "RMI_VSMMU_MAP"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `AttestationTokenGenerationFailed` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RSI_ATTESTATION_TOKEN_CONTINUE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: expected `,`",
+    "run": "eval-tbs2_B",
+    "command": "RSI_ATTESTATION_TOKEN_INIT"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find function, tuple struct or tuple variant `AddrRangeHasRipas` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RSI_IPA_STATE_GET"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: expected `,`",
+    "run": "eval-tbs2_B",
+    "command": "RSI_MEASUREMENT_READ"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: expected `,`",
+    "run": "eval-tbs2_B",
+    "command": "RSI_MEM_SET_PERM_INDEX"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0423]: expected value, found macro `cfg`",
+    "run": "eval-tbs2_B",
+    "command": "RSI_REALM_CONFIG"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0425]: cannot find value `RMM_FEATURE_FALSE` in this scope",
+    "run": "eval-tbs2_B",
+    "command": "RSI_VDEV_GET_INFO"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: arguments to this function are incorrect",
+    "run": "eval-tbs2_B",
+    "command": "RSI_VDEV_VALIDATE_MAPPING"
+  },
+  {
+    "cand_implies_gold": "disproved",
+    "gold_implies_cand": "disproved",
+    "verdict": "incomparable",
+    "gold_vacuous": false,
+    "run": "eval-tbs2_B",
+    "command": "RSI_VERSION"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error: expected `,`",
+    "run": "eval-tbs2_B",
+    "command": "RSI_VSMMU_ACTIVATE"
+  },
+  {
+    "cand_implies_gold": "compile_error",
+    "gold_implies_cand": "compile_error",
+    "verdict": "compile_error",
+    "detail": "error[E0308]: arguments to this function are incorrect",
+    "run": "eval-tbs2_B",
+    "command": "RSI_VSMMU_GET_INFO"
+  }
+]

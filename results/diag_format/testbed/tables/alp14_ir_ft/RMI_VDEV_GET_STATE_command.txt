@@ -1,0 +1,261 @@
+B4.3.55 RMI_VDEV_GET_STATE command
+                Get state of a VDEV.
+                B4.3.55.1 Interface
+                B4.3.55.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000189
+        vdev_ptr              X1          63:0        Address                               PA of the VDEV
+                B4.3.55.1.2   Context
+                The RMI_VDEV_GET_STATE command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        vdev                  RmmVdev                    VdevAt(vdev_ptr)                           false    VDEV
+                B4.3.55.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        state                 X1          7:0        RmiVdevState                          VDEV state
+                The following unused bits of RMI_VDEV_GET_STATE output values MBZ: X1[63:8].
+                B4.3.55.2 Failure conditions
+  ID                           Condition
+  dev_assign                  pre: !DeviceAssignmentSupported()
+                               post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  vdev_ptr_align              pre: !AddrIsGranuleAligned(vdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_ptr_delegable          pre: !PaIsDelegable(vdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_ptr_state              pre: GranuleAt(vdev_ptr).state != VDEV
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+                B4.3.55.2.1   Failure condition ordering
+                [dev_assign] < [vdev_ptr_align, vdev_ptr_delegable, vdev_ptr_state]
+                                 dev_assign                  vdev_ptr_align                  vdev_ptr_delegable                  vdev_ptr_state
+                                                                                           RMI_ERROR_NOT_SUPPORTED
+                                                                                           RMI_ERROR_INPUT
+                                                                                           RMI_ERROR_INPUT
+                                                                                           RMI_ERROR_INPUT
+                B4.3.55.3 Success conditions
+  ID                           Condition
+  state                       post: state == VdevAt(vdev_ptr).vdev_state
+                B4.3.55.4 Footprint
+    ID                           Value
+    state                      VdevAt(vdev_ptr).vdev_state
+    VdevAt(vdev_ptr).vdev_state state
+    VdevAt(vdev_ptr).vdev_state dma_state
+    VdevAt(vdev_ptr).vdev_state comm_state
+    VdevAt(vdev_ptr).vdev_state op
+    VdevAt(vdev_ptr).vdev_state comm_state
+    VdevAt(vdev_ptr).vdev_state aux
+    VdevAt(vdev_ptr).vdev_state num_aux
+    VdevAt(vdev_ptr).vdev_state vsmmu
+    VdevAt(vdev_ptr).vdev_state vsmmu_addr
+    VdevAt(vdev_ptr).vdev_state vsid
+    VdevAt(vdev_ptr).vdev_state num_map
+    VdevAt(vdev_ptr).vdev_state attest_info
+    VdevAt(vdev_ptr).vdev_state meas_digest
+    VdevAt(vdev_ptr).vdev_state report_digest
+    VdevAt(vdev_ptr).vdev_state p2p_bound
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).vdev_state p2p_stream
+    VdevAt(vdev_ptr).vdev_state p2p_peer
+    VdevAt(vdev_ptr).v

@@ -1,0 +1,18 @@
+pub open spec fn rmi_vsmmu_create_spec(rd: Address, vsmmu_ptr: Address, params_ptr: Address, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+    (!ImplFeatures(CurrentRealm(old_s, rd)).feat_da ==> ResultEqual(result, RMI_ERROR_NOT_SUPPORTED))
+    && (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (RealmAt(old_s, rd).state != REALM_NEW ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, vsmmu_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, vsmmu_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, vsmmu_ptr).state != DELEGATED ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsProtected(old_s, params_ptr, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!RmiVsmmuParamsIsValid(old_s, params_ptr) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_base) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_top) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsProtected(old_s, RmiVsmmuParamsAt(old_s, params_ptr).reg_base, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (RmiVsmmuParamsAt(old_s, params_ptr).reg_top <= RmiVsmmuParamsAt(old_s, params_ptr).reg_base ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (result.is_Ok() ==> (GranuleAt(new_s, vsmmu_ptr).state == VSMMU && VsmmuAt(new_s, vsmmu_ptr).state == VSMMU_INACTIVE && VsmmuAt(new_s, vsmmu_ptr).realm == RealmAt(old_s, rd) && VsmmuAt(new_s, vsmmu_ptr).reg_base == RmiVsmmuParamsAt(old_s, params_ptr).reg_base && VsmmuAt(new_s, vsmmu_ptr).reg_top == RmiVsmmuParamsAt(old_s, params_ptr).reg_top && VsmmuAt(new_s, vsmmu_ptr).aidr == RmiVsmmuParamsAt(old_s, params_ptr).aidr && (forall i: 0 <= i < 7 ==> VsmmuAt(new_s, vsmmu_ptr).idr[i] == RmiVsmmuParamsAt(old_s, params_ptr).idr[i]) && RealmAt(new_s, rd).num_vsmmus == RealmAt(old_s, rd).num_vsmmus + 1))
+}

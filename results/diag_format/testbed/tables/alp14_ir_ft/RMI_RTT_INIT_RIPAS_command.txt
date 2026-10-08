@@ -1,0 +1,128 @@
+B4.3.41 RMI_RTT_INIT_RIPAS command
+                Sets the RIPAS of a target IPA range to RAM, for a Realm in the REALM_NEW state.
+                B4.3.41.1 Interface
+                B4.3.41.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000168
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        base                  X2          63:0        Address                               Base of target IPA region
+        top                   X3          63:0        Address                               Top of target IPA region
+                B4.3.41.1.2   Context
+                The RMI_RTT_INIT_RIPAS command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm_pre             RmmRealm                   RealmAt(rd)                                true     Realm
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult            RttWalk(                                   false   RTT walk result
+                                              realm, base,
+                                              RMM_RTT_PAGE_LEVEL,
+                                              RMM_RTT_TREE_PRIMARY)
+        walk_top              Address                     RttSkipEntriesIfNotState(                  false   Top IPA of
+                                              RttAt(walk.rtt_addr),                            UNASSIGNED
+                                              walk.level,                                      entries, starting from
+                                              base, top, UNASSIGNED)                           entry at which the
+                                                                                                           RTT walk terminated
+                B4.3.41.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        out_top               X1          63:0        Address                               Top IPA of range whose RIPAS was
+                                                                                              modified
+                B4.3.41.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_base                     pre: top <= base
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  top_protected                pre: !AddrIsProtected(RttSkipEntriesIfNotState(RttAt(walk.rtt_addr), walk.level, base, top, UNASSIGNED), RealmAt(rd))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  realm_state                  pre: realm_pre.state != REALM_NEW
+                               post: ResultEqual(result, RMI_ERROR_REALM(0))
+  base_rtt_align               pre: !(RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).level == RMM_RTT_PAGE_LEVEL)
+                               post: ResultEqual(result, RMI_ERROR_RTT(RMM_RTT_PAGE_LEVEL))
+  base_rtt_unassigned          pre: RttEntryAt(RttAt(walk.rtt_addr), 0).state != UNASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_RTT(RMM_RTT_PAGE_LEVEL))
+  top_aligned                  pre: !AddrIsGranuleAligned(top)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  base_rtt_range               pre: base == RttSkipEntriesIfNotState(RttAt(walk.rtt_addr), walk.level, base, top, UNASSIGNED)
+                               post: ResultEqual(result, RMI_ERROR_RTT(RMM_RTT_PAGE_LEVEL))
+                B4.3.41.2.1   Failure condition ordering
+                [rd_delegable, rd_state] < [realm_state]
+                [rd_delegable, rd_state] < [base_rtt_align, base_rtt_unassigned]
+                [rd_delegable, rd_state] < [base_rtt_range]
+                [top_aligned] < [base_rtt_range]
+                                 rd_delegable                     rd_state                        realm_state
+                                                                                           RMI_ERROR_INPUT
+                                                                                           base_rtt_align
+                                                                                           base_rtt_unassigned
+                                                                                           base_rtt_range
+                                                                                           top_aligned
+                                                                                           RMI_ERROR_INPUT
+                                                                                           RMI_ERROR_REALM(0)
+                                                                                           RMI_ERROR_RTT(0)
+                                                                                           RMI_ERROR_RTT(0)
+                                                                                           RMI_ERROR_RTT(0)
+                B4.3.41.3 Success conditions
+  realm_state                  post: realm.state == REALM_ACTIVE
+  out_top                      post: out_top == RttSkipEntriesIfNotState(RttAt(walk.rtt_addr), walk.level, base, top, UNASSIGNED)
+                B4.3.41.4 Footprint
+    ID                           Value
+    realm.state                 realm.state
+    realm.measurements[0]       realm.measurements[0]
+    walk.rtt_addr               walk.rtt_addr
+    walk.level                  walk.level
+    walk_top                    walk_top
+    out_top                     out_top
+    RttAt(walk.rtt_addr)        RttAt(walk.rtt_addr)
+    RttEntryAt(RttAt(walk.rtt_addr), 0)  RttEntryAt(RttAt(walk.rtt_addr), 0)
+    RttSkipEntriesIfNotState(RttAt(walk.rtt_addr), walk.level, base, top, UNASSIGNED)  RttSkipEntriesIfNotState(RttAt(walk.rtt_addr), walk.level, base, top, UNASSIGNED)
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0)  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0)
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).level  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).level
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.ripas  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.ripas
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.state  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.state
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.attr_prot  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.attr_prot
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.attr_unprot  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.attr_unprot
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.sh  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.sh
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_direct  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_direct
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_direct.read  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_direct.read
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_direct.write  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_direct.write
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.base_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.base_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index
+    RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index  RttWalk(RttAt(walk.rtt_addr), walk.level, base, 0).rtte.s2ap_indirect.overlay_index

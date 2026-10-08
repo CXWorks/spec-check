@@ -1,0 +1,74 @@
+B4.3.40 RMI_RTT_FOLD command
+                Destroys a homogeneous primary RTT.
+                B4.3.40.1 Interface
+                B4.3.40.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000166
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               Base of the IPA range described by the RTT
+        level                 X3          63:0        Int64                                 RTT level
+                B4.3.40.1.2   Context
+                The RMI_RTT_FOLD command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(realm, ipa, level - 1, RMM_RTT_TREE_PRIMARY) false    RTT walk result
+        entry_idx             UInt64                     RttEntryIndex(ipa, walk.level)             false    RTTE index
+        fold_pre              RmmRttEntry                RttFold(RttAt(walk.rtte.addr))             true     Result of folding RTT
+                B4.3.40.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        rtt                   X1          63:0        Address                               PA of the RTT which was destroyed
+                The rtt output value is valid only when the command result is RMI_SUCCESS.
+                B4.3.40.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_valid                  pre: !RttLevelIsValid(realm, level) || level == RttLevelIsStarting(realm, level)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_aligned                  pre: !AddrIsAligned(ipa, pow2(RttLevelSize(level - 1)))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_in_range                 pre: ipa >= pow2(realm.ipa_width)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  walk_reaches_level           pre: walk.level != level - 1
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+  walk_entry_state             pre: walk.rtte.state != TABLE
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+  child_homogeneous            pre: !RttIsHomogeneous(RttAt(walk.rtte.addr))
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+  ipa_aux_ref                  pre: AddrIsAuxRef(ipa, realm)
+                               post: ResultEqual(result, RMI_ERROR_RTT)
+                B4.3.40.2.1   Failure condition ordering
+                [rd_delegable, rd_state] < [level_valid, ipa_in_range] < [walk_reaches_level, walk_entry_state, child_homogeneous, ipa_aux_ref]
+                                 rd_delegable                     rd_state                        level_valid                     ipa_in_range
+                                                                                           walk_reaches_level             walk_entry_state                child_homogeneous             ipa_aux_ref
+                                                                                           RMI_ERROR_INPUT
+                                                                                           RMI_ERROR_INPUT
+                                                                                           RMI_ERROR_RTT
+                                                                                           RMI_ERROR_RTT
+                                                                                           RMI_ERROR_RTT
+                                                                                           RMI_ERROR_RTT
+                B4.3.40.3 Success conditions
+  ID                           Condition
+  parent_state                 post: GranuleAt(walk.rtte.addr).state == fold_pre.state
+  parent_addr                  post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).addr == fold_pre.addr
+                               pre: fold_pre.state != UNASSIGNED && fold_pre.state != UNASSIGNED_NS
+  parent_mem_attr              post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).attr_prot == RTT_PROTECTED
+                               pre: fold_pre.state == ASSIGNED
+  parent_s2ap                  post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).s2ap_indirect.base_index == S2AP_INDIRECT
+                               pre: fold_pre.state == ASSIGNED
+  parent_mem_attr_ns           post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).attr_unprot == RTT_UNPROTECTED
+                               pre: fold_pre.state == ASSIGNED_NS
+  parent_s2ap_ns               post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).s2ap_indirect.base_index == realm.rtt_s2ap_encoding
+                               pre: fold_pre.state == ASSIGNED_NS
+  parent_ripas                 post: RttEntryAt(RttAt(walk.rtt_addr), entry_idx).ripas == fold_pre.ripas
+                               pre: IsProtectedIPA(ipa)
+  granule_delegated            post: GranuleAt(walk.rtte.addr).state == DELEGATED
+  rtt_value                    post: rtt == walk.rtt_addr
+                B4.3.40.4 Footprint
+    ID                           Value
+    rtt_state                   GranuleAt(walk.rtte.addr).state
+    rtte                        RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

@@ -1,0 +1,80 @@
+{
+ "RMI_DATA_CREATE_UNKNOWN": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16882
+ },
+ "RMI_PDEV_IDE_RESET": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16516
+ },
+ "RMI_REALM_CREATE": {
+  "attempts": 1,
+  "problems": [
+   "prose: 'forall i' in 'forall i: 0..3 | realm.rtt_base[i] == params.aux_rtt_base[i]'",
+   "quantifier not in Verus form in 'forall i: 0..3 | realm.rtt_base[i] == params.aux_rtt_base[i]'",
+   "prose: 'forall i' in 'forall i: 0..realm.rtt_num_start | forall j: 0..RttLevelSize'"
+  ],
+  "written": true,
+  "prompt_tokens": 17525
+ },
+ "RMI_RTT_AUX_MAP_PROTECTED": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17338
+ },
+ "RMI_RTT_DESTROY": {
+  "attempts": 1,
+  "problems": [
+   "return codes lost: ['RMI_SUCCESS']"
+  ],
+  "written": true,
+  "prompt_tokens": 17337
+ },
+ "RMI_RTT_READ_ENTRY": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17434
+ },
+ "RMI_VDEV_DESTROY": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17061
+ },
+ "RMI_VDEV_P2P_BIND": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 18015
+ },
+ "RMI_VERSION": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16689
+ },
+ "RSI_ATTESTATION_TOKEN_INIT": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16568
+ },
+ "RSI_REALM_CONFIG": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16474
+ },
+ "RSI_VSMMU_ACTIVATE": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16598
+ }
+}

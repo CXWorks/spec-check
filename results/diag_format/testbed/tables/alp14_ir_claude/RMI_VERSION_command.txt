@@ -1,0 +1,27 @@
+B4.3.64 RMI_VERSION command
+                Allows the Host and the RMM to determine whether there exists a mutually acceptable revision of the RMM via which the two components can communicate.
+                B4.3.64.1 Interface
+                B4.3.64.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000150
+        req                   X1          63:0        RmiInterfaceVersion                   Requested interface revision
+                B4.3.64.1.2   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        lower                 X1          63:0        RmiInterfaceVersion                   Lower supported interface revision
+        higher                X2          63:0        RmiInterfaceVersion                   Higher supported interface revision
+                B4.3.64.2 Failure conditions
+  ID                           Condition
+  incompat_lower               pre: !RmiVersionIsSupported(req) && RmiVersionLowerIsSupported(req)
+                               post: ResultEqual(result, RMI_ERROR_INPUT) && VersionEqualRmi(lower, RmiVersionHighestBelow(req)) && VersionEqualRmi(higher, RmiVersionHighest())
+  incompat_higher              pre: !RmiVersionIsSupported(req) && !RmiVersionLowerIsSupported(req) && RmiVersionHigherIsSupported(req)
+                               post: ResultEqual(result, RMI_ERROR_INPUT) && VersionEqualRmi(lower, RmiVersionHighest()) && VersionEqualRmi(higher, RmiVersionHighest())
+                B4.3.64.2.1   Failure condition ordering
+                The RMI_VERSION command does not have any failure condition orderings.
+                B4.3.64.3 Success conditions
+  ID                           Condition
+  result                       post: ResultEqual(result, RMI_SUCCESS)
+  lower                        post: VersionEqualRmi(lower, req)
+  higher                       post: VersionEqualRmi(higher, RmiVersionHighest())
+                B4.3.64.4 Footprint
+                The RMI_VERSION command does not have any footprint.

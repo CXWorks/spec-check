@@ -1,0 +1,80 @@
+{
+ "PSCI_VERSION": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16146
+ },
+ "RMI_GRANULE_DELEGATE": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16298
+ },
+ "RMI_PDEV_STOP": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16537
+ },
+ "RMI_REC_DESTROY": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16570
+ },
+ "RMI_RTT_AUX_UNMAP_UNPROTECTED": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16734
+ },
+ "RMI_RTT_INIT_RIPAS": {
+  "attempts": 1,
+  "problems": [
+   "return codes lost: ['RMI_SUCCESS']"
+  ],
+  "written": true,
+  "prompt_tokens": 17410
+ },
+ "RMI_RTT_SET_S2AP": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17118
+ },
+ "RMI_VDEV_GET_STATE": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16467
+ },
+ "RMI_VDEV_UNLOCK": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16774
+ },
+ "RMI_VSMMU_MAP": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17056
+ },
+ "RSI_MEASUREMENT_READ": {
+  "attempts": 1,
+  "problems": [
+   "prose: 'forall i' in 'realm.hash_algo == RMM_HASH_SHA_256 ==> (forall i: 0..4 | Bi'",
+   "quantifier not in Verus form in 'realm.hash_algo == RMM_HASH_SHA_256 ==> (forall i: 0..4 | Bi'",
+   "prose: 'forall i' in 'realm.hash_algo == RMM_HASH_SHA_512 ==> (forall i: 0..7 | Bi'"
+  ],
+  "written": true,
+  "prompt_tokens": 16685
+ },
+ "RSI_VDEV_VALIDATE_MAPPING": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16816
+ }
+}

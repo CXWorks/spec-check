@@ -1,0 +1,18 @@
+pub open spec fn rmi_rtt_fold_spec(rd: Address, ipa: Address, level: Int64, result: Result<(), RmiStatusCode>, rtt: Address, old_s: S, new_s: S) -> bool {
+    (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!RttLevelIsValid(old_s, RealmAt(old_s, rd), level) || level == RttLevelIsStarting(old_s, RealmAt(old_s, rd), level) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsAligned(old_s, ipa, pow2(RttLevelSize(level - 1) as int)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (ipa >= pow2(RealmAt(old_s, rd).ipa_width as int) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (RttWalk_(old_s, rd, ipa, (level - 1) as int).level != (level - 1) as int ==> ResultEqual(result, RMI_ERROR_RTT))
+    && (RttWalk_(old_s, rd, ipa, (level - 1) as int).rtte.state != RmmRttEntryState::TABLE ==> ResultEqual(result, RMI_ERROR_RTT))
+    && (!RttIsHomogeneous(old_s, RttAt(old_s, RttWalk_(old_s, rd, ipa, (level - 1) as int).rtte.addr)) ==> ResultEqual(result, RMI_ERROR_RTT))
+    && (AddrIsAuxRef(old_s, ipa, RealmAt(old_s, rd)) ==> ResultEqual(result, RMI_ERROR_RTT))
+    && (result.is_Ok() ==> (GranuleAt(old_s, RttWalk_(old_s, rd, ipa, (level - 1) as int).rtte.addr).state == RmmGranuleState::DELEGATED))
+    && (result.is_Ok() ==> (rtt == RttWalk_(old_s, rd, ipa, (level - 1) as int).rtte.addr))
+    && (result.is_Ok() ==> (RttEntryAt(old_s, RttAt(old_s, rtt), RttEntryIndex(old_s, ipa, RttWalk_(old_s, rd, ipa, (level - 1) as int).level as int)).addr == RttFold(old_s, RttAt(old_s, RttWalk_(old_s, rd, ipa, (level - 1) as int).rtte.addr)).addr))
+    && (result.is_Ok() ==> (RttEntryAt(old_s, RttAt(old_s, rtt), RttEntryIndex(old_s, ipa, RttWalk_(old_s, rd, ipa, (level - 1) as int).level as int)).attr_prot == RmmRttMemAttr::MEMATTR_PROTECTED))
+    && (result.is_Ok() ==> (RttEntryAt(old_s, RttAt(old_s, rtt), RttEntryIndex(old_s, ipa, RttWalk_(old_s, rd, ipa, (level - 1) as int).level as int)).s2ap_indirect.base_index == RmmRttS2APBase::S2AP_INDIRECT))
+    && (result.is_Ok() ==> (RttEntryAt(old_s, RttAt(old_s, rtt), RttEntryIndex(old_s, ipa, RttWalk_(old_s, rd, ipa, (level - 1) as int).level as int)).ripas == RttFold(old_s, RttAt(old_s, RttWalk_(old_s, rd, ipa, (level - 1) as int).rtte.addr)).ripas))
+}

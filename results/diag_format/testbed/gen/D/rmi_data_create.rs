@@ -1,0 +1,17 @@
+pub open spec fn rmi_data_create_spec(rd: Address, data: Address, ipa: Address, src: Address, flags: RmiDataFlags, result: Result<(), RmiStatusCode>, old_s: S, new_s: S) -> bool {
+    (!AddrIsGranuleAligned(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegable(old_s, rd) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, rd).state != RD ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (RealmAt(old_s, rd).state != REALM_NEW ==> ResultEqual(result, RMI_ERROR_REALM))
+    && (!AddrIsGranuleAligned(old_s, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsProtected(old_s, rd, ipa) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, src) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegableNonCohDevMem(old_s, src) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!AddrIsGranuleAligned(old_s, data) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (!PaIsDelegableDevMem(old_s, data) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (GranuleAt(old_s, data).state != DATA ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (RealmAt(old_s, rd).feat_lpa2 == FEATURE_FALSE && data >= pow2(48) ==> ResultEqual(result, RMI_ERROR_INPUT))
+    && (RttWalk(old_s, RealmAt(old_s, rd), ipa, RMM_RTT_PAGE_LEVEL, RMM_RTT_TREE_PRIMARY).level < RMM_RTT_PAGE_LEVEL ==> ResultEqual(result, RMI_ERROR_RTT))
+    && (RttEntryAt(RttAt(old_s, RttWalk(old_s, RealmAt(old_s, rd), ipa, RMM_RTT_PAGE_LEVEL, RMM_RTT_TREE_PRIMARY).rtt_addr), RttEntryIndex(ipa, RttWalk(old_s, RealmAt(old_s, rd), ipa, RMM_RTT_PAGE_LEVEL, RMM_RTT_TREE_PRIMARY).level)).state != UNASSIGNED ==> ResultEqual(result, RMI_ERROR_RTT))
+    && (result.is_Ok() ==> (GranuleAt(new_s, rd).state == RD && GranuleAt(new_s, data).state == DATA && GranuleAt(new_s, ipa).state == DATA && GranuleAt(new_s, src).state == UNDELEGATED))
+}

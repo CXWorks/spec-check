@@ -1,0 +1,149 @@
+B4.3.39 RMI_RTT_DESTROY command
+                Destroys a primary RTT.
+                B4.3.39.1 Interface
+                B4.3.39.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400015E
+        rd                    X1          63:0        Address                               PA of the RD for the target Realm
+        ipa                   X2          63:0        Address                               Base of the IPA range described by the
+                                                                                            RTT
+        level                 X3          63:0        Int64                                 RTT level
+                B4.3.39.1.2   Context
+                The RMI_RTT_DESTROY command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                                             realm, ipa,
+                                                             level - 1,
+                                                             RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                                             ipa, walk.level)
+        walk_top              Address                    RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                                             RttAt(walk.rtt_addr),                           RTT entries, from
+                                                             walk.level,                                     entry at which the
+                                                             ipa)                                            RTT walk terminated
+                B4.3.39.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        rtt                   X1          63:0        Address                               PA of the RTT which was destroyed
+        top                   X2          63:0        Address                               Top IPA of non-live RTT entries, from
+                                                                                            entry at which the RTT walk terminated
+                B4.3.39.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  level_valid                  pre: !(RttLevelIsValid(RealmAt(rd), level) && !(RttLevelIsStarting(RealmAt(rd), level)))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_aligned                  pre: !AddrIsRttLevelAligned(RttAt(walk.rtt_addr), ipa, level - 1)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_in_range                 pre: !(ipa < pow2(RealmAt(rd).ipa_width))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  walk_level                   pre: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level < level - 1
+                               post: ResultEqual(result, RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level))
+  walk_table                   pre: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.state != TABLE
+                               post: ResultEqual(result, RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level))
+  walk_live                    pre: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.state == TABLE && RttAt(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.addr).state == RTT
+                               post: ResultEqual(result, RMI_ERROR_RTT(level))
+  walk_aux                     pre: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas != EMPTY && RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas != DEV && RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas != RAM
+                               post: ResultEqual(result, RMI_ERROR_RTT(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level))
+                B4.3.39.2.1   Failure condition ordering
+                [rd_delegable, rd_state] < [level_valid, ipa_in_range]
+                                 rd_align                     rd_state                        rd_delegable
+                                                                                           RMI_ERROR_INPUT
+                                                                                           level_valid
+                                                                                           ipa_in_range
+                                                                                           walk_level
+                                                                                           walk_table
+                                                                                           walk_live
+                                                                                           walk_aux
+                                                                                           RMI_ERROR_RTT
+                                                                                           RMI_ERROR_RTT
+                                                                                           RMI_ERROR_RTT
+                                                                                           RMI_ERROR_RTT
+                B4.3.39.3 Success conditions
+  walk_state                   post: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.state == UNASSIGNED
+  walk_ripas                   post: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas == DESTROYED
+  walk_state_ns                post: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.state == UNASSIGNED_NS
+  granule_state                post: GranuleAt(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.addr).state == DELEGATED
+  rtt                          post: RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.addr
+  top                          post: top == RttSkipNonLiveEntries(RttAt(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.addr),RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level,ipa)
+                B4.3.39.4 Footprint
+    ID                           Value
+    rtt_state                   GranuleAt(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.addr).state
+    rtte                        RttEntryAt(RttAt(RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.addr), RttEntryIndex(ipa, RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).level))
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_state                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.state
+    walk_state_ns               RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.state
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas
+    walk_ripas                  RttWalk(RealmAt(rd), ipa, level - 1, RMM_RTT_TREE_PRIMARY).rtte.ripas

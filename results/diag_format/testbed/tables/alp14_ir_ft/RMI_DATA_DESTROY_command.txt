@@ -1,0 +1,64 @@
+B4.3.3 RMI_DATA_DESTROY command
+                Destroys a Data Granule.
+                B4.3.3.1 Interface
+                B4.3.3.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000155
+        rd                    X1          63:0        Address                               PA of the RD which owns the target Data
+        ipa                   X2          63:0        Address                               IPA at which the Granule is mapped in the target Realm
+                B4.3.3.1.2   Context
+                The RMI_DATA_DESTROY command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        walk                  RmmRttWalkResult           RttWalk(                                   false    RTT walk result
+                                  realm, ipa,
+                                  RMM_RTT_PAGE_LEVEL,
+                                  RMM_RTT_TREE_PRIMARY)
+        entry_idx             UInt64                     RttEntryIndex(                             false    RTTE index
+                                  ipa, walk.level)
+        walk_top              Address                    RttSkipNonLiveEntries(                     false    Top IPA of non-live
+                                  RttAt(walk.rtt_addr),                           RTT entries, from
+                                  walk.level,                                     entry at which the
+                                  ipa)                                            RTT walk terminated
+                B4.3.3.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+        data                  X1          63:0        Address                               PA of the Data Granule which was
+                                                                                destroyed
+        top                   X2          63:0        Address                               Top IPA of non-live RTT entries, from
+                                                                                entry at which the RTT walk terminated
+                B4.3.3.2 Failure conditions
+  ID                           Condition
+  rd_align                     pre: !AddrIsGranuleAligned(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                 pre: !PaIsDelegable(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                     pre: GranuleAt(rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_align                    pre: !AddrIsGranuleAligned(ipa)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  ipa_protected                pre: !AddrIsProtected(ipa, RealmAt(rd))
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rtt_page_level               pre: walk.level > RMM_RTT_PAGE_LEVEL
+                               post: ResultEqual(result, RMI_ERROR_RTT(0))
+  rtt_entry_assigned           pre: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).state != ASSIGNED
+                               post: ResultEqual(result, RMI_ERROR_RTT(0))
+  ipa_aux_live                 pre: AddrIsAuxLive(ipa, RealmAt(rd))
+                               post: ResultEqual(result, RMI_ERROR_RTT_AUX(0))
+                B4.3.3.2.1   Failure condition ordering
+                [rd_delegable, rd_state, ipa_protected] < [rtt_page_level, rtt_entry_assigned, ipa_aux_live]
+                                 rd_delegable                     rd_state                        ipa_protected
+                                                                                           rtt_page_level                     rtt_entry_assigned                     ipa_aux_live
+                                                                                           RMI_ERROR_INPUT
+                                                                                           RMI_ERROR_RTT(0)
+                                                                                           RMI_ERROR_RTT_AUX(0)
+                B4.3.3.3 Success conditions
+  ID                           Condition
+  rtte_state                   post: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).state == UNASSIGNED
+  rtte_ripas                   post: RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).ripas == DESTROYED
+  rtte_state                   post: GranuleAt(RttEntryAt(RttAt(walk.rtt_addr), RttEntryIndex(ipa, walk.level)).addr).state == DELEGATED
+  top                          post: top == RttSkipNonLiveEntries(RttAt(walk.rtt_addr), walk.level, ipa)
+                B4.3.3.4 Footprint
+    ID                        Value
+    data_state                GranuleAt(walk.rtte.addr).state
+    rtte                      RttEntryAt(RttAt(walk.rtt_addr), entry_idx)

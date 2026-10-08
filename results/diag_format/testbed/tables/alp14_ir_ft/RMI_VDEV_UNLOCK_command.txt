@@ -1,0 +1,60 @@
+B4.3.61 RMI_VDEV_UNLOCK command
+                Unlock a VDEV.
+                B4.3.61.1 Interface
+                B4.3.61.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC400018A
+        rd                    X1          63:0        Address                               PA of the RD
+        vdev_ptr              X2          63:0        Address                               PA of the VDEV
+                B4.3.61.1.2   Context
+                The RMI_VDEV_UNLOCK command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   RealmAt(rd)                                false    Realm
+        vdev                  RmmVdev                    VdevAt(vdev_ptr)                           false    VDEV
+                B4.3.61.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RmiCommandReturnCode                  Command return status
+                B4.3.61.2 Failure conditions
+  ID                           Condition
+  feature                     pre: !FeatureToRmi(s, FEATURE_DA) == RMI_FEATURE_TRUE
+                               post: ResultEqual(result, RMI_ERROR_NOT_SUPPORTED)
+  rd_align                    pre: !AddrIsGranuleAligned(s, rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_delegable                pre: !PaIsDelegable(s, rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  rd_state                    pre: GranuleAt(s, rd).state != RD
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_ptr_align              pre: !AddrIsGranuleAligned(s, vdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_ptr_delegable          pre: !PaIsDelegable(s, vdev_ptr)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_ptr_state              pre: GranuleAt(s, vdev_ptr).state != VDEV
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_realm                  pre: VdevAt(s, vdev_ptr).realm != RealmAt(rd)
+                               post: ResultEqual(result, RMI_ERROR_INPUT)
+  vdev_state                  pre: VdevAt(s, vdev_ptr).vdev_state != VDEV_LOCKED && VdevAt(s, vdev_ptr).vdev_state != VDEV_STARTED && VdevAt(s, vdev_ptr).vdev_state != VDEV_ERROR
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+  vdev_comm_state             pre: VdevAt(s, vdev_ptr).comm_state != DEV_COMM_IDLE
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+  vdev_mapping_count          pre: VdevAt(s, vdev_ptr).num_map != 0
+                               post: ResultEqual(result, RMI_ERROR_DEVICE)
+                B4.3.61.2.1   Failure condition ordering
+                [feature] < [rd_delegable, rd_state, vdev_ptr_delegable, vdev_ptr_state, vdev_realm]
+                [rd_align] < [rd_delegable, rd_state, vdev_ptr_delegable, vdev_ptr_state, vdev_realm]
+                [vdev_ptr_align] < [rd_delegable, rd_state, vdev_ptr_delegable, vdev_ptr_state, vdev_realm]
+                [vdev_state] < [vdev_comm_state, vdev_mapping_count]
+                [vdev_comm_state] < [vdev_mapping_count]
+                [vdev_mapping_count] < [vdev_comm_state]
+                [vdev_realm] < [vdev_state, vdev_comm_state, vdev_mapping_count]
+                [vdev_ptr_state] < [vdev_state, vdev_comm_state, vdev_mapping_count]
+                [rd_state] < [vdev_state, vdev_comm_state, vdev_mapping_count]
+                B4.3.61.3 Success conditions
+  ID                           Condition
+  vdev_dma_state               post: VdevAt(s, vdev_ptr).dma_state == VDEV_DMA_DISABLED
+  vdev_op                      post: VdevAt(s, vdev_ptr).op == VDEV_OP_UNLOCK
+  vdev_comm_state              post: VdevAt(s, vdev_ptr).comm_state == DEV_COMM_PENDING
+                B4.3.61.4 Footprint
+    ID                           Value
+    vdev_dma_state              VdevAt(s, vdev_ptr).dma_state
+    vdev_op                     VdevAt(s, vdev_ptr).op
+    vdev_comm_state             VdevAt(s, vdev_ptr).comm_state

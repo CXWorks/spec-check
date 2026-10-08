@@ -1,0 +1,89 @@
+{
+ "PSCI_CPU_OFF": {
+  "attempts": 1,
+  "problems": [
+   "no post: rows"
+  ],
+  "written": true,
+  "prompt_tokens": 16236
+ },
+ "RMI_DATA_DESTROY": {
+  "attempts": 1,
+  "problems": [
+   "return codes lost: ['RMI_SUCCESS']"
+  ],
+  "written": true,
+  "prompt_tokens": 17130
+ },
+ "RMI_PDEV_SET_PUBKEY": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16748
+ },
+ "RMI_REALM_DESTROY": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16597
+ },
+ "RMI_RTT_AUX_MAP_UNPROTECTED": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16907
+ },
+ "RMI_RTT_FOLD": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17169
+ },
+ "RMI_RTT_SET_RIPAS": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 17375
+ },
+ "RMI_VDEV_GET_INTERFACE_REPORT": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16694
+ },
+ "RMI_VDEV_START": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16708
+ },
+ "RMI_VSMMU_CREATE": {
+  "attempts": 1,
+  "problems": [
+   "prose: 'forall i' in 'forall i: 0 <= i < 7 ==> vsmmu.idr[i] == params.idr[i]'",
+   "quantifier not in Verus form in 'forall i: 0 <= i < 7 ==> vsmmu.idr[i] == params.idr[i]'"
+  ],
+  "written": true,
+  "prompt_tokens": 16950
+ },
+ "RSI_IPA_STATE_GET": {
+  "attempts": 1,
+  "problems": [
+   "return codes lost: ['RSI_SUCCESS']"
+  ],
+  "written": true,
+  "prompt_tokens": 16546
+ },
+ "RSI_VDEV_GET_INFO": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16782
+ },
+ "RSI_VSMMU_GET_INFO": {
+  "attempts": 1,
+  "problems": [],
+  "written": true,
+  "prompt_tokens": 16466
+ }
+}

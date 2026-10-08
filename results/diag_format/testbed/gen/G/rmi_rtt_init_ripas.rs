@@ -1,0 +1,17 @@
+pub open spec fn rmi_rtt_init_ripas_spec(rd: Address, base: Address, top: Address, result: Result<(), RmiStatusCode>, out_top: Address, old_s: S, new_s: S) -> bool {
+  (AddrIsGranuleAligned(old_s, rd) ==> result.is_Ok())
+  && (AddrIsGranuleAligned(old_s, rd) ==> result.is_Ok())
+  && (GranuleAt(old_s, rd).state == RD ==> result.is_Ok())
+  && (top <= base ==> result.is_err())
+  && (AddrIsProtected(old_s, (top) , RealmAt(old_s, rd)) ==> result.is_Ok())
+  && (RealmAt(old_s, rd).state == REALM_NEW ==> result.is_Ok())
+  && (AddrIsRttLevelAligned(old_s, base, RMM_RTT_PAGE_LEVEL as int) ==> result.is_Ok())
+  && (RttWalk_(old_s, rd, base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED ==> result.is_Ok())
+  && (result.is_Ok() && !(AddrIsGranuleAligned(old_s, rd) && GranuleAt(old_s, rd).state == RD) && !(top <= base) && !(RealmAt(old_s, rd).state == REALM_NEW) ==> result.is_Err())
+  && (result.is_Ok() && (RttWalk_(old_s, rd, base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED) ==> result.is_Err())
+  && ((!(AddrIsGranuleAligned(old_s, rd)) || !(GranuleAt(old_s, rd).state == RD)) ==> ResultEqual(result, RMI_ERROR_INPUT))
+  && (result.is_Err() ==> out_top == 0)
+  && (result.is_Ok() ==> out_top >= base)
+  && (result.is_Ok() ==> out_top <= top)
+  && ((result.is_Ok() && (RttWalk_(old_s, rd, base,RMM_RTT_PAGE_LEVEL as int,RMM_RTT_TREE_PRIMARY as int).rtte.state == UNASSIGNED)) ==> result.is_Err())
+}

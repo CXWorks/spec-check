@@ -1,0 +1,38 @@
+B5.3.15 RSI_REALM_CONFIG command
+                Reads configuration for the current Realm.
+                B5.3.15.1 Interface
+                B5.3.15.1.1   Input values
+        Name                  Register    Bits        Type                                  Description
+        fid                   X0          63:0        UInt64                                FID, value 0xC4000196
+        addr                  X1          63:0        Address                               IPA of the Granule to which the configuration data will be written
+                B5.3.15.1.2   Context
+                The RSI_REALM_CONFIG command operates on the following context.
+        Name                  Type                       Value                                      Before   Description
+        realm                 RmmRealm                   CurrentRealm()                             false    Current Realm
+        cfg                   RsiRealmConfig             RsiRealmConfigAt(addr)                     false    Realm configuration
+        walk                  RmmRttWalkResult           RttWalk(realm, addr, RMM_RTT_PAGE_LEVEL, RMM_RTT_TREE_PRIMARY) false    RTT walk result
+                B5.3.15.1.3   Output values
+        Name                  Register    Bits        Type                                  Description
+        result                X0          63:0        RsiCommandReturnCode                  Command return status
+                B5.3.15.2 Failure conditions
+  ID                           Condition
+  addr_align                  pre: !AddrIsGranuleAligned(CurrentRealm(), addr)
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  addr_protected              pre: !AddrIsProtected(CurrentRealm(), addr)
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+  ripas_empty                 pre: GranuleAt(CurrentRealm(), addr).state == RMM_RTT_ENTRY_UNASSIGNED
+                               post: ResultEqual(result, RSI_ERROR_INPUT)
+                B5.3.15.2.1   Failure condition ordering
+                [addr_align, addr_protected] < [ripas_empty]
+                                 addr_align                     addr_protected                        ripas_empty
+                                                                                           RSI_ERROR_INPUT
+                                                                                           ripas_empty
+                B5.3.15.3 Success conditions
+  ID                           Condition
+  cfg_ipa_width               post: cfg.ipa_width == CurrentRealm().ipa_width
+  cfg_hash_algo               post: cfg.hash_algo == CurrentRealm().hash_algo
+  cfg_num_aux_planes          post: cfg.num_aux_planes == CurrentRealm().num_aux_planes
+  cfg_ats_plane               post: cfg.ats_plane == CurrentRealm().ats_plane
+                B5.3.15.4 Footprint
+    ID                           Value
+    None                         None
