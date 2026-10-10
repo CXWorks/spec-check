@@ -2,7 +2,7 @@
 
 > 本文件是**所有实验结果的唯一汇总处**。新结果请按第 5 节的约定更新到对应小节，不要新开文档。
 >
-> 最后更新：2026-10-09
+> 最后更新：2026-10-10
 
 ---
 
@@ -36,6 +36,7 @@
 | `alp14` | 98 条 = 49 留出 + 49 训练见过 | ✅ | 1.1 版。**两半必须分开报** |
 | `2.0 BET3` | 121 条 | ❌ | 最新版（2026-08-08，847 页） |
 | PSCI / 新文档 | 310 条 / 6 份 | ❌ | 只能用代理指标，真实正确率待人工审核 |
+| **非 RMM 五份规范** | 160 条 | ❌ | SDEI / DRTM / SCMI / FF-A / SBI v3.0，见 §1.5 |
 
 ---
 
@@ -118,6 +119,48 @@
 > ⚠️ 这三个数字**只说明格式合法，不能用来比谁写得对**——在有标准答案的测试场上排序是反的（见 §3.1）。
 > ⚠️ 67% 与上表的 24% 是同一指标的不同测试集（6 份新文档 310 条 vs alp14 改写版 49 条，且后者把签名对不上计为"比不了"），**不可并排引用**。
 
+### 1.5 非 RMM 的五份规范（Claude vs GPT，2026-10-10）
+
+把 `specs/` 下的五份非 RMM 规范各自逐条命令生成一遍，两个模型同条件对照。
+产物：`results/newspecs/{claude,gpt}/{type}/`。
+
+**设置**：`claude-opus-5` 与 `gpt-5.6-sol`，各 160 条命令。每条命令的输入 =
+`training/boilerplate/layer1_{type}.rs`（手写 preamble，两个模型拿到的完全相同）
+\+ 该命令的 PDF 小节原文，prompt 用 `training/pipeline.py` 各 spec type 自己的
+`_SYSTEM_COMMANDS_*`。检查时同一份 preamble 作为源码拼在生成函数前编译。
+
+| 规范 | 命令数 | Claude Verus 通过 | GPT Verus 通过 |
+|---|---|---|---|
+| SDEI（DEN0054C） | 19 | 16（84%） | 16（84%） |
+| DRTM（DEN0113 1.4） | 10 | **10（100%）** | 6（60%） |
+| SCMI（DEN0056F v4.0-bet0） | 22 | **17（77%）** | 12（55%） |
+| FF-A（DEN0077A 1.3 ALP4） | 37 | **31（84%）** | 26（70%） |
+| SBI v3.0 | 72 | **67（93%）** | 63（88%） |
+| **合计** | **160** | **141（88%）** | **123（77%）** |
+
+**空话**：Claude 0/160，GPT 1/160（DRTM 一条）。
+
+**Z3 逻辑矛盾：两个模型、320 份规范，全部为 0。**
+对照 RMM——我们的 4B 在那里反复生成出自相矛盾的 `psci_affinity_info`（3 次独立生成、
+2 个规范版本）。这类"裸 `&&` 强制一个返回值同时等于两个常量"的失效模式，在两个 SOTA
+模型的 320 份输出里一次都没出现，看起来是小模型特有的问题，不是通用现象。
+
+> ⚠️ **这 88% / 77% 不能和 RMM 的 48% / 66% 并排比。** 这几份 `layer1_*.rs` 是
+> 被历年模型输出反向补过 helper 的（`layer1_sdei.rs` 里就留着一行
+> `/// u32 variant used by model-generated SDEI_INTERRUPT_BIND specs.`），等于字典
+> 被调整过来迁就模型；RMM 的 preamble 是独立的人工产物，没有这层照顾。
+> ⚠️ 同 §0：Verus 通过 = 编译 + 类型检查，**不是正确性**。这五份规范都没有标准答案，
+> 真实正确率无从测量。
+> ⚠️ **dangling output 与 footprint 两项检查在这五份规范上不适用**，原因见 §2.5。
+
+**过程中发现并修复的 2 个真 bug**（commit `7cf7f85`，均与模型无关）：
+
+1. `training/boilerplate/layer1_ffa.rs` 重复声明 `type Int32 = i32;`，该文件单独
+   编译即报 E0428 —— FF-A 的任何规范检查都必挂。**修前 0/37，修后 31/37。**
+2. `training/extract_sections_sbi.py` 是按 SBI v2.0 写的，而 `specs/riscv-sbi.pdf`
+   是 v3.0（章节重排、小节号带尾点），**静默返回 0 条命令**。新增
+   `training/extract_sections_sbi3.py`，抽出 72 个函数。
+
 ---
 
 ## 2. 找 bug 能力
@@ -198,6 +241,40 @@
 | eac5 / rel0 | 5（SCOPE 已知 8 个中真实复现 5 个） | 0 | 5 |
 | alp14 | 2 | 2 | **4（新发现）** |
 | 2.0 BET3 | 7（2 旧未修 + 5 新） | 未测 | **7（下限）** |
+| 非 RMM 五份 | 不适用 | 不适用 | — （见 §2.5） |
+
+### 2.5 为什么三种检查只有一种能迁移到非 RMM 规范
+
+三种检查对文档结构的依赖程度完全不同，这决定了它们能走多远：
+
+| 检查 | 依赖什么 | 能否迁移 |
+|---|---|---|
+| **Logic inconsistency** | 只要「生成的规范 + Verus」 | ✅ **任何规范都能跑**，不依赖文档结构 |
+| **Dangling output** | PDF 的 Outputs 表 + Success conditions 表 | ❌ 这两张表是 RMM 文档格式特有的 |
+| **Footprint** | PDF 的 Footprint 表 | ❌ 同上 |
+
+实测五份非 RMM 规范的 160 条命令里，相关小节出现这些结构的数量：
+
+| | SDEI | DRTM | SCMI | FF-A | SBI |
+|---|---|---|---|---|---|
+| 含 "Footprint" | 0 | 0 | 0 | 0 | 0 |
+| 含 "Success condition" | 0 | 0 | 0 | 0 | 0 |
+| 含 "Return" | 19/19 | 10/10 | 20/22 | 30/37 | 64/72 |
+
+**这些是散文式规范 + 返回值描述，不是 RMM 的三表结构**（Outputs / Success-Failure
+conditions / Footprint）。SCOPE 的两个 rule-mode 检查正是建立在那三张表之上的，所以
+不是"还没做"，是**结构上无从做起**。
+
+同时要记住：**logic inconsistency 找的是模型自己写出的自相矛盾规范（生成缺陷），
+不是文档 bug**。真正的文档 bug 全部来自另外两个检查。所以 §1.5 里"320 份规范 0 矛盾"
+的含义是"两个 SOTA 模型没写出自相矛盾的规范"，**不等于"这五份文档没有 bug"**。
+
+若要在这类规范上找文档 bug，两条可行路线（均未实施）：
+
+- **返回码覆盖检查**（dangling output 的等价物）：文档列出的每个返回码，规范是否
+  给出了触发条件？反过来即"文档列了码却从没说何时返回"。需为每份规范写返回码抽取器。
+- **双模型一致性**：若 Claude 与 GPT 各自独立地都没约束某个返回码，大概率是文档没写。
+  零额外基础设施（配对的两份生成结果已有），且天然规避"强模型编造定义"（见 §3.2）。
 
 ---
 
@@ -232,6 +309,27 @@ alp14 3 个 → 2.0 BET3 7 个，旧 bug 一个没修，新功能带着新漏洞
 | 能编译 vs 真正写对 | ~2 倍以上（39/49 vs 17/49） |
 | 代理指标 vs 真实正确率 | 排序可能相反 |
 
+### 3.6 自相矛盾是小模型特有的失效模式
+
+我们的 4B 在 RMM 上反复生成出自相矛盾的 `psci_affinity_info`（3 次独立生成、2 个规范
+版本）；两个 SOTA 模型在 320 份非 RMM 规范上**一次都没有**。所以 Z3 矛盾检查对小模型
+产线是有价值的守门员，对 SOTA 模型基本不触发——**它的 0 不是质量证明，只是说明这类
+低级错误不在它们的失效谱里**（它们的失效形态是编造定义和过于宽松，见 §3.1、§3.2）。
+
+### 3.7 工具链 bug 会伪装成模型结果
+
+本项目至今已发现 4 处"看起来像模型表现、实为工具缺陷"的情况：
+
+| 现象 | 真因 |
+|---|---|
+| FF-A 0/37 全败 | `layer1_ffa.rs` 重复声明 `type Int32`，preamble 自身编译不过 |
+| SBI 抽出 0 条命令 | 抽取器针对 v2.0，PDF 是 v3.0，静默返回空 |
+| alp14 dangling-output 少报 | `extract_our_clauses` 只丢一行跳过签名，verusfmt 换行后参数名泄漏 |
+| GPT eac5 首轮 0 flags | 同上，同事侧独立遇到 |
+
+**共同点：全部表现为某个数字异常整齐（0% 或 100%）。** 看到这种数字先查工具，不要
+先解释模型行为。
+
 ---
 
 ## 4. 已知问题与待办
@@ -243,7 +341,9 @@ alp14 3 个 → 2.0 BET3 7 个，旧 bug 一个没修，新功能带着新漏洞
 | `prompt_engineering/prompt_engineering_v3.py:70` | 错称 `RSI_FEATURES` / version queries 的 oracle 是 `true`；实为 4 个版本全有真实约束，且已烤进训练权重 | ✅ 已修 |
 | `prompt_engineering/RESULTS_V3.md:499` | 同一误解传导进分析，把真实正确性问题误判为"CodeBLEU 噪声" | ✅ 已修 |
 | `training/scope_rule_check_ourcode.py:88` | 只丢一行跳过签名，verusfmt 换行后参数名泄漏进 body，造成假阴性 | ❌ 同事已修，**未合入本分支** |
-| `prompt_engineering_v3.py` 的 `PROMPT_V3_TEMPLATE` | `{context}`（preamble）被误加回 Qwen 用的模板，撤销了 Iteration 6 的优化（GPT 另有独立模板 `PROMPT_V3_GPT_TEMPLATE`，不应改共享文件） | ❌ **待 revert** |
+| `prompt_engineering_v3.py` 的 `PROMPT_V3_TEMPLATE` | `{context}`（preamble）被加回 Qwen 用的模板（GPT 另有独立模板 `PROMPT_V3_GPT_TEMPLATE`）。**是否该 revert 待定**：Iteration 6 认为微调模型不需要重复看 preamble，但 9B 的字典消融显示给字典能把正确数从 10/49 提到 17/49，该结论可能本身是错的。无论保留与否，**都意味着新跑的 4B 数字不能与历史 48% 并排比** | ⚠️ 待决定 |
+| `training/boilerplate/layer1_ffa.rs` | 重复声明 `type Int32`，preamble 自身编译不过，FF-A 检查全败 | ✅ 已修（`7cf7f85`） |
+| `training/extract_sections_sbi.py` | 针对 SBI v2.0，对 v3.0 的 PDF 静默返回 0 条 | ✅ 已绕过（新增 `extract_sections_sbi3.py`，原文件未动） |
 
 ### 4.2 改进方案状态
 
@@ -260,8 +360,9 @@ alp14 3 个 → 2.0 BET3 7 个，旧 bug 一个没修，新功能带着新漏洞
 | 高 | **人工审核 PSCI 20 条**——新文档上的真实正确率仍是空白，方案 3 也卡在这里 |
 | 高 | **更新 preamble/字典到 2.0**——`RmiCommandReturnCode` → `RmiResult`（104 处），186 种类型中 71 种旧字典没有，编译率掉到 8%，导致 2.0 上跑不了 footprint 和 Z3 检查 |
 | 中 | 合入 `scope_rule_check_ourcode.py` 的修复，重跑 eac5/rel0 的 dangling-output 计数 |
-| 中 | revert `PROMPT_V3_TEMPLATE` 里误加的 `{context}` |
+| 中 | 决定 `PROMPT_V3_TEMPLATE` 的 `{context}` 去留（见 §4.1），并记录决定理由 |
 | 中 | prompt bug 修复后触发一次 retrain（改文本不改权重） |
+| 中 | 非 RMM 五份规范的文档 bug 检查——走 §2.5 的"双模型一致性"路线（配对结果已有，零额外基础设施） |
 | 低 | **找错率**仍无合适测试集——alp14 留出 49 条里只含 1 个已知文档 bug |
 
 ---
