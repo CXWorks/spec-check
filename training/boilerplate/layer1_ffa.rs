@@ -153,7 +153,4 @@ impl FfaError {
     pub open spec fn as_int(self) -> int { self.0 }
 }
 
-// Type aliases used by some model outputs
-type Int32 = i32;
-
 } // verus!
